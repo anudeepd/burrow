@@ -1,0 +1,20 @@
+{
+  "id" : 0,
+  "status" : "COMPLETED",
+  "description" : "createOrReplaceTempView at NativeMethodAccessorImpl.java:0",
+  "planDescription" : "== Physical Plan ==\nExecute CreateViewCommand (1)\n   +- CreateViewCommand (2)\n         +- Project (4)\n            +- Range (3)\n\n\n(1) Execute CreateViewCommand\nOutput: []\n\n(2) CreateViewCommand\nArguments: `t`, false, true, LocalTempView, UNSUPPORTED, true\n\n(3) Range\nArguments: 0, 50000, 1, 4, [id#0L], false\n\n(4) Project\nArguments: [(id#0L % cast(100 as bigint)) AS k#1L, (id#0L * cast(3 as bigint)) AS v#2L]\n\n",
+  "submissionTime" : "2026-10-03T07:06:35.093GMT",
+  "duration" : 376,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 0,
+    "nodeName" : "Execute CreateViewCommand",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ ],
+  "queryId" : "01a10096-08c1-70c3-b9b6-b67f038ae11d",
+  "errorMessage" : "",
+  "rootExecutionId" : 0
+}

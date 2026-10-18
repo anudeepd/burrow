@@ -1,0 +1,29 @@
+{
+  "container": {
+    "containerId": "container_1767225600000_0003_01_000001",
+    "allocatedMB": "1024",
+    "allocatedVCores": "1",
+    "assignedNodeId": "nm1:35000",
+    "priority": "0",
+    "startedTime": "1767225701000",
+    "finishedTime": "0",
+    "elapsedTime": "60000",
+    "diagnosticsInfo": "",
+    "logUrl": "http://nm1:8042/node/containerlogs/container_1767225600000_0003_01_000001/alice",
+    "containerExitStatus": "-1000",
+    "containerState": "RUNNING",
+    "nodeHttpAddress": "nm1:8042",
+    "nodeId": "nm1:35000",
+    "allocatedResources": [
+      {
+        "key": "memory-mb",
+        "value": "1024"
+      },
+      {
+        "key": "vcores",
+        "value": "1"
+      }
+    ],
+    "exposedPorts": "{}"
+  }
+}

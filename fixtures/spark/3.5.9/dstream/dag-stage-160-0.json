@@ -1,0 +1,72 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 160,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 160",
+      "clusters": [
+        {
+          "id": "cluster16",
+          "name": "parallelize",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 56,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": true,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 405,
+          "name": "PythonRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 406,
+          "name": "PairwiseRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 16,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:289",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster16"
+        }
+      ],
+      "edges": [
+        {
+          "from": 16,
+          "to": 56
+        },
+        {
+          "from": 56,
+          "to": 405
+        },
+        {
+          "from": 405,
+          "to": 406
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

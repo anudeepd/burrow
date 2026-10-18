@@ -1,0 +1,1326 @@
+{
+ "version": 1,
+ "scenario": "live-running",
+ "count": 70,
+ "digest": "905e6ed4ff33",
+ "entries": [
+  {
+   "url": "http://127.0.0.1:8088/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0067-7854ccf4e794.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0068-73ebf3d43db7.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/metrics",
+   "status": 404,
+   "headers": {
+    "cache-control": "must-revalidate,no-cache,no-store",
+    "content-length": "405",
+    "content-type": "text/html;charset=iso-8859-1",
+    "pragma": "no-cache",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0070-c9823656fae1.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/stacks",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "text/plain;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0069-ceef1c405a91.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0019-dab6af4ccd77.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=ACCEPTED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0041-e537467aa556.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=FAILED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0044-a01a6b4e47c2.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=FINISHED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0043-55db5f0a08ff.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=KILLED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0045-fd27a81b01cb.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=NEW",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0038-dd85ae8ab00e.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=NEW_SAVING",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0039-507d8ce07bc1.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=RUNNING",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0042-af11f0beb993.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=SUBMITTED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0040-8c1932708568.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-bb760d95e4e1.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps//appattempts",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7536",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-36a2fb66703e.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps//appattempts/",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7537",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-7168951f11a4.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps//appattempts//containers",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7547",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-693234f2841d.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps//appattempts//containers/",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7548",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-a5ea4078f9ec.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0019-327f37f3bb41.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0020-bfaf824389c3.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts/appattempt_1791901196446_0002_000001",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0021-713e8932304e.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts/appattempt_1791901196446_0002_000001/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0022-2f403cb5100f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts/appattempt_1791901196446_0002_000001/containers/container_1791901196446_0002_01_000002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0023-76a0d5894486.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/priority",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0025-a33f1c5f28bc.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/queue",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0026-e7740507c1e6.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/state",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0024-8d5f0d3f23c7.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/timeouts",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0027-04badea69d95.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/timeouts/LIFETIME",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0028-1337ee12e752.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/appstatistics",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0029-606f43f06f12.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/containers/container_1791901196446_0002_01_000002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7569",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0037-3f73c50b595d.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/get-node-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0032-13094c07ad7a.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/get-node-to-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0033-811fab8d8f32.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/get-rm-node-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0032-94f8034e50e5.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-a0bf6e841e2f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/label-mappings",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0034-c29f4fb4d37f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/metrics",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-b58f3dfc54aa.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/nodes",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0030-1d5454d4e03f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/nodes/127.0.0.3:8041",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0030-dfb90a763908.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/nodes/127.0.0.3:8041/get-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0031-d2c773b449bb.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/resource-profiles",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7537",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0035-9b4835b99060.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/resource-types",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7534",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0036-18e7511c7654.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-e3e521aae243.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler-conf",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0017-65fa60a65fce.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler-conf/version",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0018-6be7ddbc3b07.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler-overview",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-a1944168e2ec.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler/activities",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0014-a59f2c59e009.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler/app-activities/application_1791901196446_0002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:01 GMT, Tue, 13 Oct 2026 14:29:01 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:01 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0016-b44ed5a3608f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler/bulk-activities",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0015-42744239b26c.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/userinfo",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:28:58 GMT, Tue, 13 Oct 2026 14:28:58 GMT",
+    "expires": "Tue, 13 Oct 2026 14:28:58 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0013-70611cc645a7.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0051-71d6e9ead2b2.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0052-235bfece27d6.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0047-d9da5f97c6ee.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/apps/application_1791901196446_0002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0048-e1c25f9fcf37.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0049-0369d002d1b1.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/containers/container_1791901196446_0002_01_000002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0050-7cf0840678d8.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0046-d0dfd0c68cdf.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0058-14eb817073c3.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0059-9c2a639ca9ac.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0054-13b8c07c6ee9.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/apps/application_1791901196446_0002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0055-6a54b1c04cfa.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0056-308c2352d8d2.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/containers/container_1791901196446_0002_01_000002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0057-7a6824b14381.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0053-08bfb3e0b1d6.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0065-9a04f43b9ae1.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0066-f6b2e6d69a9e.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0061-7f52c570f184.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/apps/application_1791901196446_0002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0062-3691ad2c51b5.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0063-fc0d0dad17c2.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/containers/container_1791901196446_0002_01_000002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0064-96e7f0ffeeaf.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:02 GMT, Tue, 13 Oct 2026 14:29:02 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:02 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "main-0060-a3522484f2fc.json"
+  }
+ ]
+}

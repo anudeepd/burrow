@@ -1,0 +1,290 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 2,
+  "stages": [
+    {
+      "stageId": 2,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 2 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster1",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster0",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster1"
+        },
+        {
+          "id": 1,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster1"
+        },
+        {
+          "id": 2,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster1"
+        },
+        {
+          "id": 3,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster0"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 1
+        },
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        }
+      ]
+    },
+    {
+      "stageId": 3,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 3 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster6",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster5",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 4,
+          "name": "ParallelCollectionRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster6"
+        },
+        {
+          "id": 5,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster6"
+        },
+        {
+          "id": 6,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster6"
+        },
+        {
+          "id": 7,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster5"
+        }
+      ],
+      "edges": [
+        {
+          "from": 4,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 6
+        },
+        {
+          "from": 6,
+          "to": 7
+        }
+      ]
+    },
+    {
+      "stageId": 4,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 4",
+      "clusters": [
+        {
+          "id": "cluster18",
+          "name": "AQEShuffleRead",
+          "parentId": null
+        },
+        {
+          "id": "cluster15",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster23",
+          "name": "AQEShuffleRead",
+          "parentId": null
+        },
+        {
+          "id": "cluster20",
+          "name": "WholeStageCodegen (4)",
+          "parentId": null
+        },
+        {
+          "id": "cluster10",
+          "name": "WholeStageCodegen (5)",
+          "parentId": null
+        },
+        {
+          "id": "cluster9",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 8,
+          "name": "ShuffledRowRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster18"
+        },
+        {
+          "id": 9,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster15"
+        },
+        {
+          "id": 10,
+          "name": "ShuffledRowRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster23"
+        },
+        {
+          "id": 11,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster20"
+        },
+        {
+          "id": 12,
+          "name": "ZippedPartitionsRDD2",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster10"
+        },
+        {
+          "id": 13,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster10"
+        },
+        {
+          "id": 14,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster9"
+        }
+      ],
+      "edges": [
+        {
+          "from": 8,
+          "to": 9
+        },
+        {
+          "from": 10,
+          "to": 11
+        },
+        {
+          "from": 9,
+          "to": 12
+        },
+        {
+          "from": 11,
+          "to": 12
+        },
+        {
+          "from": 12,
+          "to": 13
+        },
+        {
+          "from": 13,
+          "to": 14
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 3,
+      "to": 8,
+      "fromStage": 2,
+      "toStage": 4
+    },
+    {
+      "from": 7,
+      "to": 10,
+      "fromStage": 3,
+      "toStage": 4
+    }
+  ]
+}

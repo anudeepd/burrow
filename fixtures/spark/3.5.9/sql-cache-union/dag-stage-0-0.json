@@ -1,0 +1,77 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 0,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 0",
+      "clusters": [
+        {
+          "id": "cluster2",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster1",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster2"
+        },
+        {
+          "id": 1,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster2"
+        },
+        {
+          "id": 2,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster2"
+        },
+        {
+          "id": 3,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster1"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 1
+        },
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

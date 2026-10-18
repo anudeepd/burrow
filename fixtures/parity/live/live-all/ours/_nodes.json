@@ -1,0 +1,593 @@
+{
+ "routeKey": "/nodes",
+ "url": "http://127.0.0.1:8787/nodes?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.nodeLabels",
+   "raw": "[\"ssd\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "ssd",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.rack",
+   "raw": "/rack1",
+   "yn": false,
+   "fmt": "text",
+   "text": "/rack1",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.id",
+   "raw": "127.0.0.3:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.3:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.nodeHTTPAddress",
+   "raw": "127.0.0.3:8042",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.3:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.lastHealthUpdate",
+   "raw": "1791901679391",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:57:59",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.healthReport",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.numContainers",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.derived.allocationTagsSummary",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "1024",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.availMemoryMB",
+   "raw": "2048",
+   "yn": false,
+   "fmt": "mb",
+   "text": "2 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.memUtilization",
+   "raw": "77.05401",
+   "yn": false,
+   "fmt": "pct",
+   "text": "77%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.cpuUtilization",
+   "raw": "20.88887",
+   "yn": false,
+   "fmt": "pct",
+   "text": "20%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.derived.customResourceUsed",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.derived.customResourceAvail",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.version",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": "text",
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.nodeLabels",
+   "raw": "[\"gpu\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "gpu",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.rack",
+   "raw": "/rack1",
+   "yn": false,
+   "fmt": "text",
+   "text": "/rack1",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.id",
+   "raw": "127.0.0.2:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.2:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.nodeHTTPAddress",
+   "raw": "127.0.0.2:8042",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.2:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.lastHealthUpdate",
+   "raw": "1791901679143",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:57:59",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.healthReport",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.derived.allocationTagsSummary",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.availMemoryMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.memUtilization",
+   "raw": "77.09984",
+   "yn": false,
+   "fmt": "pct",
+   "text": "77%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.cpuUtilization",
+   "raw": "19.61846",
+   "yn": false,
+   "fmt": "pct",
+   "text": "19%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.derived.customResourceUsed",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.derived.customResourceAvail",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.version",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": "text",
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.nodeLabels",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.rack",
+   "raw": "/rack2",
+   "yn": false,
+   "fmt": "text",
+   "text": "/rack2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.id",
+   "raw": "127.0.0.4:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.4:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.nodeHTTPAddress",
+   "raw": "127.0.0.4:8042",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.4:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.lastHealthUpdate",
+   "raw": "1791901679822",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:57:59",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.healthReport",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.derived.allocationTagsSummary",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.availMemoryMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.memUtilization",
+   "raw": "76.98854",
+   "yn": false,
+   "fmt": "pct",
+   "text": "76%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.cpuUtilization",
+   "raw": "13.1206255",
+   "yn": false,
+   "fmt": "pct",
+   "text": "13%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.derived.customResourceUsed",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.derived.customResourceAvail",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.version",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": "text",
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "node.numContainers",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "node.usedMemoryMB",
+   "raw": "1024",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "127.0.0.3:8041",
+  "127.0.0.2:8041",
+  "127.0.0.4:8041"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nNodes\nupdated 19:59:36\nRUNNING\n3\nof 3 nodes\nUNHEALTHY\n0\nhealth checks passing\nCONTAINERS\n2\nallocated on all nodes\nMEMORY\n1 GiB\nof 9 GiB\nVCORES\n2\nof 12\nAll\n3\nNew\n0\nRunning\n3\nUnhealthy\n0\nDecommissioning\n0\nDecommissioned\n0\nLost\n0\nRebooted\n0\nShutdown\n0\nAll labels\nAll racks\nSort\nColumns\n16/16\nExport\nNode Labels\nRack\nNode State\nNode Address\nNode HTTP Address\nLast health-update\nHealth-report\nContainers\nAllocation Tags\nMem Used\nMem Avail\nPhys Mem Used %\nVCores Used\nVCores Avail\nPhys VCores Used %\nVersion\nssd\n/rack1\nRunning\n127.0.0.3:8041\n127.0.0.3:8042\n2026-10-13 19:57:59\n—\n2\n1 GiB\n2 GiB\n77%\n2\n2\n20%\n——\n3.4.3\ngpu\n/rack1\nRunning\n127.0.0.2:8041\n127.0.0.2:8042\n2026-10-13 19:57:59\n—\n0\n0 B\n3 GiB\n77%\n0\n4\n19%\n——\n3.4.3\n—\n/rack2\nRunning\n127.0.0.4:8041\n127.0.0.4:8042\n2026-10-13 19:57:59\n—\n0\n0 B\n3 GiB\n76%\n0\n4\n13%\n——\n3.4.3\n3 rows\nScroll for more columns\nshift-click header: multi-sort\nTop consumers\nContainers\n1\n127.0.0.3\n2\ncontainers\n1 GiB · 77%\n2\n127.0.0.2\n0\ncontainers\n0 B · 77%\n3\n127.0.0.4\n0\ncontainers\n0 B · 76%"
+}

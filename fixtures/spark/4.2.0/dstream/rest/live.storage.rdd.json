@@ -1,0 +1,156 @@
+[ {
+  "id" : 45,
+  "name" : "PythonRDD",
+  "numPartitions" : 2,
+  "numCachedPartitions" : 2,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 448,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:40761",
+    "memoryUsed" : 448,
+    "memoryRemaining" : 454462145,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 448,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 454462145,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_45_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 224,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_45_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 224,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+}, {
+  "id" : 46,
+  "name" : "PythonRDD",
+  "numPartitions" : 2,
+  "numCachedPartitions" : 2,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 456,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:40761",
+    "memoryUsed" : 456,
+    "memoryRemaining" : 454462145,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 456,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 454462145,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_46_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 228,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_46_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 228,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+}, {
+  "id" : 47,
+  "name" : "PythonRDD",
+  "numPartitions" : 2,
+  "numCachedPartitions" : 2,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 462,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:40761",
+    "memoryUsed" : 462,
+    "memoryRemaining" : 454462145,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 462,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 454462145,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_47_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 231,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_47_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 231,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+}, {
+  "id" : 48,
+  "name" : "PythonRDD",
+  "numPartitions" : 2,
+  "numCachedPartitions" : 2,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 460,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:40761",
+    "memoryUsed" : 460,
+    "memoryRemaining" : 454462145,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 460,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 454462145,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_48_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 230,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_48_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 230,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+}, {
+  "id" : 49,
+  "name" : "PythonRDD",
+  "numPartitions" : 2,
+  "numCachedPartitions" : 2,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 462,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:40761",
+    "memoryUsed" : 462,
+    "memoryRemaining" : 454462145,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 462,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 454462145,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_49_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 231,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_49_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 231,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+} ]

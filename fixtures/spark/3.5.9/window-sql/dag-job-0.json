@@ -1,0 +1,137 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 0,
+  "stages": [
+    {
+      "stageId": 0,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 0",
+      "clusters": [
+        {
+          "id": "cluster0",
+          "name": "parallelize",
+          "parentId": null
+        },
+        {
+          "id": "cluster1",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster2",
+          "name": "map",
+          "parentId": null
+        },
+        {
+          "id": "cluster3",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster5",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster4",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 1,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:289",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster0"
+        },
+        {
+          "id": 2,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at SerDeUtil.scala:117",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster1"
+        },
+        {
+          "id": 3,
+          "name": "MapPartitionsRDD",
+          "callsite": "map at SerDeUtil.scala:69",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster2"
+        },
+        {
+          "id": 4,
+          "name": "MapPartitionsRDD",
+          "callsite": "applySchemaToPythonRDD at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster3"
+        },
+        {
+          "id": 5,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:16",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster5"
+        },
+        {
+          "id": 6,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:16",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster4"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 1
+        },
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        },
+        {
+          "from": 3,
+          "to": 4
+        },
+        {
+          "from": 4,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 6
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

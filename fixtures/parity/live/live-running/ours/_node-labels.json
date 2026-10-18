@@ -1,0 +1,296 @@
+{
+ "routeKey": "/node-labels",
+ "url": "http://127.0.0.1:8787/node-labels?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.derived.labelNameText",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "<DEFAULT_PARTITION>",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.name",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "<DEFAULT_PARTITION>",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.derived.labelTypeText",
+   "raw": "true",
+   "yn": false,
+   "fmt": "text",
+   "text": "Exclusive Partition",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.exclusivity",
+   "raw": "true",
+   "yn": false,
+   "fmt": "text",
+   "text": "Exclusive Partition",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.activeNMs",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.derived.totalResourceText",
+   "raw": "3072/4",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:3 GB, vCores:4>",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.partitionInfo.resourceAvailable.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.partitionInfo.resourceAvailable.vCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "",
+   "field": "nodelabel.nodes",
+   "raw": "[\"127.0.0.4:8041\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.derived.labelNameText",
+   "raw": "gpu",
+   "yn": false,
+   "fmt": "text",
+   "text": "gpu",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.name",
+   "raw": "gpu",
+   "yn": false,
+   "fmt": "text",
+   "text": "gpu",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.derived.labelTypeText",
+   "raw": "true",
+   "yn": false,
+   "fmt": "text",
+   "text": "Exclusive Partition",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.exclusivity",
+   "raw": "true",
+   "yn": false,
+   "fmt": "text",
+   "text": "Exclusive Partition",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.activeNMs",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.derived.totalResourceText",
+   "raw": "3072/4",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:3 GB, vCores:4>",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.partitionInfo.resourceAvailable.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.partitionInfo.resourceAvailable.vCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "nodelabel.nodes",
+   "raw": "[\"127.0.0.2:8041\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.derived.labelNameText",
+   "raw": "ssd",
+   "yn": false,
+   "fmt": "text",
+   "text": "ssd",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.name",
+   "raw": "ssd",
+   "yn": false,
+   "fmt": "text",
+   "text": "ssd",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.derived.labelTypeText",
+   "raw": "false",
+   "yn": false,
+   "fmt": "text",
+   "text": "Non Exclusive Partition",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.exclusivity",
+   "raw": "false",
+   "yn": false,
+   "fmt": "text",
+   "text": "Non Exclusive Partition",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.activeNMs",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.derived.totalResourceText",
+   "raw": "3072/4",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:3 GB, vCores:4>",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.partitionInfo.resourceAvailable.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.partitionInfo.resourceAvailable.vCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "nodelabel.nodes",
+   "raw": "[\"127.0.0.3:8041\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "1",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "",
+  "gpu",
+  "ssd"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nNode labels\nSort\nColumns\n5/5\nExport\nLabel Name\nLabel Type\nNum Of Active NMs\nPartition resources\nMapped nodes\n<DEFAULT_PARTITION>\nderived\nExclusive Partition\n1\n<memory:3 GB, vCores:4>\n3 GiB\nmemory\n·\n4\nvCores\n1\ngpu\nExclusive Partition\n1\n<memory:3 GB, vCores:4>\n3 GiB\nmemory\n·\n4\nvCores\n1\nssd\nNon Exclusive Partition\n1\n<memory:3 GB, vCores:4>\n3 GiB\nmemory\n·\n4\nvCores\n1\n3 rows\nshift-click header: multi-sort"
+}

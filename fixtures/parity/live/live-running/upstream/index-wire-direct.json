@@ -1,0 +1,1451 @@
+{
+ "version": 1,
+ "scenario": "live-running",
+ "count": 77,
+ "digest": "78e6996946f8",
+ "entries": [
+  {
+   "url": "http://127.0.0.1:8088/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0062-7854ccf4e794.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0063-73ebf3d43db7.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/metrics",
+   "status": 404,
+   "headers": {
+    "cache-control": "must-revalidate,no-cache,no-store",
+    "content-length": "405",
+    "content-type": "text/html;charset=iso-8859-1",
+    "pragma": "no-cache",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0066-c9823656fae1.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0066-86b90042e122.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/allexecutors",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0070-9930ede488ac.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/environment",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0071-71c17571d74b.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/executors",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0069-a1f5b08142e4.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/jobs",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0067-93002e262911.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/sql",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0073-91e7ddfcfe0a.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/stages",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0068-53c9b04f032d.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/storage/rdd",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:09 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0072-35c550a63607.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/streaming/batches",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-length": "46",
+    "content-type": "text/plain;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0076-b56f41ba3088.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/streaming/receivers",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-length": "46",
+    "content-type": "text/plain;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0075-ccfdf001a009.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/api/v1/applications/application_1791901196446_0002/streaming/statistics",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-length": "46",
+    "content-type": "text/plain;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0074-64c484519035.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/proxy/application_1791901196446_0002/jobs/",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache, no-store, must-revalidate",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:10 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0077-4188d8958379.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/stacks",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "text/plain;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0064-ceef1c405a91.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0066-dab6af4ccd77.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=ACCEPTED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0036-e537467aa556.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=FAILED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0039-a01a6b4e47c2.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=FINISHED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0038-55db5f0a08ff.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=KILLED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0040-fd27a81b01cb.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=NEW",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0033-dd85ae8ab00e.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=NEW_SAVING",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0034-507d8ce07bc1.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=RUNNING",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0037-af11f0beb993.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps?states=SUBMITTED",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0035-8c1932708568.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0012-327f37f3bb41.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0013-bfaf824389c3.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts/appattempt_1791901196446_0002_000001",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0014-713e8932304e.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts/appattempt_1791901196446_0002_000001/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0015-2f403cb5100f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/appattempts/appattempt_1791901196446_0002_000001/containers/container_1791901196446_0002_01_000002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0016-76a0d5894486.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/priority",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0018-a33f1c5f28bc.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/queue",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0019-e7740507c1e6.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/state",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0017-8d5f0d3f23c7.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/timeouts",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0020-04badea69d95.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/apps/application_1791901196446_0002/timeouts/LIFETIME",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0021-1337ee12e752.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/appstatistics",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0022-606f43f06f12.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/containers/container_1791901196446_0002_01_000002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7569",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0033-3f73c50b595d.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/get-node-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0026-13094c07ad7a.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/get-node-to-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0028-811fab8d8f32.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/get-rm-node-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0027-94f8034e50e5.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:03 GMT, Tue, 13 Oct 2026 14:29:03 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:03 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0001-a0bf6e841e2f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/label-mappings",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0029-c29f4fb4d37f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/metrics",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:03 GMT, Tue, 13 Oct 2026 14:29:03 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:03 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0002-b58f3dfc54aa.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/nodes",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0023-1d5454d4e03f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/nodes/127.0.0.3:8041",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0024-dfb90a763908.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/nodes/127.0.0.3:8041/get-labels",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0025-d2c773b449bb.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/resource-profiles",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7537",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0031-9b4835b99060.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/resource-types",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-length": "7534",
+    "content-type": "text/html;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0032-18e7511c7654.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:03 GMT, Tue, 13 Oct 2026 14:29:03 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:03 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0004-e3e521aae243.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler-conf",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0009-65fa60a65fce.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler-conf/version",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0010-6be7ddbc3b07.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler-overview",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:03 GMT, Tue, 13 Oct 2026 14:29:03 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:03 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0005-a1944168e2ec.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler/activities",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:03 GMT, Tue, 13 Oct 2026 14:29:03 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:03 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0006-a59f2c59e009.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler/app-activities/application_1791901196446_0002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0008-b44ed5a3608f.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/scheduler/bulk-activities",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:03 GMT, Tue, 13 Oct 2026 14:29:03 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:03 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0007-42744239b26c.json"
+  },
+  {
+   "url": "http://127.0.0.1:8088/ws/v1/cluster/userinfo",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:03 GMT, Tue, 13 Oct 2026 14:29:03 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:03 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0003-70611cc645a7.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0046-71d6e9ead2b2.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0047-235bfece27d6.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0042-d9da5f97c6ee.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/apps/application_1791901196446_0002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0043-e1c25f9fcf37.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0044-0369d002d1b1.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/containers/container_1791901196446_0002_01_000002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0045-7cf0840678d8.json"
+  },
+  {
+   "url": "http://127.0.0.2:8042/ws/v1/node/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0041-d0dfd0c68cdf.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0053-14eb817073c3.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0054-9c2a639ca9ac.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0049-13b8c07c6ee9.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/apps/application_1791901196446_0002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0050-6a54b1c04cfa.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0051-308c2352d8d2.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/containers/container_1791901196446_0002_01_000002",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0052-7a6824b14381.json"
+  },
+  {
+   "url": "http://127.0.0.3:8042/ws/v1/node/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0048-08bfb3e0b1d6.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/conf?format=json",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0060-9a04f43b9ae1.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/jmx?qry=Hadoop:*",
+   "status": 200,
+   "headers": {
+    "access-control-allow-methods": "GET",
+    "access-control-allow-origin": "*",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=utf8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0061-f6b2e6d69a9e.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/apps",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0056-7f52c570f184.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/apps/application_1791901196446_0002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0057-3691ad2c51b5.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/containers",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0058-fc0d0dad17c2.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/containers/container_1791901196446_0002_01_000002",
+   "status": 404,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0059-96e7f0ffeeaf.json"
+  },
+  {
+   "url": "http://127.0.0.4:8042/ws/v1/node/info",
+   "status": 200,
+   "headers": {
+    "cache-control": "no-cache",
+    "content-encoding": "gzip",
+    "content-type": "application/json;charset=utf-8",
+    "date": "Tue, 13 Oct 2026 14:29:06 GMT, Tue, 13 Oct 2026 14:29:06 GMT",
+    "expires": "Tue, 13 Oct 2026 14:29:06 GMT",
+    "pragma": "no-cache",
+    "transfer-encoding": "chunked",
+    "vary": "Accept-Encoding",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "x-xss-protection": "1; mode=block"
+   },
+   "error": null,
+   "file": "wire-direct-0055-a3522484f2fc.json"
+  }
+ ]
+}

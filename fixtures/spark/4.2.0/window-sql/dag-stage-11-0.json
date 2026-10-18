@@ -1,0 +1,89 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 11,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 11",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_219",
+          "name": "AQEShuffleRead",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_224",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_225",
+          "name": "Window",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 24,
+          "name": "ShuffledRowRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:19",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_219"
+        },
+        {
+          "id": 25,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:19",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_224"
+        },
+        {
+          "id": 26,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:19",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_225"
+        },
+        {
+          "id": 27,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:19",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_225"
+        }
+      ],
+      "edges": [
+        {
+          "from": 24,
+          "to": 25
+        },
+        {
+          "from": 25,
+          "to": 26
+        },
+        {
+          "from": 26,
+          "to": 27
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 23,
+      "to": 24,
+      "fromStage": null,
+      "toStage": 11
+    }
+  ]
+}

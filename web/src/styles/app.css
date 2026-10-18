@@ -1,0 +1,967 @@
+@import "tailwindcss";
+@import "./fonts.css";
+@import "./tokens.css";
+@custom-variant parity (&:where(html[data-parity] *));
+@custom-variant motion-ok (&:where(html:not([data-motion="reduced"]):not([data-parity]) *));
+@custom-variant rail-collapsed (&:where([data-collapsed="true"] *));
+
+/* fixed z-index scale (no arbitrary z-*) */
+@utility z-sticky { z-index: 10; }
+@utility z-rail { z-index: 20; }
+@utility z-topbar { z-index: 30; }
+@utility z-overlay { z-index: 50; }
+@utility z-popover { z-index: 60; }
+@utility z-toast { z-index: 70; }
+@utility z-tooltip { z-index: 80; }
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+    background: var(--ground);
+    color: var(--ink);
+    font-feature-settings: "ss01" 0, "kern" 1, "calt" 1;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-size: var(--text-body);
+    line-height: 1.55;
+    background: var(--ground);
+    color: var(--ink);
+    transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+  }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 600; letter-spacing: -0.012em; margin: 0; }
+  p { text-wrap: pretty; margin: 0; }
+  ::selection { background: var(--selection); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--r-xs); }
+  :focus:not(:focus-visible) { outline: none; }
+  button { font: inherit; color: inherit; }
+  code, kbd, samp, pre { font-family: var(--font-mono); }
+  /* tabular numerals everywhere numbers live */
+  .tnum, table, [data-yf], input[type="number"] { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "zero" 0; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-feature-settings: "calt" 0, "zero" 1; letter-spacing: -0.01em; }
+  /* Keep native scrolling, but make its chrome quiet and consistent in Gecko and Blink. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--seam-strong) transparent;
+  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--seam-strong);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
+  ::-webkit-scrollbar-button,
+  ::-webkit-scrollbar-button:single-button,
+  ::-webkit-scrollbar-button:horizontal:decrement,
+  ::-webkit-scrollbar-button:horizontal:increment,
+  ::-webkit-scrollbar-button:vertical:decrement,
+  ::-webkit-scrollbar-button:vertical:increment {
+    display: none !important;
+    visibility: hidden;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0;
+    height: 0;
+    border: 0;
+    background: none;
+  }
+  ::-webkit-scrollbar-corner { background: transparent; }
+  [hidden] { display: none !important; }
+}
+
+/* ---------- the rail's collapsed state (CSS, not markup) ----------
+   The server-rendered structure is stable across the saved preference. `theme-init.js` applies the width before paint;
+   React mirrors the attribute after hydration, and the same selectors animate user-triggered changes. */
+
+.burrow-logo-light,
+.burrow-rail-brand-mark { display: block; }
+html[data-theme="light"] .burrow-logo-dark,
+html[data-theme="dark"] .burrow-logo-light,
+html[data-theme="light"] .burrow-mark-dark,
+html[data-theme="dark"] .burrow-mark-light { display: none; }
+.burrow-rail-logo-wordmark {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  opacity: 1;
+  transition: opacity var(--dur-fade) var(--ease-out), transform var(--dur-base) var(--ease-in-out);
+}
+.burrow-rail-brand-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  opacity: 0;
+  transition: opacity var(--dur-fade) var(--ease-out), transform var(--dur-base) var(--ease-in-out);
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-logo-wordmark,
+.burrow-rail[data-collapsed="true"] .burrow-rail-logo-wordmark {
+  transform: translateY(-50%) scale(0.96);
+  opacity: 0;
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-brand-mark,
+.burrow-rail[data-collapsed="true"] .burrow-rail-brand-mark {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* A user-triggered rail resize is the one small shell-level layout transition: the main column follows its width. */
+.burrow-rail {
+  width: var(--rail-w);
+  transition:
+    width var(--dur-base) var(--ease-in-out),
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked,
+.burrow-rail[data-collapsed="true"] { width: var(--rail-w-collapsed); }
+.burrow-rail-collapsible {
+  transition: opacity var(--dur-fade) var(--ease-out);
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-collapsible,
+.burrow-rail[data-collapsed="true"] .burrow-rail-collapsible {
+  opacity: 0;
+  transition-delay: 0ms;
+}
+/* Let the desktop rail finish most of its width change before labels and footer details fade in. */
+html:not([data-rail-collapsed="true"]) .burrow-rail-docked .burrow-rail-collapsible,
+.burrow-rail-docked:not([data-collapsed="true"]) .burrow-rail-collapsible {
+  transition-delay: var(--delay-cascade-2);
+}
+@starting-style {
+  html:not([data-rail-collapsed="true"]) .burrow-rail-docked .burrow-rail-collapsible,
+  .burrow-rail-docked:not([data-collapsed="true"]) .burrow-rail-collapsible { opacity: 0; }
+}
+.burrow-rail-section-rule {
+  opacity: 0;
+  transition: opacity var(--dur-fade) var(--ease-out);
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-section-rule,
+.burrow-rail[data-collapsed="true"] .burrow-rail-section-rule {
+  opacity: 1;
+  transition-delay: 0ms;
+}
+html:not([data-rail-collapsed="true"]) .burrow-rail-docked .burrow-rail-section-rule,
+.burrow-rail-docked:not([data-collapsed="true"]) .burrow-rail-section-rule {
+  transition-delay: var(--delay-cascade-2);
+}
+.burrow-rail-docked .burrow-rail-footer-row > button[aria-label="Collapse navigation"],
+.burrow-rail-docked .burrow-rail-footer-row > button[aria-label="Expand navigation"] {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 100%;
+  translate: -100% -50%;
+  transition: inset-inline-start var(--dur-base) var(--ease-in-out), translate var(--dur-base) var(--ease-in-out);
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-footer-row > button[aria-label="Expand navigation"],
+.burrow-rail[data-collapsed="true"] .burrow-rail-footer-row > button[aria-label="Expand navigation"] {
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-footer-status,
+.burrow-rail[data-collapsed="true"] .burrow-rail-footer-status {
+  display: none;
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-footer-row,
+.burrow-rail[data-collapsed="true"] .burrow-rail-footer-row {
+  min-height: 24px;
+  /* Center the compact status controls in the footer while the hidden metadata line keeps its height. */
+  translate: 0 10px;
+}
+.burrow-rail-footer-row { transition: translate var(--dur-base) var(--ease-in-out); }
+/* Keep the footer's second-line space while hiding its expanded-only version text. This preserves the status row's
+   vertical position when the nav collapses. */
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-footer-meta,
+.burrow-rail[data-collapsed="true"] .burrow-rail-footer-meta {
+  display: flex;
+  visibility: hidden;
+}
+
+/* Query the bar's available width, which changes when the desktop rail expands. Keep HA in the Overview identity
+   panel and give the Connection trigger room before the shell's phone-specific treatment applies. */
+.burrow-topbar {
+  container-type: inline-size;
+  transition: background-color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+}
+@container (max-width: 37rem) {
+  .burrow-topbar [data-testid="ha-pill"] { display: none; }
+}
+
+/* The prototype's page frame: broad outer gutters, a calm max-width reading measure, and a clear active rail marker. */
+.burrow-main { padding: var(--page-gutter-y) var(--page-gutter-x); }
+.burrow-page { width: 100%; max-width: 1560px; min-width: 0; margin-inline: auto; }
+.burrow-app-scroll {
+  margin-right: calc(var(--page-gutter-x) * -1);
+  padding-right: var(--page-gutter-x);
+}
+.burrow-rail-active-selection {
+  position: absolute;
+  top: 0;
+  right: 6px;
+  left: 6px;
+  z-index: 0;
+  height: 36px;
+  background: color-mix(in srgb, var(--live) 9%, var(--fabric-3));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--live) 16%, transparent);
+  will-change: transform;
+  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.burrow-rail-active-selection::before {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 0;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--live);
+  content: "";
+}
+.burrow-nav-link[data-status="active"] .burrow-rail-item-icon { color: var(--live); }
+.burrow-rail-logo { translate: 0 0; transition: translate var(--dur-base) var(--ease-in-out); }
+.burrow-rail-item-icon {
+  translate: 0 0;
+  transition: color var(--dur-base) var(--ease-out), translate var(--dur-base) var(--ease-in-out);
+}
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-logo,
+.burrow-rail[data-collapsed="true"] .burrow-rail-logo { translate: 4px 0; }
+html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-item-icon,
+.burrow-rail[data-collapsed="true"] .burrow-rail-item-icon { translate: 6px 0; }
+.burrow-nav-link:hover:not([data-status="active"]) { background-color: var(--fabric-2); }
+html[data-motion="reduced"] .burrow-rail-active-selection { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .burrow-rail-active-selection { transition: none; }
+}
+
+/* Shell surfaces stay flat; elevation is reserved for menus, dialogs and focused graph nodes. */
+.burrow-rail { background: var(--ground-raised); }
+.burrow-topbar { background: var(--ground-raised); }
+
+@media (max-width: 639px) {
+  .burrow-main { padding-inline: 12px; }
+  .burrow-app-scroll { margin-right: -12px; padding-right: 12px; }
+}
+
+/* ---------- motion gating ----------
+   reduced := OS prefers-reduced-motion OR user toggle (data-motion="reduced"). Parity mode is the screenshot contract.
+   Tiered (DESIGN §5.3): movement and loops are dropped; opacity/colour fades keep `--dur-fade`. Tab panels and in-place
+   filter fades use `--dur-content` normally and fall back to the short fade under reduced motion. Parity zeroes everything so a
+   screenshot cannot catch a half-run animation. */
+html[data-motion="reduced"] {
+  --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms;
+  --dur-content: var(--dur-fade);
+}
+html[data-parity] {
+  --dur-fade: 0ms; --dur-content: 0ms; --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms; --dur-content: var(--dur-fade); }
+}
+html[data-parity] *, html[data-parity] *::before, html[data-parity] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+/* Loading spinners are Tier-3 feedback — they say "working" — so they survive reduced motion, slowed to a rate that
+   reads as activity rather than self-motion. Every other loop is gated off at its own selector. */
+html[data-motion="reduced"] .animate-spin, html[data-motion="reduced"] .animate-pulse { animation-duration: 2.4s !important; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin, .animate-pulse { animation-duration: 2.4s !important; }
+}
+
+/* Theme changes flip every colour in one frame; `applyPrefsToDom()` sets the lock before the theme attribute lands and
+   clears it on the next frame (better-ui: suppress transitions on theme switch). */
+html[data-switching] *, html[data-switching] *::before, html[data-switching] *::after { transition: none !important; }
+
+/* ---------- keyframes (transform/opacity only; the DAG's SVG dash flow lives in features/dag/dag.css) ---------- */
+@keyframes burrow-needle {
+  0% { transform: translateX(-100%); opacity: 0; }
+  15%, 70% { opacity: 1; }
+  90%, 100% { opacity: 0; }
+  100% { transform: translateX(400%); }
+}
+@keyframes burrow-pulse-ring { 0% { transform: scale(0.8); opacity: 0.7; } 70%, 100% { transform: scale(2.1); opacity: 0; } }
+@keyframes burrow-skeleton { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+/* ---------- entrance / continuity primitives (DESIGN §5.5) ----------
+   Mount entrances are transitions, not keyframes, so a re-trigger retargets instead of restarting from zero. They
+   start from 4px / scale(0.96), never from nothing, and they are gated the tiered way: reduced motion keeps the fade
+   and drops the move (opacity is Tier 3, displacement is what makes people ill). */
+.burrow-enter { transition: opacity var(--dur-fade) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+.burrow-enter-pop { transition: opacity var(--dur-fade) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+@starting-style {
+  .burrow-enter { opacity: 0; transform: translateY(4px); }
+  .burrow-enter-pop { opacity: 0; transform: scale(0.96); }
+}
+html[data-motion="reduced"] .burrow-enter, html[data-motion="reduced"] .burrow-enter-pop,
+html[data-parity] .burrow-enter, html[data-parity] .burrow-enter-pop { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .burrow-enter, .burrow-enter-pop { transform: none; }
+}
+
+/* Page switches swap the heading immediately, then cascade only coarse content groups (never rows or live cells). */
+@keyframes burrow-page-content-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes burrow-page-content-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 2),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > * {
+  animation: burrow-page-content-in var(--dur-base) var(--ease-out) both;
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(2):not([data-page-motion]),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(2),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(2) {
+  animation-delay: var(--delay-cascade-1);
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(3):not([data-page-motion]),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(3),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(3) {
+  animation-delay: var(--delay-cascade-2);
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 4):not([data-page-motion]),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 4),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(n + 4) {
+  animation-delay: var(--delay-cascade-3);
+}
+
+/* Section reveals are tied to native scroll progress; no JS wheel interception or row-level motion. */
+@keyframes burrow-scroll-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@supports (animation-timeline: view()) {
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll > section > :not(:first-child),
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll > div > section > :not(:first-child) {
+    animation: burrow-scroll-reveal 1s linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 30%;
+  }
+}
+html[data-motion="reduced"]:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]),
+html[data-motion="reduced"]:not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 2),
+html[data-motion="reduced"]:not([data-parity]) [data-page-motion="cards"] > * {
+  animation: burrow-page-content-fade var(--dur-fade) var(--ease-out) both !important;
+  animation-delay: 0ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]),
+  html:not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 2),
+  html:not([data-parity]) [data-page-motion="cards"] > * {
+    animation: burrow-page-content-fade var(--dur-fade) var(--ease-out) both !important;
+    animation-delay: 0ms !important;
+  }
+  .burrow-page-scroll > section > :not(:first-child),
+  .burrow-page-scroll > div > section > :not(:first-child) { animation: none !important; }
+}
+html[data-motion="reduced"] .burrow-page-scroll > section > :not(:first-child),
+html[data-motion="reduced"] .burrow-page-scroll > div > section > :not(:first-child) { animation: none !important; }
+
+/* Dense node tables and filters should appear in one frame instead of flashing through the page entrance cascade. */
+html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) > * > :is(div, nav):nth-child(n + 2),
+html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) > .burrow-page-scroll > div > section:nth-child(n + 2),
+html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) [data-page-motion="cards"] > *,
+html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) .burrow-page-scroll > section > :not(:first-child),
+html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) .burrow-page-scroll > div > section > :not(:first-child) {
+  animation: none !important;
+  animation-delay: 0ms !important;
+}
+
+/* Base UI keeps the outgoing panel mounted through `data-ending-style`, so both sides can fade without moving dense data. */
+[role="tabpanel"] { transition: opacity var(--dur-content) var(--ease-out); }
+[role="tabpanel"][data-starting-style], [role="tabpanel"][data-ending-style] { opacity: 0; }
+
+/* Share and thread fills share one motion cadence; percentage labels use one tabular numeric slot. */
+.burrow-bar { transform: scaleX(var(--fill, 0)); transform-origin: left center; transition: transform var(--dur-base) var(--ease-in-out); }
+.burrow-progress-value { width: 3rem; flex: 0 0 3rem; text-align: right; font-variant-numeric: tabular-nums; }
+.burrow-thread[data-markers="true"] { overflow: visible; }
+/* Markers stay above their own fill but below sticky table columns while the bar scrolls underneath them. */
+.burrow-progress-marker { position: absolute; top: 50%; z-index: 0; width: 2px; height: 10px; border-radius: 1px; transform: translate(-50%, -50%); transition: left var(--dur-base) var(--ease-in-out); }
+.burrow-progress-marker-guarantee, .burrow-progress-legend-guarantee { background: var(--live); }
+.burrow-progress-marker-minimum, .burrow-progress-legend-minimum { background: var(--ink-2); }
+.burrow-progress-marker-fair, .burrow-progress-legend-fair { background: var(--live); }
+.burrow-progress-marker-max, .burrow-progress-legend-max { background: repeating-linear-gradient(to bottom, var(--wait) 0 2px, transparent 2px 3px); }
+.burrow-progress-marker-guarantee, .burrow-progress-marker-minimum, .burrow-progress-marker-fair, .burrow-progress-marker-max { box-shadow: 0 0 0 1px var(--ground); }
+.burrow-progress-marker-overlap { width: 4px; background: linear-gradient(to right, var(--live) 0 50%, var(--wait) 50% 100%); box-shadow: 0 0 0 1px var(--ground); }
+.burrow-progress-legend-guarantee, .burrow-progress-legend-minimum, .burrow-progress-legend-fair, .burrow-progress-legend-max { display: inline-block; width: 2px; height: 12px; border-radius: 1px; box-shadow: 0 0 0 1px var(--ground); }
+
+.burrow-treemap[data-basis-transition="true"] rect {
+  transition:
+    x var(--dur-tween) var(--ease-in-out),
+    y var(--dur-tween) var(--ease-in-out),
+    width var(--dur-tween) var(--ease-in-out),
+    height var(--dur-tween) var(--ease-in-out),
+    opacity var(--dur-fast) var(--ease-out),
+    fill-opacity var(--dur-fast) var(--ease-out),
+    stroke-opacity var(--dur-fast) var(--ease-out);
+}
+.burrow-treemap[data-basis-transition="true"] text {
+  transition:
+    x var(--dur-tween) var(--ease-in-out),
+    y var(--dur-tween) var(--ease-in-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+@starting-style {
+  .burrow-treemap[data-basis-transition="true"] rect {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  .burrow-treemap[data-basis-transition="true"] text { opacity: 0; }
+}
+/* ---------- the thread: ProgressBar ---------- */
+.burrow-thread { position: relative; height: 4px; border-radius: 99px; background: var(--seam); overflow: hidden; }
+.burrow-thread.burrow-thread--headroom { height: 5px; }
+.burrow-thread > .burrow-thread-fill { position: absolute; inset: 0 auto 0 0; overflow: hidden; background: var(--tone, var(--live)); border-radius: inherit; transition: width var(--dur-base) var(--ease-in-out); }
+.burrow-thread[data-segments="true"] > span { transition: width var(--dur-base) var(--ease-in-out); }
+.burrow-thread[data-live="true"] > .burrow-thread-fill::after {
+  content: ""; position: absolute; inset: 0; width: 25%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, white 32%, transparent), transparent);
+  opacity: 0;
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-thread[data-live="true"][data-visible="true"] > .burrow-thread-fill::after {
+  opacity: 1; animation: burrow-needle 1.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) { .burrow-thread[data-live="true"] > .burrow-thread-fill::after { animation: none !important; opacity: 0; } }
+/* reduced-motion/parity fallback: when the needle cannot move, live is encoded statically by a dashed track */
+html[data-motion="reduced"] .burrow-thread[data-live="true"],
+html[data-parity] .burrow-thread[data-live="true"] { background-image: repeating-linear-gradient(90deg, var(--seam-strong) 0 3px, transparent 3px 7px); }
+@media (prefers-reduced-motion: reduce) { .burrow-thread[data-live="true"] { background-image: repeating-linear-gradient(90deg, var(--seam-strong) 0 3px, transparent 3px 7px); } }
+
+/* Segmented threads (task progress by state) have no single fill element, so the needle rides the track itself. */
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-thread[data-segments="true"][data-live="true"][data-visible="true"]::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 25%;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, white 32%, transparent), transparent);
+  animation: burrow-needle 1.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) { .burrow-thread[data-segments="true"][data-live="true"]::after { animation: none !important; } }
+
+/* ---------- status ---------- */
+.burrow-dot-pulse::after { content: ""; position: absolute; inset: 0; border-radius: 99px; background: currentColor; opacity: 0; }
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-dot-pulse[data-visible="true"]::after { animation: burrow-pulse-ring 1.8s var(--ease-out) infinite; }
+@media (prefers-reduced-motion: reduce) { .burrow-dot-pulse::after { animation: none !important; } }
+@media (prefers-contrast: more) {
+  .burrow-pill { border-color: currentColor !important; }
+}
+@media (forced-colors: active) {
+  .burrow-pill, .burrow-thread { border: 1px solid CanvasText; }
+  .burrow-thread-fill { background: Highlight !important; }
+}
+
+/* ---------- skeleton: structural, running-stitch shimmer ---------- */
+.burrow-skeleton { position: relative; overflow: hidden; background: var(--fabric-3); border-radius: var(--r-sm); }
+.burrow-skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--ink) 7%, transparent), transparent); transform: translateX(-100%); }
+/* gated twice: the motion predicate, and `data-visible` from useInView so a 12-row skeleton does not run 96
+   offscreen loops (the shared IntersectionObserver is what makes that free) */
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-skeleton[data-visible="true"]::after { animation: burrow-skeleton 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .burrow-skeleton::after { animation: none !important; } }
+/* reduced motion: the box keeps its --fabric-3 fill, which is the static "not loaded yet" cue */
+
+/* ---------- overlay entrance (Base UI data attributes) ---------- */
+.burrow-pop { transition: opacity var(--dur-fade) var(--ease-out), transform var(--dur-base) var(--ease-out); transform-origin: var(--transform-origin, center); }
+.burrow-pop[data-starting-style], .burrow-pop[data-ending-style] { opacity: 0; transform: scale(0.96); }
+.burrow-pop[data-ending-style] { transition-duration: var(--dur-fast); }
+.burrow-scrim { transition: opacity var(--dur-fade) var(--ease-out); background: var(--scrim); }
+.burrow-scrim[data-starting-style], .burrow-scrim[data-ending-style] { opacity: 0; }
+.burrow-sheet { transition: transform var(--dur-sheet) var(--ease-out), opacity var(--dur-fade) var(--ease-out); }
+.burrow-sheet[data-side="right"][data-starting-style], .burrow-sheet[data-side="right"][data-ending-style] { transform: translateX(100%); }
+.burrow-sheet[data-side="left"][data-starting-style], .burrow-sheet[data-side="left"][data-ending-style] { transform: translateX(-100%); }
+.burrow-sheet[data-side="bottom"][data-starting-style], .burrow-sheet[data-side="bottom"][data-ending-style] { transform: translateY(100%); }
+/* a drawer is a long slide, so it gets the iOS drawer curve rather than the short-hop ease-out */
+.burrow-sheet[data-side="left"], .burrow-sheet[data-side="bottom"] { transition-timing-function: var(--ease-drawer); }
+/* reduced motion: overlays arrive by fade only — the panel keeps its place and never slides */
+html[data-motion="reduced"] .burrow-sheet[data-starting-style], html[data-motion="reduced"] .burrow-sheet[data-ending-style],
+html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-sheet[data-ending-style] { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .burrow-sheet[data-starting-style], .burrow-sheet[data-ending-style] { transform: none; }
+}
+/* a keyboard-first surface (the command palette) opens instantly: it is used hundreds of times a day and an entrance
+   is a cost paid on every open. The class zeroes the overlay durations for that subtree only. */
+.burrow-instant { --dur-fade: 0ms; --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; }
+
+/* ---------- table rows ---------- */
+.burrow-row { content-visibility: auto; transition: background-color var(--dur-fast) var(--ease-out); }
+/* parity renders every row eagerly: `content-visibility: auto` is a rendering hint that may skip offscreen work */
+.burrow-row-static { content-visibility: visible; }
+/* The row IS the click target on every list in the product and it had no hover cue at all. Pointer-gated, colour only;
+   selection stays instant, and the 10k-row table never animates geometry. */
+@media (hover: hover) and (pointer: fine) {
+.burrow-row:hover { background: var(--fabric-2); }
+}
+.burrow-row[data-selected="true"] { background: color-mix(in oklch, var(--live) 9%, transparent); box-shadow: inset 2px 0 0 var(--live); }
+
+.burrow-pinned-header { background: var(--fabric-2); }
+.burrow-pinned-cell { background: var(--fabric); border-right: 1px solid var(--seam-soft); }
+.burrow-tab-overflow-fade {
+  background: linear-gradient(90deg, transparent 0%, var(--ground) 48%);
+}
+.burrow-tab-overflow-fade--left {
+  background: linear-gradient(270deg, transparent 0%, var(--ground) 48%);
+}
+.burrow-table-edge-fade {
+  background:
+    linear-gradient(90deg, transparent, var(--fabric-2)) top / 100% calc(var(--table-header-h, 32px) + 1px) no-repeat,
+    linear-gradient(90deg, transparent, var(--fabric)) bottom / 100% calc(100% - var(--table-header-h, 32px) - 1px) no-repeat;
+}
+.burrow-table-bottom-fade { background: linear-gradient(180deg, transparent, var(--fabric)); }
+@media (hover: hover) and (pointer: fine) {
+  .burrow-row:hover > .burrow-pinned-cell { background: var(--fabric-2); }
+}
+.burrow-row[data-selected="true"] > .burrow-pinned-cell { background: color-mix(in oklch, var(--live) 9%, var(--fabric)); }
+
+/* Scroll surface. Chromium reserves scrollbar space only for a container that asks for a stable gutter: without it the
+   platform's overlay bar is painted on top of the content, so a table's last column, a `<pre>`'s right edge or the DAG
+   drawer's right-aligned values sit under the thumb. Every scroller in the app carries this class. */
+.burrow-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-color: transparent transparent;
+}
+.burrow-scroll:hover,
+.burrow-scroll:focus-visible,
+.burrow-scroll:focus-within { scrollbar-color: var(--seam-strong) transparent; }
+.burrow-scroll::-webkit-scrollbar-thumb { background: transparent; }
+.burrow-scroll:hover::-webkit-scrollbar-thumb,
+.burrow-scroll:focus-visible::-webkit-scrollbar-thumb,
+.burrow-scroll:focus-within::-webkit-scrollbar-thumb { background: var(--seam-strong); }
+.burrow-scroll:hover::-webkit-scrollbar-thumb:hover,
+.burrow-scroll:focus-visible::-webkit-scrollbar-thumb:hover,
+.burrow-scroll:focus-within::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
+.burrow-scroll::-webkit-scrollbar-button { opacity: 0; }
+.burrow-scroll:hover::-webkit-scrollbar-button,
+.burrow-scroll:focus-visible::-webkit-scrollbar-button,
+.burrow-scroll:focus-within::-webkit-scrollbar-button { opacity: 0; }
+
+/* Dense tables and compact horizontal strips keep native scrolling without browser-owned scrollbar chrome. Gecko's
+   standard scrollbar properties and Blink's WebKit scrollbar pseudo-elements otherwise produce different bars. */
+.burrow-table-scroll,
+.burrow-scroll-hidden { scrollbar-gutter: auto; scrollbar-width: none; scrollbar-color: transparent transparent; }
+.burrow-table-scroll::-webkit-scrollbar,
+.burrow-scroll-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* Whole-page scrollers keep native wheel/touch scrolling but hide browser scrollbar chrome. Classic scrollbars reserve
+   width in Firefox while overlay scrollbars do not, making identical pages visibly narrower in Firefox. Removing the
+   bar and its gutter keeps page content aligned with full-width table views across browsers. They also keep their
+   overscroll: a page that has reached its end must not drag the shell behind it. Nested scrollers (tables, `<pre>` blocks,
+   charts) deliberately do NOT contain — `overscroll-behavior: contain` on a container with no scroll range of its own
+   makes it swallow the wheel entirely, so a page full of short tables became unscrollable whenever the pointer sat on
+   one. Chaining is the standard behaviour: the inner scroller moves first, the page takes over at its end. */
+.burrow-page-scroll {
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.burrow-page-scroll--stable { overflow-anchor: none; }
+.burrow-page-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+.burrow-switch[data-checked] .burrow-switch-track {
+  border-color: transparent;
+  background-color: var(--live);
+}
+
+/* Dense desktop controls become deliberate touch targets on phones and tablets. */
+@media (pointer: coarse) {
+  :root { --ctl-h: 44px; --topbar-h: 60px; --table-header-h: 44px; }
+  .burrow-switch { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  .burrow-control, .burrow-help, .burrow-nav-link, [role="option"], [role="menuitem"], [role="menuitemcheckbox"] { min-height: 44px; }
+  .burrow-control { min-width: 44px; }
+  .burrow-control--icon { min-width: 44px; }
+  .burrow-touch-target { min-width: 44px; min-height: 44px; }
+  .burrow-help, [data-testid="rail-toggle"], [data-testid="palette-trigger"], [data-testid="connection"], [data-testid="live-pause"] { min-width: 44px; }
+  main .burrow-tab {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  main nav[aria-label="Application sections"] a,
+  main nav[aria-label="Spark pages"] a {
+    min-height: 44px;
+  }
+  main .burrow-touch-link {
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  main .burrow-overview-row-grid .burrow-metric-row { min-height: 44px; }
+  main [role="columnheader"] > button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .burrow-log-toolbar button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  [data-testid="live-controls"] { height: 46px; }
+  .burrow-help { width: 44px; }
+  .burrow-scroll { scrollbar-color: var(--seam-strong) transparent; }
+}
+
+/* Overview composition follows the content column, which is narrower than the viewport beside the desktop rail. */
+.burrow-overview-page { container: overview-page / inline-size; }
+.burrow-overview-content { min-width: 0; }
+.burrow-overview-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+  min-width: 0;
+}
+.burrow-active-app-scroll-cue { background: linear-gradient(180deg, transparent, var(--fabric)); }
+@container overview-page (min-width: 48rem) {
+  .burrow-active-app-scroll { max-height: min(70dvh, 32rem); }
+}
+html[data-parity] .burrow-active-app-scroll { max-height: none; }
+.burrow-overview-panel { min-width: 0; }
+
+/* Metric rows avoid tiny repeated cards. Each group has its own container so the rows adapt to their allocated track. */
+.burrow-overview-metrics-container { container: overview-metrics / inline-size; min-width: 0; }
+.burrow-overview-metric-groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.burrow-overview-metric-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid var(--seam-soft);
+  border-radius: var(--r-md);
+  background: var(--well);
+  padding: 0.75rem;
+  container: overview-metric-group / inline-size;
+}
+.burrow-overview-card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 1.25rem;
+  min-width: 0;
+}
+/* Keep the label/value line aligned when one metric adds a second-line footnote. */
+.burrow-overview-card-grid .burrow-metric-row {
+  min-height: 2.75rem;
+  align-content: start;
+}
+.burrow-overview-skeleton-metric {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  border-bottom: 1px solid var(--seam-soft);
+  padding-block: 0.75rem;
+}
+@container overview-metric-group (min-width: 25rem) {
+  .burrow-overview-card-grid--apps,
+  .burrow-overview-card-grid--containers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container overview-metric-group (min-width: 34rem) {
+  .burrow-overview-card-grid--apps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container overview-metric-group (min-width: 36rem) {
+  .burrow-overview-card-grid--resources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container overview-metric-group (min-width: 70rem) {
+  .burrow-overview-card-grid--resources { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container overview-metric-group (max-width: 44.99rem) {
+  .burrow-overview-card-grid--resources .burrow-metric-row {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+    row-gap: 0.25rem;
+  }
+  .burrow-overview-card-grid--resources .burrow-metric-row > div:nth-of-type(1) {
+    justify-content: flex-start;
+  }
+  .burrow-overview-card-grid--resources .burrow-metric-row > div:nth-of-type(1) > div {
+    text-align: left;
+  }
+}
+@container overview-metrics (min-width: 64rem) {
+  .burrow-overview-metric-groups { grid-template-columns: minmax(0, 1.2fr) minmax(25rem, 0.9fr); }
+  .burrow-overview-metric-group--resources { grid-column: 1 / -1; }
+}
+.burrow-overview-rm-groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gap-card);
+  min-width: 0;
+}
+@container overview-metrics (min-width: 44rem) {
+  .burrow-overview-rm-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.burrow-overview-utilization-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--gap-card);
+  min-width: 0;
+}
+@container overview-metrics (min-width: 54rem) {
+  .burrow-overview-utilization-grid {
+    grid-template-columns: minmax(20rem, 0.9fr) minmax(0, 1.1fr);
+    align-items: stretch;
+  }
+  .burrow-overview-history-panel {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+  .burrow-overview-history-chart {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+}
+
+.burrow-overview-row-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 1.25rem;
+  min-width: 0;
+}
+@container overview-metrics (min-width: 32rem) {
+  .burrow-overview-row-grid--two,
+  .burrow-overview-row-grid--three,
+  .burrow-overview-row-grid--four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .burrow-overview-resource-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.burrow-overview-row-grid--scheduler {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+.burrow-overview-row-grid--node-states {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.25rem), 1fr));
+  column-gap: 0.75rem;
+}
+@container overview-metrics (min-width: 65rem) {
+  .burrow-overview-row-grid--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .burrow-overview-row-grid--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.burrow-overview-disclosure > summary::-webkit-details-marker { display: none; }
+.burrow-overview-disclosure-indicator {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--seam-soft);
+  border-radius: var(--r-sm);
+  color: var(--ink-4);
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.burrow-overview-disclosure-indicator::before { content: "+"; }
+.burrow-overview-disclosure[open] .burrow-overview-disclosure-indicator::before { content: "−"; }
+
+.burrow-metric-row:focus-within { outline: 2px solid var(--live); outline-offset: -2px; }
+.burrow-overview-data-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: baseline;
+  gap: 0.75rem;
+  min-width: 0;
+  border-bottom: 1px solid var(--seam-soft);
+  padding-block: 0.625rem;
+}
+
+.burrow-scheduler-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 0.5rem;
+}
+.burrow-scheduler-metrics-primary,
+.burrow-scheduler-metrics-secondary { display: contents; }
+.burrow-scheduler-metrics-toggle { display: none; }
+@media (max-width: 639px) {
+  .burrow-scheduler-metrics { display: block; }
+  .burrow-scheduler-metrics-primary,
+  .burrow-scheduler-metrics-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem;
+    row-gap: 0;
+  }
+  .burrow-scheduler-metrics-secondary { margin-top: 0.5rem; }
+  .burrow-scheduler-metrics-primary > * {
+    min-height: 0;
+    border: 0;
+    border-bottom: 1px solid var(--seam-soft);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.5rem 0.25rem;
+  }
+  .burrow-scheduler-metrics-secondary { display: none; }
+  .burrow-scheduler-metrics[data-expanded="true"] .burrow-scheduler-metrics-secondary { display: grid; }
+  .burrow-scheduler-metrics-secondary > * {
+    min-height: 0;
+    border: 0;
+    border-bottom: 1px solid var(--seam-soft);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.5rem 0.25rem;
+  }
+  .burrow-scheduler-metrics-toggle { display: inline-flex; margin-top: 0.5rem; }
+}
+
+/* Keep trends readable when their individual metric card gets narrow, even inside a multi-column desktop overview. */
+.burrow-metric-spark-container { container-type: inline-size; }
+@container (max-width: 8rem) {
+  .burrow-metric-value-row { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+  .burrow-metric-spark { align-self: flex-end; }
+}
+
+/* Measure the picker itself: the app shell and a split pane can make content narrower than the browser viewport. Keep
+   the identifying columns and action when the actual table frame gets compact. */
+.burrow-picker { container-type: inline-size; }
+.burrow-picker-short-action { display: none; }
+@container (max-width: 63.9375rem) {
+  .burrow-picker tr > :nth-child(n + 3):nth-child(-n + 6) {
+    display: none;
+  }
+  .burrow-picker tr > :first-child { width: 50%; }
+  .burrow-picker tr > :nth-child(2) { width: 32%; }
+  .burrow-picker tr > :last-child { width: 18%; }
+  .burrow-picker table { table-layout: fixed; }
+  .burrow-picker-full-action { display: none; }
+  .burrow-picker-short-action { display: inline; }
+}
+@container (max-width: 39.9375rem) {
+  .burrow-picker table { min-width: 36rem; }
+}
+
+/* The log toolbar packs controls below a comfortable touch target. On a phone every button in it gets a 44px hit area;
+   the switch keeps its visual track compact inside the larger button. Desktop sizing is unchanged. */
+@media (max-width: 639px) {
+  .burrow-log-toolbar button {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+  .burrow-switch { width: 2.75rem; height: 2.75rem; }
+}
+
+/* The shell bar has the same problem: 24–26px icon buttons across the top of every page. On a phone they get a 44px
+   hit area, and only the icon-only ones widen — the search trigger and interval select stay compact. The topbar grows
+   to 60px on coarse pointers, and the HA pill is dropped at this width:
+   seven controls plus the cluster id do not fit, and the same `cluster.info.haState` is a first-class field on
+   /overview, so nothing becomes unreachable. */
+@media (max-width: 639px) {
+  [data-testid="topbar"] button {
+    min-height: 2.75rem;
+  }
+  /* Match the live-control frame to its 44px mobile buttons instead of letting them overflow its desktop-height shell. */
+  [data-testid="topbar"] [data-testid="live-controls"] {
+    height: 2.75rem;
+  }
+  [data-testid="topbar"] [data-testid="rail-toggle"],
+  [data-testid="topbar"] [data-testid="live-pause"],
+  [data-testid="topbar"] [data-testid="palette-trigger"],
+  [data-testid="topbar"] [data-testid="connection"] {
+    min-width: 2.75rem;
+  }
+  [data-testid="topbar"] .burrow-help,
+  [data-testid="topbar"] [data-burrow-help] {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .burrow-help,
+  [data-burrow-help] {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  .burrow-nav-link,
+  nav[aria-label="Application sections"] li > :is(a, span),
+  nav[aria-label="Spark pages"] > a {
+    min-height: 2.75rem;
+  }
+  [data-testid="topbar"] [data-testid="ha-pill"] {
+    display: none;
+  }
+}
+
+/* Dense phone controls keep their compact visuals but expose a full 44px hit area. Scope this to main so the shell's
+   search trigger and refresh interval retain their deliberate compact treatment. */
+@media (max-width: 639px) {
+  main {
+    --ctl-h: 2.75rem;
+    --table-header-h: 2.75rem;
+  }
+  main .burrow-control {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  main .burrow-touch-target {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  main .burrow-control--icon { min-width: 2.75rem; }
+  main .burrow-apps-name-filter { height: 2.875rem; }
+  main .burrow-apps-name-filter-input { min-height: 2.75rem; }
+  main .burrow-tab { min-height: 2.75rem; }
+  main .burrow-help {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  main .burrow-touch-link {
+    display: inline-flex;
+    align-items: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  /* SparkShell repeats the app ID, user, version, start time, and Spark history link on these routes. Keep the YARN
+     application name, state, and copyable app ID visible, while removing duplicate context from the first phone screen. */
+  main [data-burrow-app-header="spark"] [data-burrow-app-header-secondary] {
+    display: none;
+  }
+  main .burrow-overview-row-grid .burrow-metric-row { min-height: 2.75rem; }
+  main [role="columnheader"] > button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+/* Active-application links use a deliberate grid on narrow/coarse-pointer layouts to keep their name above progress and facts. */
+@media (max-width: 639px), (pointer: coarse) {
+  main .burrow-active-app-link {
+    display: grid;
+    align-items: stretch;
+  }
+}
+
+/* ---------- status tones ---------- */
+.burrow-tone-live { --tone: var(--live); }
+.burrow-tone-ok { --tone: var(--ok); }
+.burrow-tone-fail { --tone: var(--fail); }
+.burrow-tone-wait { --tone: var(--wait); }
+.burrow-tone-fresh { --tone: var(--fresh); }
+.burrow-tone-warn { --tone: var(--warn); }
+.burrow-tone-idle { --tone: var(--idle); }
+.burrow-pill {
+  /* the tone at full strength fails AA against its own 13% tint on the darker surfaces (light: 3.9:1); mixing 15%
+     toward the ink tier keeps the hue readable and clears 4.5:1 in both themes */
+  color: color-mix(in oklch, var(--tone, var(--ink-3)) 85%, var(--ink));
+  background: color-mix(in oklch, var(--tone, var(--idle)) 13%, transparent);
+  border: 1px solid color-mix(in oklch, var(--tone, var(--idle)) 32%, transparent);
+  /* a state flip (RUNNING → FINISHED) settles in colour; the token gate zeroes this under reduced motion/parity */
+  transition: color var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+@keyframes burrow-drain { from { opacity: 1; } to { opacity: 0.55; } }
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-drain[data-visible="true"] { animation: burrow-drain 1.8s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .burrow-drain { animation: none !important; } }

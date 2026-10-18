@@ -1,0 +1,755 @@
+{
+ "routeKey": "/apps",
+ "url": "http://127.0.0.1:8787/apps?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.id",
+   "raw": "application_1791901196446_0003",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0003",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.user",
+   "raw": "carol",
+   "yn": false,
+   "fmt": null,
+   "text": "carol",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.name",
+   "raw": "ys-accepted",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.applicationTags",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.queue",
+   "raw": "root.adhoc",
+   "yn": false,
+   "fmt": null,
+   "text": "root.adhoc",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.startedTime",
+   "raw": "1791901326648",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.launchTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.finishedTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.state",
+   "raw": "ACCEPTED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Undefined",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.runningContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.allocatedVCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.allocatedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.allocatedGpus",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.reservedVCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.reservedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.reservedGpus",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.queueUsagePercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.clusterUsagePercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.progress",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.trackingUI",
+   "raw": "UNASSIGNED",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.trackingUiText",
+   "raw": "ApplicationMaster",
+   "yn": false,
+   "fmt": "text",
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.trackingUrl",
+   "raw": "http://127.0.0.1:8088/proxy/application_1791901196446_0003/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "a"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.blacklistedNodesCount",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.id",
+   "raw": "application_1791901196446_0002",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0002",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.user",
+   "raw": "alice",
+   "yn": false,
+   "fmt": null,
+   "text": "alice",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.name",
+   "raw": "ys-running-ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-running-ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationTags",
+   "raw": "running,burrow",
+   "yn": false,
+   "fmt": null,
+   "text": "running,burrow",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.queue",
+   "raw": "root.etl.ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "root.etl.ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.priority",
+   "raw": "5",
+   "yn": false,
+   "fmt": "int",
+   "text": "5",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.startedTime",
+   "raw": "1791901313958",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:53",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.launchTime",
+   "raw": "1791901314227",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:54",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.finishedTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Undefined",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.runningContainers",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.allocatedVCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.allocatedMB",
+   "raw": "1024",
+   "yn": false,
+   "fmt": "int",
+   "text": "1,024",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.allocatedGpus",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.reservedVCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.reservedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.reservedGpus",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.queueUsagePercentage",
+   "raw": "85.47579",
+   "yn": false,
+   "fmt": "pct",
+   "text": "85.5%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.clusterUsagePercentage",
+   "raw": "11.111112",
+   "yn": false,
+   "fmt": "pct",
+   "text": "11.1%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.progress",
+   "raw": "10",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.trackingUI",
+   "raw": "ApplicationMaster",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.derived.trackingUiText",
+   "raw": "ApplicationMaster",
+   "yn": false,
+   "fmt": "text",
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0002/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "a"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.derived.blacklistedNodesCount",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.id",
+   "raw": "application_1791901196446_0001",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0001",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.user",
+   "raw": "alice",
+   "yn": false,
+   "fmt": null,
+   "text": "alice",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.name",
+   "raw": "ys-finished-wc",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-finished-wc",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.applicationTags",
+   "raw": "finished,burrow",
+   "yn": false,
+   "fmt": null,
+   "text": "finished,burrow",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.queue",
+   "raw": "root.default",
+   "yn": false,
+   "fmt": null,
+   "text": "root.default",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.startedTime",
+   "raw": "1791901294521",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:34",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.launchTime",
+   "raw": "1791901295723",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:35",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.finishedTime",
+   "raw": "1791901310852",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:50",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.state",
+   "raw": "FINISHED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Finished",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.finalStatus",
+   "raw": "SUCCEEDED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Succeeded",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.runningContainers",
+   "raw": "-1",
+   "yn": false,
+   "fmt": "int",
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.allocatedVCores",
+   "raw": "-1",
+   "yn": false,
+   "fmt": "int",
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.allocatedMB",
+   "raw": "-1",
+   "yn": false,
+   "fmt": "int",
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.allocatedGpus",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.reservedVCores",
+   "raw": "-1",
+   "yn": false,
+   "fmt": "int",
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.reservedMB",
+   "raw": "-1",
+   "yn": false,
+   "fmt": "int",
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.reservedGpus",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.queueUsagePercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.clusterUsagePercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.progress",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.trackingUI",
+   "raw": "History",
+   "yn": false,
+   "fmt": null,
+   "text": "History",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.derived.trackingUiText",
+   "raw": "History",
+   "yn": false,
+   "fmt": "text",
+   "text": "History",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0001/",
+   "yn": false,
+   "fmt": null,
+   "text": "History",
+   "tag": "a"
+  },
+  {
+   "entity": "application_1791901196446_0001",
+   "field": "app.derived.blacklistedNodesCount",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "application_1791901196446_0003",
+  "application_1791901196446_0002",
+  "application_1791901196446_0001"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nApplications\n\n3 shown\n\nUpdated just now\nAll\n3\nPending\n1\nActive\n2\nCompleted\n1\nNew\n0\nNew saving\n0\nSubmitted\n0\nAccepted\n1\nRunning\n1\nFinished\n1\nFailed\n0\nKilled\n0\nFinal status\nNot set\n2\nSucceeded\n1\nAny user\nAny queue\nAny type\nAny tag\nStarted\nFinished\nSort\nColumns\n24/24\nExport\nID\nUser\nName\nApplication Type\nApplication Tags\nQueue\nApplication Priority\nStart time\nLaunch time\nFinish time\nState\nFinal status\nRunning Containers\nAllocated CPU vCores\nAllocated Memory MB\nAllocated GPUs\nReserved CPU vCores\nReserved Memory MB\nReserved GPUs\n% of Queue\n% of Cluster\nProgress\nTracking UI\nBlacklisted Nodes\napplication_1791901196446_0003\ncarol\nys-accepted\nSPARK\nroot.adhoc\n0\n2026-10-13 19:52:06\n—\n—\nAccepted\nUndefined\n0\n0\n0\n—\n0\n0\n—\n0.0%\n0.0%\n0.0%\nApplicationMaster\n0\napplication_1791901196446_0002\nalice\nys-running-ingest\nSPARK\nrunning,burrow\nroot.etl.ingest\n5\n2026-10-13 19:51:53\n2026-10-13 19:51:54\n—\nRunning\nUndefined\n2\n2\n1,024\n—\n0\n0\n—\n85.5%\n11.1%\n10.0%\nApplicationMaster\n0\napplication_1791901196446_0001\nalice\nys-finished-wc\nSPARK\nfinished,burrow\nroot.default\n0\n2026-10-13 19:51:34\n2026-10-13 19:51:35\n2026-10-13 19:51:50\nFinished\nSucceeded\nN/A\nN/A\nN/A\nN/A\nN/A\nN/A\nN/A\n0.0%\n0.0%\n100.0%\nHistory\n0\n3 rows\nScroll for more columns\nshift-click header: multi-sort"
+}

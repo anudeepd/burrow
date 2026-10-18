@@ -1,0 +1,177 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/vis.min.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/webui.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/timeline-view.css" type="text/css"/><script src="/proxy/application_1791822093166_0005/static/sorttable.js"></script><script src="/proxy/application_1791822093166_0005/static/jquery-1.11.1.min.js"></script><script src="/proxy/application_1791822093166_0005/static/vis.min.js"></script><script src="/proxy/application_1791822093166_0005/static/bootstrap-tooltip.js"></script><script src="/proxy/application_1791822093166_0005/static/initialize-tooltips.js"></script><script src="/proxy/application_1791822093166_0005/static/table.js"></script><script src="/proxy/application_1791822093166_0005/static/additional-metrics.js"></script><script src="/proxy/application_1791822093166_0005/static/timeline-view.js"></script><script src="/proxy/application_1791822093166_0005/static/log-view.js"></script><script src="/proxy/application_1791822093166_0005/static/webui.js"></script><script>setUIRoot('/proxy/application_1791822093166_0005')</script>
+        
+        
+        <link rel="shortcut icon" href="/proxy/application_1791822093166_0005/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-spark24-sql-demo - SQL</title>
+      </head>
+      <body>
+        <div class="navbar navbar-static-top">
+          <div class="navbar-inner">
+            <div class="brand">
+              <a href="/proxy/application_1791822093166_0005/" class="brand">
+                <img src="/proxy/application_1791822093166_0005/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">2.4.0</span>
+              </a>
+            </div>
+            <p class="navbar-text pull-right">
+              <strong title="burrow-spark24-sql-demo">burrow-spark24-sql-demo</strong> application UI
+            </p>
+            <ul class="nav"><li class="">
+        <a href="/proxy/application_1791822093166_0005/jobs/">Jobs</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/stages/">Stages</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/storage/">Storage</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/environment/">Environment</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/executors/">Executors</a>
+      </li><li class="active">
+        <a href="/proxy/application_1791822093166_0005/SQL/">SQL</a>
+      </li></ul>
+          </div>
+        </div>
+        <div class="container-fluid">
+          <div class="row-fluid">
+            <div class="span12">
+              <h3 style="vertical-align: bottom; display: inline-block;">
+                SQL
+                
+              </h3>
+            </div>
+          </div>
+          <div>
+        <ul class="unstyled">
+          
+          <li>
+                <a href="#completed-execution-table"><strong>Completed Queries:</strong></a>
+                3
+              </li>
+          
+        </ul>
+      </div><div>
+      <h4>Completed Queries (3)</h4>
+      <table class="table table-bordered table-condensed table-striped sortable" id="completed-execution-table">
+      <thead><th width="" class="">ID</th><th width="" class="">Description</th><th width="" class="">Submitted</th><th width="" class="">Duration</th><th width="" class="">Job IDs</th></thead>
+      <tbody>
+        <tr>
+      <td>
+        2
+      </td>
+      <td>
+        <div><a href="/proxy/application_1791822093166_0005/SQL/execution/?id=2">collect at BurrowSqlDemo.scala:21</a> <span onclick="clickDetail(this)" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>org.apache.spark.sql.Dataset.collect(Dataset.scala:2783)
+BurrowSqlDemo$.main(BurrowSqlDemo.scala:21)
+BurrowSqlDemo.main(BurrowSqlDemo.scala)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:498)
+org.apache.spark.deploy.JavaMainApplication.start(SparkApplication.scala:52)
+org.apache.spark.deploy.SparkSubmit.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:849)
+org.apache.spark.deploy.SparkSubmit.doRunMain$1(SparkSubmit.scala:167)
+org.apache.spark.deploy.SparkSubmit.submit(SparkSubmit.scala:195)
+org.apache.spark.deploy.SparkSubmit.doSubmit(SparkSubmit.scala:86)
+org.apache.spark.deploy.SparkSubmit$$anon$2.doSubmit(SparkSubmit.scala:924)
+org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:933)
+org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)</pre>
+      </div></div>
+      </td>
+      <td sorttable_customkey="1791823075237">
+        2026/10/12 22:07:55
+      </td>
+      <td sorttable_customkey="2340">
+        2 s
+      </td>
+      
+      <td>
+          <a href="/proxy/application_1791822093166_0005/jobs/job/?id=0">[0]</a><a href="/proxy/application_1791822093166_0005/jobs/job/?id=1">[1]</a><a href="/proxy/application_1791822093166_0005/jobs/job/?id=2">[2]</a>
+        </td>
+      
+    </tr><tr>
+      <td>
+        1
+      </td>
+      <td>
+        <div><a href="/proxy/application_1791822093166_0005/SQL/execution/?id=1">createOrReplaceTempView at BurrowSqlDemo.scala:14</a> <span onclick="clickDetail(this)" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>org.apache.spark.sql.Dataset.createOrReplaceTempView(Dataset.scala:3096)
+BurrowSqlDemo$.main(BurrowSqlDemo.scala:14)
+BurrowSqlDemo.main(BurrowSqlDemo.scala)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:498)
+org.apache.spark.deploy.JavaMainApplication.start(SparkApplication.scala:52)
+org.apache.spark.deploy.SparkSubmit.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:849)
+org.apache.spark.deploy.SparkSubmit.doRunMain$1(SparkSubmit.scala:167)
+org.apache.spark.deploy.SparkSubmit.submit(SparkSubmit.scala:195)
+org.apache.spark.deploy.SparkSubmit.doSubmit(SparkSubmit.scala:86)
+org.apache.spark.deploy.SparkSubmit$$anon$2.doSubmit(SparkSubmit.scala:924)
+org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:933)
+org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)</pre>
+      </div></div>
+      </td>
+      <td sorttable_customkey="1791823074751">
+        2026/10/12 22:07:54
+      </td>
+      <td sorttable_customkey="1">
+        1 ms
+      </td>
+      
+      <td>
+          
+        </td>
+      
+    </tr><tr>
+      <td>
+        0
+      </td>
+      <td>
+        <div><a href="/proxy/application_1791822093166_0005/SQL/execution/?id=0">createOrReplaceTempView at BurrowSqlDemo.scala:11</a> <span onclick="clickDetail(this)" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>org.apache.spark.sql.Dataset.createOrReplaceTempView(Dataset.scala:3096)
+BurrowSqlDemo$.main(BurrowSqlDemo.scala:11)
+BurrowSqlDemo.main(BurrowSqlDemo.scala)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:498)
+org.apache.spark.deploy.JavaMainApplication.start(SparkApplication.scala:52)
+org.apache.spark.deploy.SparkSubmit.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:849)
+org.apache.spark.deploy.SparkSubmit.doRunMain$1(SparkSubmit.scala:167)
+org.apache.spark.deploy.SparkSubmit.submit(SparkSubmit.scala:195)
+org.apache.spark.deploy.SparkSubmit.doSubmit(SparkSubmit.scala:86)
+org.apache.spark.deploy.SparkSubmit$$anon$2.doSubmit(SparkSubmit.scala:924)
+org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:933)
+org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)</pre>
+      </div></div>
+      </td>
+      <td sorttable_customkey="1791823074636">
+        2026/10/12 22:07:54
+      </td>
+      <td sorttable_customkey="3">
+        3 ms
+      </td>
+      
+      <td>
+          
+        </td>
+      
+    </tr>
+      </tbody>
+    </table>
+    </div><script>
+        function clickDetail(details) {
+          details.parentNode.querySelector('.stage-details').classList.toggle('collapsed')
+        }
+      </script>
+        </div>
+      </body>
+    </html>

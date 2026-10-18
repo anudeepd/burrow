@@ -1,0 +1,242 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 5,
+  "stages": [
+    {
+      "stageId": 10,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 10",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_536",
+          "name": "MicroBatchScan",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_573",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_574",
+          "name": "EventTimeWatermark",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_579",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_580",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 60,
+          "name": "DataSourceRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_536"
+        },
+        {
+          "id": 61,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_536"
+        },
+        {
+          "id": 62,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_573"
+        },
+        {
+          "id": 63,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_574"
+        },
+        {
+          "id": 64,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_579"
+        },
+        {
+          "id": 65,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_580"
+        }
+      ],
+      "edges": [
+        {
+          "from": 60,
+          "to": 61
+        },
+        {
+          "from": 61,
+          "to": 62
+        },
+        {
+          "from": 62,
+          "to": 63
+        },
+        {
+          "from": 63,
+          "to": 64
+        },
+        {
+          "from": 64,
+          "to": 65
+        }
+      ]
+    },
+    {
+      "stageId": 11,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 11",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_580",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_583",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_584",
+          "name": "StateStoreRestore",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_587",
+          "name": "WholeStageCodegen (4)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_588",
+          "name": "StateStoreSave",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_591",
+          "name": "WholeStageCodegen (5)",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 66,
+          "name": "ShuffledRowRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_580"
+        },
+        {
+          "id": 67,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_583"
+        },
+        {
+          "id": 68,
+          "name": "ReadStateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_584"
+        },
+        {
+          "id": 69,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_587"
+        },
+        {
+          "id": 70,
+          "name": "StateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_588"
+        },
+        {
+          "id": 71,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_591"
+        }
+      ],
+      "edges": [
+        {
+          "from": 66,
+          "to": 67
+        },
+        {
+          "from": 67,
+          "to": 68
+        },
+        {
+          "from": 68,
+          "to": 69
+        },
+        {
+          "from": 69,
+          "to": 70
+        },
+        {
+          "from": 70,
+          "to": 71
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 65,
+      "to": 66,
+      "fromStage": 10,
+      "toStage": 11
+    }
+  ]
+}

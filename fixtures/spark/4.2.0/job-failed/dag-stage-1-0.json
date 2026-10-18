@@ -1,0 +1,59 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 1,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 1",
+      "clusters": [
+        {
+          "id": "cluster_4",
+          "name": "parallelize",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 3,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py:18",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 4,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py:18",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 2,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:326",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_4"
+        }
+      ],
+      "edges": [
+        {
+          "from": 2,
+          "to": 3
+        },
+        {
+          "from": 3,
+          "to": 4
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

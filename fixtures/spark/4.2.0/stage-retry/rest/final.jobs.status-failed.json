@@ -1,0 +1,21 @@
+[ {
+  "jobId" : 0,
+  "name" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/stage_retry.py:39",
+  "submissionTime" : "2026-10-03T07:07:41.063GMT",
+  "completionTime" : "2026-10-03T07:07:43.830GMT",
+  "stageIds" : [ 0, 1, 2 ],
+  "jobTags" : [ ],
+  "status" : "FAILED",
+  "numTasks" : 6,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 4,
+  "numSkippedTasks" : 2,
+  "numFailedTasks" : 14,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 2,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 1,
+  "numSkippedStages" : 1,
+  "numFailedStages" : 2,
+  "killedTasksSummary" : { }
+} ]

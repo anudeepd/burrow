@@ -1,0 +1,637 @@
+{
+ "routeKey": "/apps/application_1791901196446_0003",
+ "url": "http://127.0.0.1:8787/apps/application_1791901196446_0003?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.name",
+   "raw": "ys-accepted",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.state",
+   "raw": "ACCEPTED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": null,
+   "text": "UNDEFINED",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.id",
+   "raw": "application_1791901196446_0003",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0003",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.user",
+   "raw": "carol",
+   "yn": false,
+   "fmt": null,
+   "text": "carol",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.queue",
+   "raw": "root.adhoc",
+   "yn": false,
+   "fmt": null,
+   "text": "root.adhoc",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.elapsedTime",
+   "raw": "550825",
+   "yn": false,
+   "fmt": "ms",
+   "text": "9m 10s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.trackingUrl",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "Unassigned",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.startedTime",
+   "raw": "1791901326648",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.timeline.durationMs.submitted",
+   "raw": "2",
+   "yn": false,
+   "fmt": "ms",
+   "text": "+2 ms",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.firstAttemptCreatedAt",
+   "raw": "1791901326650",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.timeline.durationMs.attempt",
+   "raw": "550844",
+   "yn": false,
+   "fmt": "ms",
+   "text": "+9m 10s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.launchTime",
+   "raw": "",
+   "yn": true,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.finishedTime",
+   "raw": "",
+   "yn": true,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.progress",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0%",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.id",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "#1",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.startTime",
+   "raw": "1791901326650",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.user",
+   "raw": "carol",
+   "yn": false,
+   "fmt": "text",
+   "text": "carol",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.name",
+   "raw": "ys-accepted",
+   "yn": false,
+   "fmt": "text",
+   "text": "ys-accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": "text",
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.applicationTags",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "no tags",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0 (Higher Integer value indicates higher priority)",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.state",
+   "raw": "ACCEPTED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Acceptedwaiting for AM container to be allocated, launched and register with RM.",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.queue",
+   "raw": "root.adhoc",
+   "yn": false,
+   "fmt": "text",
+   "text": "root.adhoc",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": "text",
+   "text": "UndefinedApplication has not completed yet.",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.startedTime",
+   "raw": "1791901326648",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.launchTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.finishedTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.elapsedTime",
+   "raw": "550846",
+   "yn": false,
+   "fmt": "ms",
+   "text": "9m 10s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.trackingUrl",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.trackingUiText",
+   "raw": "ApplicationMaster",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0003/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "a"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.logAggregationStatus",
+   "raw": "NOT_START",
+   "yn": false,
+   "fmt": "text",
+   "text": "Not started",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.timeouts.timeout.remainingTimeInSeconds",
+   "raw": "-1",
+   "yn": false,
+   "fmt": "int",
+   "text": "Unlimited",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.unmanagedApplication",
+   "raw": "false",
+   "yn": false,
+   "fmt": "text",
+   "text": "false",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.appNodeLabelExpression",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "<Not set>",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.amNodeLabelExpression",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "<DEFAULT_PARTITION>",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.diagnostics",
+   "raw": "[Tue Oct 13 20:01:17 +0530 2026] Application is Activated, waiting for resources to be assigned for AM. Skipping assigning to Node in Ignore Exclusivity mode.  Last Node which was processed for the application : 127.0.0.3:8041 ( Partition : [ssd], Total resource : <memory:3072, vCores:4>, Available resource : <memory:2048, vCores:2> ). Details : AM Partition = <DEFAULT_PARTITION> ; Partition Resource = <memory:3072, vCores:4> ; Queue's Absolute capacity = 5.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 5.0 % ; Queue's capacity (absolute resource) = <memory:153, vCores:0> ; Queue's used capacity (absolute resource) = <memory:0, vCores:0> ; Queue's max capacity (absolute resource) = <memory:153, vCores:0> ; ",
+   "yn": false,
+   "fmt": null,
+   "text": "[Tue Oct 13 20:01:17 +0530 2026] Application is Activated, waiting for resources to be assigned for AM. Skipping assigning to Node in Ignore Exclusivity mode. Last Node which was processed for the application : 127.0.0.3:8041 ( Partition : [ssd], Total resource : <memory:3072, vCores:4>, Available resource : <memory:2048, vCores:2> ). Details : AM Partition = <DEFAULT_PARTITION> ; Partition Resource = <memory:3072, vCores:4> ; Queue's Absolute capacity = 5.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 5.0 % ; Queue's capacity (absolute resource) = <memory:153, vCores:0> ; Queue's used capacity (absolute resource) = <memory:0, vCores:0> ; Queue's max capacity (absolute resource) = <memory:153, vCores:0> ;",
+   "tag": "pre"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.preemptedResourceMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.preemptedResourceVCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.numNonAMContainerPreempted",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.numAMContainerPreempted",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.currentAttemptResourcePreemptedText",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "not exposedRM REST has no such field",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.currentAttemptNumNonAMContainersPreempted",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "not exposedRM REST has no such field",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.resourceSecondsText",
+   "raw": "0 MB-seconds, 0 vcore-seconds",
+   "yn": false,
+   "fmt": "text",
+   "text": "0 MB-seconds, 0 vcore-seconds",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.derived.preemptedResourceSecondsText",
+   "raw": "0 MB-seconds, 0 vcore-seconds",
+   "yn": false,
+   "fmt": "text",
+   "text": "0 MB-seconds, 0 vcore-seconds",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.memorySeconds",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.vcoreSeconds",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.preemptedMemorySeconds",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.preemptedVcoreSeconds",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.runningContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.allocatedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.allocatedVCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.reservedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.reservedVCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.queueUsagePercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.clusterUsagePercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.clusterId",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "int",
+   "text": "1,791,901,196,446",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.masterNodeId",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.amHostHttpAddress",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.amRPCAddress",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.rmClusterId",
+   "raw": "",
+   "yn": true,
+   "fmt": "text",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "attempt.startTime",
+   "raw": "1791901326650",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "application_1791901196446_0003",
+  "appattempt_1791901196446_0003_000001"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nys-accepted\nAccepted\nUNDEFINED\napplication_1791901196446_0003\n·\nUser carol\n·\nType SPARK\n·\nQueue root.adhoc\n·\nPriority 0\n·\nelapsed\n9m 10s\nUnassigned\nYARN application page\nOpen in burrow\n\nSpark UI unavailable\n\napplication application_1791901196446_0003 is ACCEPTED: its Spark driver web UI is not running yet\n\nNext: the RM proxy serves a Spark UI only once the application is RUNNING\n\nOverview\nAttempts\nLogs\nSpark\nSTATUS TIMELINE\nSubmitted\n2026-10-13 19:52:06\n+2 ms\n\nAccepted by the ResourceManager\n\nAttempt #1 created\n2026-10-13 19:52:06\n+9m 10s\n\nThe RM created the application attempt\n\nLaunched\n—\n\nApplicationMaster container launched and registered\n\nFinished\n—\n\nStill running\n\n0%\nprogress\nATTEMPTS\n2026-10-13 19:52:06 → now\n#1\nScheduled\n2026-10-13 19:52:06\nAPPLICATION OVERVIEW\nUser:\ncarol\nName:\nys-accepted\nApplication Type:\nSPARK\nApplication Tags:\nno tags\nApplication Priority:\n0 (Higher Integer value indicates higher priority)\nYarnApplicationState:\nAccepted\nwaiting for AM container to be allocated, launched and register with RM.\nQueue:\nroot.adhoc\nFinalStatus Reported by AM:\nUndefined\nApplication has not completed yet.\nStarted:\n2026-10-13 19:52:06\nLaunched:\n—\nFinished:\n—\nElapsed:\n9m 10s\nTracking URL:\nApplicationMaster\nLog Aggregation Status:\nNot started\nApplication Timeout (Remaining Time):\nUnlimited\nUnmanaged Application:\nfalse\nApplication Node Label expression:\n<Not set>\nAM container Node Label expression:\n<DEFAULT_PARTITION>\nDIAGNOSTICS\n748 characters · 1 lines\nCopy diagnostics\n[Tue Oct 13 20:01:17 +0530 2026] Application is Activated, waiting for resources to be assigned for AM. Skipping assigning to Node in Ignore Exclusivity mode.  Last Node which was processed for the application : 127.0.0.3:8041 ( Partition : [ssd], Total resource : <memory:3072, vCores:4>, Available resource : <memory:2048, vCores:2> ). Details : AM Partition = <DEFAULT_PARTITION> ; Partition Resource = <memory:3072, vCores:4> ; Queue's Absolute capacity = 5.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 5.0 % ; Queue's capacity (absolute resource) = <memory:153, vCores:0> ; Queue's used capacity (absolute resource) = <memory:0, vCores:0> ; Queue's max capacity (absolute resource) = <memory:153, vCores:0> ; \nAPPLICATION METRICS\nTotal Resource Preempted:\n0 B\n·\n0\nTotal Number of Non-AM Containers Preempted:\n0\nTotal Number of AM Containers Preempted:\n0\nResource Preempted from Current Attempt:\nNOT EXPOSED\nRM REST has no such field\nNumber of Non-AM Containers Preempted from Current Attempt:\nNOT EXPOSED\nRM REST has no such field\nAggregate Resource Allocation:\n0 MB-seconds, 0 vcore-seconds\nAggregate Preempted Resource Allocation:\n0 MB-seconds, 0 vcore-seconds\n0000\nRESOURCE USAGE\nRunning Containers:\n0\nAllocated Memory MB:\n0 B\nAllocated CPU VCores:\n0\nReserved Memory MB:\n0 B\nReserved CPU VCores:\n0\n% of Queue:\n0.0%\n% of Cluster:\n0.0%\nCluster ID:\n1,791,901,196,446\nMaster Node ID:\nAM Host HTTP Address:\n—\nAM RPC Address:\n—\nRM Cluster ID:\n—\nATTEMPTS\nall attempts\n#1\nScheduled\n2026-10-13 19:52:06"
+}

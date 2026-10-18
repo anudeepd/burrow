@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <title>
+    Sorry, got error 404
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#msg').accordion({autoHeight: false});
+    });
+  </script>
+  <style type="text/css">
+    #msg { margin: 1em auto; width: 88%; }
+    #msg h1 { padding: 0.2em 1.5em; font: bold 1.3em serif; }
+  </style>
+  <div id="msg">
+    <h1>
+      Sorry, got error 404
+    </h1>
+    <div>
+      Please consult
+      <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">RFC 2616</a>
+       for meanings of the error code.
+    </div>
+    <h1>
+      Error Details
+    </h1>
+    <pre>org.apache.hadoop.yarn.webapp.WebAppException: /v1/cluster/containers/container_1791901196446_0002_01_000002: controller for v1 not found
+	at org.apache.hadoop.yarn.webapp.Router.resolveDefault(Router.java:247)
+	at org.apache.hadoop.yarn.webapp.Router.resolve(Router.java:155)
+	at org.apache.hadoop.yarn.webapp.Dispatcher.service(Dispatcher.java:152)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+	at com.google.inject.servlet.ServletDefinition.doServiceImpl(ServletDefinition.java:290)
+	at com.google.inject.servlet.ServletDefinition.doService(ServletDefinition.java:280)
+	at com.google.inject.servlet.ServletDefinition.service(ServletDefinition.java:184)
+	at com.google.inject.servlet.ManagedServletPipeline.service(ManagedServletPipeline.java:89)
+	at com.google.inject.servlet.FilterChainInvocation.doFilter(FilterChainInvocation.java:85)
+	at com.sun.jersey.spi.container.servlet.ServletContainer.doFilter(ServletContainer.java:941)
+	at com.sun.jersey.spi.container.servlet.ServletContainer.doFilter(ServletContainer.java:875)
+	at org.apache.hadoop.yarn.server.resourcemanager.webapp.RMWebAppFilter.doFilter(RMWebAppFilter.java:179)
+	at com.sun.jersey.spi.container.servlet.ServletContainer.doFilter(ServletContainer.java:829)
+	at com.google.inject.servlet.FilterChainInvocation.doFilter(FilterChainInvocation.java:82)
+	at com.google.inject.servlet.ManagedFilterPipeline.dispatch(ManagedFilterPipeline.java:121)
+	at com.google.inject.servlet.GuiceFilter.doFilter(GuiceFilter.java:133)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1626)
+	at org.apache.hadoop.http.lib.StaticUserWebFilter$StaticUserFilter.doFilter(StaticUserWebFilter.java:110)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1626)
+	at org.apache.hadoop.security.authentication.server.AuthenticationFilter.doFilter(AuthenticationFilter.java:652)
+	at org.apache.hadoop.security.token.delegation.web.DelegationTokenAuthenticationFilter.doFilter(DelegationTokenAuthenticationFilter.java:303)
+	at org.apache.hadoop.security.authentication.server.AuthenticationFilter.doFilter(AuthenticationFilter.java:592)
+	at org.apache.hadoop.yarn.server.security.http.RMAuthenticationFilter.doFilter(RMAuthenticationFilter.java:82)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1626)
+	at org.apache.hadoop.http.HttpServer2$QuotingInputFilter.doFilter(HttpServer2.java:1907)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1626)
+	at org.apache.hadoop.http.NoCacheFilter.doFilter(NoCacheFilter.java:45)
+	at org.eclipse.jetty.servlet.FilterHolder.doFilter(FilterHolder.java:193)
+	at org.eclipse.jetty.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1626)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:552)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:143)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:600)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1624)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:233)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1440)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:188)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:505)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1594)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:186)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1355)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:146)
+	at org.eclipse.jetty.server.handler.StatisticsHandler.handle(StatisticsHandler.java:181)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+	at org.eclipse.jetty.server.Server.handle(Server.java:516)
+	at org.eclipse.jetty.server.HttpChannel.lambda$handle$1(HttpChannel.java:487)
+	at org.eclipse.jetty.server.HttpChannel.dispatch(HttpChannel.java:732)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:479)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:277)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:311)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:105)
+	at org.eclipse.jetty.io.ChannelEndPoint$1.run(ChannelEndPoint.java:104)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:338)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:315)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:173)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:131)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:409)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:883)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1034)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+</pre>
+  </div>
+</html>

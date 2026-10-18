@@ -1,0 +1,446 @@
+[ {
+  "id" : 1,
+  "status" : "COMPLETED",
+  "description" : "self-join of a shared aggregate (ReusedExchange)",
+  "planDescription" : "== Physical Plan ==\nAdaptiveSparkPlan (37)\n+- == Final Plan ==\n   ResultQueryStage (21), Statistics(sizeInBytes=8.0 EiB)\n   +- * HashAggregate (20)\n      +- ShuffleQueryStage (19), Statistics(sizeInBytes=16.0 B, rowCount=1)\n         +- Exchange (18)\n            +- * HashAggregate (17)\n               +- * Project (16)\n                  +- * SortMergeJoin Inner (15)\n                     :- * Sort (9)\n                     :  +- * HashAggregate (8)\n                     :     +- AQEShuffleRead (7), coalesced\n                     :        +- ShuffleQueryStage (6), Statistics(sizeInBytes=62.5 KiB, rowCount=4.00E+3)\n                     :           +- Exchange (5)\n                     :              +- * HashAggregate (4)\n                     :                 +- * Project (3)\n                     :                    +- * Filter (2)\n                     :                       +- * Range (1)\n                     +- * Sort (14)\n                        +- * HashAggregate (13)\n                           +- AQEShuffleRead (12), coalesced\n                              +- ShuffleQueryStage (11), Statistics(sizeInBytes=62.5 KiB, rowCount=4.00E+3)\n                                 +- ReusedExchange (10)\n+- == Initial Plan ==\n   HashAggregate (36)\n   +- Exchange (35)\n      +- HashAggregate (34)\n         +- Project (33)\n            +- SortMergeJoin Inner (32)\n               :- Sort (24)\n               :  +- HashAggregate (23)\n               :     +- Exchange (22)\n               :        +- HashAggregate (4)\n               :           +- Project (3)\n               :              +- Filter (2)\n               :                 +- Range (1)\n               +- Sort (31)\n                  +- HashAggregate (30)\n                     +- Exchange (29)\n                        +- HashAggregate (28)\n                           +- Project (27)\n                              +- Filter (26)\n                                 +- Range (25)\n\n\n(1) Range [codegen id : 1]\nOutput [1]: [id#0L]\nArguments: Range (0, 200000, step=1, splits=Some(4))\n\n(2) Filter [codegen id : 1]\nInput [1]: [id#0L]\nCondition : isnotnull((id#0L % 1000))\n\n(3) Project [codegen id : 1]\nOutput [1]: [(id#0L % 1000) AS cust#1L]\nInput [1]: [id#0L]\n\n(4) HashAggregate [codegen id : 1]\nInput [1]: [cust#1L]\nKeys [1]: [cust#1L]\nFunctions: []\nAggregate Attributes: []\nResults [1]: [cust#1L]\n\n(5) Exchange\nInput [1]: [cust#1L]\nArguments: hashpartitioning(cust#1L, 8), ENSURE_REQUIREMENTS, [plan_id=358]\n\n(6) ShuffleQueryStage\nOutput [1]: [cust#1L]\nArguments: 0\n\n(7) AQEShuffleRead\nInput [1]: [cust#1L]\nArguments: coalesced\n\n(8) HashAggregate [codegen id : 3]\nInput [1]: [cust#1L]\nKeys [1]: [cust#1L]\nFunctions: []\nAggregate Attributes: []\nResults [1]: [cust#1L]\n\n(9) Sort [codegen id : 3]\nInput [1]: [cust#1L]\nArguments: [cust#1L ASC NULLS FIRST], false, 0\n\n(10) ReusedExchange [Reuses operator id: 5]\nOutput [1]: [cust#31L]\n\n(11) ShuffleQueryStage\nOutput [1]: [cust#31L]\nArguments: 2\n\n(12) AQEShuffleRead\nInput [1]: [cust#31L]\nArguments: coalesced\n\n(13) HashAggregate [codegen id : 4]\nInput [1]: [cust#31L]\nKeys [1]: [cust#31L]\nFunctions: []\nAggregate Attributes: []\nResults [1]: [cust#31L]\n\n(14) Sort [codegen id : 4]\nInput [1]: [cust#31L]\nArguments: [cust#31L ASC NULLS FIRST], false, 0\n\n(15) SortMergeJoin [codegen id : 5]\nLeft keys [1]: [cust#1L]\nRight keys [1]: [cust#31L]\nJoin type: Inner\nJoin condition: None\n\n(16) Project [codegen id : 5]\nOutput: []\nInput [2]: [cust#1L, cust#31L]\n\n(17) HashAggregate [codegen id : 5]\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#40L]\nResults [1]: [count#41L]\n\n(18) Exchange\nInput [1]: [count#41L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=441]\n\n(19) ShuffleQueryStage\nOutput [1]: [count#41L]\nArguments: 3\n\n(20) HashAggregate [codegen id : 6]\nInput [1]: [count#41L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#39L]\nResults [1]: [count(1)#39L AS count#35L]\n\n(21) ResultQueryStage\nOutput [1]: [count#35L]\nArguments: 4\n\n(22) Exchange\nInput [1]: [cust#1L]\nArguments: hashpartitioning(cust#1L, 8), ENSURE_REQUIREMENTS, [plan_id=311]\n\n(23) HashAggregate\nInput [1]: [cust#1L]\nKeys [1]: [cust#1L]\nFunctions: []\nAggregate Attributes: []\nResults [1]: [cust#1L]\n\n(24) Sort\nInput [1]: [cust#1L]\nArguments: [cust#1L ASC NULLS FIRST], false, 0\n\n(25) Range\nOutput [1]: [id#30L]\nArguments: Range (0, 200000, step=1, splits=Some(4))\n\n(26) Filter\nInput [1]: [id#30L]\nCondition : isnotnull((id#30L % 1000))\n\n(27) Project\nOutput [1]: [(id#30L % 1000) AS cust#31L]\nInput [1]: [id#30L]\n\n(28) HashAggregate\nInput [1]: [cust#31L]\nKeys [1]: [cust#31L]\nFunctions: []\nAggregate Attributes: []\nResults [1]: [cust#31L]\n\n(29) Exchange\nInput [1]: [cust#31L]\nArguments: hashpartitioning(cust#31L, 8), ENSURE_REQUIREMENTS, [plan_id=313]\n\n(30) HashAggregate\nInput [1]: [cust#31L]\nKeys [1]: [cust#31L]\nFunctions: []\nAggregate Attributes: []\nResults [1]: [cust#31L]\n\n(31) Sort\nInput [1]: [cust#31L]\nArguments: [cust#31L ASC NULLS FIRST], false, 0\n\n(32) SortMergeJoin\nLeft keys [1]: [cust#1L]\nRight keys [1]: [cust#31L]\nJoin type: Inner\nJoin condition: None\n\n(33) Project\nOutput: []\nInput [2]: [cust#1L, cust#31L]\n\n(34) HashAggregate\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#40L]\nResults [1]: [count#41L]\n\n(35) Exchange\nInput [1]: [count#41L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=323]\n\n(36) HashAggregate\nInput [1]: [count#41L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#39L]\nResults [1]: [count(1)#39L AS count#35L]\n\n(37) AdaptiveSparkPlan\nOutput [1]: [count#35L]\nArguments: isFinalPlan=true\n\n",
+  "submissionTime" : "2026-10-03T07:12:19.194GMT",
+  "duration" : 589,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 6, 7, 8 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 21,
+    "nodeName" : "AQEShuffleRead",
+    "metrics" : [ {
+      "name" : "number of partitions",
+      "value" : "1"
+    }, {
+      "name" : "number of empty partitions",
+      "value" : "0"
+    }, {
+      "name" : "partition data size",
+      "value" : "27.4 KiB"
+    }, {
+      "name" : "number of coalesced partitions",
+      "value" : "1"
+    } ]
+  }, {
+    "nodeId" : 20,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 4,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "3 ms"
+    }, {
+      "name" : "peak memory",
+      "value" : "256.0 KiB"
+    }, {
+      "name" : "number of output rows",
+      "value" : "1,000"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "0"
+    } ]
+  }, {
+    "nodeId" : 19,
+    "nodeName" : "Sort",
+    "wholeStageCodegenId" : 4,
+    "metrics" : [ {
+      "name" : "sort time",
+      "value" : "0 ms"
+    }, {
+      "name" : "peak memory",
+      "value" : "8.1 MiB"
+    }, {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    } ]
+  }, {
+    "nodeId" : 18,
+    "nodeName" : "WholeStageCodegen (4)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "44 ms"
+    } ]
+  }, {
+    "nodeId" : 17,
+    "nodeName" : "Range",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "200,000"
+    } ]
+  }, {
+    "nodeId" : 16,
+    "nodeName" : "Filter",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "200,000"
+    } ]
+  }, {
+    "nodeId" : 15,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 14,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "total (min, med, max (stageId: taskId))\n58 ms (11 ms, 17 ms, 18 ms (stage 18.0: task 12))"
+    }, {
+      "name" : "peak memory",
+      "value" : "total (min, med, max (stageId: taskId))\n1024.0 KiB (256.0 KiB, 256.0 KiB, 256.0 KiB (stage 18.0: task 12))"
+    }, {
+      "name" : "number of output rows",
+      "value" : "4,000"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "0"
+    } ]
+  }, {
+    "nodeId" : 13,
+    "nodeName" : "WholeStageCodegen (1)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n159 ms (24 ms, 55 ms, 55 ms (stage 18.0: task 12))"
+    } ]
+  }, {
+    "nodeId" : 12,
+    "nodeName" : "Exchange",
+    "metrics" : [ {
+      "name" : "shuffle records written",
+      "value" : "4,000"
+    }, {
+      "name" : "remote merged reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "records read",
+      "value" : "8,000"
+    }, {
+      "name" : "local bytes read",
+      "value" : "52.3 KiB"
+    }, {
+      "name" : "merged fetch fallback count",
+      "value" : "0"
+    }, {
+      "name" : "local blocks read",
+      "value" : "8"
+    }, {
+      "name" : "remote merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "remote blocks read",
+      "value" : "0"
+    }, {
+      "name" : "data size",
+      "value" : "total (min, med, max (stageId: taskId))\n62.5 KiB (15.6 KiB, 15.6 KiB, 15.6 KiB (stage 18.0: task 12))"
+    }, {
+      "name" : "local merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "shuffle write time",
+      "value" : "total (min, med, max (stageId: taskId))\n8 ms (1 ms, 2 ms, 2 ms (stage 18.0: task 11))"
+    }, {
+      "name" : "remote merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "corrupt merged block chunks",
+      "value" : "0"
+    }, {
+      "name" : "fetch wait time",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of partitions",
+      "value" : "8"
+    }, {
+      "name" : "remote reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read to disk",
+      "value" : "0.0 B"
+    }, {
+      "name" : "shuffle bytes written",
+      "value" : "total (min, med, max (stageId: taskId))\n26.1 KiB (6.5 KiB, 6.5 KiB, 6.5 KiB (stage 18.0: task 12))"
+    } ]
+  }, {
+    "nodeId" : 11,
+    "nodeName" : "AQEShuffleRead",
+    "metrics" : [ {
+      "name" : "number of partitions",
+      "value" : "1"
+    }, {
+      "name" : "number of empty partitions",
+      "value" : "0"
+    }, {
+      "name" : "partition data size",
+      "value" : "27.4 KiB"
+    }, {
+      "name" : "number of coalesced partitions",
+      "value" : "1"
+    } ]
+  }, {
+    "nodeId" : 10,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 3,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "5 ms"
+    }, {
+      "name" : "peak memory",
+      "value" : "256.0 KiB"
+    }, {
+      "name" : "number of output rows",
+      "value" : "1,000"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "0"
+    } ]
+  }, {
+    "nodeId" : 9,
+    "nodeName" : "Sort",
+    "wholeStageCodegenId" : 3,
+    "metrics" : [ {
+      "name" : "sort time",
+      "value" : "0 ms"
+    }, {
+      "name" : "peak memory",
+      "value" : "8.1 MiB"
+    }, {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    } ]
+  }, {
+    "nodeId" : 8,
+    "nodeName" : "WholeStageCodegen (3)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "77 ms"
+    } ]
+  }, {
+    "nodeId" : 7,
+    "nodeName" : "SortMergeJoin",
+    "wholeStageCodegenId" : 5,
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "1,000"
+    }, {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    } ]
+  }, {
+    "nodeId" : 6,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 5,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 5,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 5,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "29 ms"
+    }, {
+      "name" : "peak memory",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of output rows",
+      "value" : "1"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "0"
+    } ]
+  }, {
+    "nodeId" : 4,
+    "nodeName" : "WholeStageCodegen (5)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "30 ms"
+    } ]
+  }, {
+    "nodeId" : 3,
+    "nodeName" : "Exchange",
+    "metrics" : [ {
+      "name" : "shuffle records written",
+      "value" : "1"
+    }, {
+      "name" : "remote merged reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "records read",
+      "value" : "1"
+    }, {
+      "name" : "local bytes read",
+      "value" : "59.0 B"
+    }, {
+      "name" : "merged fetch fallback count",
+      "value" : "0"
+    }, {
+      "name" : "local blocks read",
+      "value" : "1"
+    }, {
+      "name" : "remote merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "remote blocks read",
+      "value" : "0"
+    }, {
+      "name" : "data size",
+      "value" : "16.0 B"
+    }, {
+      "name" : "local merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "shuffle write time",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "corrupt merged block chunks",
+      "value" : "0"
+    }, {
+      "name" : "fetch wait time",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of partitions",
+      "value" : "1"
+    }, {
+      "name" : "remote reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read to disk",
+      "value" : "0.0 B"
+    }, {
+      "name" : "shuffle bytes written",
+      "value" : "59.0 B"
+    } ]
+  }, {
+    "nodeId" : 2,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 6,
+    "metrics" : [ {
+      "name" : "time in aggregation build",
+      "value" : "0 ms"
+    }, {
+      "name" : "number of output rows",
+      "value" : "1"
+    } ]
+  }, {
+    "nodeId" : 1,
+    "nodeName" : "WholeStageCodegen (6)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "0 ms"
+    } ]
+  }, {
+    "nodeId" : 0,
+    "nodeName" : "AdaptiveSparkPlan",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ {
+    "fromId" : 2,
+    "toId" : 0
+  }, {
+    "fromId" : 3,
+    "toId" : 2
+  }, {
+    "fromId" : 5,
+    "toId" : 3
+  }, {
+    "fromId" : 6,
+    "toId" : 5
+  }, {
+    "fromId" : 7,
+    "toId" : 6
+  }, {
+    "fromId" : 9,
+    "toId" : 7
+  }, {
+    "fromId" : 10,
+    "toId" : 9
+  }, {
+    "fromId" : 11,
+    "toId" : 10
+  }, {
+    "fromId" : 12,
+    "toId" : 11
+  }, {
+    "fromId" : 14,
+    "toId" : 12
+  }, {
+    "fromId" : 15,
+    "toId" : 14
+  }, {
+    "fromId" : 16,
+    "toId" : 15
+  }, {
+    "fromId" : 17,
+    "toId" : 16
+  }, {
+    "fromId" : 19,
+    "toId" : 7
+  }, {
+    "fromId" : 20,
+    "toId" : 19
+  }, {
+    "fromId" : 21,
+    "toId" : 20
+  }, {
+    "fromId" : 12,
+    "toId" : 21
+  } ],
+  "queryId" : "01a1009b-48f4-7637-9004-ef92f6e20c7b",
+  "errorMessage" : "",
+  "rootExecutionId" : 1
+} ]

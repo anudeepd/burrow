@@ -1,0 +1,272 @@
+{
+  "completionTime": "1791823077577",
+  "description": "collect at BurrowSqlDemo.scala:21",
+  "duration": 2340,
+  "edges": [
+    {
+      "fromId": 2,
+      "toId": 1
+    },
+    {
+      "fromId": 4,
+      "toId": 2
+    },
+    {
+      "fromId": 5,
+      "toId": 4
+    },
+    {
+      "fromId": 7,
+      "toId": 5
+    },
+    {
+      "fromId": 8,
+      "toId": 7
+    },
+    {
+      "fromId": 9,
+      "toId": 8
+    },
+    {
+      "fromId": 10,
+      "toId": 9
+    },
+    {
+      "fromId": 11,
+      "toId": 10
+    },
+    {
+      "fromId": 12,
+      "toId": 11
+    },
+    {
+      "fromId": 13,
+      "toId": 9
+    },
+    {
+      "fromId": 15,
+      "toId": 13
+    },
+    {
+      "fromId": 16,
+      "toId": 15
+    }
+  ],
+  "failedJobIds": [],
+  "id": 2,
+  "nodes": [
+    {
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "26 ms (1 ms, 2 ms, 19 ms)"
+        }
+      ],
+      "nodeId": 0,
+      "nodeName": "WholeStageCodegen"
+    },
+    {
+      "metrics": [
+        {
+          "name": "peak memory total (min, med, max)",
+          "value": "20.3 MB (4.1 MB, 4.1 MB, 4.1 MB)"
+        }
+      ],
+      "nodeId": 1,
+      "nodeName": "Sort",
+      "wholeStageCodegenId": 0
+    },
+    {
+      "metrics": [
+        {
+          "name": "data size total (min, med, max)",
+          "value": "197.0 B (39.0 B, 79.0 B, 79.0 B)"
+        }
+      ],
+      "nodeId": 2,
+      "nodeName": "Exchange",
+      "wholeStageCodegenId": null
+    },
+    {
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "31 ms (1 ms, 1 ms, 9 ms)"
+        }
+      ],
+      "nodeId": 3,
+      "nodeName": "WholeStageCodegen"
+    },
+    {
+      "metrics": [
+        {
+          "name": "aggregate time total (min, med, max)",
+          "value": "4 ms (0 ms, 0 ms, 4 ms)"
+        },
+        {
+          "name": "peak memory total (min, med, max)",
+          "value": "28.0 MB (256.0 KB, 256.0 KB, 4.2 MB)"
+        },
+        {
+          "name": "number of output rows",
+          "value": "10"
+        },
+        {
+          "name": "avg hash probe (min, med, max)",
+          "value": "(1, 1, 1)"
+        }
+      ],
+      "nodeId": 4,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 3
+    },
+    {
+      "metrics": [
+        {
+          "name": "data size total (min, med, max)",
+          "value": "796.0 B (199.0 B, 199.0 B, 199.0 B)"
+        }
+      ],
+      "nodeId": 5,
+      "nodeName": "Exchange",
+      "wholeStageCodegenId": null
+    },
+    {
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "149 ms (11 ms, 14 ms, 113 ms)"
+        }
+      ],
+      "nodeId": 6,
+      "nodeName": "WholeStageCodegen"
+    },
+    {
+      "metrics": [
+        {
+          "name": "aggregate time total (min, med, max)",
+          "value": "29 ms (3 ms, 5 ms, 17 ms)"
+        },
+        {
+          "name": "peak memory total (min, med, max)",
+          "value": "1024.0 KB (256.0 KB, 256.0 KB, 256.0 KB)"
+        },
+        {
+          "name": "number of output rows",
+          "value": "20"
+        }
+      ],
+      "nodeId": 7,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 6
+    },
+    {
+      "metrics": [],
+      "nodeId": 8,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 6
+    },
+    {
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "20,000"
+        },
+        {
+          "name": "avg hash probe (min, med, max)",
+          "value": "(1, 1, 1)"
+        }
+      ],
+      "nodeId": 9,
+      "nodeName": "BroadcastHashJoin",
+      "wholeStageCodegenId": 6
+    },
+    {
+      "metrics": [],
+      "nodeId": 10,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 6
+    },
+    {
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "20,000"
+        }
+      ],
+      "nodeId": 11,
+      "nodeName": "Filter",
+      "wholeStageCodegenId": 6
+    },
+    {
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "20,000"
+        }
+      ],
+      "nodeId": 12,
+      "nodeName": "Range",
+      "wholeStageCodegenId": 6
+    },
+    {
+      "metrics": [
+        {
+          "name": "data size (bytes)",
+          "value": "1,049,376"
+        },
+        {
+          "name": "time to collect (ms)",
+          "value": "926"
+        },
+        {
+          "name": "time to build (ms)",
+          "value": "26"
+        },
+        {
+          "name": "time to broadcast (ms)",
+          "value": "4"
+        }
+      ],
+      "nodeId": 13,
+      "nodeName": "BroadcastExchange",
+      "wholeStageCodegenId": null
+    },
+    {
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "0 ms (0 ms, 0 ms, 0 ms)"
+        }
+      ],
+      "nodeId": 14,
+      "nodeName": "WholeStageCodegen"
+    },
+    {
+      "metrics": [],
+      "nodeId": 15,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 14
+    },
+    {
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "100"
+        }
+      ],
+      "nodeId": 16,
+      "nodeName": "Range",
+      "wholeStageCodegenId": 14
+    }
+  ],
+  "planDescription": "== Parsed Logical Plan ==\n'Sort ['c.region ASC NULLS FIRST], true\n+- 'Aggregate ['c.region], ['c.region, 'SUM('o.amount) AS revenue#13, 'COUNT(1) AS order_count#14]\n   +- 'Join Inner, ('o.customer_id = 'c.customer_id)\n      :- 'SubqueryAlias `o`\n      :  +- 'UnresolvedRelation `orders`\n      +- 'SubqueryAlias `c`\n         +- 'UnresolvedRelation `customers`\n\n== Analyzed Logical Plan ==\nregion: string, revenue: double, order_count: bigint\nProject [region#10, revenue#13, order_count#14L]\n+- Sort [region#10 ASC NULLS FIRST], true\n   +- Aggregate [region#10], [region#10, sum(amount#3) AS revenue#13, count(1) AS order_count#14L]\n      +- Join Inner, (customer_id#2 = customer_id#9)\n         :- SubqueryAlias `o`\n         :  +- SubqueryAlias `orders`\n         :     +- Project [id#0L, cast((id#0L % cast(100 as bigint)) as int) AS customer_id#2, cast(CheckOverflow((promote_precision(cast(cast(id#0L as decimal(20,0)) as decimal(21,1))) * promote_precision(cast(0.5 as decimal(21,1)))), DecimalType(22,1)) as double) AS amount#3]\n         :        +- Range (0, 20000, step=1, splits=Some(4))\n         +- SubqueryAlias `c`\n            +- SubqueryAlias `customers`\n               +- Project [cast(id#7L as int) AS customer_id#9, concat(region-, cast((id#7L % cast(5 as bigint)) as string)) AS region#10]\n                  +- Range (0, 100, step=1, splits=Some(4))\n\n== Optimized Logical Plan ==\nSort [region#10 ASC NULLS FIRST], true\n+- Aggregate [region#10], [region#10, sum(amount#3) AS revenue#13, count(1) AS order_count#14L]\n   +- Project [amount#3, region#10]\n      +- Join Inner, (customer_id#2 = customer_id#9)\n         :- Project [cast((id#0L % 100) as int) AS customer_id#2, cast(CheckOverflow((promote_precision(cast(cast(id#0L as decimal(20,0)) as decimal(21,1))) * 0.5), DecimalType(22,1)) as double) AS amount#3]\n         :  +- Filter isnotnull(cast((id#0L % 100) as int))\n         :     +- Range (0, 20000, step=1, splits=Some(4))\n         +- Project [cast(id#7L as int) AS customer_id#9, concat(region-, cast((id#7L % 5) as string)) AS region#10]\n            +- Range (0, 100, step=1, splits=Some(4))\n\n== Physical Plan ==\n*(4) Sort [region#10 ASC NULLS FIRST], true, 0\n+- Exchange rangepartitioning(region#10 ASC NULLS FIRST, 8)\n   +- *(3) HashAggregate(keys=[region#10], functions=[sum(amount#3), count(1)], output=[region#10, revenue#13, order_count#14L])\n      +- Exchange hashpartitioning(region#10, 8)\n         +- *(2) HashAggregate(keys=[region#10], functions=[partial_sum(amount#3), partial_count(1)], output=[region#10, sum#31, count#32L])\n            +- *(2) Project [amount#3, region#10]\n               +- *(2) BroadcastHashJoin [customer_id#2], [customer_id#9], Inner, BuildRight\n                  :- *(2) Project [cast((id#0L % 100) as int) AS customer_id#2, cast(CheckOverflow((promote_precision(cast(cast(id#0L as decimal(20,0)) as decimal(21,1))) * 0.5), DecimalType(22,1)) as double) AS amount#3]\n                  :  +- *(2) Filter isnotnull(cast((id#0L % 100) as int))\n                  :     +- *(2) Range (0, 20000, step=1, splits=4)\n                  +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)))\n                     +- *(1) Project [cast(id#7L as int) AS customer_id#9, concat(region-, cast((id#7L % 5) as string)) AS region#10]\n                        +- *(1) Range (0, 100, step=1, splits=4)",
+  "runningJobIds": [],
+  "status": "COMPLETED",
+  "submissionTime": "1791823075237",
+  "successJobIds": [
+    0,
+    1,
+    2
+  ]
+}

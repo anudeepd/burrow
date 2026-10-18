@@ -1,0 +1,4211 @@
+version: 1
+derived:
+- id: app.derived.allocatedResourceText
+  entity: app
+  type: string
+  format: other:<memory> MBs, <vCores> VCores
+  from:
+  - app.allocatedMB
+  - app.allocatedVCores
+  derivation: converter.resourceToString(allocatedMB, allocatedVCores) => mem + " MBs, " + cpu + " VCores" (each Math.max(0, x))
+  source: yarn-ui/utils/converter.js:25
+- id: app.derived.preemptedResourceText
+  entity: app
+  type: string
+  format: other:<memory> MBs, <vCores> VCores
+  from:
+  - app.preemptedResourceMB
+  - app.preemptedResourceVCores
+  derivation: converter.resourceToString(preemptedResourceMB, preemptedResourceVCores)
+  source: yarn-ui/models/yarn-app.js:65
+- id: app.derived.aggregatedResourceUsageText
+  entity: app
+  type: string
+  format: other:<memory> MBs, <vCores> VCores (× Secs)
+  from:
+  - app.memorySeconds
+  - app.vcoreSeconds
+  derivation: converter.resourceToString(memorySeconds, vcoreSeconds) + " (× Secs)"
+  source: yarn-ui/models/yarn-app.js:68
+- id: app.derived.remainingTimeoutSeconds
+  entity: app
+  type: number
+  format: int
+  from: []
+  derivation: payload.timeouts.timeout[0].remainingTimeInSeconds (serializer internalNormalizeSingleResponse); -1 when the /apps/{id} payload has no timeouts
+  source: yarn-ui/serializers/yarn-app.js:9
+  restGap: true
+  altSource: GET /ws/v1/cluster/apps/{appid}/timeouts -> timeouts.timeout[0].remainingTimeInSeconds
+- id: app.derived.applicationExpiryTime
+  entity: app
+  type: string
+  format: epoch-datetime
+  from:
+  - app.finishedTime
+  derivation: 'payload.timeouts.timeout[0].expiryTime ? isoDateToDate(expiryTime) : timeStampToDate(finishedTime)'
+  source: yarn-ui/serializers/yarn-app.js:8
+  restGap: true
+  altSource: GET /ws/v1/cluster/apps/{appid}/timeouts -> timeouts.timeout[0].expiryTime
+- id: attempt.derived.appMasterContainerId
+  entity: attempt
+  type: string
+  format: none
+  from:
+  - attempt.containerId
+  derivation: amContainerId = attempt.containerId (serializer attribute amContainerId is absent from RM AppAttemptInfo; model falls back to containerId via appMasterContainerId())
+  source: yarn-ui/models/yarn-app-attempt.js:49
+- id: attempt.derived.elapsedTimeText
+  entity: attempt
+  type: string
+  format: duration
+  from:
+  - attempt.startTime
+  - attempt.finishedTime
+  derivation: elapsedMs = finishedTs - startTs; if (elapsedMs <= 0) elapsedMs = Date.now() - startTs; converter.msToElapsedTimeUnit(elapsedMs)
+  source: yarn-ui/models/yarn-app-attempt.js:77
+- id: attempt.derived.diagnosticsInfo
+  entity: attempt
+  type: string
+  format: none
+  from: []
+  derivation: payload.diagnosticsInfo (not serialised by RM AppAttemptInfo.java:42-53)
+  source: yarn-ui/serializers/yarn-app-attempt.js:23
+  restGap: true
+  altSource: none (ATS attempt info has no diagnostics either)
+- id: container.derived.appAttemptContainerLogsUrl
+  entity: container
+  type: string
+  format: url
+  from:
+  - container.containerId
+  derivation: '"#/yarn-app/" + attemptIdToAppId(containerIdToAttemptId(id)) + "/logs?attempt=" + attemptId + "&containerid=" + id'
+  source: yarn-ui/models/yarn-container.js:42
+- id: container.derived.masterNodeUrl
+  entity: container
+  type: string
+  format: url
+  from:
+  - container.nodeId
+  - container.nodeHttpAddress
+  derivation: '"#/yarn-node/" + nodeId + "/" + encodeURIComponent(nodeHttpAddress) + "/info/"'
+  source: yarn-ui/models/yarn-container.js:38
+- id: node.derived.nodeLabelsAsString
+  entity: node
+  type: string
+  format: none
+  from:
+  - node.nodeLabels
+  derivation: 'nodeLabels && nodeLabels.length > 0 ? nodeLabels[0] : "default"'
+  source: yarn-ui/models/yarn-rm-node.js:18
+  note: REST nodeLabels is an array; UI2 shows only the first label
+- id: node.derived.toolTipText
+  entity: node
+  type: string
+  format: 'other:<p>Rack: {rack}</p><p>Host: {nodeHostName}</p>'
+  from:
+  - node.rack
+  - node.nodeHostName
+  derivation: '"<p>Rack: " + rack + "</p>" + "<p>Host: " + nodeHostName + "</p>"'
+  source: yarn-ui/models/yarn-rm-node.js:96
+- id: queue.derived.partitionNames
+  entity: queue
+  type: string
+  format: join-comma
+  from:
+  - queue.capacities.queueCapacitiesByPartition.partitionName
+  derivation: capacities.queueCapacitiesByPartition.map(c => c.partitionName || "Default partition")
+  source: yarn-ui/serializers/yarn-queue/capacity-queue.js:44
+- id: nm.info.derived.totalGpuDeviceCount
+  entity: nm.info
+  type: int
+  format: int
+  from:
+  - nm.info.totalGpuDevices
+  derivation: model.nmGpuInfo.info.totalGpuDevices.length (totalGpuDevices is a List<GpuDevice>)
+  source: templates/yarn-node/yarn-nm-gpu.hbs.txt:40
+- id: log.derived.fileUrl
+  entity: log
+  type: string
+  format: url
+  from:
+  - log.fileName
+  derivation: 'containerLogURL / the log-file endpoint URL UI2 builds from the node/container coordinates (utils/converter.js: splitForAppLogs / logFileURL helpers); used as the href of the log-file link'
+  source: yarn-ui/adapters/yarn-container-log.js:1
+  restGap: true
+  altSource: the URL is reconstructible from the container id + node address; the log-serving endpoints are listed in rest-daemon.yaml (nm.containerlogs / ahs.containerlogs / jhs.containerlogs)
+pages:
+- id: ui2.shared.chrome
+  daemon: rm
+  route: (every UI2 page)
+  title: (per page)
+  classes:
+  - ApplicationController
+  - ApplicationRoute
+  - application
+  - navbar
+  - em-breadcrumbs
+  - breadcrumb-bar
+  - info-tooltip
+  sections:
+  - id: ui2.shared.chrome.navbar
+    title: null
+    source: templates/application.hbs.txt:4
+    items:
+    - id: ui2.shared.chrome.navbar.brand
+      label: null
+      kind: text
+      field: static.navbar.brand
+      source: templates/application.hbs.txt:9
+      note: img assets/images/hadoop_logo.png alt='Apache Hadoop'
+    - id: ui2.shared.chrome.navbar.toggle
+      label: Toggle navigation
+      kind: text
+      field: static.navbar.toggle
+      source: templates/application.hbs.txt:12
+      note: screen-reader only
+    - id: ui2.shared.chrome.navbar.cluster-overview
+      label: Cluster Overview
+      kind: nav
+      field: static.nav.clusterOverview
+      format: url
+      source: templates/application.hbs.txt:39
+      note: route cluster-overview
+    - id: ui2.shared.chrome.navbar.queues
+      label: Queues
+      kind: nav
+      field: static.nav.queues
+      format: url
+      source: templates/application.hbs.txt:42
+      note: route yarn-queues model=root
+    - id: ui2.shared.chrome.navbar.applications
+      label: Applications
+      kind: nav
+      field: static.nav.applications
+      format: url
+      source: templates/application.hbs.txt:46
+      note: route yarn-apps.apps
+    - id: ui2.shared.chrome.navbar.services
+      label: Services
+      kind: nav
+      field: static.nav.services
+      format: url
+      source: templates/application.hbs.txt:52
+      note: OUT OF SCOPE (yarn-services, delegated)
+    - id: ui2.shared.chrome.navbar.flow-activity
+      label: Flow Activity
+      kind: nav
+      field: static.nav.flowActivity
+      format: url
+      source: templates/application.hbs.txt:57
+      when:
+      - other:!isTimelineUnHealthy
+      note: OUT OF SCOPE (timeline, delegated); disabled when ATS unhealthy
+    - id: ui2.shared.chrome.navbar.nodes
+      label: Nodes
+      kind: nav
+      field: static.nav.nodes
+      format: url
+      source: templates/application.hbs.txt:62
+      note: route yarn-nodes.table
+    - id: ui2.shared.chrome.navbar.tools
+      label: Tools
+      kind: nav
+      field: static.nav.tools
+      format: url
+      source: templates/application.hbs.txt:67
+      note: route yarn-tools.yarn-conf
+    - id: ui2.shared.chrome.navbar.logged-in
+      label: 'Logged in as: '
+      dynamic: true
+      kind: text
+      field: clusteruser.derived.loggedInText
+      fields:
+      - clusteruser.requestedUser
+      rest:
+        resource: rm.cluster-user-info
+        path: requestedUser
+      derivation: '"Logged in as: " + userInfo.requestedUser'
+      format: none
+      when:
+      - value:non-empty
+      source: templates/application.hbs.txt:76
+      note: wrapper is {{#if userInfo}}; span.username holds the value
+  - id: ui2.shared.chrome.footer
+    title: null
+    source: templates/application.hbs.txt:53
+    items:
+    - id: ui2.shared.chrome.footer.license
+      label: Licensed under the Apache License, Version 2.0.
+      kind: link
+      field: static.footer.license
+      format: url
+      source: templates/application.hbs.txt:96
+      note: href env.app.hrefs.license
+    - id: ui2.shared.chrome.footer.timezone
+      label: Timezone
+      dynamic: true
+      kind: text
+      field: static.footer.timezone
+      source: templates/application.hbs.txt:99
+      note: <span>Timezone <b>{{env.app.timezone}}</b></span>; env config, not REST
+    - id: ui2.shared.chrome.footer.hadoop-version
+      label: null
+      dynamic: true
+      kind: text
+      field: cluster.info.hadoopVersion
+      rest:
+        resource: rm.info
+        path: clusterInfo.hadoopVersion
+      derivation: '"v" + clusterInfo.hadoopVersion'
+      format: none
+      source: templates/application.hbs.txt:107
+    - id: ui2.shared.chrome.footer.cluster-state
+      label: null
+      kind: text
+      field: cluster.info.state
+      rest:
+        resource: rm.info
+        path: clusterInfo.state
+      format: enum
+      source: templates/application.hbs.txt:110
+      tooltip: 'Hadoop Version: {{clusterInfo.getYARNBuildHash}} Started on: {{date-formatter clusterInfo.startedOn}}'
+    - id: ui2.shared.chrome.footer.started-at
+      label: 'Started at '
+      dynamic: true
+      kind: text
+      field: cluster.info.startedOn
+      rest:
+        resource: rm.info
+        path: clusterInfo.startedOn
+      derivation: '"Started at " + dateFormatter(startedOn)'
+      format: epoch-datetime
+      source: templates/application.hbs.txt:112
+  - id: ui2.shared.chrome.breadcrumb
+    title: null
+    source: templates/components/breadcrumb-bar.hbs.txt:2
+    items:
+    - id: ui2.shared.chrome.breadcrumb.home
+      label: Home
+      kind: nav
+      field: static.breadcrumb.home
+      format: url
+      source: yarn-ui/controllers/yarn-apps.js:4
+      note: em-breadcrumbs item text; every page's breadcrumbs start with Home (route application)
+    - id: ui2.shared.chrome.breadcrumb.refresh
+      label: Refresh
+      kind: button
+      field: static.breadcrumb.refresh
+      source: templates/components/breadcrumb-bar.hbs.txt:21
+      note: hidden when hideRefresh=true
+  includes: []
+- id: ui2.shared.emtable
+  daemon: rm
+  route: (vendor component, all em-table instances)
+  title: null
+  classes:
+  - em-table
+  - em-table-search-ui
+  - em-table-pagination-ui
+  - em-table-facet-panel
+  - em-table-facet-panel-values
+  - em-table-header-cell
+  - em-table-cell
+  - em-table-progress-cell
+  sections:
+  - id: ui2.shared.emtable.search
+    title: null
+    source: templates/vendor/em-table/components/em-table-search-ui.hbs.txt:1
+    items:
+    - id: ui2.shared.emtable.search.placeholder
+      label: Search...
+      kind: text
+      field: static.emtable.search
+      source: templates/vendor/em-table/components/em-table-search-ui.hbs.txt:13
+    - id: ui2.shared.emtable.search.button
+      label: Search
+      kind: button
+      field: static.emtable.searchButton
+      source: templates/vendor/em-table/components/em-table-search-ui.hbs.txt:31
+    - id: ui2.shared.emtable.search.searching
+      label: Searching...
+      kind: text
+      field: static.emtable.searching
+      source: templates/vendor/em-table/components/em-table-search-ui.hbs.txt:24
+      when:
+      - other:dataProcessor.isSearching
+    - id: ui2.shared.emtable.search.type
+      label: Regex
+      kind: text
+      field: static.emtable.searchType
+      source: em-table/utils/table-definition.js:8
+      note: select of search types; _actualSearchType default 'Regex'; pages rendering em-table set searchType 'manual' (apps/nodes tables)
+  - id: ui2.shared.emtable.pagination
+    title: null
+    source: templates/vendor/em-table/components/em-table-pagination-ui.hbs.txt:1
+    when:
+    - other:_definition.minRowsForFooter (=25) <= processedRows.length
+    items:
+    - id: ui2.shared.emtable.pagination.first
+      label: First
+      kind: button
+      field: static.emtable.firstPage
+      source: templates/vendor/em-table/components/em-table-pagination-ui.hbs.txt:3
+      tooltip: Go to first page
+    - id: ui2.shared.emtable.pagination.last
+      label: 'Last - '
+      dynamic: true
+      kind: button
+      field: static.emtable.lastPage
+      source: templates/vendor/em-table/components/em-table-pagination-ui.hbs.txt:13
+      tooltip: Go to last page, {{dataProcessor.totalPages}} page(s) available in total
+    - id: ui2.shared.emtable.pagination.pageSize
+      label: Rows
+      kind: text
+      field: static.emtable.pageSize
+      source: templates/vendor/em-table/components/em-table-pagination-ui.hbs.txt:22
+      tooltip: Select rows to display
+      note: options {{option.value}} Rows from rowCountOptions [5,10,25,50,100]
+  - id: ui2.shared.emtable.facet
+    title: null
+    source: templates/vendor/em-table/components/em-table-facet-panel.hbs.txt:1
+    when:
+    - other:_definition.enableFaceting
+    items:
+    - id: ui2.shared.emtable.facet.filter
+      label: Filter
+      kind: text
+      field: static.emtable.facetFilter
+      source: templates/vendor/em-table/components/em-table-facet-panel.hbs.txt:2
+    - id: ui2.shared.emtable.facet.apply
+      label: Apply
+      kind: button
+      field: static.emtable.facetApply
+      source: templates/vendor/em-table/components/em-table-facet-panel.hbs.txt:9
+    - id: ui2.shared.emtable.facet.clear
+      label: Clear
+      kind: button
+      field: static.emtable.facetClear
+      source: templates/vendor/em-table/components/em-table-facet-panel.hbs.txt:10
+    - id: ui2.shared.emtable.facet.not-available
+      label: Not Available!
+      kind: text
+      field: static.emtable.facetNotAvailable
+      source: templates/vendor/em-table/components/em-table-facet-panel.hbs.txt:12
+      when:
+      - other:no faceted fields
+    - id: ui2.shared.emtable.facet.all
+      label: All
+      kind: button
+      field: static.emtable.facetAll
+      source: templates/vendor/em-table/components/em-table-facet-panel-values.hbs.txt:4
+    - id: ui2.shared.emtable.facet.only
+      label: only
+      kind: button
+      field: static.emtable.facetOnly
+      source: templates/vendor/em-table/components/em-table-facet-panel-values.hbs.txt:15
+    - id: ui2.shared.emtable.facet.more
+      label: More
+      kind: button
+      field: static.emtable.facetMore
+      source: templates/vendor/em-table/components/em-table-facet-panel-values.hbs.txt:24
+      when:
+      - other:limitList
+    - id: ui2.shared.emtable.facet.less
+      label: Less
+      kind: button
+      field: static.emtable.facetLess
+      source: templates/vendor/em-table/components/em-table-facet-panel-values.hbs.txt:24
+      when:
+      - other:!limitList
+    - id: ui2.shared.emtable.facet.no-fields
+      label: No fields!
+      kind: text
+      field: static.emtable.facetNoFields
+      source: templates/vendor/em-table/components/em-table-facet-panel-values.hbs.txt:19
+  - id: ui2.shared.emtable.header-cell
+    title: null
+    source: templates/vendor/em-table/components/em-table-header-cell.hbs.txt:1
+    items:
+    - id: ui2.shared.emtable.header-cell.sort
+      label: 'Sort '
+      dynamic: true
+      kind: button
+      field: static.emtable.sort
+      source: templates/vendor/em-table/components/em-table-header-cell.hbs.txt:4
+      tooltip: Sort {{sortToggledTitle}}
+    - id: ui2.shared.emtable.header-cell.resize
+      label: null
+      kind: button
+      field: static.emtable.resizeColumn
+      source: templates/vendor/em-table/components/em-table-header-cell.hbs.txt:10
+      tooltip: Resize column
+  - id: ui2.shared.emtable.messages
+    title: null
+    source: em-table/components/em-table.js:104
+    items:
+    - id: ui2.shared.emtable.messages.no-columns
+      label: No columns available!
+      kind: text
+      field: static.emtable.noColumns
+      source: em-table/components/em-table.js:109
+      when:
+      - other:no columns
+    - id: ui2.shared.emtable.messages.no-records
+      label: No record available!
+      dynamic: true
+      kind: text
+      field: static.emtable.noData
+      source: em-table/components/em-table.js:112
+      derivation: '''No '' + pluralize(recordType || ''record'') + '' available!'''
+      note: recordType default '' => 'No records available!'
+    - id: ui2.shared.emtable.messages.waiting
+      label: Waiting...
+      kind: text
+      field: static.emtable.waiting
+      source: templates/vendor/em-table/components/em-table-cell.hbs.txt:1
+      when:
+      - other:isWaiting
+- id: ui2.shared.app-table-columns
+  daemon: rm
+  route: (shared controller app-table-columns)
+  title: null
+  classes:
+  - AppTableColumnsController
+  - em-table
+  sections:
+  - id: ui2.shared.app-table-columns.apps
+    title: null
+    source: yarn-ui/controllers/app-table-columns.js:7
+    items:
+    - id: ui2.shared.app-table-columns.apps.app-id
+      label: Application ID
+      kind: column
+      field: app.id
+      rest:
+        resource: rm.apps
+        path: apps.app[].id
+      format: none
+      normaliser: none
+      source: yarn-ui/controllers/app-table-columns.js:11
+      note: 'em-table-linked-cell href #/yarn-app/{id}/attempts'
+    - id: ui2.shared.app-table-columns.apps.app-type
+      label: Application Type
+      kind: column
+      field: app.applicationType
+      rest:
+        resource: rm.apps
+        path: apps.app[].applicationType
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:24
+    - id: ui2.shared.app-table-columns.apps.app-tag
+      label: Application Tag
+      kind: column
+      field: app.applicationTags
+      rest:
+        resource: rm.apps
+        path: apps.app[].applicationTags
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:29
+    - id: ui2.shared.app-table-columns.apps.app-name
+      label: Application Name
+      kind: column
+      field: app.name
+      rest:
+        resource: rm.apps
+        path: apps.app[].name
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:34
+      tooltip: em-table-tooltip-text (appName attribute <- REST name)
+    - id: ui2.shared.app-table-columns.apps.user
+      label: User
+      kind: column
+      field: app.user
+      rest:
+        resource: rm.apps
+        path: apps.app[].user
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:40
+    - id: ui2.shared.app-table-columns.apps.state
+      label: State
+      kind: column
+      field: app.state
+      rest:
+        resource: rm.apps
+        path: apps.app[].state
+      format: enum
+      source: yarn-ui/controllers/app-table-columns.js:45
+      note: em-table-simple-status-cell
+    - id: ui2.shared.app-table-columns.apps.queue
+      label: Queue
+      kind: column
+      field: app.queue
+      rest:
+        resource: rm.apps
+        path: apps.app[].queue
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:51
+    - id: ui2.shared.app-table-columns.apps.progress
+      label: Progress
+      kind: column
+      field: app.progress
+      rest:
+        resource: rm.apps
+        path: apps.app[].progress
+      format: progress-bar
+      source: yarn-ui/controllers/app-table-columns.js:56
+    - id: ui2.shared.app-table-columns.apps.start-time
+      label: Start Time
+      kind: column
+      field: app.startedTime
+      rest:
+        resource: rm.apps
+        path: apps.app[].startedTime
+      format: epoch-datetime
+      source: yarn-ui/controllers/app-table-columns.js:65
+      note: getCellContent formattedStartTime <- timeStampToDate(startedTime)
+    - id: ui2.shared.app-table-columns.apps.elapsed-time
+      label: Elapsed Time
+      kind: column
+      field: app.elapsedTime
+      rest:
+        resource: rm.apps
+        path: apps.app[].elapsedTime
+      format: duration
+      normaliser: duration
+      source: yarn-ui/controllers/app-table-columns.js:73
+    - id: ui2.shared.app-table-columns.apps.finished-time
+      label: Finished Time
+      kind: column
+      field: app.finishedTime
+      rest:
+        resource: rm.apps
+        path: apps.app[].finishedTime
+      format: epoch-datetime
+      normaliser: na-as-null+epoch
+      nullDisplay: N/A
+      source: yarn-ui/controllers/app-table-columns.js:81
+      note: formattedFinishedTime returns 'N/A' when finishedTime < startedTime
+    - id: ui2.shared.app-table-columns.apps.priority
+      label: Priority
+      kind: column
+      field: app.priority
+      rest:
+        resource: rm.apps
+        path: apps.app[].priority
+      format: int
+      source: yarn-ui/controllers/app-table-columns.js:90
+    - id: ui2.shared.app-table-columns.apps.cluster
+      label: '%Cluster'
+      kind: column
+      field: app.clusterUsagePercentage
+      rest:
+        resource: rm.apps
+        path: apps.app[].clusterUsagePercentage
+      format: percent-1dp
+      source: yarn-ui/controllers/app-table-columns.js:94
+  - id: ui2.shared.app-table-columns.service
+    title: null
+    source: yarn-ui/controllers/app-table-columns.js:100
+    when:
+    - other:service query param present (Yarn Services — OUT OF SCOPE, delegated)
+    items:
+    - id: ui2.shared.app-table-columns.service.name
+      label: Service Name
+      kind: column
+      field: app.name
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:104
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.app-tag
+      label: Application Tag
+      kind: column
+      field: app.id
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:117
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.app-id
+      label: Application ID
+      kind: column
+      field: app.applicationTags
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:124
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.state
+      label: State
+      kind: column
+      field: app.state
+      format: enum
+      source: yarn-ui/controllers/app-table-columns.js:129
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.cluster
+      label: '%Cluster'
+      kind: column
+      field: app.clusterUsagePercentage
+      format: percent-1dp
+      source: yarn-ui/controllers/app-table-columns.js:135
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.elapsed-time
+      label: Elapsed Time
+      kind: column
+      field: app.elapsedTime
+      format: duration
+      source: yarn-ui/controllers/app-table-columns.js:141
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.user
+      label: User
+      kind: column
+      field: app.user
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:150
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.queue
+      label: Queue
+      kind: column
+      field: app.queue
+      format: none
+      source: yarn-ui/controllers/app-table-columns.js:156
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.started-time
+      label: Started Time
+      kind: column
+      field: app.startedTime
+      format: epoch-datetime
+      source: yarn-ui/controllers/app-table-columns.js:161
+      note: delegated
+    - id: ui2.shared.app-table-columns.service.finished-time
+      label: Finished Time
+      kind: column
+      field: app.finishedTime
+      format: epoch-datetime
+      source: yarn-ui/controllers/app-table-columns.js:168
+      note: delegated
+- id: ui2.cluster-overview
+  daemon: rm
+  route: /cluster-overview
+  title: Cluster Overview
+  classes:
+  - ClusterOverviewController
+  - ClusterOverviewRoute
+  - cluster-overview
+  - donut-chart
+  - app-usage-donut-chart
+  - queue-usage-donut-chart
+  - base-usage-donut-chart
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.cluster-overview.app-usage
+    title: Cluster Resource Usage By Applications
+    source: templates/cluster-overview.hbs.txt:27
+    items:
+    - id: ui2.cluster-overview.app-usage.title
+      label: Cluster Resource Usage By Applications
+      kind: title
+      field: static.clusterOverview.appUsageTitle
+      source: templates/cluster-overview.hbs.txt:27
+    - id: ui2.cluster-overview.app-usage.chart
+      label: null
+      kind: chart
+      field: app.clusterUsagePercentage
+      rest:
+        resource: rm.apps
+        path: apps.app[].clusterUsagePercentage
+      derivation: 'usageByApps.push({label: app.id, link: getApplicationLink(app.id), value: clusterUsagePercentage.toFixed(2)})'
+      format: percent-1dp
+      source: yarn-ui/components/app-usage-donut-chart.js:8
+      scenario: at least one RUNNING app with clusterUsagePercentage > 0.01
+      note: 'data source: store.query(''yarn-app'', {state:''RUNNING''}) -> GET /ws/v1/cluster/apps?state=RUNNING'
+    - id: ui2.cluster-overview.app-usage.available
+      label: Available
+      kind: legend
+      field: static.chart.available
+      source: yarn-ui/components/app-usage-donut-chart.js:23
+      note: 100 - sum(clusterUsagePercentage)
+    - id: ui2.cluster-overview.app-usage.others
+      label: Used by others
+      kind: legend
+      field: static.chart.usedByOthers
+      source: yarn-ui/components/base-usage-donut-chart.js:9
+      when:
+      - other:more than 8 app slices
+    - id: ui2.cluster-overview.app-usage.total
+      label: Total
+      kind: metric
+      field: static.chart.total
+      source: yarn-ui/components/donut-chart.js:5
+      note: middle label default 'Total', middle value fixed '100%' suffix '%'
+  - id: ui2.cluster-overview.queue-usage
+    title: Cluster Resource Usage By Leaf Queues
+    source: templates/cluster-overview.hbs.txt:39
+    items:
+    - id: ui2.cluster-overview.queue-usage.title
+      label: Cluster Resource Usage By Leaf Queues
+      kind: title
+      field: static.clusterOverview.queueUsageTitle
+      source: templates/cluster-overview.hbs.txt:39
+    - id: ui2.cluster-overview.queue-usage.chart
+      label: null
+      kind: chart
+      field: queue.absoluteUsedCapacity
+      derivation: 'usageByQueues.push({label: queue.id, link: getQueueLink(queue.id), value: absUsedCapacity.toFixed(2)}) for leaf queues'
+      format: percent-1dp
+      source: yarn-ui/components/queue-usage-donut-chart.js:11
+      scenario: capacity scheduler with leaf queues using capacity
+      note: queue data from GET /ws/v1/cluster/scheduler; fair-queue model has no absUsedCapacity => only capacity scheduler contributes
+    - id: ui2.cluster-overview.queue-usage.available
+      label: Available
+      kind: legend
+      field: static.chart.available
+      source: yarn-ui/components/queue-usage-donut-chart.js:25
+    - id: ui2.cluster-overview.queue-usage.others
+      label: Used by others
+      kind: legend
+      field: static.chart.usedByOthers
+      source: yarn-ui/components/base-usage-donut-chart.js:9
+      when:
+      - other:more than 8 queue slices
+  - id: ui2.cluster-overview.finished-apps
+    title: Finished Apps From All Users
+    source: templates/cluster-overview.hbs.txt:57
+    items:
+    - id: ui2.cluster-overview.finished-apps.title
+      label: Finished Apps From All Users
+      kind: title
+      field: static.clusterOverview.finishedAppsTitle
+      source: templates/cluster-overview.hbs.txt:57
+    - id: ui2.cluster-overview.finished-apps.completed
+      label: Completed
+      kind: legend
+      field: cluster.metrics.appsCompleted
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.appsCompleted
+      format: int
+      source: yarn-ui/models/cluster-metric.js:31
+    - id: ui2.cluster-overview.finished-apps.killed
+      label: Killed
+      kind: legend
+      field: cluster.metrics.appsKilled
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.appsKilled
+      format: int
+      source: yarn-ui/models/cluster-metric.js:35
+    - id: ui2.cluster-overview.finished-apps.failed
+      label: Failed
+      kind: legend
+      field: cluster.metrics.appsFailed
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.appsFailed
+      format: int
+      source: yarn-ui/models/cluster-metric.js:39
+  - id: ui2.cluster-overview.running-apps
+    title: Running Apps From All Users
+    source: templates/cluster-overview.hbs.txt:72
+    items:
+    - id: ui2.cluster-overview.running-apps.title
+      label: Running Apps From All Users
+      kind: title
+      field: static.clusterOverview.runningAppsTitle
+      source: templates/cluster-overview.hbs.txt:72
+    - id: ui2.cluster-overview.running-apps.pending
+      label: Pending
+      kind: legend
+      field: cluster.metrics.appsPending
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.appsPending
+      format: int
+      source: yarn-ui/models/cluster-metric.js:48
+    - id: ui2.cluster-overview.running-apps.running
+      label: Running
+      kind: legend
+      field: cluster.metrics.appsRunning
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.appsRunning
+      format: int
+      source: yarn-ui/models/cluster-metric.js:52
+  - id: ui2.cluster-overview.resource-types
+    title: null
+    source: templates/cluster-overview.hbs.txt:95
+    when:
+    - other:totalClusterResourcesAcrossPartition and totalUsedResourcesAcrossPartition present (CapacityScheduler cross-partition metrics)
+    items:
+    - id: ui2.cluster-overview.resource-types.title
+      label: null
+      dynamic: true
+      kind: title
+      field: cluster.metrics.totalClusterResourcesAcrossPartition.resourceInformations.resourceInformation.name
+      derivation: perTypeUsage.name + " - Usages" (name from totalClusterResourcesAcrossPartition.resourceInformations.resourceInformation[].name)
+      format: none
+      source: templates/cluster-overview.hbs.txt:99
+      note: one donut per resource type (memory-mb, vcores, yarn.io/gpu, ...)
+    - id: ui2.cluster-overview.resource-types.chart
+      label: null
+      dynamic: true
+      kind: chart
+      field: cluster.metrics.totalUsedResourcesAcrossPartition.resourceInformations.resourceInformation.value
+      fields:
+      - cluster.metrics.totalClusterResourcesAcrossPartition.resourceInformations.resourceInformation.value
+      derivation: '[{label:"Used", value: usedVE.value},{label:"Available", value: clusterVE.value - usedVE.value}] matched by name; donut unit = cluster.units'
+      format: other:resourceToSimplifiedUnit(value, unit)
+      source: yarn-ui/models/cluster-metric.js:121
+  - id: ui2.cluster-overview.memory
+    title: Resource - Memory
+    source: templates/cluster-overview.hbs.txt:122
+    when:
+    - other:no totalClusterResourcesAcrossPartition (fallback branch)
+    items:
+    - id: ui2.cluster-overview.memory.title
+      label: Resource - Memory
+      kind: title
+      field: static.clusterOverview.memoryTitle
+      source: templates/cluster-overview.hbs.txt:122
+    - id: ui2.cluster-overview.memory.allocated
+      label: Allocated
+      kind: legend
+      field: cluster.metrics.allocatedMB
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.allocatedMB
+      format: mb
+      source: yarn-ui/models/cluster-metric.js:85
+    - id: ui2.cluster-overview.memory.reserved
+      label: Reserved
+      kind: legend
+      field: cluster.metrics.reservedMB
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.reservedMB
+      format: mb
+      source: yarn-ui/models/cluster-metric.js:89
+    - id: ui2.cluster-overview.memory.available
+      label: Available
+      kind: legend
+      field: cluster.metrics.availableMB
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.availableMB
+      format: mb
+      source: yarn-ui/models/cluster-metric.js:93
+  - id: ui2.cluster-overview.vcores
+    title: Resource - VCores
+    source: templates/cluster-overview.hbs.txt:134
+    when:
+    - other:no totalClusterResourcesAcrossPartition (fallback branch)
+    items:
+    - id: ui2.cluster-overview.vcores.title
+      label: Resource - VCores
+      kind: title
+      field: static.clusterOverview.vcoresTitle
+      source: templates/cluster-overview.hbs.txt:134
+    - id: ui2.cluster-overview.vcores.allocated
+      label: Allocated
+      kind: legend
+      field: cluster.metrics.allocatedVirtualCores
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.allocatedVirtualCores
+      format: int
+      source: yarn-ui/models/cluster-metric.js:102
+    - id: ui2.cluster-overview.vcores.reserved
+      label: Reserved
+      kind: legend
+      field: cluster.metrics.reservedVirtualCores
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.reservedVirtualCores
+      format: int
+      source: yarn-ui/models/cluster-metric.js:106
+    - id: ui2.cluster-overview.vcores.available
+      label: Available
+      kind: legend
+      field: cluster.metrics.availableVirtualCores
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.availableVirtualCores
+      derivation: Math.max(availableVirtualCores, 0)
+      format: int
+      source: yarn-ui/models/cluster-metric.js:110
+  - id: ui2.cluster-overview.nodes
+    title: Node Managers
+    source: templates/cluster-overview.hbs.txt:162
+    items:
+    - id: ui2.cluster-overview.nodes.title
+      label: Node Managers
+      kind: title
+      field: static.clusterOverview.nodesTitle
+      source: templates/cluster-overview.hbs.txt:162
+    - id: ui2.cluster-overview.nodes.active
+      label: Active
+      kind: legend
+      field: cluster.metrics.activeNodes
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.activeNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:61
+    - id: ui2.cluster-overview.nodes.unhealthy
+      label: Unhealthy
+      kind: legend
+      field: cluster.metrics.unhealthyNodes
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.unhealthyNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:65
+    - id: ui2.cluster-overview.nodes.decommissioning
+      label: Decommissioning
+      kind: legend
+      field: cluster.metrics.decommissioningNodes
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.decommissioningNodes
+      derivation: decommissioningNodes || 0
+      format: int
+      source: yarn-ui/models/cluster-metric.js:69
+    - id: ui2.cluster-overview.nodes.decommissioned
+      label: Decommissioned
+      kind: legend
+      field: cluster.metrics.decommissionedNodes
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.decommissionedNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:73
+    - id: ui2.cluster-overview.nodes.lost
+      label: Lost
+      kind: legend
+      field: cluster.metrics.lostNodes
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.lostNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:77
+- id: ui2.yarn-apps.apps
+  daemon: rm
+  route: /yarn-apps/apps
+  title: Applications
+  classes:
+  - YarnAppsAppsController
+  - YarnAppsController
+  - YarnAppsAppsRoute
+  - yarn-apps
+  - yarn-apps/apps
+  includes:
+  - ui2.shared.chrome
+  - ui2.shared.emtable
+  - ui2.shared.app-table-columns
+  sections:
+  - id: ui2.yarn-apps.apps.list
+    title: null
+    source: templates/yarn-apps/apps.hbs.txt:23
+    items:
+    - id: ui2.yarn-apps.apps.list.loading
+      label: Loading...
+      kind: text
+      field: static.apps.loading
+      source: templates/yarn-apps/apps.hbs.txt:19
+      when:
+      - other:model.apps.isPending
+    - id: ui2.yarn-apps.apps.list.empty
+      label: Could not find any applications from this cluster
+      kind: text
+      field: static.apps.empty
+      source: templates/yarn-apps/apps.hbs.txt:22
+      when:
+      - other:model.apps falsy
+    - id: ui2.yarn-apps.apps.list.table
+      label: null
+      kind: column
+      field: static.appTableColumns
+      source: templates/yarn-apps/apps.hbs.txt:23
+      note: renders em-table with columns=app-table-columns.columns; rows = GET /ws/v1/cluster/apps (store.findAll('yarn-app'))
+- id: ui2.yarn-app
+  daemon: rm
+  route: /yarn-app/{app_id}
+  title: App
+  classes:
+  - YarnAppController
+  - YarnAppRoute
+  - yarn-app
+  - em-table-simple-status-cell
+  - confirm-dialog
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-app.header
+    title: null
+    source: templates/yarn-app.hbs.txt:33
+    items:
+    - id: ui2.yarn-app.header.name
+      label: null
+      kind: title
+      field: app.name
+      rest:
+        resource: rm.app
+        path: app.name
+      format: none
+      source: templates/yarn-app.hbs.txt:44
+    - id: ui2.yarn-app.header.unmanaged
+      label: null
+      kind: text
+      field: app.unmanagedApplication
+      rest:
+        resource: rm.app
+        path: app.unmanagedApplication
+      format: boolean
+      when:
+      - other:unmanagedApplication
+      source: templates/yarn-app.hbs.txt:40
+      tooltip: This is an unmanaged application
+    - id: ui2.yarn-app.header.final-status
+      label: null
+      kind: text
+      field: app.finalStatus
+      rest:
+        resource: rm.app
+        path: app.finalStatus
+      format: enum
+      when:
+      - value:non-empty
+      source: templates/yarn-app.hbs.txt:48
+      tooltip: Final status
+    - id: ui2.yarn-app.header.app-id
+      label: null
+      kind: text
+      field: app.id
+      rest:
+        resource: rm.app
+        path: app.id
+      format: none
+      source: templates/yarn-app.hbs.txt:55
+      tooltip: Application id
+    - id: ui2.yarn-app.header.state
+      label: null
+      kind: text
+      field: app.state
+      rest:
+        resource: rm.app
+        path: app.state
+      format: enum
+      source: templates/yarn-app.hbs.txt:57
+    - id: ui2.yarn-app.header.user
+      label: null
+      kind: text
+      field: app.user
+      rest:
+        resource: rm.app
+        path: app.user
+      format: none
+      source: templates/yarn-app.hbs.txt:60
+    - id: ui2.yarn-app.header.finished-at
+      label: 'Finished at '
+      dynamic: true
+      kind: text
+      field: app.finishedTime
+      rest:
+        resource: rm.app
+        path: app.finishedTime
+      derivation: '"Finished at " + formattedFinishedTime'
+      format: epoch-datetime
+      when:
+      - other:hasFinishedTime
+      source: templates/yarn-app.hbs.txt:65
+      tooltip: Started at {{model.app.formattedStartTime}}. Ran for {{model.app.formattedElapsedTime}}
+    - id: ui2.yarn-app.header.started-at
+      label: 'Started at '
+      dynamic: true
+      kind: text
+      field: app.startedTime
+      rest:
+        resource: rm.app
+        path: app.startedTime
+      derivation: '"Started at " + formattedStartTime'
+      format: epoch-datetime
+      when:
+      - other:!hasFinishedTime
+      source: templates/yarn-app.hbs.txt:69
+      tooltip: Running for {{model.app.formattedElapsedTime}}
+    - id: ui2.yarn-app.header.settings
+      label: Settings
+      kind: button
+      field: static.app.settings
+      source: templates/yarn-app.hbs.txt:80
+      when:
+      - other:isServiceDeployedOrRunning || isServiceStoppped || isAppKillable
+      note: dropdown
+    - id: ui2.yarn-app.header.stop-service
+      label: Stop Service
+      kind: button
+      field: static.app.stopService
+      source: templates/yarn-app.hbs.txt:87
+      when:
+      - other:isServiceDeployedOrRunning (OUT OF SCOPE services action)
+    - id: ui2.yarn-app.header.delete-service
+      label: Delete Service
+      kind: button
+      field: static.app.deleteService
+      source: templates/yarn-app.hbs.txt:92
+      when:
+      - other:isServiceDeployedOrRunning || isServiceStoppped (OUT OF SCOPE)
+    - id: ui2.yarn-app.header.kill-application
+      label: Kill Application
+      kind: button
+      field: static.app.killApplication
+      source: templates/yarn-app.hbs.txt:106
+      when:
+      - other:isAppKillable
+      note: PUT /ws/v1/cluster/apps/{id}/state {state:KILLED} (adapter yarn-app.js:19 sendKillApplication)
+    - id: ui2.yarn-app.header.quicklinks
+      label: Quicklinks
+      kind: button
+      field: static.app.quicklinks
+      source: templates/yarn-app.hbs.txt:118
+      when:
+      - other:model.serviceName && model.quicklinks
+      note: quicklinks come from yarn-service-info (OUT OF SCOPE services API)
+    - id: ui2.yarn-app.header.queue
+      label: null
+      kind: text
+      field: app.queue
+      rest:
+        resource: rm.app
+        path: app.queue
+      format: none
+      source: templates/yarn-app.hbs.txt:131
+      tooltip: Queue
+    - id: ui2.yarn-app.header.priority
+      label: 'Priority: '
+      dynamic: true
+      kind: text
+      field: app.priority
+      rest:
+        resource: rm.app
+        path: app.priority
+      derivation: '"Priority: " + app.priority'
+      format: int
+      source: templates/yarn-app.hbs.txt:135
+    - id: ui2.yarn-app.header.tracking
+      label: null
+      kind: link
+      field: app.trackingUI
+      fields:
+      - app.trackingUrl
+      rest:
+        resource: rm.app
+        path: app.trackingUI
+      derivation: trackingUrl ? <a href=trackingUrl>trackingUI</a>
+      format: url
+      when:
+      - value:non-empty
+      source: templates/yarn-app.hbs.txt:136
+  - id: ui2.yarn-app.tabs
+    title: null
+    source: templates/yarn-app.hbs.txt:143
+    items:
+    - id: ui2.yarn-app.tabs.components
+      label: Components
+      kind: nav
+      field: static.tab.components
+      format: url
+      source: templates/yarn-app.hbs.txt:146
+      when:
+      - other:model.serviceName
+      note: OUT OF SCOPE (component instances, delegated)
+    - id: ui2.yarn-app.tabs.configs
+      label: Configurations & Metrics
+      kind: nav
+      field: static.tab.configs
+      format: url
+      source: templates/yarn-app.hbs.txt:149
+      when:
+      - other:model.serviceName
+      note: OUT OF SCOPE (service configs, delegated)
+    - id: ui2.yarn-app.tabs.attempts
+      label: Attempts List
+      kind: nav
+      field: static.tab.attempts
+      format: url
+      source: templates/yarn-app.hbs.txt:152
+    - id: ui2.yarn-app.tabs.charts
+      label: Resource Usage
+      kind: nav
+      field: static.tab.charts
+      format: url
+      source: templates/yarn-app.hbs.txt:156
+    - id: ui2.yarn-app.tabs.info
+      label: Diagnostics
+      kind: nav
+      field: static.tab.info
+      format: url
+      source: templates/yarn-app.hbs.txt:159
+    - id: ui2.yarn-app.tabs.logs
+      label: Logs
+      kind: nav
+      field: static.tab.logs
+      format: url
+      source: templates/yarn-app.hbs.txt:162
+      note: OUT OF SCOPE (log-aggregation service, delegated)
+    - id: ui2.yarn-app.tabs.threaddump
+      label: Threaddump
+      kind: nav
+      field: static.tab.threaddump
+      format: url
+      source: templates/yarn-app.hbs.txt:165
+      note: OUT OF SCOPE (JHS/thread dump, delegated)
+  - id: ui2.yarn-app.dialogs
+    title: null
+    source: templates/yarn-app.hbs.txt:179
+    items:
+    - id: ui2.yarn-app.dialogs.stop
+      label: null
+      dynamic: true
+      kind: text
+      field: static.app.stopServiceConfirm
+      derivation: '"Are you sure you want to stop service \"" + serviceName + "\" for user \"" + app.user + "\" ?"'
+      source: templates/yarn-app.hbs.txt:179
+      note: OUT OF SCOPE service action
+    - id: ui2.yarn-app.dialogs.delete
+      label: null
+      dynamic: true
+      kind: text
+      field: static.app.deleteServiceConfirm
+      derivation: '"Are you sure you want to delete service \"" + serviceName + "\" for user \"" + app.user + "\" ?"'
+      source: templates/yarn-app.hbs.txt:185
+      note: OUT OF SCOPE service action
+    - id: ui2.yarn-app.dialogs.kill
+      label: null
+      dynamic: true
+      kind: text
+      field: static.app.killConfirm
+      derivation: '"Are you sure you want to kill application \"" + app.id + "\"?"'
+      source: templates/yarn-app.hbs.txt:191
+- id: ui2.yarn-app.info
+  daemon: rm
+  route: /yarn-app/{app_id}/info
+  title: Diagnostics
+  classes:
+  - YarnAppInfoController
+  - YarnAppInfoRoute
+  - yarn-app/info
+  - app-timeout-bar
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-app.info.timeout
+    title: null
+    source: templates/components/app-timeout-bar.hbs.txt:2
+    items:
+    - id: ui2.yarn-app.info.timeout.text
+      label: 'Application will be timed out after '
+      dynamic: true
+      kind: text
+      field: app.derived.remainingTimeoutSeconds
+      fields:
+      - app.derived.applicationExpiryTime
+      - app.startedTime
+      derivation: '"Application will be timed out after " + appTimeoutValue (remainingTimeoutInSeconds*1000 -> msToElapsedTime; hidden when <= 0)'
+      format: duration
+      when:
+      - other:remainingTimeoutInSeconds > 0
+      source: templates/components/app-timeout-bar.hbs.txt:22
+      note: UI2 reads payload.timeouts from the /apps/{id} payload, which the RM AppInfo does not include; in practice the bar is hidden
+    - id: ui2.yarn-app.info.timeout.start
+      label: null
+      kind: text
+      field: app.startedTime
+      rest:
+        resource: rm.app
+        path: app.startedTime
+      format: epoch-datetime
+      source: templates/components/app-timeout-bar.hbs.txt:28
+    - id: ui2.yarn-app.info.timeout.expiry
+      label: null
+      kind: text
+      field: app.derived.applicationExpiryTime
+      format: epoch-datetime
+      source: templates/components/app-timeout-bar.hbs.txt:29
+  - id: ui2.yarn-app.info.diagnostics
+    title: Diagnostics
+    source: templates/yarn-app/info.hbs.txt:42
+    items:
+    - id: ui2.yarn-app.info.diagnostics.title
+      label: Diagnostics
+      kind: title
+      field: static.app.diagnosticsTitle
+      source: templates/yarn-app/info.hbs.txt:42
+      when:
+      - value:non-empty
+    - id: ui2.yarn-app.info.diagnostics.value
+      label: null
+      kind: text
+      field: app.diagnostics
+      rest:
+        resource: rm.app
+        path: app.diagnostics
+      format: html-escaped
+      when:
+      - value:non-empty
+      source: templates/yarn-app/info.hbs.txt:44
+      note: panel-danger when isFailed, else panel-default; style white-space:pre-wrap in failed branch
+  - id: ui2.yarn-app.info.resource-requests
+    title: Outstanding Resource Requests
+    source: templates/yarn-app/info.hbs.txt:61
+    when:
+    - other:!model.serviceName
+    items:
+    - id: ui2.yarn-app.info.resource-requests.title
+      label: Outstanding Resource Requests
+      kind: title
+      field: static.app.outstandingRequestsTitle
+      source: templates/yarn-app/info.hbs.txt:61
+    - id: ui2.yarn-app.info.resource-requests.total
+      label: 'Total: '
+      dynamic: true
+      kind: metric
+      field: static.app.totalOutstandingRequests
+      derivation: '"Total: <Memory: " + memory + ", vCores: " + vCores + ">" summing capability.resourceInformations.resourceInformation[0].value * numContainers for resourceName === "*"'
+      source: yarn-ui/controllers/yarn-app/info.js:78
+      when:
+      - other:totalOutstandingResourceRequests
+    - id: ui2.yarn-app.info.resource-requests.priority
+      label: Priority
+      kind: column
+      field: app.resourceRequests.priority
+      rest:
+        resource: rm.app
+        path: app.resourceRequests.priority
+      format: int
+      source: templates/yarn-app/info.hbs.txt:72
+    - id: ui2.yarn-app.info.resource-requests.resource-name
+      label: Resource Name
+      kind: column
+      field: app.resourceRequests.resourceName
+      rest:
+        resource: rm.app
+        path: app.resourceRequests.resourceName
+      format: none
+      source: templates/yarn-app/info.hbs.txt:73
+    - id: ui2.yarn-app.info.resource-requests.capability
+      label: Capability
+      kind: column
+      field: app.resourceRequests.capability.resourceInformations.resourceInformation.value
+      fields:
+      - app.resourceRequests.capability.resourceInformations.resourceInformation.value
+      rest:
+        resource: rm.app
+        path: app.resourceRequests.capability.resourceInformations.resourceInformation[].value
+      derivation: '"<Memory: " + resourceInformation[0].value + ", vCores: " + resourceInformation[1].value + ">"'
+      source: templates/yarn-app/info.hbs.txt:74
+    - id: ui2.yarn-app.info.resource-requests.num-containers
+      label: '# Containers'
+      kind: column
+      field: app.resourceRequests.numContainers
+      rest:
+        resource: rm.app
+        path: app.resourceRequests.numContainers
+      format: int
+      source: templates/yarn-app/info.hbs.txt:75
+    - id: ui2.yarn-app.info.resource-requests.relax-locality
+      label: Relax Locality
+      kind: column
+      field: app.resourceRequests.relaxLocality
+      rest:
+        resource: rm.app
+        path: app.resourceRequests.relaxLocality
+      format: boolean
+      source: templates/yarn-app/info.hbs.txt:76
+    - id: ui2.yarn-app.info.resource-requests.node-label-expression
+      label: Node Label Expression
+      kind: column
+      field: app.resourceRequests.nodeLabelExpression
+      rest:
+        resource: rm.app
+        path: app.resourceRequests.nodeLabelExpression
+      format: none
+      nullDisplay: N/A
+      source: templates/yarn-app/info.hbs.txt:77
+    - id: ui2.yarn-app.info.resource-requests.no-data
+      label: No data available!
+      kind: text
+      field: static.app.noData
+      source: templates/yarn-app/info.hbs.txt:100
+      when:
+      - other:resourceRequests empty
+  - id: ui2.yarn-app.info.scheduling
+    title: Scheduling Info
+    source: templates/yarn-app/info.hbs.txt:111
+    items:
+    - id: ui2.yarn-app.info.scheduling.title
+      label: Scheduling Info
+      kind: title
+      field: static.app.schedulingInfoTitle
+      source: templates/yarn-app/info.hbs.txt:111
+    - id: ui2.yarn-app.info.scheduling.allocated-resource
+      label: Allocated Resource
+      kind: column
+      field: app.derived.allocatedResourceText
+      fields:
+      - app.allocatedMB
+      - app.allocatedVCores
+      derivation: resourceToString(allocatedMB, allocatedVCores)
+      format: resource-string
+      source: templates/yarn-app/info.hbs.txt:115
+    - id: ui2.yarn-app.info.scheduling.running-containers
+      label: Running Containers
+      kind: column
+      field: app.runningContainers
+      rest:
+        resource: rm.app
+        path: app.runningContainers
+      derivation: 'runningContainersNumber: runningContainers < 0 ? 0 : runningContainers'
+      format: int
+      source: templates/yarn-app/info.hbs.txt:116
+    - id: ui2.yarn-app.info.scheduling.preempted-resource
+      label: Preempted Resource
+      kind: column
+      field: app.derived.preemptedResourceText
+      fields:
+      - app.preemptedResourceMB
+      - app.preemptedResourceVCores
+      format: resource-string
+      source: templates/yarn-app/info.hbs.txt:117
+    - id: ui2.yarn-app.info.scheduling.num-non-am-preempted
+      label: Num Non-AM container preempted
+      kind: column
+      field: app.numNonAMContainerPreempted
+      rest:
+        resource: rm.app
+        path: app.numNonAMContainerPreempted
+      format: int
+      source: templates/yarn-app/info.hbs.txt:118
+    - id: ui2.yarn-app.info.scheduling.num-am-preempted
+      label: Num AM container preempted
+      kind: column
+      field: app.numAMContainerPreempted
+      rest:
+        resource: rm.app
+        path: app.numAMContainerPreempted
+      format: int
+      source: templates/yarn-app/info.hbs.txt:119
+    - id: ui2.yarn-app.info.scheduling.aggregated-usage
+      label: Aggregated Resource Usage
+      kind: column
+      field: app.derived.aggregatedResourceUsageText
+      fields:
+      - app.memorySeconds
+      - app.vcoreSeconds
+      format: resource-string
+      source: templates/yarn-app/info.hbs.txt:120
+- id: ui2.yarn-app.attempts
+  daemon: rm
+  route: /yarn-app/{app_id}/attempts
+  title: Attempts
+  classes:
+  - YarnAppAttemptsController
+  - YarnAppAttemptsRoute
+  - yarn-app/attempts
+  - timeline-view
+  includes:
+  - ui2.shared.chrome
+  when: []
+  sections:
+  - id: ui2.yarn-app.attempts.notes
+    title: null
+    source: yarn-ui/routes/yarn-app/attempts.js:13
+    items:
+    - id: ui2.yarn-app.attempts.notes.text
+      label: null
+      kind: text
+      field: static.yarn_app_attempts.notes
+      source: yarn-ui/routes/yarn-app/attempts.js:13
+      note: Attempt list is fetched from RM (GET /ws/v1/cluster/apps/{appId}/appattempts) and falls back to ATS timeline (yarn-timeline-appattempt) when RM fails — see yarn-ui/mixins/app-attempt.js:45. ATS is OUT OF SCOPE.
+  - id: ui2.yarn-app.attempts.timeline
+    title: Application Attempts
+    source: templates/components/timeline-view.hbs.txt:22
+    items:
+    - id: ui2.yarn-app.attempts.timeline.empty
+      label: No data available!
+      kind: text
+      field: static.attempts.noData
+      source: templates/yarn-app/attempts.hbs.txt:38
+      when:
+      - other:no attempts
+    - id: ui2.yarn-app.attempts.timeline.heading
+      label: Application Attempts
+      kind: title
+      field: static.timeline.attemptsTitle
+      source: templates/components/timeline-view.hbs.txt:22
+      when:
+      - other:attemptModel
+    - id: ui2.yarn-app.attempts.timeline.graph-view
+      label: Graph View
+      kind: nav
+      field: static.timeline.graphView
+      source: templates/components/timeline-view.hbs.txt:29
+    - id: ui2.yarn-app.attempts.timeline.grid-view
+      label: Grid View
+      kind: nav
+      field: static.timeline.gridView
+      source: templates/components/timeline-view.hbs.txt:32
+    - id: ui2.yarn-app.attempts.timeline.attempt-id
+      label: Attempt ID
+      kind: column
+      field: attempt.appAttemptId
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].appAttemptId
+      format: none
+      source: yarn-ui/components/timeline-view.js:190
+      note: 'em-table-linked-cell -> #/yarn-app-attempt/{id}'
+    - id: ui2.yarn-app.attempts.timeline.started-time
+      label: Started Time
+      kind: column
+      field: attempt.startTime
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].startTime
+      format: epoch-datetime
+      source: yarn-ui/components/timeline-view.js:207
+    - id: ui2.yarn-app.attempts.timeline.finished-time
+      label: Finished Time
+      kind: column
+      field: attempt.finishedTime
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].finishedTime
+      format: epoch-datetime
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:211
+    - id: ui2.yarn-app.attempts.timeline.elapsed-time
+      label: Elapsed Time
+      kind: column
+      field: attempt.derived.elapsedTimeText
+      format: duration
+      source: yarn-ui/components/timeline-view.js:221
+    - id: ui2.yarn-app.attempts.timeline.am-container-id
+      label: AM Container ID
+      kind: column
+      field: attempt.derived.appMasterContainerId
+      format: none
+      source: yarn-ui/components/timeline-view.js:225
+    - id: ui2.yarn-app.attempts.timeline.am-node-id
+      label: AM Node ID
+      kind: column
+      field: attempt.nodeId
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].nodeId
+      format: none
+      source: yarn-ui/components/timeline-view.js:230
+    - id: ui2.yarn-app.attempts.timeline.state
+      label: State
+      kind: column
+      field: attempt.appAttemptState
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].appAttemptState
+      format: enum
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:234
+    - id: ui2.yarn-app.attempts.timeline.exposed-ports
+      label: Exposed Ports
+      kind: column
+      field: attempt.exportPorts
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].exportPorts
+      format: none
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:246
+      note: UI2 reads payload.exposedPorts (absent); real key is exportPorts -> always N/A
+    - id: ui2.yarn-app.attempts.timeline.node-webui
+      label: NodeManager Web UI
+      kind: column
+      field: attempt.nodeHttpAddress
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].nodeHttpAddress
+      format: url
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:258
+    - id: ui2.yarn-app.attempts.timeline.logs
+      label: Logs
+      kind: link
+      field: attempt.logsLink
+      rest:
+        resource: rm.app.attempts
+        path: appAttempts.appAttempt[].logsLink
+      format: url
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:272
+      note: link to appAttemptContainerLogsURL (app logs tab, OUT OF SCOPE)
+  - id: ui2.yarn-app.attempts.detail
+    title: null
+    source: templates/components/app-attempt-table.hbs.txt:2
+    items:
+    - id: ui2.yarn-app.attempts.detail.attempt-id
+      label: Application Attempt Id
+      kind: kv
+      field: attempt.appAttemptId
+      format: none
+      source: templates/components/app-attempt-table.hbs.txt:5
+    - id: ui2.yarn-app.attempts.detail.started-time
+      label: Started Time
+      kind: kv
+      field: attempt.startTime
+      format: epoch-datetime
+      source: templates/components/app-attempt-table.hbs.txt:26
+    - id: ui2.yarn-app.attempts.detail.finished-time
+      label: Finished Time
+      kind: kv
+      field: attempt.finishedTime
+      format: epoch-datetime
+      when:
+      - value:non-empty
+      source: templates/components/app-attempt-table.hbs.txt:29
+    - id: ui2.yarn-app.attempts.detail.elapsed-time
+      label: Elapsed Time
+      kind: kv
+      field: attempt.derived.elapsedTimeText
+      format: duration
+      source: templates/components/app-attempt-table.hbs.txt:35
+    - id: ui2.yarn-app.attempts.detail.am-container-id
+      label: AM Container Id
+      kind: kv
+      field: attempt.derived.appMasterContainerId
+      format: none
+      source: templates/components/app-attempt-table.hbs.txt:40
+    - id: ui2.yarn-app.attempts.detail.am-node-id
+      label: AM Node Id
+      kind: kv
+      field: attempt.nodeId
+      format: none
+      source: templates/components/app-attempt-table.hbs.txt:44
+    - id: ui2.yarn-app.attempts.detail.state
+      label: Attempt State
+      kind: kv
+      field: attempt.appAttemptState
+      format: enum
+      source: templates/components/app-attempt-table.hbs.txt:47
+    - id: ui2.yarn-app.attempts.detail.node-webui
+      label: AM Node Web UI
+      kind: link
+      field: attempt.nodeHttpAddress
+      format: url
+      source: templates/components/app-attempt-table.hbs.txt:54
+    - id: ui2.yarn-app.attempts.detail.exposed-ports
+      label: Exposed Ports
+      kind: kv
+      field: attempt.exportPorts
+      format: none
+      source: templates/components/app-attempt-table.hbs.txt:60
+    - id: ui2.yarn-app.attempts.detail.logs
+      label: Logs
+      kind: link
+      field: attempt.logsLink
+      format: url
+      source: templates/components/app-attempt-table.hbs.txt:66
+    - id: ui2.yarn-app.attempts.detail.diagnostics
+      label: Diagnostics Info
+      kind: kv
+      field: attempt.derived.diagnosticsInfo
+      format: none
+      source: templates/components/app-attempt-table.hbs.txt:74
+- id: ui2.yarn-app.charts
+  daemon: rm
+  route: /yarn-app/{app_id}/charts
+  title: Charts
+  classes:
+  - YarnAppChartsController
+  - YarnAppChartsRoute
+  - yarn-app/charts
+  - per-app-memusage-by-nodes-stacked-barchart
+  - per-app-vcoreusage-by-nodes-stacked-barchart
+  - per-app-ncontainers-by-nodes-stacked-barchart
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-app.charts.running
+    title: null
+    source: templates/yarn-app/charts.hbs.txt:20
+    when:
+    - state=RUNNING
+    items:
+    - id: ui2.yarn-app.charts.running.memory
+      label: null
+      dynamic: true
+      kind: chart
+      field: container.allocatedMB
+      derivation: 'title "Memory usage by nodes for: [" + appId + "]"; bars = sum(container.allocatedMB) per assignedNodeId (rmContainers: GET /apps/{appId}/appattempts/{attemptId}/containers)'
+      format: mb
+      source: templates/yarn-app/charts.hbs.txt:4
+    - id: ui2.yarn-app.charts.running.vcore
+      label: null
+      dynamic: true
+      kind: chart
+      field: container.allocatedVCores
+      derivation: 'title "VCore usage by nodes for: [" + appId + "]"'
+      format: int
+      source: templates/yarn-app/charts.hbs.txt:8
+    - id: ui2.yarn-app.charts.running.containers
+      label: null
+      dynamic: true
+      kind: chart
+      field: container.containerId
+      derivation: 'title "Running #Containers by nodes for: [" + appId + "]"; count of containers per assignedNodeId'
+      format: int
+      source: templates/yarn-app/charts.hbs.txt:12
+  - id: ui2.yarn-app.charts.not-running
+    title: null
+    source: templates/yarn-app/charts.hbs.txt:45
+    when:
+    - other:state != RUNNING
+    items:
+    - id: ui2.yarn-app.charts.not-running.message
+      label: This application is not running. Hence no resource usage data is available.
+      kind: text
+      field: static.app.chartsNotRunning
+      source: templates/yarn-app/charts.hbs.txt:45
+- id: ui2.yarn-app-attempt
+  daemon: rm
+  route: /yarn-app-attempt/{app_attempt_id}
+  title: Attempt [ {attempt_id} ]
+  classes:
+  - YarnAppAttemptController
+  - YarnAppAttemptRoute
+  - yarn-app-attempt
+  - timeline-view
+  - container-table
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-app-attempt.notes
+    title: null
+    source: yarn-ui/routes/yarn-app-attempt.js:5
+    items:
+    - id: ui2.yarn-app-attempt.notes.text
+      label: null
+      kind: text
+      field: static.yarn_app_attempt.notes
+      source: yarn-ui/routes/yarn-app-attempt.js:5
+      note: Attempt info from RM (GET /ws/v1/cluster/apps/{appId}/appattempts/{attemptId}) with ATS fallback (yarn-ui/mixins/app-attempt.js:27, OUT OF SCOPE); containers RM + ATS timeline merged.
+  - id: ui2.yarn-app-attempt.header
+    title: null
+    source: templates/yarn-app-attempt.hbs.txt:25
+    items:
+    - id: ui2.yarn-app-attempt.header.id
+      label: null
+      kind: title
+      field: attempt.appAttemptId
+      format: none
+      source: templates/yarn-app-attempt.hbs.txt:29
+    - id: ui2.yarn-app-attempt.header.am-container
+      label: null
+      kind: text
+      field: attempt.derived.appMasterContainerId
+      format: none
+      source: templates/yarn-app-attempt.hbs.txt:31
+    - id: ui2.yarn-app-attempt.header.state
+      label: null
+      kind: text
+      field: attempt.appAttemptState
+      format: enum
+      when:
+      - value:non-empty
+      source: templates/yarn-app-attempt.hbs.txt:32
+    - id: ui2.yarn-app-attempt.header.elapsed
+      label: null
+      kind: text
+      field: attempt.derived.elapsedTimeText
+      format: duration
+      when:
+      - other:attemptStartedTime || validatedFinishedTs
+      source: templates/yarn-app-attempt.hbs.txt:35
+      tooltip: 'Elapsed Time: {{model.attempt.elapsedTime}}'
+    - id: ui2.yarn-app-attempt.header.started-at
+      label: 'Started at '
+      dynamic: true
+      kind: text
+      field: attempt.startTime
+      rest:
+        resource: rm.app.attempt
+        path: appAttempt.startTime
+      derivation: '"Started at " + attemptStartedTime'
+      format: epoch-datetime
+      source: templates/yarn-app-attempt.hbs.txt:39
+    - id: ui2.yarn-app-attempt.header.finished-at
+      label: 'Finished at '
+      dynamic: true
+      kind: text
+      field: attempt.finishedTime
+      rest:
+        resource: rm.app.attempt
+        path: appAttempt.finishedTime
+      derivation: '"Finished at " + validatedFinishedTs'
+      format: epoch-datetime
+      when:
+      - value:non-empty
+      source: templates/yarn-app-attempt.hbs.txt:45
+    - id: ui2.yarn-app-attempt.header.am-host
+      label: 'AM Host: '
+      dynamic: true
+      kind: text
+      field: attempt.nodeId
+      rest:
+        resource: rm.app.attempt
+        path: appAttempt.nodeId
+      derivation: '"AM Host: " + amNodeId (nodeId || hosts)'
+      format: none
+      source: templates/yarn-app-attempt.hbs.txt:53
+    - id: ui2.yarn-app-attempt.header.am-webui
+      label: 'AM Node WebUI: '
+      dynamic: true
+      kind: link
+      field: attempt.nodeHttpAddress
+      rest:
+        resource: rm.app.attempt
+        path: appAttempt.nodeHttpAddress
+      derivation: '"AM Node WebUI: " + nodeHttpAddress (href masterNodeURL)'
+      format: url
+      when:
+      - value:non-empty
+      source: templates/yarn-app-attempt.hbs.txt:58
+    - id: ui2.yarn-app-attempt.header.log
+      label: 'Log: '
+      dynamic: true
+      kind: link
+      field: attempt.logsLink
+      rest:
+        resource: rm.app.attempt
+        path: appAttempt.logsLink
+      derivation: '"Log: " + logsLink (href prepend-protocol logsLink)'
+      format: url
+      when:
+      - value:non-empty
+      source: templates/yarn-app-attempt.hbs.txt:66
+    - id: ui2.yarn-app-attempt.header.diagnostics
+      label: null
+      dynamic: true
+      kind: text
+      field: attempt.derived.diagnosticsInfo
+      derivation: '"Diagnostic Info for " + attempt.id'
+      format: none
+      when:
+      - value:non-empty
+      source: templates/yarn-app-attempt.hbs.txt:77
+  - id: ui2.yarn-app-attempt.containers
+    title: Containers
+    source: templates/yarn-app-attempt.hbs.txt:106
+    items:
+    - id: ui2.yarn-app-attempt.containers.empty
+      label: No data available!
+      kind: text
+      field: static.containers.noData
+      source: templates/yarn-app-attempt.hbs.txt:109
+      when:
+      - other:no rmContainers and no tsContainers
+    - id: ui2.yarn-app-attempt.containers.id
+      label: Container ID
+      kind: column
+      field: container.containerId
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].containerId
+      format: none
+      source: yarn-ui/components/timeline-view.js:293
+      note: linked to NM terminal.template
+    - id: ui2.yarn-app-attempt.containers.started-time
+      label: Started Time
+      kind: column
+      field: container.startedTime
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].startedTime
+      format: epoch-datetime
+      source: yarn-ui/components/timeline-view.js:305
+    - id: ui2.yarn-app-attempt.containers.finished-time
+      label: Finished Time
+      kind: column
+      field: container.finishedTime
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].finishedTime
+      format: epoch-datetime
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:309
+    - id: ui2.yarn-app-attempt.containers.elapsed-time
+      label: Elapsed Time
+      kind: column
+      field: container.elapsedTime
+      format: duration
+      source: yarn-ui/components/timeline-view.js:319
+    - id: ui2.yarn-app-attempt.containers.priority
+      label: Priority
+      kind: column
+      field: container.priority
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].priority
+      format: int
+      source: yarn-ui/components/timeline-view.js:323
+    - id: ui2.yarn-app-attempt.containers.exit-status
+      label: Exit Status
+      kind: column
+      field: container.containerExitStatus
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].containerExitStatus
+      format: int
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:327
+    - id: ui2.yarn-app-attempt.containers.state
+      label: State
+      kind: column
+      field: container.containerState
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].containerState
+      format: enum
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:339
+    - id: ui2.yarn-app-attempt.containers.logs
+      label: Logs
+      kind: link
+      field: container.derived.appAttemptContainerLogsUrl
+      format: url
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:351
+    - id: ui2.yarn-app-attempt.containers.exposed-ports
+      label: Exposed Ports
+      kind: column
+      field: container.exposedPorts
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].exposedPorts
+      format: none
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:364
+    - id: ui2.yarn-app-attempt.containers.node-webui
+      label: Node Manager UI
+      kind: link
+      field: container.nodeHttpAddress
+      rest:
+        resource: rm.app.attempt.containers
+        path: containers.container[].nodeHttpAddress
+      format: url
+      nullDisplay: N/A
+      source: yarn-ui/components/timeline-view.js:376
+  - id: ui2.yarn-app-attempt.detail
+    title: null
+    source: templates/components/container-table.hbs.txt:2
+    items:
+    - id: ui2.yarn-app-attempt.detail.started-time
+      label: Started Time
+      kind: kv
+      field: container.startedTime
+      format: epoch-datetime
+      source: templates/components/container-table.hbs.txt:5
+    - id: ui2.yarn-app-attempt.detail.finished-time
+      label: Finished Time
+      kind: kv
+      field: container.finishedTime
+      format: epoch-datetime
+      when:
+      - value:non-empty
+      source: templates/components/container-table.hbs.txt:25
+    - id: ui2.yarn-app-attempt.detail.elapsed-time
+      label: Elapsed Time
+      kind: kv
+      field: container.elapsedTime
+      format: duration
+      source: templates/components/container-table.hbs.txt:31
+    - id: ui2.yarn-app-attempt.detail.priority
+      label: Priority
+      kind: kv
+      field: container.priority
+      format: int
+      source: templates/components/container-table.hbs.txt:36
+    - id: ui2.yarn-app-attempt.detail.exit-status
+      label: Exit Status
+      kind: kv
+      field: container.containerExitStatus
+      format: int
+      when:
+      - value:non-empty
+      source: templates/components/container-table.hbs.txt:40
+    - id: ui2.yarn-app-attempt.detail.state
+      label: State
+      kind: kv
+      field: container.containerState
+      format: enum
+      when:
+      - value:non-empty
+      source: templates/components/container-table.hbs.txt:46
+    - id: ui2.yarn-app-attempt.detail.node-webui
+      label: NodeManager UI
+      kind: link
+      field: container.nodeHttpAddress
+      format: url
+      when:
+      - value:non-empty
+      source: templates/components/container-table.hbs.txt:51
+    - id: ui2.yarn-app-attempt.detail.exposed-ports
+      label: Exposed Ports
+      kind: kv
+      field: container.exposedPorts
+      format: none
+      when:
+      - value:non-empty
+      source: templates/components/container-table.hbs.txt:57
+    - id: ui2.yarn-app-attempt.detail.logs
+      label: Logs
+      kind: link
+      field: container.derived.appAttemptContainerLogsUrl
+      format: url
+      when:
+      - value:non-empty
+      source: templates/components/container-table.hbs.txt:63
+    - id: ui2.yarn-app-attempt.detail.terminal
+      label: Terminal
+      kind: link
+      field: container.nodeHttpAddress
+      derivation: nodeHttpAddress + "/terminal/terminal.template?container=" + container.id + "&user.name=" + requestedUser
+      format: url
+      when:
+      - value:non-empty
+      source: templates/components/container-table.hbs.txt:71
+- id: ui2.yarn-nodes.table
+  daemon: rm
+  route: /yarn-nodes/table
+  title: Nodes
+  classes:
+  - YarnNodesController
+  - YarnNodesTableController
+  - YarnNodesTableRoute
+  - yarn-nodes
+  - yarn-nodes/table
+  includes:
+  - ui2.shared.chrome
+  - ui2.shared.emtable
+  sections:
+  - id: ui2.yarn-nodes.table.tabs
+    title: null
+    source: templates/yarn-nodes.hbs.txt:24
+    items:
+    - id: ui2.yarn-nodes.table.tabs.information
+      label: Information
+      kind: nav
+      field: static.nodes.tabInformation
+      format: url
+      source: templates/yarn-nodes.hbs.txt:26
+    - id: ui2.yarn-nodes.table.tabs.status
+      label: Node Status
+      kind: nav
+      field: static.nodes.tabStatus
+      format: url
+      source: templates/yarn-nodes.hbs.txt:31
+    - id: ui2.yarn-nodes.table.tabs.heatmap
+      label: Nodes Heatmap Chart
+      kind: nav
+      field: static.nodes.tabHeatmap
+      format: url
+      source: templates/yarn-nodes.hbs.txt:36
+  - id: ui2.yarn-nodes.table.list
+    title: null
+    source: templates/yarn-nodes/table.hbs.txt:20
+    items:
+    - id: ui2.yarn-nodes.table.list.empty
+      label: No nodes found on this cluster
+      kind: text
+      field: static.nodes.empty
+      source: templates/yarn-nodes/table.hbs.txt:20
+      when:
+      - other:no nodes
+    - id: ui2.yarn-nodes.table.list.node-label
+      label: Node Label
+      kind: column
+      field: node.derived.nodeLabelsAsString
+      format: none
+      source: yarn-ui/controllers/yarn-nodes/table.js:21
+    - id: ui2.yarn-nodes.table.list.rack
+      label: Rack
+      kind: column
+      field: node.rack
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].rack
+      format: none
+      source: yarn-ui/controllers/yarn-nodes/table.js:26
+    - id: ui2.yarn-nodes.table.list.state
+      label: Node State
+      kind: column
+      field: node.state
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].state
+      format: enum
+      source: yarn-ui/controllers/yarn-nodes/table.js:32
+      note: em-table-status-cell
+    - id: ui2.yarn-nodes.table.list.address
+      label: Node Address
+      kind: column
+      field: node.id
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].id
+      format: none
+      source: yarn-ui/controllers/yarn-nodes/table.js:38
+    - id: ui2.yarn-nodes.table.list.http-address
+      label: Node HTTP Address
+      kind: column
+      field: node.nodeHTTPAddress
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].nodeHTTPAddress
+      format: url
+      source: yarn-ui/controllers/yarn-nodes/table.js:44
+      note: 'href #/yarn-node/{id}/{enc(nodeHTTPAddress)}/info; blanked for SHUTDOWN/LOST'
+    - id: ui2.yarn-nodes.table.list.containers
+      label: Containers
+      kind: column
+      field: node.numContainers
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].numContainers
+      format: int
+      source: yarn-ui/controllers/yarn-nodes/table.js:65
+    - id: ui2.yarn-nodes.table.list.mem-used
+      label: Mem Used
+      kind: column
+      field: node.usedMemoryMB
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].usedMemoryMB
+      format: mb
+      source: yarn-ui/controllers/yarn-nodes/table.js:70
+      note: cellDefinition type 'memory' (usedMemoryBytes = MB*1024*1024)
+    - id: ui2.yarn-nodes.table.list.mem-available
+      label: Mem Available
+      kind: column
+      field: node.availMemoryMB
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].availMemoryMB
+      format: mb
+      source: yarn-ui/controllers/yarn-nodes/table.js:78
+    - id: ui2.yarn-nodes.table.list.vcores-used
+      label: VCores Used
+      kind: column
+      field: node.usedVirtualCores
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].usedVirtualCores
+      format: int
+      source: yarn-ui/controllers/yarn-nodes/table.js:86
+    - id: ui2.yarn-nodes.table.list.vcores-available
+      label: VCores Available
+      kind: column
+      field: node.availableVirtualCores
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].availableVirtualCores
+      format: int
+      source: yarn-ui/controllers/yarn-nodes/table.js:91
+    - id: ui2.yarn-nodes.table.list.last-health-update
+      label: Last Health Update
+      kind: column
+      field: node.lastHealthUpdate
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].lastHealthUpdate
+      format: epoch-datetime
+      source: yarn-ui/controllers/yarn-nodes/table.js:96
+    - id: ui2.yarn-nodes.table.list.health-report
+      label: Health-Report
+      kind: column
+      field: node.healthReport
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].healthReport
+      format: none
+      source: yarn-ui/controllers/yarn-nodes/table.js:102
+    - id: ui2.yarn-nodes.table.list.version
+      label: Version
+      kind: column
+      field: node.version
+      rest:
+        resource: rm.nodes
+        path: nodes.node[].version
+      format: none
+      source: yarn-ui/controllers/yarn-nodes/table.js:108
+- id: ui2.yarn-nodes.heatmap
+  daemon: rm
+  route: /yarn-nodes/heatmap
+  title: Nodes Heatmap Chart
+  classes:
+  - YarnNodesController
+  - YarnNodesHeatmapController
+  - YarnNodesHeatmapRoute
+  - yarn-nodes/heatmap
+  - nodes-heatmap
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-nodes.heatmap.chart
+    title: null
+    source: templates/yarn-nodes/heatmap.hbs.txt:19
+    items:
+    - id: ui2.yarn-nodes.heatmap.chart.title
+      label: null
+      dynamic: true
+      kind: title
+      field: static.nodes.heatmapTitle
+      derivation: '"Node Heatmap Chart (Usage of " + selectedOption + ")"'
+      source: templates/yarn-nodes/heatmap.hbs.txt:19
+      note: selectedOption from the category select (Memory/VCores/Containers)
+    - id: ui2.yarn-nodes.heatmap.chart.filter
+      label: null
+      kind: text
+      field: static.nodes.heatmapFilter
+      source: templates/components/nodes-heatmap.hbs.txt:4
+      note: input placeholder 'Enter part of host/rack to filter nodes'
+    - id: ui2.yarn-nodes.heatmap.chart.memory
+      label: Memory
+      kind: text
+      field: static.nodes.heatmapMemory
+      source: yarn-ui/components/nodes-heatmap.js:11
+      note: select option; cell usage = usedMemoryMB / (usedMemoryMB + availMemoryMB)
+    - id: ui2.yarn-nodes.heatmap.chart.vcores
+      label: VCores
+      kind: text
+      field: static.nodes.heatmapVcores
+      source: yarn-ui/components/nodes-heatmap.js:12
+      note: cell usage = usedVirtualCores / (usedVirtualCores + availableVirtualCores)
+    - id: ui2.yarn-nodes.heatmap.chart.containers
+      label: Containers
+      kind: text
+      field: static.nodes.heatmapContainers
+      source: yarn-ui/components/nodes-heatmap.js:13
+      note: cell usage = numContainers / totalContainers
+    - id: ui2.yarn-nodes.heatmap.chart.legend
+      label: Used
+      dynamic: true
+      kind: legend
+      field: static.nodes.heatmapLegend
+      derivation: (ratio*100).toFixed(1) + "% Used" for i in 1..5 (ratio = i*0.2 - 0.1)
+      source: yarn-ui/components/nodes-heatmap.js:90
+    - id: ui2.yarn-nodes.heatmap.chart.clear
+      label: Clear
+      kind: button
+      field: static.nodes.heatmapClear
+      source: yarn-ui/components/nodes-heatmap.js:95
+      when:
+      - other:selectedCategory != 0
+- id: ui2.yarn-nodes.status
+  daemon: rm
+  route: /yarn-nodes/status
+  title: Node status
+  classes:
+  - YarnNodesController
+  - YarnNodesStatusController
+  - yarn-nodes/status
+  - donut-chart
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-nodes.status.notes
+    title: null
+    source: yarn-ui/router.js:13
+    items:
+    - id: ui2.yarn-nodes.status.notes.text
+      label: null
+      kind: text
+      field: static.yarn_nodes_status.notes
+      source: yarn-ui/router.js:13
+      note: router.js:13 registers yarn-nodes.status but there is no routes/yarn-nodes/status.js; the controller is yarn-nodes-status.js (flat) and model is undefined, so model.clusterMetrics is never populated in the built app (dead/auto-generated route).
+  - id: ui2.yarn-nodes.status.nodes
+    title: Node Managers
+    source: templates/yarn-nodes/status.hbs.txt:23
+    items:
+    - id: ui2.yarn-nodes.status.nodes.title
+      label: Node Managers
+      kind: title
+      field: static.nodes.statusTitle
+      source: templates/yarn-nodes/status.hbs.txt:23
+    - id: ui2.yarn-nodes.status.nodes.active
+      label: Active
+      kind: legend
+      field: cluster.metrics.activeNodes
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.activeNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:61
+    - id: ui2.yarn-nodes.status.nodes.unhealthy
+      label: Unhealthy
+      kind: legend
+      field: cluster.metrics.unhealthyNodes
+      rest:
+        resource: rm.metrics
+        path: clusterMetrics.unhealthyNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:65
+    - id: ui2.yarn-nodes.status.nodes.decommissioning
+      label: Decommissioning
+      kind: legend
+      field: cluster.metrics.decommissioningNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:69
+    - id: ui2.yarn-nodes.status.nodes.decommissioned
+      label: Decommissioned
+      kind: legend
+      field: cluster.metrics.decommissionedNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:73
+    - id: ui2.yarn-nodes.status.nodes.lost
+      label: Lost
+      kind: legend
+      field: cluster.metrics.lostNodes
+      format: int
+      source: yarn-ui/models/cluster-metric.js:77
+- id: ui2.yarn-node.menu
+  daemon: nm
+  route: (shared component, every /yarn-node* page)
+  title: Node Manager
+  classes:
+  - NodeMenuPanelComponent
+  - node-menu-panel
+  sections:
+  - id: ui2.yarn-node.menu
+    title: Node Manager
+    source: templates/components/node-menu-panel.hbs.txt:5
+    items:
+    - id: ui2.yarn-node.menu.title
+      label: Node Manager
+      kind: title
+      field: static.nodeManager.title
+      source: templates/components/node-menu-panel.hbs.txt:5
+    - id: ui2.yarn-node.menu.info
+      label: Node Information
+      kind: nav
+      field: static.nodeManager.nodeInfo
+      format: url
+      source: templates/components/node-menu-panel.hbs.txt:27
+    - id: ui2.yarn-node.menu.apps
+      label: List of Applications on this Node
+      kind: nav
+      field: static.nodeManager.apps
+      format: url
+      source: templates/components/node-menu-panel.hbs.txt:29
+    - id: ui2.yarn-node.menu.containers
+      label: List of Containers on this Node
+      kind: nav
+      field: static.nodeManager.containers
+      format: url
+      source: templates/components/node-menu-panel.hbs.txt:33
+    - id: ui2.yarn-node.menu.gpu
+      label: GPU Information
+      kind: nav
+      field: static.nodeManager.gpu
+      format: url
+      when:
+      - other:nmGpuInfo.info.totalGpuDevices
+      source: templates/components/node-menu-panel.hbs.txt:41
+- id: ui2.yarn-node.info
+  daemon: nm
+  route: /yarn-node/{node_id}/{node_addr}/info
+  title: Node Information
+  classes:
+  - YarnNodeController
+  - yarn-node
+  - yarn-node/info
+  - donut-chart
+  - node-menu-panel
+  includes:
+  - ui2.yarn-node.menu
+  sections:
+  - id: ui2.yarn-node.info.nm
+    title: null
+    source: templates/yarn-node/info.hbs.txt:29
+    items:
+    - id: ui2.yarn-node.info.nm.heading
+      label: null
+      dynamic: true
+      kind: title
+      field: node.id
+      derivation: '"Node Information: " + model.rmNode.id'
+      source: templates/yarn-node/info.hbs.txt:29
+    - id: ui2.yarn-node.info.nm.total-vmem
+      label: Total Vmem allocated for Containers
+      kind: kv
+      field: nm.info.totalVmemAllocatedContainersMB
+      derivation: divide(totalVmemAllocatedContainersMB, 1024) + " GB"
+      format: other:Math.floor(MB/1024) GB
+      source: templates/yarn-node/info.hbs.txt:35
+    - id: ui2.yarn-node.info.nm.vmem-check
+      label: Vmem enforcement enabled
+      kind: kv
+      field: nm.info.vmemCheckEnabled
+      format: boolean
+      source: templates/yarn-node/info.hbs.txt:40
+    - id: ui2.yarn-node.info.nm.total-pmem
+      label: Total Pmem allocated for Containers
+      kind: kv
+      field: nm.info.totalPmemAllocatedContainersMB
+      derivation: divide(totalPmemAllocatedContainersMB, 1024) + " GB"
+      format: other:Math.floor(MB/1024) GB
+      source: templates/yarn-node/info.hbs.txt:45
+    - id: ui2.yarn-node.info.nm.pmem-check
+      label: Pmem enforcement enabled
+      kind: kv
+      field: nm.info.pmemCheckEnabled
+      format: boolean
+      source: templates/yarn-node/info.hbs.txt:50
+    - id: ui2.yarn-node.info.nm.total-vcores
+      label: Total VCores allocated for Containers
+      kind: kv
+      field: nm.info.totalVCoresAllocatedContainers
+      format: int
+      source: templates/yarn-node/info.hbs.txt:55
+    - id: ui2.yarn-node.info.nm.healthy
+      label: Node Healthy Status
+      kind: kv
+      field: nm.info.nodeHealthy
+      format: boolean
+      source: templates/yarn-node/info.hbs.txt:59
+    - id: ui2.yarn-node.info.nm.last-health
+      label: Last Node Health Report Time
+      kind: kv
+      field: nm.info.lastNodeUpdateTime
+      format: epoch-datetime
+      source: templates/yarn-node/info.hbs.txt:63
+    - id: ui2.yarn-node.info.nm.health-report
+      label: Node Health Report
+      kind: kv
+      field: nm.info.healthReport
+      format: none
+      source: templates/yarn-node/info.hbs.txt:67
+    - id: ui2.yarn-node.info.nm.startup
+      label: Node Manager Start Time
+      kind: kv
+      field: nm.info.nmStartupTime
+      format: epoch-datetime
+      when:
+      - value:non-empty
+      source: templates/yarn-node/info.hbs.txt:71
+    - id: ui2.yarn-node.info.nm.version
+      label: Node Manager Version
+      kind: kv
+      field: nm.info.nodeManagerBuildVersion
+      format: none
+      source: templates/yarn-node/info.hbs.txt:76
+    - id: ui2.yarn-node.info.nm.hadoop-version
+      label: Hadoop Version
+      kind: kv
+      field: nm.info.hadoopBuildVersion
+      format: none
+      source: templates/yarn-node/info.hbs.txt:81
+  - id: ui2.yarn-node.info.memory
+    title: Resource - Memory
+    source: templates/yarn-node/info.hbs.txt:94
+    items:
+    - id: ui2.yarn-node.info.memory.title
+      label: Resource - Memory
+      kind: title
+      field: static.node.memoryTitle
+      source: templates/yarn-node/info.hbs.txt:94
+    - id: ui2.yarn-node.info.memory.used
+      label: Used
+      kind: legend
+      field: node.usedMemoryMB
+      rest:
+        resource: rm.node
+        path: node.usedMemoryMB
+      format: mb
+      source: yarn-ui/models/yarn-rm-node.js:45
+    - id: ui2.yarn-node.info.memory.available
+      label: Available
+      kind: legend
+      field: node.availMemoryMB
+      rest:
+        resource: rm.node
+        path: node.availMemoryMB
+      format: mb
+      source: yarn-ui/models/yarn-rm-node.js:49
+  - id: ui2.yarn-node.info.vcores
+    title: Resource - VCores
+    source: templates/yarn-node/info.hbs.txt:105
+    items:
+    - id: ui2.yarn-node.info.vcores.title
+      label: Resource - VCores
+      kind: title
+      field: static.node.vcoresTitle
+      source: templates/yarn-node/info.hbs.txt:105
+    - id: ui2.yarn-node.info.vcores.used
+      label: Used
+      kind: legend
+      field: node.usedVirtualCores
+      rest:
+        resource: rm.node
+        path: node.usedVirtualCores
+      format: int
+      source: yarn-ui/models/yarn-rm-node.js:57
+    - id: ui2.yarn-node.info.vcores.available
+      label: Available
+      kind: legend
+      field: node.availableVirtualCores
+      rest:
+        resource: rm.node
+        path: node.availableVirtualCores
+      format: int
+      source: yarn-ui/models/yarn-rm-node.js:61
+  - id: ui2.yarn-node.info.gpu
+    title: Resources - yarn.io/gpu
+    source: templates/yarn-node/info.hbs.txt:131
+    when:
+    - other:model.nmGpuInfo
+    items:
+    - id: ui2.yarn-node.info.gpu.title
+      label: Resources - yarn.io/gpu
+      kind: title
+      field: static.node.gpuTitle
+      source: templates/yarn-node/info.hbs.txt:131
+    - id: ui2.yarn-node.info.gpu.used
+      label: Used
+      kind: legend
+      field: node.usedResource.resourceInformations.resourceInformation.value
+      derivation: sum(usedResource.resourceInformations.resourceInformation[].value where name == "yarn.io/gpu")
+      format: int
+      source: yarn-ui/models/yarn-rm-node.js:74
+    - id: ui2.yarn-node.info.gpu.available
+      label: Available
+      kind: legend
+      field: node.availableResource.resourceInformations.resourceInformation.value
+      derivation: sum(availableResource.resourceInformations.resourceInformation[].value where name == "yarn.io/gpu")
+      format: int
+      source: yarn-ui/models/yarn-rm-node.js:82
+- id: ui2.yarn-node.yarn-nm-gpu
+  daemon: nm
+  route: /yarn-node/{node_id}/{node_addr}/yarn-nm-gpu
+  title: GPU Information
+  classes:
+  - YarnNodeRoute
+  - routes/yarn-node/yarn-nm-gpu
+  - yarn-node/yarn-nm-gpu
+  - yarn-nm-gpu-info
+  - gpu-donut-chart
+  - node-menu-panel
+  includes:
+  - ui2.yarn-node.menu
+  when:
+  - other:nmGpuInfo.info.totalGpuDevices
+  sections:
+  - id: ui2.yarn-node.yarn-nm-gpu.notes
+    title: null
+    source: yarn-ui/adapters/yarn-nm-gpu.js:8
+    items:
+    - id: ui2.yarn-node.yarn-nm-gpu.notes.text
+      label: null
+      kind: text
+      field: static.yarn_node_yarn_nm_gpu.notes
+      source: yarn-ui/adapters/yarn-nm-gpu.js:8
+      note: Data from GET http://{nodeAddr}/ws/v1/node/resources/yarn.io%2Fgpu (adapter yarn-nm-gpu.js:8). NMResourceInfo/PerGpuDeviceInformation are serialised by field/getter names (Jackson) so the keys below match the UI2 template; the JAXB @XmlElement names differ (gpu, driver_version, fb_memory_usage.used/free, utilization.gpu_util, temperature.gpu_temp/gpu_temp_max_threshold).
+  - id: ui2.yarn-node.yarn-nm-gpu.summary
+    title: Gpu Information
+    source: templates/yarn-node/yarn-nm-gpu.hbs.txt:27
+    items:
+    - id: ui2.yarn-node.yarn-nm-gpu.summary.title
+      label: Gpu Information
+      kind: title
+      field: static.gpu.title
+      source: templates/yarn-node/yarn-nm-gpu.hbs.txt:27
+    - id: ui2.yarn-node.yarn-nm-gpu.summary.vendor
+      label: Vendor
+      kind: kv
+      field: static.gpu.vendor
+      source: templates/yarn-node/yarn-nm-gpu.hbs.txt:31
+      note: hardcoded 'NVIDIA'
+    - id: ui2.yarn-node.yarn-nm-gpu.summary.driver
+      label: Driver Version
+      kind: kv
+      field: nm.gpu.gpuDeviceInformation.driverVersion
+      format: none
+      source: templates/yarn-node/yarn-nm-gpu.hbs.txt:35
+    - id: ui2.yarn-node.yarn-nm-gpu.summary.count
+      label: Total Number Of Gpus
+      kind: kv
+      field: nm.info.derived.totalGpuDeviceCount
+      format: int
+      source: templates/yarn-node/yarn-nm-gpu.hbs.txt:40
+    - id: ui2.yarn-node.yarn-nm-gpu.summary.empty
+      label: No GPUs are found on this node.
+      kind: text
+      field: static.gpu.empty
+      source: templates/yarn-node/yarn-nm-gpu.hbs.txt:52
+      when:
+      - other:no totalGpuDevices
+  - id: ui2.yarn-node.yarn-nm-gpu.device
+    title: null
+    source: templates/components/yarn-nm-gpu-info.hbs.txt:3
+    items:
+    - id: ui2.yarn-node.yarn-nm-gpu.device.heading
+      label: null
+      dynamic: true
+      kind: title
+      field: nm.gpu.gpuDeviceInformation.gpus.minorNumber
+      derivation: '"Gpu Information - (Minor Number " + gpu.minorNumber + ")"'
+      source: templates/components/yarn-nm-gpu-info.hbs.txt:3
+    - id: ui2.yarn-node.yarn-nm-gpu.device.product-name
+      label: Product Name
+      kind: kv
+      field: nm.gpu.gpuDeviceInformation.gpus.productName
+      source: templates/components/yarn-nm-gpu-info.hbs.txt:26
+    - id: ui2.yarn-node.yarn-nm-gpu.device.uuid
+      label: UUID
+      kind: kv
+      field: nm.gpu.gpuDeviceInformation.gpus.uuid
+      source: templates/components/yarn-nm-gpu-info.hbs.txt:30
+    - id: ui2.yarn-node.yarn-nm-gpu.device.current-temp
+      label: Current Temperature
+      kind: kv
+      field: nm.gpu.gpuDeviceInformation.gpus.temperature.currentGpuTemp
+      format: float-1dp
+      source: templates/components/yarn-nm-gpu-info.hbs.txt:34
+    - id: ui2.yarn-node.yarn-nm-gpu.device.max-temp
+      label: Max Temperature
+      kind: kv
+      field: nm.gpu.gpuDeviceInformation.gpus.temperature.maxGpuTemp
+      format: float-1dp
+      source: templates/components/yarn-nm-gpu-info.hbs.txt:38
+    - id: ui2.yarn-node.yarn-nm-gpu.device.memory-used
+      label: Used
+      kind: legend
+      field: nm.gpu.gpuDeviceInformation.gpus.gpuMemoryUsage.usedMemoryMiB
+      format: other:MiB
+      source: yarn-ui/components/gpu-donut-chart.js:8
+    - id: ui2.yarn-node.yarn-nm-gpu.device.memory-avail
+      label: Available
+      kind: legend
+      field: nm.gpu.gpuDeviceInformation.gpus.gpuMemoryUsage.availMemoryMiB
+      format: other:MiB
+      source: yarn-ui/components/gpu-donut-chart.js:12
+    - id: ui2.yarn-node.yarn-nm-gpu.device.utilized
+      label: Utilized
+      kind: legend
+      field: nm.gpu.gpuDeviceInformation.gpus.gpuUtilizations.overallGpuUtilization
+      format: percent-1dp
+      source: yarn-ui/components/gpu-donut-chart.js:17
+    - id: ui2.yarn-node.yarn-nm-gpu.device.util-avail
+      label: Available
+      kind: legend
+      field: nm.gpu.gpuDeviceInformation.gpus.gpuUtilizations.overallGpuUtilization
+      derivation: 100 - overallGpuUtilization
+      format: percent-1dp
+      source: yarn-ui/components/gpu-donut-chart.js:22
+- id: ui2.yarn-node-apps
+  daemon: nm
+  route: /yarn-node-apps/{node_id}/{node_addr}
+  title: Applications
+  classes:
+  - YarnNodeAppsController
+  - YarnNodeAppsRoute
+  - yarn-node-apps
+  - simple-table
+  - node-menu-panel
+  includes:
+  - ui2.yarn-node.menu
+  sections:
+  - id: ui2.yarn-node-apps.table
+    title: null
+    source: templates/yarn-node-apps.hbs.txt:25
+    items:
+    - id: ui2.yarn-node-apps.table.app-id
+      label: Application ID
+      kind: column
+      field: nm.app.id
+      format: none
+      source: templates/yarn-node-apps.hbs.txt:28
+      note: 'href #/yarn-node-app/{nodeId}/{encAddr}/{app.appId}'
+    - id: ui2.yarn-node-apps.table.state
+      label: State
+      kind: column
+      field: nm.app.state
+      format: enum
+      source: templates/yarn-node-apps.hbs.txt:29
+    - id: ui2.yarn-node-apps.table.user
+      label: User
+      kind: column
+      field: nm.app.user
+      format: none
+      source: templates/yarn-node-apps.hbs.txt:30
+    - id: ui2.yarn-node-apps.table.empty
+      label: No apps found on this node
+      kind: text
+      field: static.nodeApps.empty
+      source: templates/yarn-node-apps.hbs.txt:49
+      when:
+      - other:no apps
+- id: ui2.yarn-node-app
+  daemon: nm
+  route: /yarn-node-app/{node_id}/{node_addr}/{app_id}
+  title: Application [ {app_id} ]
+  classes:
+  - YarnNodeAppController
+  - YarnNodeAppRoute
+  - yarn-node-app
+  - simple-table
+  - node-menu-panel
+  includes:
+  - ui2.yarn-node.menu
+  sections:
+  - id: ui2.yarn-node-app.info
+    title: Application Information
+    source: templates/yarn-node-app.hbs.txt:26
+    items:
+    - id: ui2.yarn-node-app.info.title
+      label: Application Information
+      kind: title
+      field: static.nodeApp.title
+      source: templates/yarn-node-app.hbs.txt:26
+    - id: ui2.yarn-node-app.info.app-id
+      label: Application ID
+      kind: kv
+      field: nm.app.id
+      format: none
+      source: templates/yarn-node-app.hbs.txt:30
+    - id: ui2.yarn-node-app.info.state
+      label: Application State
+      kind: kv
+      field: nm.app.state
+      format: enum
+      source: templates/yarn-node-app.hbs.txt:34
+    - id: ui2.yarn-node-app.info.user
+      label: User
+      kind: kv
+      field: nm.app.user
+      format: none
+      source: templates/yarn-node-app.hbs.txt:38
+  - id: ui2.yarn-node-app.containers
+    title: null
+    source: templates/yarn-node-app.hbs.txt:47
+    items:
+    - id: ui2.yarn-node-app.containers.header
+      label: null
+      dynamic: true
+      kind: column
+      field: nm.app.containerids
+      derivation: '"Containers for " + model.nodeApp.appId'
+      source: templates/yarn-node-app.hbs.txt:47
+    - id: ui2.yarn-node-app.containers.link
+      label: null
+      kind: link
+      field: nm.app.containerids
+      format: url
+      source: templates/yarn-node-app.hbs.txt:52
+      note: 'href #/yarn-node-container/{nodeId}/{encAddr}/{container}'
+- id: ui2.yarn-node-containers
+  daemon: nm
+  route: /yarn-node-containers/{node_id}/{node_addr}
+  title: Containers
+  classes:
+  - YarnNodeContainersController
+  - YarnNodeContainersRoute
+  - yarn-node-containers
+  - simple-table
+  - log-files-comma
+  - node-menu-panel
+  includes:
+  - ui2.yarn-node.menu
+  sections:
+  - id: ui2.yarn-node-containers.table
+    title: null
+    source: templates/yarn-node-containers.hbs.txt:25
+    items:
+    - id: ui2.yarn-node-containers.table.container-id
+      label: Container ID
+      kind: column
+      field: nm.container.id
+      format: none
+      source: templates/yarn-node-containers.hbs.txt:28
+      note: 'href #/yarn-node-container/{nodeId}/{encAddr}/{containerId}'
+    - id: ui2.yarn-node-containers.table.state
+      label: Container State
+      kind: column
+      field: nm.container.state
+      format: enum
+      source: templates/yarn-node-containers.hbs.txt:29
+    - id: ui2.yarn-node-containers.table.user
+      label: User
+      kind: column
+      field: nm.container.user
+      format: none
+      source: templates/yarn-node-containers.hbs.txt:30
+    - id: ui2.yarn-node-containers.table.logs
+      label: Logs
+      kind: link
+      field: nm.container.containerLogFiles
+      format: url
+      source: templates/yarn-node-containers.hbs.txt:31
+      note: 'log-files-comma helper -> #/yarn-container-log/{nodeId}/{encAddr}/{containerId}/{file}'
+    - id: ui2.yarn-node-containers.table.empty
+      label: No containers found on this node
+      kind: text
+      field: static.nodeContainers.empty
+      source: templates/yarn-node-containers.hbs.txt:56
+      when:
+      - other:no containers
+- id: ui2.yarn-node-container
+  daemon: nm
+  route: /yarn-node-container/{node_id}/{node_addr}/{container_id}
+  title: Container [ {container_id} ]
+  classes:
+  - YarnNodeContainerController
+  - YarnNodeContainerRoute
+  - yarn-node-container
+  - log-files-comma
+  - node-menu-panel
+  includes:
+  - ui2.yarn-node.menu
+  sections:
+  - id: ui2.yarn-node-container.info
+    title: Container Information
+    source: templates/yarn-node-container.hbs.txt:26
+    items:
+    - id: ui2.yarn-node-container.info.title
+      label: Container Information
+      kind: title
+      field: static.nodeContainer.title
+      source: templates/yarn-node-container.hbs.txt:26
+    - id: ui2.yarn-node-container.info.container-id
+      label: Container ID
+      kind: kv
+      field: nm.container.id
+      format: none
+      source: templates/yarn-node-container.hbs.txt:30
+    - id: ui2.yarn-node-container.info.state
+      label: Container State
+      kind: kv
+      field: nm.container.state
+      format: enum
+      source: templates/yarn-node-container.hbs.txt:34
+    - id: ui2.yarn-node-container.info.exit-code
+      label: Exit Code
+      kind: kv
+      field: nm.container.exitCode
+      format: int
+      source: templates/yarn-node-container.hbs.txt:38
+    - id: ui2.yarn-node-container.info.diagnostics
+      label: Diagnostics
+      kind: kv
+      field: nm.container.diagnostics
+      format: none
+      source: templates/yarn-node-container.hbs.txt:42
+    - id: ui2.yarn-node-container.info.user
+      label: User
+      kind: kv
+      field: nm.container.user
+      format: none
+      source: templates/yarn-node-container.hbs.txt:46
+    - id: ui2.yarn-node-container.info.total-memory
+      label: Total Memory Needed
+      kind: kv
+      field: nm.container.totalMemoryNeededMB
+      derivation: totalMemoryNeededMB + " MB"
+      format: mb-suffix
+      source: templates/yarn-node-container.hbs.txt:50
+    - id: ui2.yarn-node-container.info.total-vcores
+      label: Total VCores Needed
+      kind: kv
+      field: nm.container.totalVCoresNeeded
+      format: int
+      source: templates/yarn-node-container.hbs.txt:54
+    - id: ui2.yarn-node-container.info.logs
+      label: Link to Logs
+      kind: link
+      field: nm.container.containerLogFiles
+      format: url
+      source: templates/yarn-node-container.hbs.txt:58
+      note: log-files-comma helper
+- id: ui2.yarn-container-log
+  daemon: nm
+  route: /yarn-container-log/{node_id}/{node_addr}/{container_id}/{filename}
+  title: Log
+  classes:
+  - YarnContainerLogController
+  - YarnContainerLogRoute
+  - yarn-container-log
+  - node-menu-panel
+  sections:
+  - id: ui2.yarn-container-log.viewer
+    title: null
+    source: templates/yarn-container-log.hbs.txt:24
+    items:
+    - id: ui2.yarn-container-log.viewer.heading
+      label: null
+      dynamic: true
+      kind: title
+      field: log.fileName
+      derivation: containerLog.logFileName + " for " + containerLog.containerID
+      source: templates/yarn-container-log.hbs.txt:26
+    - id: ui2.yarn-container-log.viewer.content
+      label: null
+      kind: text
+      field: log.content
+      format: none
+      source: templates/yarn-container-log.hbs.txt:29
+      when:
+      - other:has logs
+      note: GET /ws/v1/node/containerlogs/{containerId}/{filename} (adapter yarn-container-log.js:18), Accept text/plain
+    - id: ui2.yarn-container-log.viewer.empty
+      label: null
+      dynamic: true
+      kind: text
+      field: static.containerLog.empty
+      derivation: '"No logs were written in " + containerLog.logFileName + "."'
+      source: templates/yarn-container-log.hbs.txt:32
+      when:
+      - other:no logs
+- id: ui2.yarn-queue
+  daemon: rm
+  route: /yarn-queue/{queue_name}
+  title: Queue [ {queue_name} ]
+  classes:
+  - YarnQueueController
+  - YarnQueueRoute
+  - yarn-queue
+  - yarn-queue/capacity-queue-info
+  - yarn-queue/fair-queue-info
+  - yarn-queue/fifo-queue-info
+  - bar-chart
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-queue.header
+    title: null
+    source: templates/yarn-queue.hbs.txt:23
+    items:
+    - id: ui2.yarn-queue.header.heading
+      label: null
+      kind: title
+      field: queue.queueName
+      rest:
+        resource: rm.scheduler
+        path: scheduler.schedulerInfo.queues.queue[].queueName
+      source: templates/yarn-queue.hbs.txt:26
+    - id: ui2.yarn-queue.header.state
+      label: null
+      kind: text
+      field: queue.state
+      format: enum
+      when:
+      - value:non-empty
+      source: templates/yarn-queue.hbs.txt:27
+    - id: ui2.yarn-queue.header.weight
+      label: weight
+      kind: metric
+      field: queue.weight
+      when:
+      - scheduler=capacity
+      - other:isWeightMode
+      source: templates/yarn-queue.hbs.txt:35
+    - id: ui2.yarn-queue.header.normalized-weight
+      label: normalized weight
+      kind: metric
+      field: queue.normalizedWeight
+      when:
+      - scheduler=capacity
+      - other:isWeightMode
+      source: templates/yarn-queue.hbs.txt:40
+    - id: ui2.yarn-queue.header.configured-capacity
+      label: configured capacity
+      kind: metric
+      field: queue.capacity
+      derivation: capacity + "%"
+      format: percent-1dp
+      when:
+      - scheduler=capacity
+      - other:!isWeightMode
+      source: templates/yarn-queue.hbs.txt:44
+    - id: ui2.yarn-queue.header.configured-max-capacity
+      label: configured max capacity
+      kind: metric
+      field: queue.maxCapacity
+      derivation: maxCapacity + "%"
+      format: percent-1dp
+      when:
+      - scheduler=capacity
+      - other:!isWeightMode
+      source: templates/yarn-queue.hbs.txt:49
+    - id: ui2.yarn-queue.header.ordering-policy
+      label: ordering policy
+      kind: metric
+      field: queue.orderingPolicyInfo
+      when:
+      - scheduler=capacity
+      source: templates/yarn-queue.hbs.txt:53
+    - id: ui2.yarn-queue.header.flexible
+      label: flexible dynamic queue
+      kind: metric
+      field: queue.creationMethod
+      when:
+      - scheduler=capacity
+      - other:isFlexibleDynamicQueue
+      source: templates/yarn-queue.hbs.txt:58
+    - id: ui2.yarn-queue.header.user-limit
+      label: user limit
+      kind: metric
+      field: queue.userLimit
+      derivation: userLimit + "%"
+      format: percent-1dp
+      when:
+      - scheduler=capacity
+      - other:isLeafQueue
+      source: templates/yarn-queue.hbs.txt:63
+    - id: ui2.yarn-queue.header.user-limit-factor
+      label: user limit factor
+      kind: metric
+      field: queue.userLimitFactor
+      when:
+      - scheduler=capacity
+      - other:isLeafQueue
+      source: templates/yarn-queue.hbs.txt:68
+  - id: ui2.yarn-queue.capacities
+    title: null
+    source: templates/yarn-queue.hbs.txt:76
+    items:
+    - id: ui2.yarn-queue.capacities.capacity-used
+      label: null
+      dynamic: true
+      kind: chart
+      field: queue.absoluteUsedCapacity
+      derivation: 'lower(item.label) + " = " + item.value + (type=="fair" ? " MB" : "%") for capacitiesBarChartData {label:"Absolute Used", value: floatToFixed(name=="root"?usedCapacity:absUsedCapacity)}'
+      format: percent-1dp
+      when:
+      - scheduler=capacity
+      source: templates/yarn-queue.hbs.txt:76
+    - id: ui2.yarn-queue.capacities.capacity-abs
+      label: null
+      dynamic: true
+      kind: chart
+      field: queue.absoluteCapacity
+      derivation: '{label:"Absolute Capacity", value: name=="root"?100:floatToFixed(absCapacity)}'
+      format: percent-1dp
+      when:
+      - scheduler=capacity
+      source: templates/yarn-queue.hbs.txt:76
+    - id: ui2.yarn-queue.capacities.capacity-max
+      label: null
+      dynamic: true
+      kind: chart
+      field: queue.absoluteMaxCapacity
+      derivation: '{label:"Absolute Max Capacity", value: name=="root"?100:floatToFixed(absMaxCapacity)}'
+      format: percent-1dp
+      when:
+      - scheduler=capacity
+      source: templates/yarn-queue.hbs.txt:76
+    - id: ui2.yarn-queue.capacities.fair-steady
+      label: null
+      dynamic: true
+      kind: chart
+      field: queue.steadyFairResources.memory
+      derivation: '{label:"Steady Fair Memory", value: floatToFixed(steadyFairResources.memory)} + " MB"'
+      format: mb
+      when:
+      - scheduler=fair
+      source: yarn-ui/models/yarn-queue/fair-queue.js:32
+    - id: ui2.yarn-queue.capacities.fair-used
+      label: null
+      dynamic: true
+      kind: chart
+      field: queue.usedResources.memory
+      derivation: '{label:"Used Memory", value: floatToFixed(usedResources.memory)} + " MB"'
+      format: mb
+      when:
+      - scheduler=fair
+      source: yarn-ui/models/yarn-queue/fair-queue.js:35
+    - id: ui2.yarn-queue.capacities.fair-max
+      label: null
+      dynamic: true
+      kind: chart
+      field: queue.maxResources.memory
+      derivation: '{label:"Maximum Memory", value: floatToFixed(maxResources.memory)} + " MB"'
+      format: mb
+      when:
+      - scheduler=fair
+      source: yarn-ui/models/yarn-queue/fair-queue.js:38
+    - id: ui2.yarn-queue.capacities.fifo-avail
+      label: null
+      dynamic: true
+      kind: chart
+      field: scheduler.availNodeCapacity
+      derivation: '{label:"Available Capacity", value: floatToFixed(availNodeCapacity)}'
+      format: float-1dp
+      when:
+      - scheduler=fifo
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:19
+    - id: ui2.yarn-queue.capacities.fifo-used
+      label: null
+      dynamic: true
+      kind: chart
+      field: scheduler.usedNodeCapacity
+      derivation: '{label:"Used Capacity", value: floatToFixed(usedNodeCapacity)}'
+      format: float-1dp
+      when:
+      - scheduler=fifo
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:22
+    - id: ui2.yarn-queue.capacities.fifo-total
+      label: null
+      dynamic: true
+      kind: chart
+      field: scheduler.totalNodeCapacity
+      derivation: '{label:"Total Capacity", value: floatToFixed(totalNodeCapacity)}'
+      format: float-1dp
+      when:
+      - scheduler=fifo
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:25
+- id: ui2.yarn-queue.info
+  daemon: rm
+  route: /yarn-queue/{queue_name}/info
+  title: null
+  classes:
+  - YarnQueueController
+  - YarnQueueInfoRoute
+  - yarn-queue/info
+  - yarn-queue/capacity-queue-info
+  - yarn-queue/fair-queue-info
+  - yarn-queue/fifo-queue-info
+  includes:
+  - ui2.shared.chrome
+  - ui2.yarn-queue
+  sections:
+  - id: ui2.yarn-queue.info.capacity
+    title: null
+    source: templates/components/yarn-queue/capacity-queue-info.hbs.txt:6
+    when:
+    - scheduler=capacity
+    items:
+    - id: ui2.yarn-queue.info.capacity.apps-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Running Apps From All Users: " + model.selected'
+      source: templates/components/yarn-queue/capacity-queue-info.hbs.txt:6
+    - id: ui2.yarn-queue.info.capacity.apps-pending
+      label: Pending Apps
+      kind: legend
+      field: queue.numPendingApplications
+      rest:
+        resource: rm.scheduler
+        path: scheduler.schedulerInfo.queues.queue[].numPendingApplications
+      derivation: numPendingApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/capacity-queue.js:74
+    - id: ui2.yarn-queue.info.capacity.apps-active
+      label: Active Apps
+      kind: legend
+      field: queue.numActiveApplications
+      rest:
+        resource: rm.scheduler
+        path: scheduler.schedulerInfo.queues.queue[].numActiveApplications
+      derivation: numActiveApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/capacity-queue.js:78
+    - id: ui2.yarn-queue.info.capacity.user-usages-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"User Usages: " + model.selected'
+      source: templates/components/yarn-queue/capacity-queue-info.hbs.txt:38
+      when:
+      - other:hasUserUsages
+    - id: ui2.yarn-queue.info.capacity.user-usages-chart
+      label: null
+      kind: chart
+      field: queueuser.resourcesUsed.memory
+      derivation: 'users.map(u => {label: u.name, value: u.usedMemoryMB})'
+      format: mb
+      source: yarn-ui/models/yarn-queue/capacity-queue.js:57
+      when:
+      - other:hasUserUsages
+    - id: ui2.yarn-queue.info.capacity.user-usages-others
+      label: Used by others
+      kind: legend
+      field: static.chart.usedByOthers
+      source: yarn-ui/components/base-usage-donut-chart.js:9
+      when:
+      - other:more than 8 users
+    - id: ui2.yarn-queue.info.capacity.conf-columns
+      label: Configurations
+      kind: column
+      field: static.queue.confConfigurations
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:5
+      when:
+      - other:never (template not rendered by any route)
+    - id: ui2.yarn-queue.info.capacity.conf-value
+      label: Value
+      kind: column
+      field: static.queue.confValue
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:6
+      when:
+      - other:never (template not rendered by any route)
+    - id: ui2.yarn-queue.info.capacity.conf-capacity
+      label: Configured Capacity
+      kind: kv
+      field: queue.capacity
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:11
+      when:
+      - other:never (template not rendered by any route)
+    - id: ui2.yarn-queue.info.capacity.conf-max-capacity
+      label: Configured Max Capacity
+      kind: kv
+      field: queue.maxCapacity
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:15
+      when:
+      - other:never (template not rendered by any route)
+    - id: ui2.yarn-queue.info.capacity.conf-state
+      label: State
+      kind: kv
+      field: queue.state
+      when:
+      - other:never (template not rendered by any route)
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:19
+    - id: ui2.yarn-queue.info.capacity.conf-user-limit
+      label: User Limit Percent
+      kind: kv
+      field: queue.userLimit
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:23
+      when:
+      - other:never (template not rendered by any route)
+    - id: ui2.yarn-queue.info.capacity.conf-user-limit-factor
+      label: User Limit Factor
+      kind: kv
+      field: queue.userLimitFactor
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:27
+      when:
+      - other:never (template not rendered by any route)
+    - id: ui2.yarn-queue.info.capacity.conf-preemption
+      label: Preemption Disabled
+      kind: kv
+      field: queue.preemptionDisabled
+      format: boolean
+      source: templates/components/yarn-queue/capacity-queue-conf-table.hbs.txt:31
+      when:
+      - other:never (template not rendered by any route)
+  - id: ui2.yarn-queue.info.fair
+    title: null
+    source: templates/components/yarn-queue/fair-queue-info.hbs.txt:3
+    when:
+    - scheduler=fair
+    items:
+    - id: ui2.yarn-queue.info.fair.capacities-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Capacities: " + model.selected'
+      source: templates/components/yarn-queue/fair-queue-info.hbs.txt:7
+    - id: ui2.yarn-queue.info.fair.steady-fair
+      label: Steady Fair Memory
+      kind: chart
+      field: queue.steadyFairResources.memory
+      format: mb
+      source: yarn-ui/models/yarn-queue/fair-queue.js:32
+    - id: ui2.yarn-queue.info.fair.used-memory
+      label: Used Memory
+      kind: chart
+      field: queue.usedResources.memory
+      format: mb
+      source: yarn-ui/models/yarn-queue/fair-queue.js:35
+    - id: ui2.yarn-queue.info.fair.max-memory
+      label: Maximum Memory
+      kind: chart
+      field: queue.maxResources.memory
+      format: mb
+      source: yarn-ui/models/yarn-queue/fair-queue.js:38
+    - id: ui2.yarn-queue.info.fair.info-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Information: " + model.selected'
+      source: templates/components/yarn-queue/fair-queue-info.hbs.txt:36
+    - id: ui2.yarn-queue.info.fair.apps-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Running Apps From All Users: " + model.selected'
+      source: templates/components/yarn-queue/fair-queue-info.hbs.txt:54
+    - id: ui2.yarn-queue.info.fair.apps-pending
+      label: Pending Apps
+      kind: legend
+      field: queue.numPendingApps
+      rest:
+        resource: rm.scheduler
+        path: scheduler.schedulerInfo.rootQueue.childQueues.queue[].numPendingApps
+      derivation: numPendingApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/fair-queue.js:44
+    - id: ui2.yarn-queue.info.fair.apps-active
+      label: Active Apps
+      kind: legend
+      field: queue.numActiveApps
+      derivation: numActiveApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/fair-queue.js:48
+    - id: ui2.yarn-queue.info.fair.conf-fair
+      label: Fair Memory, VCores
+      kind: kv
+      field: queue.fairResources.memory
+      fields:
+      - queue.fairResources.vCores
+      derivation: fairResources.memory + " MB, " + fairResources.vCores
+      format: mb-suffix
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:11
+    - id: ui2.yarn-queue.info.fair.conf-min
+      label: Minimum Memory, VCores
+      kind: kv
+      field: queue.minResources.memory
+      fields:
+      - queue.minResources.vCores
+      derivation: minResources.memory + " MB, " + minResources.vCores
+      format: mb-suffix
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:15
+    - id: ui2.yarn-queue.info.fair.conf-cluster
+      label: Cluster Memory, VCores
+      kind: kv
+      field: queue.clusterResources.memory
+      fields:
+      - queue.clusterResources.vCores
+      derivation: clusterResources.memory + " MB, " + clusterResources.vCores
+      format: mb-suffix
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:19
+    - id: ui2.yarn-queue.info.fair.conf-containers
+      label: Pending, Allocated, Reserved Containers
+      kind: kv
+      field: queue.pendingContainers
+      fields:
+      - queue.allocatedContainers
+      - queue.reservedContainers
+      derivation: (pendingContainers||0) + ", " + (allocatedContainers||0) + ", " + (reservedContainers||0)
+      format: join-comma
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:23
+    - id: ui2.yarn-queue.info.fair.conf-policy
+      label: Scheduling Policy
+      kind: kv
+      field: queue.schedulingPolicy
+      format: none
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:27
+    - id: ui2.yarn-queue.info.fair.conf-preemption
+      label: Preemption Enabled
+      kind: kv
+      field: queue.preemptable
+      format: boolean
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:31
+  - id: ui2.yarn-queue.info.fifo
+    title: null
+    source: templates/components/yarn-queue/fifo-queue-info.hbs.txt:3
+    when:
+    - scheduler=fifo
+    items:
+    - id: ui2.yarn-queue.info.fifo.capacities-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Capacities: " + model.selected'
+      source: templates/components/yarn-queue/fifo-queue-info.hbs.txt:7
+    - id: ui2.yarn-queue.info.fifo.available
+      label: Available Capacity
+      kind: chart
+      field: scheduler.availNodeCapacity
+      format: float-1dp
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:19
+    - id: ui2.yarn-queue.info.fifo.used
+      label: Used Capacity
+      kind: chart
+      field: scheduler.usedNodeCapacity
+      format: float-1dp
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:22
+    - id: ui2.yarn-queue.info.fifo.total
+      label: Total Capacity
+      kind: chart
+      field: scheduler.totalNodeCapacity
+      format: float-1dp
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:25
+    - id: ui2.yarn-queue.info.fifo.info-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Information: " + model.selected'
+      source: templates/components/yarn-queue/fifo-queue-info.hbs.txt:36
+    - id: ui2.yarn-queue.info.fifo.conf-capacity
+      label: Configured Capacity
+      kind: kv
+      field: queue.capacity
+      derivation: payload.capacity * 100
+      format: other:percent
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:11
+    - id: ui2.yarn-queue.info.fifo.conf-used
+      label: Used Capacity
+      kind: kv
+      field: queue.usedCapacity
+      derivation: payload.usedCapacity * 100
+      format: other:percent
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:15
+    - id: ui2.yarn-queue.info.fifo.conf-state
+      label: State
+      kind: kv
+      field: scheduler.qstate
+      derivation: payload.qstate
+      format: enum
+      when:
+      - value:non-empty
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:19
+    - id: ui2.yarn-queue.info.fifo.conf-min-mem
+      label: Minimum Queue Memory Capacity
+      kind: kv
+      field: scheduler.minQueueMemoryCapacity
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:23
+    - id: ui2.yarn-queue.info.fifo.conf-max-mem
+      label: Maximum Queue Memory Capacity
+      kind: kv
+      field: scheduler.maxQueueMemoryCapacity
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:27
+    - id: ui2.yarn-queue.info.fifo.conf-nodes
+      label: Number of Nodes
+      kind: kv
+      field: scheduler.numNodes
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:31
+    - id: ui2.yarn-queue.info.fifo.conf-containers
+      label: Number of Containers
+      kind: kv
+      field: queue.numContainers
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:35
+- id: ui2.yarn-queue.apps
+  daemon: rm
+  route: /yarn-queue/{queue_name}/apps
+  title: Queue [ {queue_name} ]
+  classes:
+  - YarnQueueController
+  - YarnQueueAppsController
+  - YarnQueueAppsRoute
+  - yarn-queue/apps
+  - queue-navigator
+  - yarn-queue-partition-capacity-labels
+  includes:
+  - ui2.shared.chrome
+  - ui2.yarn-queue
+  - ui2.yarn-queue.info
+  - ui2.shared.emtable
+  - ui2.shared.app-table-columns
+  sections:
+  - id: ui2.yarn-queue.apps.apps
+    title: null
+    source: templates/yarn-queue/apps.hbs.txt:32
+    items:
+    - id: ui2.yarn-queue.apps.apps.empty
+      label: Could not find any applications from this cluster
+      kind: text
+      field: static.apps.empty
+      source: templates/yarn-queue/apps.hbs.txt:36
+      when:
+      - other:no apps
+    - id: ui2.yarn-queue.apps.apps.table
+      label: null
+      kind: column
+      field: static.appTableColumns
+      source: templates/yarn-queue/apps.hbs.txt:32
+      note: em-table columns=app-table-columns.columns; rows from GET /ws/v1/cluster/apps?queue={queue_name}; tableDefinition.searchText pre-set to queue name
+  - id: ui2.yarn-queue.apps.users
+    title: Active User Info
+    source: templates/yarn-queue/apps.hbs.txt:45
+    when:
+    - other:model.selectedQueue.users
+    - scheduler=capacity
+    items:
+    - id: ui2.yarn-queue.apps.users.title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Active User Info: " + model.selected'
+      source: templates/yarn-queue/apps.hbs.txt:45
+    - id: ui2.yarn-queue.apps.users.name
+      label: User Name
+      kind: column
+      field: queueuser.username
+      rest:
+        resource: rm.scheduler
+        path: scheduler.schedulerInfo.queues.queue[].users.user[].username
+      format: none
+      source: templates/yarn-queue/apps.hbs.txt:52
+    - id: ui2.yarn-queue.apps.users.limit-resource
+      label: User Limit Resource
+      kind: column
+      field: queueuser.userResourceLimit.memory
+      fields:
+      - queueuser.userResourceLimit.vCores
+      derivation: '"<memory: " + userResourceLimit.memory + " MB, vCores: " + userResourceLimit.vCores + ">"'
+      format: resource-string
+      source: templates/yarn-queue/apps.hbs.txt:53
+    - id: ui2.yarn-queue.apps.users.used-resource
+      label: Used Resource
+      kind: column
+      field: queueuser.resourcesUsed.memory
+      fields:
+      - queueuser.resourcesUsed.vCores
+      derivation: '"<memory: " + resourcesUsed.memory + " MB, vCores: " + resourcesUsed.vCores + ">"'
+      format: resource-string
+      source: templates/yarn-queue/apps.hbs.txt:54
+    - id: ui2.yarn-queue.apps.users.max-am-resource
+      label: Max AM Resource
+      kind: column
+      field: queueuser.resources.resourceUsagesByPartition.amLimit.memory
+      fields:
+      - queueuser.resources.resourceUsagesByPartition.amLimit.vCores
+      derivation: '"<memory: " + amLimit.memory + " MB, vCores: " + amLimit.vCores + ">" (from resources.resourceUsagesByPartition[0].amLimit)'
+      format: resource-string
+      source: templates/yarn-queue/apps.hbs.txt:55
+    - id: ui2.yarn-queue.apps.users.used-am-resource
+      label: Used AM Resource
+      kind: column
+      field: queueuser.AMResourceUsed.memory
+      fields:
+      - queueuser.AMResourceUsed.vCores
+      derivation: '"<memory: " + AMResourceUsed.memory + " MB, vCores: " + AMResourceUsed.vCores + ">"'
+      format: resource-string
+      source: templates/yarn-queue/apps.hbs.txt:56
+    - id: ui2.yarn-queue.apps.users.active-apps
+      label: Active Apps
+      kind: column
+      field: queueuser.numActiveApplications
+      format: int
+      source: templates/yarn-queue/apps.hbs.txt:57
+    - id: ui2.yarn-queue.apps.users.pending-apps
+      label: Pending Apps
+      kind: column
+      field: queueuser.numPendingApplications
+      format: int
+      source: templates/yarn-queue/apps.hbs.txt:58
+    - id: ui2.yarn-queue.apps.users.weight
+      label: Weight
+      kind: column
+      field: queueuser.userWeight
+      format: float-1dp
+      source: templates/yarn-queue/apps.hbs.txt:59
+- id: ui2.yarn-queues
+  daemon: rm
+  route: /yarn-queues/{queue_name}
+  title: Queues
+  classes:
+  - YarnQueuesController
+  - YarnQueuesRoute
+  - yarn-queues
+  - queue-navigator
+  - tree-selector
+  - yarn-queue/capacity-queue
+  - yarn-queue/fair-queue
+  - yarn-queue/fifo-queue
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-queues.navigator
+    title: null
+    source: templates/components/queue-navigator.hbs.txt:6
+    items:
+    - id: ui2.yarn-queues.navigator.heading
+      label: null
+      dynamic: true
+      kind: title
+      field: scheduler.type
+      rest:
+        resource: rm.scheduler
+        path: scheduler.schedulerInfo.type
+      derivation: 'filteredPartition ? type + " scheduler - Showing queues from partition " + lower(filteredPartition) : type + " scheduler - Showing queues from all partitions"'
+      source: templates/components/queue-navigator.hbs.txt:24
+    - id: ui2.yarn-queues.navigator.partitions
+      label: 'Partitions: '
+      kind: text
+      field: static.queue.partitions
+      source: templates/components/queue-navigator.hbs.txt:32
+      when:
+      - scheduler=capacity
+    - id: ui2.yarn-queues.navigator.partition-option
+      label: null
+      kind: text
+      field: queue.derived.partitionNames
+      source: templates/components/queue-navigator.hbs.txt:35
+      note: one <option> per partitions[] entry
+  - id: ui2.yarn-queues.capacity
+    title: null
+    source: templates/components/yarn-queue/capacity-queue.hbs.txt:19
+    when:
+    - scheduler=capacity
+    items:
+    - id: ui2.yarn-queues.capacity.heading
+      label: null
+      kind: title
+      field: queue.queueName
+      rest:
+        resource: rm.scheduler
+        path: scheduler.schedulerInfo.queues.queue[].queueName
+      source: templates/components/yarn-queue/capacity-queue.hbs.txt:24
+      note: 'href #/yarn-queue/{selected}/apps'
+    - id: ui2.yarn-queues.capacity.state
+      label: null
+      kind: text
+      field: queue.state
+      when:
+      - value:non-empty
+      format: enum
+      source: templates/components/yarn-queue/capacity-queue.hbs.txt:30
+    - id: ui2.yarn-queues.capacity.apps-title
+      label: Running Apps From All Users in Queue
+      kind: title
+      field: static.queue.runningAppsTitle
+      source: templates/components/yarn-queue/capacity-queue.hbs.txt:38
+    - id: ui2.yarn-queues.capacity.apps-pending
+      label: Pending Apps
+      kind: legend
+      field: queue.numPendingApplications
+      derivation: numPendingApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/capacity-queue.js:74
+    - id: ui2.yarn-queues.capacity.apps-active
+      label: Active Apps
+      kind: legend
+      field: queue.numActiveApplications
+      derivation: numActiveApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/capacity-queue.js:78
+  - id: ui2.yarn-queues.capacity.labels
+    title: null
+    source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:2
+    when:
+    - scheduler=capacity
+    items:
+    - id: ui2.yarn-queues.capacity.labels.absolute-used
+      label: absolute used
+      kind: metric
+      field: queue.absoluteUsedCapacity
+      derivation: partitionMap[filteredPartition].absoluteUsedCapacity + "%"
+      format: percent-1dp
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:4
+    - id: ui2.yarn-queues.capacity.labels.absolute-capacity
+      label: absolute capacity
+      kind: metric
+      field: queue.absoluteCapacity
+      derivation: partitionMap[filteredPartition].absoluteCapacity + "%"
+      format: percent-1dp
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:8
+    - id: ui2.yarn-queues.capacity.labels.absolute-max-capacity
+      label: absolute max capacity
+      kind: metric
+      field: queue.absoluteMaxCapacity
+      derivation: partitionMap[filteredPartition].absoluteMaxCapacity + "%"
+      format: percent-1dp
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:12
+    - id: ui2.yarn-queues.capacity.labels.weight
+      label: weight
+      kind: metric
+      field: queue.weight
+      when:
+      - other:isWeightMode
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:18
+    - id: ui2.yarn-queues.capacity.labels.normalized-weight
+      label: normalized weight
+      kind: metric
+      field: queue.normalizedWeight
+      when:
+      - other:isWeightMode
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:22
+    - id: ui2.yarn-queues.capacity.labels.configured-capacity
+      label: configured capacity
+      kind: metric
+      field: queue.capacity
+      derivation: partitionMap[filteredPartition].capacity + "%"
+      format: percent-1dp
+      when:
+      - other:!isWeightMode
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:28
+    - id: ui2.yarn-queues.capacity.labels.configured-max-capacity
+      label: configured max capacity
+      kind: metric
+      field: queue.maxCapacity
+      derivation: partitionMap[filteredPartition].maxCapacity + "%"
+      format: percent-1dp
+      when:
+      - other:!isWeightMode
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:32
+    - id: ui2.yarn-queues.capacity.labels.user-limit
+      label: user limit
+      kind: metric
+      field: queue.userLimit
+      derivation: userLimit + "%"
+      format: percent-1dp
+      when:
+      - other:isLeafQueue
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:38
+    - id: ui2.yarn-queues.capacity.labels.user-limit-factor
+      label: user limit factor
+      kind: metric
+      field: queue.userLimitFactor
+      when:
+      - other:isLeafQueue
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:42
+    - id: ui2.yarn-queues.capacity.labels.flexible
+      label: flexible dynamic queue
+      kind: metric
+      field: queue.creationMethod
+      derivation: isFlexibleDynamicQueue = creationMethod === "dynamicFlexible"
+      when:
+      - other:isFlexibleDynamicQueue
+      source: templates/components/yarn-queue-partition-capacity-labels.hbs.txt:48
+  - id: ui2.yarn-queues.fair
+    title: null
+    source: templates/components/yarn-queue/fair-queue.hbs.txt:21
+    when:
+    - scheduler=fair
+    items:
+    - id: ui2.yarn-queues.fair.info-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Information: " + model.selected'
+      source: templates/components/yarn-queue/fair-queue.hbs.txt:23
+    - id: ui2.yarn-queues.fair.details-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue details for " + model.selected'
+      source: templates/components/yarn-queue/fair-queue.hbs.txt:30
+    - id: ui2.yarn-queues.fair.link
+      label: null
+      kind: link
+      field: queue.queueName
+      format: url
+      source: templates/components/yarn-queue/fair-queue.hbs.txt:34
+      note: 'href #/yarn-queue/{selected}/apps'
+    - id: ui2.yarn-queues.fair.capacities-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Capacities: " + model.selected'
+      source: templates/components/yarn-queue/fair-queue.hbs.txt:48
+    - id: ui2.yarn-queues.fair.apps-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Running Apps From All Users: " + model.selected'
+      source: templates/components/yarn-queue/fair-queue.hbs.txt:60
+    - id: ui2.yarn-queues.fair.steady-fair
+      label: Steady Fair Memory
+      kind: chart
+      field: queue.steadyFairResources.memory
+      format: mb
+      source: yarn-ui/models/yarn-queue/fair-queue.js:32
+    - id: ui2.yarn-queues.fair.used-memory
+      label: Used Memory
+      kind: chart
+      field: queue.usedResources.memory
+      format: mb
+      source: yarn-ui/models/yarn-queue/fair-queue.js:35
+    - id: ui2.yarn-queues.fair.max-memory
+      label: Maximum Memory
+      kind: chart
+      field: queue.maxResources.memory
+      format: mb
+      source: yarn-ui/models/yarn-queue/fair-queue.js:38
+    - id: ui2.yarn-queues.fair.apps-pending
+      label: Pending Apps
+      kind: legend
+      field: queue.numPendingApps
+      derivation: numPendingApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/fair-queue.js:44
+    - id: ui2.yarn-queues.fair.apps-active
+      label: Active Apps
+      kind: legend
+      field: queue.numActiveApps
+      derivation: numActiveApplications || 0
+      format: int
+      source: yarn-ui/models/yarn-queue/fair-queue.js:48
+    - id: ui2.yarn-queues.fair.conf-fair
+      label: Fair Memory, VCores
+      kind: kv
+      field: queue.fairResources.memory
+      fields:
+      - queue.fairResources.vCores
+      format: mb-suffix
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:11
+    - id: ui2.yarn-queues.fair.conf-min
+      label: Minimum Memory, VCores
+      kind: kv
+      field: queue.minResources.memory
+      fields:
+      - queue.minResources.vCores
+      format: mb-suffix
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:15
+    - id: ui2.yarn-queues.fair.conf-cluster
+      label: Cluster Memory, VCores
+      kind: kv
+      field: queue.clusterResources.memory
+      fields:
+      - queue.clusterResources.vCores
+      format: mb-suffix
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:19
+    - id: ui2.yarn-queues.fair.conf-containers
+      label: Pending, Allocated, Reserved Containers
+      kind: kv
+      field: queue.pendingContainers
+      fields:
+      - queue.allocatedContainers
+      - queue.reservedContainers
+      format: join-comma
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:23
+    - id: ui2.yarn-queues.fair.conf-policy
+      label: Scheduling Policy
+      kind: kv
+      field: queue.schedulingPolicy
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:27
+    - id: ui2.yarn-queues.fair.conf-preemption
+      label: Preemption Enabled
+      kind: kv
+      field: queue.preemptable
+      format: boolean
+      source: templates/components/yarn-queue/fair-queue-conf-table.hbs.txt:31
+  - id: ui2.yarn-queues.fifo
+    title: null
+    source: templates/components/yarn-queue/fifo-queue.hbs.txt:21
+    when:
+    - scheduler=fifo
+    items:
+    - id: ui2.yarn-queues.fifo.info-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Information: " + model.selected'
+      source: templates/components/yarn-queue/fifo-queue.hbs.txt:23
+    - id: ui2.yarn-queues.fifo.capacities-title
+      label: null
+      dynamic: true
+      kind: title
+      field: queue.queueName
+      derivation: '"Queue Capacities: " + model.selected'
+      source: templates/components/yarn-queue/fifo-queue.hbs.txt:35
+    - id: ui2.yarn-queues.fifo.available
+      label: Available Capacity
+      kind: chart
+      field: scheduler.availNodeCapacity
+      format: float-1dp
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:19
+    - id: ui2.yarn-queues.fifo.used
+      label: Used Capacity
+      kind: chart
+      field: scheduler.usedNodeCapacity
+      format: float-1dp
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:22
+    - id: ui2.yarn-queues.fifo.total
+      label: Total Capacity
+      kind: chart
+      field: scheduler.totalNodeCapacity
+      format: float-1dp
+      source: yarn-ui/models/yarn-queue/fifo-queue.js:25
+    - id: ui2.yarn-queues.fifo.conf-capacity
+      label: Configured Capacity
+      kind: kv
+      field: queue.capacity
+      format: other:percent
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:11
+    - id: ui2.yarn-queues.fifo.conf-used
+      label: Used Capacity
+      kind: kv
+      field: queue.usedCapacity
+      format: other:percent
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:15
+    - id: ui2.yarn-queues.fifo.conf-state
+      label: State
+      kind: kv
+      field: scheduler.qstate
+      when:
+      - value:non-empty
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:19
+    - id: ui2.yarn-queues.fifo.conf-min-mem
+      label: Minimum Queue Memory Capacity
+      kind: kv
+      field: scheduler.minQueueMemoryCapacity
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:23
+    - id: ui2.yarn-queues.fifo.conf-max-mem
+      label: Maximum Queue Memory Capacity
+      kind: kv
+      field: scheduler.maxQueueMemoryCapacity
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:27
+    - id: ui2.yarn-queues.fifo.conf-nodes
+      label: Number of Nodes
+      kind: kv
+      field: scheduler.numNodes
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:31
+    - id: ui2.yarn-queues.fifo.conf-containers
+      label: Number of Containers
+      kind: kv
+      field: queue.numContainers
+      format: int
+      source: templates/components/yarn-queue/fifo-queue-conf-table.hbs.txt:35
+- id: ui2.yarn-queue-apps
+  daemon: rm
+  route: /yarn-queue-apps/{queue_name}
+  title: null
+  classes: []
+  when:
+  - other:never (dead route)
+  sections:
+  - id: ui2.yarn-queue-apps.notes
+    title: null
+    source: yarn-ui/router.js:78
+    items:
+    - id: ui2.yarn-queue-apps.notes.text
+      label: null
+      kind: text
+      field: static.yarn_queue_apps.notes
+      source: yarn-ui/router.js:78
+      note: router.js:78 registers yarn-queue-apps but there is NO routes/ or templates/ implementation and no controller; Ember's auto-generated route renders nothing. The queue-apps UI lives at yarn-queue/{name}/apps instead.
+  - id: ui2.yarn-queue-apps.dead
+    title: null
+    source: yarn-ui/router.js:78
+    items:
+    - id: ui2.yarn-queue-apps.dead.route
+      label: null
+      kind: text
+      field: static.deadRoute
+      source: yarn-ui/router.js:78
+      note: registered but unimplemented
+- id: ui2.yarn-tools
+  daemon: rm
+  route: /yarn-tools
+  title: YARN Tools
+  classes:
+  - YarnToolsController
+  - YarnToolsRoute
+  - yarn-tools
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-tools.menu
+    title: Tools
+    source: templates/yarn-tools.hbs.txt:45
+    items:
+    - id: ui2.yarn-tools.menu.title
+      label: Tools
+      kind: title
+      field: static.tools.title
+      source: templates/yarn-tools.hbs.txt:45
+    - id: ui2.yarn-tools.menu.conf
+      label: YARN Configuration
+      kind: nav
+      field: static.tools.conf
+      format: url
+      source: templates/yarn-tools.hbs.txt:50
+    - id: ui2.yarn-tools.menu.rm-log
+      label: YARN Daemon Logs
+      kind: nav
+      field: static.tools.rmLog
+      format: url
+      source: templates/yarn-tools.hbs.txt:52
+    - id: ui2.yarn-tools.menu.metrics
+      label: null
+      kind: text
+      field: static.tools.metrics
+      source: yarn-ui/router.js:83
+      note: route yarn-tools.yarn-metrics exists but is NOT linked from the side nav
+  - id: ui2.yarn-tools.menu.donuts
+    title: null
+    source: templates/yarn-tools.hbs.txt:65
+    when:
+    - other:model.clusterMetrics
+    items:
+    - id: ui2.yarn-tools.menu.donuts.finished-title
+      label: Finished Apps From All Users
+      kind: title
+      field: static.clusterOverview.finishedAppsTitle
+      source: templates/yarn-tools.hbs.txt:69
+    - id: ui2.yarn-tools.menu.donuts.running-title
+      label: Running Apps From All Users
+      kind: title
+      field: static.clusterOverview.runningAppsTitle
+      source: templates/yarn-tools.hbs.txt:81
+- id: ui2.yarn-tools.yarn-conf
+  daemon: rm
+  route: /yarn-tools/yarn-conf
+  title: Configuration
+  classes:
+  - YarnToolsYarnConfController
+  - YarnToolsYarnConfRoute
+  - yarn-tools/yarn-conf
+  - em-table
+  includes:
+  - ui2.shared.chrome
+  - ui2.shared.emtable
+  sections:
+  - id: ui2.yarn-tools.yarn-conf.core
+    title: Core Configuration
+    source: templates/yarn-tools/yarn-conf.hbs.txt:2
+    items:
+    - id: ui2.yarn-tools.yarn-conf.core.heading
+      label: Core Configuration
+      kind: title
+      field: static.conf.coreTitle
+      source: templates/yarn-tools/yarn-conf.hbs.txt:2
+    - id: ui2.yarn-tools.yarn-conf.core.table
+      label: null
+      kind: column
+      field: conf.name
+      source: templates/yarn-tools/yarn-conf.hbs.txt:20
+      note: em-table rows = yarn-conf entries with source == 'core-default.xml'; columns from models/yarn-conf.js (name, source, value -> headers Name/Source/Value via makeFromModel)
+  - id: ui2.yarn-tools.yarn-conf.yarn
+    title: YARN Configuration
+    source: templates/yarn-tools/yarn-conf.hbs.txt:22
+    items:
+    - id: ui2.yarn-tools.yarn-conf.yarn.heading
+      label: YARN Configuration
+      kind: title
+      field: static.conf.yarnTitle
+      source: templates/yarn-tools/yarn-conf.hbs.txt:22
+    - id: ui2.yarn-tools.yarn-conf.yarn.table
+      label: null
+      kind: column
+      field: conf.name
+      source: templates/yarn-tools/yarn-conf.hbs.txt:23
+      note: rows with source == 'yarn-default.xml'
+  - id: ui2.yarn-tools.yarn-conf.mapred
+    title: MapReduce Configuration
+    source: templates/yarn-tools/yarn-conf.hbs.txt:25
+    items:
+    - id: ui2.yarn-tools.yarn-conf.mapred.heading
+      label: MapReduce Configuration
+      kind: title
+      field: static.conf.mapredTitle
+      source: templates/yarn-tools/yarn-conf.hbs.txt:25
+    - id: ui2.yarn-tools.yarn-conf.mapred.table
+      label: null
+      kind: column
+      field: conf.name
+      source: templates/yarn-tools/yarn-conf.hbs.txt:26
+      note: rows with source == 'mapred-default.xml'
+  - id: ui2.yarn-tools.yarn-conf.columns
+    title: null
+    source: yarn-ui/models/yarn-conf.js:2
+    items:
+    - id: ui2.yarn-tools.yarn-conf.columns.name
+      label: Name
+      kind: column
+      field: conf.name
+      source: em-table/utils/column-definition.js:59
+      note: 'makeFromModel capitalizes attribute names: name/source/value -> Name/Source/Value'
+    - id: ui2.yarn-tools.yarn-conf.columns.source
+      label: Source
+      kind: column
+      field: conf.source
+      source: em-table/utils/column-definition.js:59
+    - id: ui2.yarn-tools.yarn-conf.columns.value
+      label: Value
+      kind: column
+      field: conf.value
+      source: em-table/utils/column-definition.js:59
+- id: ui2.yarn-tools.yarn-metrics
+  daemon: rm
+  route: /yarn-tools/yarn-metrics
+  title: Server metrics
+  classes:
+  - YarnToolsYarnMetricsRoute
+  - yarn-tools/yarn-metrics
+  - json-pretty
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-tools.yarn-metrics.notes
+    title: null
+    source: yarn-ui/adapters/yarn-metrics.js:12
+    items:
+    - id: ui2.yarn-tools.yarn-metrics.notes.text
+      label: null
+      kind: text
+      field: static.yarn_tools_yarn_metrics.notes
+      source: yarn-ui/adapters/yarn-metrics.js:12
+      note: GET http://{rmWebAddress}/jmx (adapter yarn-metrics.js pathForType 'jmx'); template renders raw JSON of each jmx.metrics entry via json-pretty (no labels).
+  - id: ui2.yarn-tools.yarn-metrics.json
+    title: null
+    source: templates/yarn-tools/yarn-metrics.hbs.txt:24
+    items:
+    - id: ui2.yarn-tools.yarn-metrics.json.value
+      label: null
+      kind: text
+      field: static.jmx.json
+      source: templates/yarn-tools/yarn-metrics.hbs.txt:24
+      note: json-pretty(jmx.metrics) per bean; data = /jmx response (conf/log/jmx declared in rest-daemon.yaml by sibling)
+- id: ui2.yarn-tools.yarn-rm-log
+  daemon: rm
+  route: /yarn-tools/yarn-rm-log
+  title: YARN Daemon Logs
+  classes:
+  - YarnToolsYarnRmLogController
+  - YarnToolsYarnRmLogRoute
+  - yarn-tools/yarn-rm-log
+  includes:
+  - ui2.shared.chrome
+  sections:
+  - id: ui2.yarn-tools.yarn-rm-log.notes
+    title: null
+    source: yarn-ui/adapters/yarn-rm-log.js:12
+    items:
+    - id: ui2.yarn-tools.yarn-rm-log.notes.text
+      label: null
+      kind: text
+      field: static.yarn_tools_yarn_rm_log.notes
+      source: yarn-ui/adapters/yarn-rm-log.js:12
+      note: GET http://{rmWebAddress}/logs (adapter yarn-rm-log.js pathForType 'logs'); serializer scrapes <A HREF="/logs/..."> from the HTML directory listing. Selecting a file opens {rmWebAddress}{logFileUrl}.
+  - id: ui2.yarn-tools.yarn-rm-log.list
+    title: YARN Daemon Logs
+    source: templates/yarn-tools/yarn-rm-log.hbs.txt:2
+    items:
+    - id: ui2.yarn-tools.yarn-rm-log.list.heading
+      label: YARN Daemon Logs
+      kind: title
+      field: static.rmLog.title
+      source: templates/yarn-tools/yarn-rm-log.hbs.txt:2
+    - id: ui2.yarn-tools.yarn-rm-log.list.file
+      label: null
+      kind: link
+      field: log.fileName
+      fields:
+      - log.derived.fileUrl
+      derivation: logFileName = logFileUrl.replace("logs","").replace(/\//g,"")
+      format: url
+      source: templates/yarn-tools/yarn-rm-log.hbs.txt:28
+      note: one list item per log file
+    - id: ui2.yarn-tools.yarn-rm-log.list.empty
+      label: No logs were found.
+      kind: text
+      field: static.rmLog.empty
+      source: templates/yarn-tools/yarn-rm-log.hbs.txt:33
+      when:
+      - other:no logs

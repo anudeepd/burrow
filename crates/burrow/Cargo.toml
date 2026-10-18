@@ -1,0 +1,46 @@
+[package]
+name = "burrow"
+description = "A modern UI for Apache Hadoop YARN and Spark-on-YARN, as one binary"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+build = "build.rs"
+
+[dependencies]
+anyhow = "1.0.104"
+axum = { version = "0.8.9", default-features = false, features = ["http1", "http2", "tokio", "query", "json"] }
+bytes = "1.12.1"
+clap = { version = "4.6.7", features = ["derive", "env", "wrap_help"] }
+futures-util = "0.3.34"
+getrandom = "0.4"
+http = "1.5.0"
+httpdate = "1.0.3"
+mimalloc = { version = "0.1.52", default-features = false, optional = true }
+mime_guess = { version = "2.0.5", default-features = false }
+rust-embed = { version = "8.12.0", features = ["interpolate-folder-path"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "net", "time", "signal", "sync"] }
+tokio-util = "0.7.19"
+tower = "0.5.3"
+tower-http = { version = "0.7.1", features = ["compression-br", "compression-gzip", "compression-zstd", "trace", "set-header"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+url = "2.5.8"
+webbrowser = "1.2.4"
+burrow-core = { version = "0.1.0", path = "../burrow-core" }
+
+[features]
+mimalloc = ["dep:mimalloc"]
+
+[build-dependencies]
+brotli = "9.0.0"
+flate2 = "1.1.10"
+
+[dev-dependencies]
+brotli = "9.0.0"
+flate2 = "1.1.10"
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls-no-provider", "http2", "stream"] }
+tempfile = "3.27.0"
+tokio = { version = "1.53.1", features = ["full"] }

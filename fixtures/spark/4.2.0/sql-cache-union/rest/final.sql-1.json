@@ -1,0 +1,20 @@
+{
+  "id" : 1,
+  "status" : "COMPLETED",
+  "description" : "sql at NativeMethodAccessorImpl.java:0",
+  "planDescription" : "== Physical Plan ==\nCacheTableAsSelect (1)\n\n\n(1) CacheTableAsSelect\nArguments: tc, Aggregate [k#1L], [k#1L, sum(v#2L) AS s#3L], SELECT k, sum(v) AS s FROM t GROUP BY k, false\n\n",
+  "submissionTime" : "2026-10-03T07:06:35.603GMT",
+  "duration" : 2391,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 0,
+    "nodeName" : "CacheTableAsSelect",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ ],
+  "queryId" : "01a10096-0ad1-724a-a8dc-41d730b9e0db",
+  "errorMessage" : "",
+  "rootExecutionId" : 1
+}

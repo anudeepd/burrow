@@ -1,0 +1,341 @@
+{
+  "id" : 16,
+  "status" : "COMPLETED",
+  "description" : "rate_counts\nid = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a\nrunId = 61db4652-e827-43ba-9389-5973a94b8fac\nbatch = 7",
+  "planDescription" : "== Physical Plan ==\nWriteToDataSourceV2 (13)\n+- * HashAggregate (12)\n   +- StateStoreSave (11)\n      +- * HashAggregate (10)\n         +- StateStoreRestore (9)\n            +- * HashAggregate (8)\n               +- Exchange (7)\n                  +- * HashAggregate (6)\n                     +- * Project (5)\n                        +- * Filter (4)\n                           +- EventTimeWatermark (3)\n                              +- * Project (2)\n                                 +- MicroBatchScan (1)\n\n\n(1) MicroBatchScan\nOutput [2]: [timestamp#0, value#1L]\nclass org.apache.spark.sql.execution.streaming.sources.RateStreamTable$$anon$1\n\n(2) Project [codegen id : 1]\nOutput [2]: [timestamp#0, value#1L]\nInput [2]: [timestamp#0, value#1L]\n\n(3) EventTimeWatermark\nInput [2]: [timestamp#0, value#1L]\nArguments: timestamp#0: timestamp, 10 seconds\n\n(4) Filter [codegen id : 2]\nInput [2]: [timestamp#0-T10000ms, value#1L]\nCondition : isnotnull(timestamp#0-T10000ms)\n\n(5) Project [codegen id : 2]\nOutput [2]: [named_struct(start, knownnullable(precisetimestampconversion(((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) < 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0), LongType, TimestampType)), end, knownnullable(precisetimestampconversion((((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) < 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0) + 5000000), LongType, TimestampType))) AS window#10-T10000ms, (value#1L % 3) AS _groupingexpression#335L]\nInput [2]: [timestamp#0-T10000ms, value#1L]\n\n(6) HashAggregate [codegen id : 2]\nInput [2]: [window#10-T10000ms, _groupingexpression#335L]\nKeys [2]: [window#10-T10000ms, _groupingexpression#335L]\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count(1)#8L]\nResults [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\n\n(7) Exchange\nInput [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\nArguments: hashpartitioning(window#10-T10000ms, _groupingexpression#335L, 4), ENSURE_REQUIREMENTS, [plan_id=2398]\n\n(8) HashAggregate [codegen id : 3]\nInput [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\nKeys [2]: [window#10-T10000ms, _groupingexpression#335L]\nFunctions [1]: [merge_count(1)]\nAggregate Attributes [1]: [count(1)#8L]\nResults [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\n\n(9) StateStoreRestore\nInput [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\nArguments: [window#10-T10000ms, _groupingexpression#335L], state info [ checkpoint = <unknown>, runId = 69da7caa-a28a-4665-830b-d06222ab512d, opId = 0, ver = 0, numPartitions = 4], 2\n\n(10) HashAggregate [codegen id : 4]\nInput [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\nKeys [2]: [window#10-T10000ms, _groupingexpression#335L]\nFunctions [1]: [merge_count(1)]\nAggregate Attributes [1]: [count(1)#8L]\nResults [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\n\n(11) StateStoreSave\nInput [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\nArguments: [window#10-T10000ms, _groupingexpression#335L], state info [ checkpoint = <unknown>, runId = 69da7caa-a28a-4665-830b-d06222ab512d, opId = 0, ver = 0, numPartitions = 4], Append, -9223372036854775808, -9223372036854775808, 2\n\n(12) HashAggregate [codegen id : 5]\nInput [3]: [window#10-T10000ms, _groupingexpression#335L, count#25L]\nKeys [2]: [window#10-T10000ms, _groupingexpression#335L]\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#8L]\nResults [3]: [window#10-T10000ms, _groupingexpression#335L AS k#5L, count(1)#8L AS count#9L]\n\n(13) WriteToDataSourceV2\nInput [3]: [window#10-T10000ms, k#5L, count#9L]\nArguments: MicroBatchWrite[epoch: 7, writer: org.apache.spark.sql.execution.streaming.sources.MemoryStreamingWrite@14979661], org.apache.spark.sql.execution.datasources.v2.DataSourceV2Strategy$$Lambda$2381/0x00007f8008cf34e0@4d92e4a8\n\n",
+  "submissionTime" : "2026-10-03T07:14:32.088GMT",
+  "duration" : 248,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 7 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 17,
+    "nodeName" : "MicroBatchScan",
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "80"
+    } ]
+  }, {
+    "nodeId" : 16,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 15,
+    "nodeName" : "WholeStageCodegen (1)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n8 ms (4 ms, 4 ms, 4 ms (stage 14.0: task 40))"
+    } ]
+  }, {
+    "nodeId" : 14,
+    "nodeName" : "EventTimeWatermark",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 13,
+    "nodeName" : "Filter",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "80"
+    } ]
+  }, {
+    "nodeId" : 12,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 11,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "total (min, med, max (stageId: taskId))\n0 ms (0 ms, 0 ms, 0 ms (stage 14.0: task 40))"
+    }, {
+      "name" : "peak memory",
+      "value" : "total (min, med, max (stageId: taskId))\n16.5 MiB (8.2 MiB, 8.2 MiB, 8.2 MiB (stage 14.0: task 40))"
+    }, {
+      "name" : "number of output rows",
+      "value" : "12"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "(min, med, max (stageId: taskId)):\n(1, 1, 1 (stage 14.0: task 40))"
+    } ]
+  }, {
+    "nodeId" : 10,
+    "nodeName" : "WholeStageCodegen (2)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n6 ms (3 ms, 3 ms, 3 ms (stage 14.0: task 40))"
+    } ]
+  }, {
+    "nodeId" : 9,
+    "nodeName" : "Exchange",
+    "metrics" : [ {
+      "name" : "shuffle records written",
+      "value" : "12"
+    }, {
+      "name" : "local merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "shuffle write time",
+      "value" : "total (min, med, max (stageId: taskId))\n1 ms (0 ms, 0 ms, 0 ms (stage 14.0: task 41))"
+    }, {
+      "name" : "remote merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "corrupt merged block chunks",
+      "value" : "0"
+    }, {
+      "name" : "remote merged reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "records read",
+      "value" : "12"
+    }, {
+      "name" : "local bytes read",
+      "value" : "total (min, med, max (stageId: taskId))\n612.0 B (172.0 B, 212.0 B, 228.0 B (stage 15.0: task 42))"
+    }, {
+      "name" : "fetch wait time",
+      "value" : "total (min, med, max (stageId: taskId))\n0 ms (0 ms, 0 ms, 0 ms (stage 15.0: task 43))"
+    }, {
+      "name" : "remote bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "merged fetch fallback count",
+      "value" : "0"
+    }, {
+      "name" : "local blocks read",
+      "value" : "6"
+    }, {
+      "name" : "remote merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "remote blocks read",
+      "value" : "0"
+    }, {
+      "name" : "data size",
+      "value" : "total (min, med, max (stageId: taskId))\n672.0 B (336.0 B, 336.0 B, 336.0 B (stage 14.0: task 40))"
+    }, {
+      "name" : "local merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of partitions",
+      "value" : "4"
+    }, {
+      "name" : "remote reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read to disk",
+      "value" : "0.0 B"
+    }, {
+      "name" : "shuffle bytes written",
+      "value" : "total (min, med, max (stageId: taskId))\n612.0 B (306.0 B, 306.0 B, 306.0 B (stage 14.0: task 40))"
+    } ]
+  }, {
+    "nodeId" : 8,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 3,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "total (min, med, max (stageId: taskId))\n0 ms (0 ms, 0 ms, 0 ms (stage 15.0: task 43))"
+    }, {
+      "name" : "peak memory",
+      "value" : "total (min, med, max (stageId: taskId))\n25.0 MiB (256.0 KiB, 8.2 MiB, 8.2 MiB (stage 15.0: task 43))"
+    }, {
+      "name" : "number of output rows",
+      "value" : "6"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "(min, med, max (stageId: taskId)):\n(1, 1, 1 (stage 15.0: task 43))"
+    } ]
+  }, {
+    "nodeId" : 7,
+    "nodeName" : "WholeStageCodegen (3)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n78 ms (18 ms, 20 ms, 20 ms (stage 15.0: task 43))"
+    } ]
+  }, {
+    "nodeId" : 6,
+    "nodeName" : "StateStoreRestore",
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "9"
+    } ]
+  }, {
+    "nodeId" : 5,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 4,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "total (min, med, max (stageId: taskId))\n2 ms (0 ms, 1 ms, 1 ms (stage 15.0: task 43))"
+    }, {
+      "name" : "peak memory",
+      "value" : "total (min, med, max (stageId: taskId))\n25.0 MiB (256.0 KiB, 8.2 MiB, 8.2 MiB (stage 15.0: task 43))"
+    }, {
+      "name" : "number of output rows",
+      "value" : "6"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "(min, med, max (stageId: taskId)):\n(1, 1, 1 (stage 15.0: task 43))"
+    } ]
+  }, {
+    "nodeId" : 4,
+    "nodeName" : "WholeStageCodegen (4)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n89 ms (11 ms, 26 ms, 26 ms (stage 15.0: task 43))"
+    } ]
+  }, {
+    "nodeId" : 3,
+    "nodeName" : "StateStoreSave",
+    "metrics" : [ {
+      "name" : "number of shuffle partitions",
+      "value" : "4"
+    }, {
+      "name" : "number of removed state rows",
+      "value" : "0"
+    }, {
+      "name" : "data returned from Python workers",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of total state rows",
+      "value" : "12"
+    }, {
+      "name" : "number of state store instances",
+      "value" : "4"
+    }, {
+      "name" : "memory used by state",
+      "value" : "total (min, med, max (stageId: taskId))\n4.9 KiB (688.0 B, 1392.0 B, 1632.0 B (stage 15.0: task 42))"
+    }, {
+      "name" : "count of cache hit on states cache in provider",
+      "value" : "56"
+    }, {
+      "name" : "number of output rows",
+      "value" : "6"
+    }, {
+      "name" : "estimated size of state only on current version",
+      "value" : "total (min, med, max (stageId: taskId))\n3.0 KiB (328.0 B, 976.0 B, 1008.0 B (stage 15.0: task 42))"
+    }, {
+      "name" : "number of rows which are dropped by watermark",
+      "value" : "0"
+    }, {
+      "name" : "data sent to Python workers",
+      "value" : "0.0 B"
+    }, {
+      "name" : "count of cache miss on states cache in provider",
+      "value" : "0"
+    }, {
+      "name" : "time to commit changes",
+      "value" : "total (min, med, max (stageId: taskId))\n115 ms (27 ms, 27 ms, 34 ms (stage 15.0: task 45))"
+    }, {
+      "name" : "time to remove",
+      "value" : "total (min, med, max (stageId: taskId))\n23 ms (5 ms, 6 ms, 6 ms (stage 15.0: task 43))"
+    }, {
+      "name" : "number of updated state rows",
+      "value" : "6"
+    }, {
+      "name" : "time to update",
+      "value" : "total (min, med, max (stageId: taskId))\n82 ms (9 ms, 24 ms, 25 ms (stage 15.0: task 44))"
+    }, {
+      "name" : "number of output rows",
+      "value" : "0"
+    } ]
+  }, {
+    "nodeId" : 2,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 5,
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "time in aggregation build",
+      "value" : "total (min, med, max (stageId: taskId))\n183 ms (42 ms, 47 ms, 47 ms (stage 15.0: task 43))"
+    }, {
+      "name" : "peak memory",
+      "value" : "total (min, med, max (stageId: taskId))\n25.0 MiB (256.0 KiB, 8.2 MiB, 8.2 MiB (stage 15.0: task 43))"
+    }, {
+      "name" : "number of output rows",
+      "value" : "6"
+    }, {
+      "name" : "number of sort fallback tasks",
+      "value" : "0"
+    }, {
+      "name" : "avg hash probes per key",
+      "value" : "(min, med, max (stageId: taskId)):\n(1, 1, 1 (stage 15.0: task 43))"
+    } ]
+  }, {
+    "nodeId" : 1,
+    "nodeName" : "WholeStageCodegen (5)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n233 ms (50 ms, 61 ms, 61 ms (stage 15.0: task 43))"
+    } ]
+  }, {
+    "nodeId" : 0,
+    "nodeName" : "WriteToDataSourceV2",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ {
+    "fromId" : 2,
+    "toId" : 0
+  }, {
+    "fromId" : 3,
+    "toId" : 2
+  }, {
+    "fromId" : 5,
+    "toId" : 3
+  }, {
+    "fromId" : 6,
+    "toId" : 5
+  }, {
+    "fromId" : 8,
+    "toId" : 6
+  }, {
+    "fromId" : 9,
+    "toId" : 8
+  }, {
+    "fromId" : 11,
+    "toId" : 9
+  }, {
+    "fromId" : 12,
+    "toId" : 11
+  }, {
+    "fromId" : 13,
+    "toId" : 12
+  }, {
+    "fromId" : 14,
+    "toId" : 13
+  }, {
+    "fromId" : 16,
+    "toId" : 14
+  }, {
+    "fromId" : 17,
+    "toId" : 16
+  } ]
+}

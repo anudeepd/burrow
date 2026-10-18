@@ -1,0 +1,96 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 11,
+  "stages": [
+    {
+      "stageId": 24,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 24",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_335",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_117",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        },
+        {
+          "id": "cluster_118",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 51,
+          "name": "ParallelCollectionRDD",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_335"
+        },
+        {
+          "id": 52,
+          "name": "MapPartitionsRDD",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_335"
+        },
+        {
+          "id": 53,
+          "name": "MapPartitionsRDD",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_335"
+        },
+        {
+          "id": 54,
+          "name": "MapPartitionsRDD",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_117"
+        },
+        {
+          "id": 55,
+          "name": "*(1) Project [(id#0L % 100) AS k#1L, (id#0L * 3) AS v#2L]\n+- *(1) Range (0, 50000, step=1, splits=4)\n",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": true,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_118"
+        }
+      ],
+      "edges": [
+        {
+          "from": 51,
+          "to": 52
+        },
+        {
+          "from": 52,
+          "to": 53
+        },
+        {
+          "from": 53,
+          "to": 54
+        },
+        {
+          "from": 54,
+          "to": 55
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

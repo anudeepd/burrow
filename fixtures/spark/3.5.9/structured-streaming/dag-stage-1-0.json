@@ -1,0 +1,130 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 1,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 1",
+      "clusters": [
+        {
+          "id": "cluster11",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster8",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster7",
+          "name": "StateStoreRestore",
+          "parentId": null
+        },
+        {
+          "id": "cluster4",
+          "name": "WholeStageCodegen (4)",
+          "parentId": null
+        },
+        {
+          "id": "cluster3",
+          "name": "StateStoreSave",
+          "parentId": null
+        },
+        {
+          "id": "cluster0",
+          "name": "WholeStageCodegen (5)",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 6,
+          "name": "ShuffledRowRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster11"
+        },
+        {
+          "id": 7,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster8"
+        },
+        {
+          "id": 8,
+          "name": "ReadStateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster7"
+        },
+        {
+          "id": 9,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster4"
+        },
+        {
+          "id": 10,
+          "name": "StateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster3"
+        },
+        {
+          "id": 11,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster0"
+        }
+      ],
+      "edges": [
+        {
+          "from": 6,
+          "to": 7
+        },
+        {
+          "from": 7,
+          "to": 8
+        },
+        {
+          "from": 8,
+          "to": 9
+        },
+        {
+          "from": 9,
+          "to": 10
+        },
+        {
+          "from": 10,
+          "to": 11
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 5,
+      "to": 6,
+      "fromStage": null,
+      "toStage": 1
+    }
+  ]
+}

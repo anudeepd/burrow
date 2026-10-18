@@ -1,0 +1,16 @@
+WARNING: HADOOP_PREFIX has been replaced by HADOOP_HOME. Using value of HADOOP_PREFIX.
+WARNING: YARN_CONF_DIR has been replaced by HADOOP_CONF_DIR. Using value of YARN_CONF_DIR.
+Oct 03, 2026 12:21:02 PM com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory register
+INFO: Registering org.apache.hadoop.yarn.server.resourcemanager.webapp.JAXBContextResolver as a provider class
+Oct 03, 2026 12:21:02 PM com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory register
+INFO: Registering org.apache.hadoop.yarn.server.resourcemanager.webapp.RMWebServices as a root resource class
+Oct 03, 2026 12:21:02 PM com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory register
+INFO: Registering org.apache.hadoop.yarn.webapp.GenericExceptionHandler as a provider class
+Oct 03, 2026 12:21:02 PM com.sun.jersey.server.impl.application.WebApplicationImpl _initiate
+INFO: Initiating Jersey application, version 'Jersey: 1.19.4 05/24/2017 03:20 PM'
+Oct 03, 2026 12:21:02 PM com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory getComponentProvider
+INFO: Binding org.apache.hadoop.yarn.server.resourcemanager.webapp.JAXBContextResolver to GuiceManagedComponentProvider with the scope "Singleton"
+Oct 03, 2026 12:21:02 PM com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory getComponentProvider
+INFO: Binding org.apache.hadoop.yarn.webapp.GenericExceptionHandler to GuiceManagedComponentProvider with the scope "Singleton"
+Oct 03, 2026 12:21:03 PM com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory getComponentProvider
+INFO: Binding org.apache.hadoop.yarn.server.resourcemanager.webapp.RMWebServices to GuiceManagedComponentProvider with the scope "Singleton"

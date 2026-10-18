@@ -1,0 +1,22 @@
+{
+  "jobId" : 2,
+  "name" : "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+  "description" : "long sql query",
+  "submissionTime" : "2026-10-03T07:09:39.668GMT",
+  "completionTime" : "2026-10-03T07:09:39.740GMT",
+  "stageIds" : [ 4, 5 ],
+  "jobTags" : [ "spark-session-cb843b0e-e95d-449d-866e-6d5e33770bec", "spark-session-cb843b0e-e95d-449d-866e-6d5e33770bec-execution-root-id-0" ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 5,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 1,
+  "numSkippedTasks" : 4,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 1,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 1,
+  "numSkippedStages" : 1,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

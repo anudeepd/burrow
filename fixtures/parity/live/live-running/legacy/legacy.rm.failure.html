@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <title>
+    
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    });
+  </script>
+  </head><body><div id="jsnotice" class="ui-state-error" style="display: none;">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/static/hadoop-st.png">
+            </div>
+            <h1>
+              
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav" class="ui-accordion ui-widget ui-helper-reset" role="tablist">
+            <h3 class="ui-accordion-header ui-corner-top ui-state-default ui-accordion-header-active ui-state-active ui-accordion-icons" role="tab" id="ui-id-1" aria-controls="ui-id-2" aria-selected="true" aria-expanded="true" tabindex="0"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span>
+              Cluster
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active" id="ui-id-2" aria-labelledby="ui-id-1" role="tabpanel" aria-hidden="false" style="height: 222.766px;">
+              <li>
+                <a href="/cluster/cluster">About</a>
+              </li><li>
+                <a href="/cluster/nodes">Nodes</a>
+              </li><li>
+                <a href="/cluster/nodelabels">Node Labels</a>
+              </li><li>
+                <a href="/cluster/apps">Applications</a>
+                <ul>
+                  <li>
+                  </li><li>
+                    <a href="/cluster/apps/NEW">NEW</a>
+                  </li><li>
+                    <a href="/cluster/apps/NEW_SAVING">NEW_SAVING</a>
+                  </li><li>
+                    <a href="/cluster/apps/SUBMITTED">SUBMITTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/ACCEPTED">ACCEPTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/RUNNING">RUNNING</a>
+                  </li><li>
+                    <a href="/cluster/apps/FINISHED">FINISHED</a>
+                  </li><li>
+                    <a href="/cluster/apps/FAILED">FAILED</a>
+                  </li><li>
+                    <a href="/cluster/apps/KILLED">KILLED</a>
+                </li></ul>
+              </li><li>
+                <a href="/cluster/scheduler">Scheduler</a>
+            </li></ul>
+            <h3 class="ui-accordion-header ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons" role="tab" id="ui-id-3" aria-controls="ui-id-4" aria-selected="false" aria-expanded="false" tabindex="-1"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>
+              Tools
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content" id="ui-id-4" aria-labelledby="ui-id-3" role="tabpanel" aria-hidden="true" style="display: none; height: 222.766px;">
+              <li>
+                <a href="/conf">Configuration</a>
+              </li><li>
+                <a href="/logs">Local logs</a>
+              </li><li>
+                <a href="/stacks">Server stacks</a>
+              </li><li>
+                <a href="/jmx?qry=Hadoop:*">Server metrics</a>
+            </li></ul>
+          </div>
+        </td>
+        <td class="content">
+          <p>
+            The application master for application_1791901196446_0002 redirected the resource manager's web proxy's request back to the web proxy, which means your request to view the application master's web UI cannot be fulfilled. The typical cause for this error is a network misconfiguration that causes the resource manager's web proxy host to resolve to an unexpected IP address on the application master host. Please contact your cluster administrator to resolve the issue.
+        </p></td>
+      </tr>
+    </tbody>
+  </table>
+
+</body></html>

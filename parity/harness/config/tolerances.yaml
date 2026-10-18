@@ -1,0 +1,46 @@
+# Explicit, reviewable tolerances for the differential gate. Every entry MUST carry a `reason`
+# (shown on the affected report rows) — nothing here is implicit, and a green run stays trustworthy
+# because each tolerance is narrow, named, and visible.
+#
+# Why this file exists: the legacy DOM snapshot and the REST/ours samples are never taken at the same
+# instant, and some inventory rows compare a *composite* rendering against a single upstream field.
+# Rather than wave those away, each one gets a named mode here.
+#
+# Modes
+#   version-prefix : compare only the leading `x.y.z` version token of a composite build string
+#   pct-tolerance  : numeric values within `pct` percent of each other count as equal
+#   ignore-bracket-timestamp : equal once a leading `[<timestamp>] ` stamp is stripped from both sides
+version: 1
+
+tolerances:
+  cluster.info.derived.rmVersionText:
+    mode: version-prefix
+    reason: >-
+      AboutBlock.java:51 renders `getRMBuildVersion() + " on " + getRMVersionBuiltOn()`, i.e. the full
+      build string plus its build date; our SPA renders the version with a different wording/omission
+      of the build date. The version token itself (3.4.3) is the datum users compare; the trailing
+      build/date text is a presentation choice for the product owner (flagged, not waived).
+  cluster.info.derived.hadoopVersionText:
+    mode: version-prefix
+    reason: >-
+      same composite as rmVersionText (AboutBlock.java:53); compared on the leading version token,
+      trailing build/date text recorded in the report for the product decision.
+  attempt.diagnosticsInfo:
+    mode: ignore-bracket-timestamp
+    reason: >-
+      Same source as app.diagnostics: RMAppAttemptBlock prints the diagnostic with the same
+      `[<Times.format(now)>]` prefix, stamped independently by the RM and our sample. Only the leading
+      bracketed timestamp is ignored; any other text difference still fails.
+  container.diagnosticsInfo:
+    mode: ignore-bracket-timestamp
+    reason: >-
+      Same as attempt.diagnosticsInfo: the container diagnostic carries a bracketed RM timestamp that the
+      legacy DOM snapshot and our sample cannot share. Any other difference still fails.
+  app.diagnostics:
+    mode: ignore-bracket-timestamp
+    reason: >-
+      The scheduler regenerates an ACCEPTED/pending application's diagnostics on every allocation attempt and
+      prefixes each with `[<Times.format(now)>]` (CapacityScheduler activity diagnostics), so a legacy DOM
+      snapshot, our SPA and the REST body — captured seconds apart — carry different stamps on otherwise
+      identical text. Only a leading bracketed timestamp is ignored; any other difference in the text still
+      fails (the mode returns not-equal when the remainder differs).

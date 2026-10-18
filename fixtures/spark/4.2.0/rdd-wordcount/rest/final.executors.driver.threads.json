@@ -1,0 +1,1815 @@
+[ {
+  "threadId" : 95,
+  "threadName" : "block-manager-ask-thread-pool-0",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 96,
+  "threadName" : "block-manager-ask-thread-pool-1",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 158,
+  "threadName" : "block-manager-ask-thread-pool-10",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 159,
+  "threadName" : "block-manager-ask-thread-pool-11",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 160,
+  "threadName" : "block-manager-ask-thread-pool-12",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 161,
+  "threadName" : "block-manager-ask-thread-pool-13",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 165,
+  "threadName" : "block-manager-ask-thread-pool-14",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 166,
+  "threadName" : "block-manager-ask-thread-pool-15",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 170,
+  "threadName" : "block-manager-ask-thread-pool-16",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 171,
+  "threadName" : "block-manager-ask-thread-pool-17",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 175,
+  "threadName" : "block-manager-ask-thread-pool-18",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 176,
+  "threadName" : "block-manager-ask-thread-pool-19",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 103,
+  "threadName" : "block-manager-ask-thread-pool-2",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 104,
+  "threadName" : "block-manager-ask-thread-pool-3",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 112,
+  "threadName" : "block-manager-ask-thread-pool-4",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 113,
+  "threadName" : "block-manager-ask-thread-pool-5",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 121,
+  "threadName" : "block-manager-ask-thread-pool-6",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 122,
+  "threadName" : "block-manager-ask-thread-pool-7",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 130,
+  "threadName" : "block-manager-ask-thread-pool-8",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 131,
+  "threadName" : "block-manager-ask-thread-pool-9",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@58b7512e",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 92,
+  "threadName" : "block-manager-storage-async-thread-pool-0",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 93,
+  "threadName" : "block-manager-storage-async-thread-pool-1",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 119,
+  "threadName" : "block-manager-storage-async-thread-pool-10",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 120,
+  "threadName" : "block-manager-storage-async-thread-pool-11",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 127,
+  "threadName" : "block-manager-storage-async-thread-pool-12",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 128,
+  "threadName" : "block-manager-storage-async-thread-pool-13",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 129,
+  "threadName" : "block-manager-storage-async-thread-pool-14",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 151,
+  "threadName" : "block-manager-storage-async-thread-pool-15",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 153,
+  "threadName" : "block-manager-storage-async-thread-pool-16",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 154,
+  "threadName" : "block-manager-storage-async-thread-pool-17",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 155,
+  "threadName" : "block-manager-storage-async-thread-pool-18",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 156,
+  "threadName" : "block-manager-storage-async-thread-pool-19",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 94,
+  "threadName" : "block-manager-storage-async-thread-pool-2",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 157,
+  "threadName" : "block-manager-storage-async-thread-pool-20",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 162,
+  "threadName" : "block-manager-storage-async-thread-pool-21",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 163,
+  "threadName" : "block-manager-storage-async-thread-pool-22",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 164,
+  "threadName" : "block-manager-storage-async-thread-pool-23",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 167,
+  "threadName" : "block-manager-storage-async-thread-pool-24",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 168,
+  "threadName" : "block-manager-storage-async-thread-pool-25",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 169,
+  "threadName" : "block-manager-storage-async-thread-pool-26",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 172,
+  "threadName" : "block-manager-storage-async-thread-pool-27",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 173,
+  "threadName" : "block-manager-storage-async-thread-pool-28",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 174,
+  "threadName" : "block-manager-storage-async-thread-pool-29",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 100,
+  "threadName" : "block-manager-storage-async-thread-pool-3",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 101,
+  "threadName" : "block-manager-storage-async-thread-pool-4",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 102,
+  "threadName" : "block-manager-storage-async-thread-pool-5",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 109,
+  "threadName" : "block-manager-storage-async-thread-pool-6",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 110,
+  "threadName" : "block-manager-storage-async-thread-pool-7",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 111,
+  "threadName" : "block-manager-storage-async-thread-pool-8",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 118,
+  "threadName" : "block-manager-storage-async-thread-pool-9",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.poll(LinkedBlockingQueue.java:460)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3768ac92",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 20,
+  "threadName" : "Common-Cleaner",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Object.wait(Native Method)\n\t-  waiting on java.lang.ref.ReferenceQueue$Lock@b612cf6\n", "java.base@17.0.20.1/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:155)\n", "java.base@17.0.20.1/jdk.internal.ref.CleanerImpl.run(CleanerImpl.java:140)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n", "java.base@17.0.20.1/jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:162)\n" ]
+  },
+  "blockedByLock" : "Lock(java.lang.ref.ReferenceQueue$Lock@b612cf6)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.lang.ref.ReferenceQueue$Lock@b612cf6",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 8
+}, {
+  "threadId" : 72,
+  "threadName" : "context-cleaner-periodic-gc",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f7bbe71\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f7bbe71)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2f7bbe71",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 57,
+  "threadName" : "dag-scheduler-event-loop",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@24ec154\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingDeque.takeFirst(LinkedBlockingDeque.java:485)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingDeque.take(LinkedBlockingDeque.java:673)\n", "app//org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:48)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@24ec154)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@24ec154",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 41,
+  "threadName" : "dispatcher-BlockManagerEndpoint1",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1b929382\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.rpc.netty.MessageLoop.org$apache$spark$rpc$netty$MessageLoop$$receiveLoop(MessageLoop.scala:70)\n", "app//org.apache.spark.rpc.netty.MessageLoop$$anon$1.run(MessageLoop.scala:42)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1b929382)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@25cb75d6" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@25cb75d6" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1b929382",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 40,
+  "threadName" : "dispatcher-BlockManagerMaster",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2b03ed9d\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.rpc.netty.MessageLoop.org$apache$spark$rpc$netty$MessageLoop$$receiveLoop(MessageLoop.scala:70)\n", "app//org.apache.spark.rpc.netty.MessageLoop$$anon$1.run(MessageLoop.scala:42)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2b03ed9d)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@4a1618dc" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@4a1618dc" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2b03ed9d",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 30,
+  "threadName" : "dispatcher-event-loop-0",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@44456ea9\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.rpc.netty.MessageLoop.org$apache$spark$rpc$netty$MessageLoop$$receiveLoop(MessageLoop.scala:70)\n", "app//org.apache.spark.rpc.netty.MessageLoop$$anon$1.run(MessageLoop.scala:42)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@44456ea9)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@2e15a53" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@2e15a53" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@44456ea9",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 31,
+  "threadName" : "dispatcher-event-loop-1",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@44456ea9\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.rpc.netty.MessageLoop.org$apache$spark$rpc$netty$MessageLoop$$receiveLoop(MessageLoop.scala:70)\n", "app//org.apache.spark.rpc.netty.MessageLoop$$anon$1.run(MessageLoop.scala:42)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@44456ea9)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@271a59a8" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@271a59a8" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@44456ea9",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 54,
+  "threadName" : "dispatcher-HeartbeatReceiver",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6a49e02\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.rpc.netty.MessageLoop.org$apache$spark$rpc$netty$MessageLoop$$receiveLoop(MessageLoop.scala:70)\n", "app//org.apache.spark.rpc.netty.MessageLoop$$anon$1.run(MessageLoop.scala:42)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6a49e02)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@74c50a21" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@74c50a21" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6a49e02",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 58,
+  "threadName" : "driver-heartbeater",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@20b81b91\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@20b81b91)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@20b81b91",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 73,
+  "threadName" : "element-tracking-store-worker",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@527f0a51\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@527f0a51)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@527f0a51",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 77,
+  "threadName" : "Executor task idle worker#77",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.SynchronousQueue$TransferStack@24af09ed\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)\n", "java.base@17.0.20.1/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.SynchronousQueue$TransferStack@24af09ed)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.SynchronousQueue$TransferStack@24af09ed",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 78,
+  "threadName" : "Executor task idle worker#78",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.SynchronousQueue$TransferStack@24af09ed\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)\n", "java.base@17.0.20.1/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.SynchronousQueue$TransferStack@24af09ed)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.SynchronousQueue$TransferStack@24af09ed",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 60,
+  "threadName" : "executor-heartbeater",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@77527fa3\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@77527fa3)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@77527fa3",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 59,
+  "threadName" : "executor-kill-mark-cleanup",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@7d4ab693\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@7d4ab693)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@7d4ab693",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 3,
+  "threadName" : "Finalizer",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Object.wait(Native Method)\n\t-  waiting on java.lang.ref.ReferenceQueue$Lock@66e1a950\n", "java.base@17.0.20.1/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:155)\n", "java.base@17.0.20.1/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:176)\n", "java.base@17.0.20.1/java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:172)\n" ]
+  },
+  "blockedByLock" : "Lock(java.lang.ref.ReferenceQueue$Lock@66e1a950)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.lang.ref.ReferenceQueue$Lock@66e1a950",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 8
+}, {
+  "threadId" : 55,
+  "threadName" : "heartbeat-receiver-event-loop-thread",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@15b8e83\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@15b8e83)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@15b8e83",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 79,
+  "threadName" : "Idle Worker Monitor for /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Thread.sleep(Native Method)\n", "app//org.apache.spark.api.python.PythonWorkerFactory$MonitorThread.run(PythonWorkerFactory.scala:452)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 1,
+  "threadName" : "main",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.io.FileInputStream.readBytes(Native Method)\n", "java.base@17.0.20.1/java.io.FileInputStream.read(FileInputStream.java:276)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.read(BufferedInputStream.java:263)\n\t-  locked java.io.BufferedInputStream@2934251d\n", "app//org.apache.spark.api.python.PythonGatewayServer$.main(PythonGatewayServer.scala:71)\n", "app//org.apache.spark.api.python.PythonGatewayServer.main(PythonGatewayServer.scala)\n", "java.base@17.0.20.1/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n", "java.base@17.0.20.1/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n", "java.base@17.0.20.1/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n", "java.base@17.0.20.1/java.lang.reflect.Method.invoke(Method.java:569)\n", "app//org.apache.spark.deploy.JavaMainApplication.start(SparkApplication.scala:52)\n", "app//org.apache.spark.deploy.SparkSubmit.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:1033)\n", "app//org.apache.spark.deploy.SparkSubmit.doRunMain$1(SparkSubmit.scala:203)\n", "app//org.apache.spark.deploy.SparkSubmit.submit(SparkSubmit.scala:226)\n", "app//org.apache.spark.deploy.SparkSubmit.doSubmit(SparkSubmit.scala:95)\n", "app//org.apache.spark.deploy.SparkSubmit$$anon$2.doSubmit(SparkSubmit.scala:1171)\n", "app//org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:1180)\n", "app//org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.io.BufferedInputStream@2934251d" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "java.io.BufferedInputStream@2934251d" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : false,
+  "priority" : 5
+}, {
+  "threadId" : 32,
+  "threadName" : "map-output-dispatcher-0",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@4b5484c1" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@4b5484c1" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 33,
+  "threadName" : "map-output-dispatcher-1",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@623321a6" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@623321a6" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 34,
+  "threadName" : "map-output-dispatcher-2",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@69312b78" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@69312b78" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 35,
+  "threadName" : "map-output-dispatcher-3",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@74a6c930" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@74a6c930" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 36,
+  "threadName" : "map-output-dispatcher-4",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@1b3b39e9" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@1b3b39e9" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 37,
+  "threadName" : "map-output-dispatcher-5",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@60fe0539" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@60fe0539" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 38,
+  "threadName" : "map-output-dispatcher-6",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@f488b5" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@f488b5" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 39,
+  "threadName" : "map-output-dispatcher-7",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.MapOutputTrackerMaster$MessageLoop.run(MapOutputTracker.scala:800)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8)",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@42592ed2" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@42592ed2" ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3d723ff8",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 56,
+  "threadName" : "netty-rpc-env-timeout",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2b743ccd\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2b743ccd)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2b743ccd",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 21,
+  "threadName" : "Notification Thread",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 9
+}, {
+  "threadId" : 62,
+  "threadName" : "org.apache.hadoop.fs.FileSystem$Statistics$StatisticsDataReferenceCleaner",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Object.wait(Native Method)\n\t-  waiting on java.lang.ref.ReferenceQueue$Lock@6366a312\n", "java.base@17.0.20.1/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:155)\n", "java.base@17.0.20.1/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:176)\n", "app//org.apache.hadoop.fs.FileSystem$Statistics$StatisticsDataReferenceCleaner.run(FileSystem.java:4176)\n", "app//org.apache.hadoop.util.concurrent.SubjectInheritingThread.work(SubjectInheritingThread.java:188)\n", "app//org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)\n" ]
+  },
+  "blockedByLock" : "Lock(java.lang.ref.ReferenceQueue$Lock@6366a312)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.lang.ref.ReferenceQueue$Lock@6366a312",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 181,
+  "threadName" : "process reaper",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.SynchronousQueue$TransferStack@7f9eeb2\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:401)\n", "java.base@17.0.20.1/java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:903)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.SynchronousQueue$TransferStack@7f9eeb2)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.SynchronousQueue$TransferStack@7f9eeb2",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 10
+}, {
+  "threadId" : 24,
+  "threadName" : "process reaper (pid 53079)",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.ProcessHandleImpl.waitForProcessExit0(Native Method)\n", "java.base@17.0.20.1/java.lang.ProcessHandleImpl$1.run(ProcessHandleImpl.java:150)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@4fdfa676" ],
+  "synchronizers" : [ "java.util.concurrent.ThreadPoolExecutor$Worker@4fdfa676" ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 10
+}, {
+  "threadId" : 2,
+  "threadName" : "Reference Handler",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.ref.Reference.waitForReferencePendingList(Native Method)\n", "java.base@17.0.20.1/java.lang.ref.Reference.processPendingReferences(Reference.java:253)\n", "java.base@17.0.20.1/java.lang.ref.Reference$ReferenceHandler.run(Reference.java:215)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 10
+}, {
+  "threadId" : 42,
+  "threadName" : "RemoteBlock-temp-file-clean-thread",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Object.wait(Native Method)\n\t-  waiting on java.lang.ref.ReferenceQueue$Lock@74cd967f\n", "java.base@17.0.20.1/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:155)\n", "app//org.apache.spark.storage.BlockManager$RemoteBlockDownloadFileManager.org$apache$spark$storage$BlockManager$RemoteBlockDownloadFileManager$$keepCleaning(BlockManager.scala:2325)\n", "app//org.apache.spark.storage.BlockManager$RemoteBlockDownloadFileManager$$anon$2.run(BlockManager.scala:2293)\n" ]
+  },
+  "blockedByLock" : "Lock(java.lang.ref.ReferenceQueue$Lock@74cd967f)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.lang.ref.ReferenceQueue$Lock@74cd967f",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 29,
+  "threadName" : "rpc-boss-3-1",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "app//io.netty.channel.epoll.Native.epollWait0(Native Method)\n", "app//io.netty.channel.epoll.Native.epollWait(Native.java:193)\n", "app//io.netty.channel.epoll.EpollIoHandler.epollWait(EpollIoHandler.java:404)\n", "app//io.netty.channel.epoll.EpollIoHandler.run(EpollIoHandler.java:470)\n", "app//io.netty.channel.SingleThreadIoEventLoop.runIo(SingleThreadIoEventLoop.java:225)\n", "app//io.netty.channel.SingleThreadIoEventLoop.run(SingleThreadIoEventLoop.java:196)\n", "app//io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:1195)\n", "app//io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)\n", "app//io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@13b462b5" ],
+  "synchronizers" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@13b462b5" ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 61,
+  "threadName" : "shuffle-boss-6-1",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "app//io.netty.channel.epoll.Native.epollWait0(Native Method)\n", "app//io.netty.channel.epoll.Native.epollWait(Native.java:193)\n", "app//io.netty.channel.epoll.EpollIoHandler.epollWait(EpollIoHandler.java:404)\n", "app//io.netty.channel.epoll.EpollIoHandler.run(EpollIoHandler.java:470)\n", "app//io.netty.channel.SingleThreadIoEventLoop.runIo(SingleThreadIoEventLoop.java:225)\n", "app//io.netty.channel.SingleThreadIoEventLoop.run(SingleThreadIoEventLoop.java:196)\n", "app//io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:1195)\n", "app//io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)\n", "app//io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@362447c" ],
+  "synchronizers" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@362447c" ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 4,
+  "threadName" : "Signal Dispatcher",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 9
+}, {
+  "threadId" : 71,
+  "threadName" : "Spark Context Cleaner",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Object.wait(Native Method)\n\t-  waiting on java.lang.ref.ReferenceQueue$Lock@4bb06fc3\n", "java.base@17.0.20.1/java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:155)\n", "app//org.apache.spark.ContextCleaner.$anonfun$keepCleaning$1(ContextCleaner.scala:192)\n", "app//org.apache.spark.ContextCleaner$$Lambda$992/0x00007f8d4060fa50.apply$mcV$sp(Unknown Source)\n", "app//org.apache.spark.util.Utils$.tryOrStopSparkContext(Utils.scala:1293)\n", "app//org.apache.spark.ContextCleaner.org$apache$spark$ContextCleaner$$keepCleaning(ContextCleaner.scala:190)\n", "app//org.apache.spark.ContextCleaner$$anon$1.run(ContextCleaner.scala:80)\n" ]
+  },
+  "blockedByLock" : "Lock(java.lang.ref.ReferenceQueue$Lock@4bb06fc3)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.lang.ref.ReferenceQueue$Lock@4bb06fc3",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 28,
+  "threadName" : "spark-listener-group-appStatus",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3eab4e46\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.scheduler.AsyncEventQueue.$anonfun$dispatch$1(AsyncEventQueue.scala:111)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$Lambda$998/0x00007f8d406116d8.apply$mcJ$sp(Unknown Source)\n", "app//scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.scala:17)\n", "app//scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)\n", "app//org.apache.spark.scheduler.AsyncEventQueue.org$apache$spark$scheduler$AsyncEventQueue$$dispatch(AsyncEventQueue.scala:101)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2.$anonfun$run$1(AsyncEventQueue.scala:97)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2$$Lambda$997/0x00007f8d406113f8.apply$mcV$sp(Unknown Source)\n", "app//org.apache.spark.util.Utils$.tryOrStopSparkContext(Utils.scala:1293)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2.run(AsyncEventQueue.scala:97)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3eab4e46)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@3eab4e46",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 70,
+  "threadName" : "spark-listener-group-eventLog",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2085a006\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.scheduler.AsyncEventQueue.$anonfun$dispatch$1(AsyncEventQueue.scala:111)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$Lambda$998/0x00007f8d406116d8.apply$mcJ$sp(Unknown Source)\n", "app//scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.scala:17)\n", "app//scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)\n", "app//org.apache.spark.scheduler.AsyncEventQueue.org$apache$spark$scheduler$AsyncEventQueue$$dispatch(AsyncEventQueue.scala:101)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2.$anonfun$run$1(AsyncEventQueue.scala:97)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2$$Lambda$997/0x00007f8d406113f8.apply$mcV$sp(Unknown Source)\n", "app//org.apache.spark.util.Utils$.tryOrStopSparkContext(Utils.scala:1293)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2.run(AsyncEventQueue.scala:97)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2085a006)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2085a006",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 53,
+  "threadName" : "spark-listener-group-executorManagement",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@680304b2\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "app//org.apache.spark.scheduler.AsyncEventQueue.$anonfun$dispatch$1(AsyncEventQueue.scala:111)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$Lambda$998/0x00007f8d406116d8.apply$mcJ$sp(Unknown Source)\n", "app//scala.runtime.java8.JFunction0$mcJ$sp.apply(JFunction0$mcJ$sp.scala:17)\n", "app//scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)\n", "app//org.apache.spark.scheduler.AsyncEventQueue.org$apache$spark$scheduler$AsyncEventQueue$$dispatch(AsyncEventQueue.scala:101)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2.$anonfun$run$1(AsyncEventQueue.scala:97)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2$$Lambda$997/0x00007f8d406113f8.apply$mcV$sp(Unknown Source)\n", "app//org.apache.spark.util.Utils$.tryOrStopSparkContext(Utils.scala:1293)\n", "app//org.apache.spark.scheduler.AsyncEventQueue$$anon$2.run(AsyncEventQueue.scala:97)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@680304b2)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@680304b2",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 180,
+  "threadName" : "SparkUI-180",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@7587d0ac\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@7587d0ac" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@7587d0ac" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 44,
+  "threadName" : "SparkUI-44",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@63360be3\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "app//org.sparkproject.jetty.util.thread.AutoLock$WithCondition.awaitNanos(AutoLock.java:194)\n", "app//org.sparkproject.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:273)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1169)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1186)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@63360be3)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@63360be3",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 45,
+  "threadName" : "SparkUI-45",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@63360be3\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "app//org.sparkproject.jetty.util.thread.AutoLock$WithCondition.awaitNanos(AutoLock.java:194)\n", "app//org.sparkproject.jetty.util.BlockingArrayQueue.poll(BlockingArrayQueue.java:273)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.idleJobPoll(QueuedThreadPool.java:1169)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1186)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@63360be3)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@63360be3",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 46,
+  "threadName" : "SparkUI-46",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@44d4c1fd\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@44d4c1fd" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@44d4c1fd" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 47,
+  "threadName" : "SparkUI-47",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@4752e6c5\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@4752e6c5" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@4752e6c5" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 48,
+  "threadName" : "SparkUI-48",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@5e7c4040\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@5e7c4040" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@5e7c4040" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 49,
+  "threadName" : "SparkUI-49",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@5e0523b4\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@5e0523b4" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@5e0523b4" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 50,
+  "threadName" : "SparkUI-50",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@733b27d2\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@733b27d2" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@733b27d2" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 51,
+  "threadName" : "SparkUI-51",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.management@17.0.20.1/sun.management.ThreadImpl.dumpThreads0(Native Method)\n", "java.management@17.0.20.1/sun.management.ThreadImpl.dumpAllThreads(ThreadImpl.java:528)\n", "java.management@17.0.20.1/sun.management.ThreadImpl.dumpAllThreads(ThreadImpl.java:516)\n", "app//org.apache.spark.util.Utils$.getThreadDump(Utils.scala:2159)\n", "app//org.apache.spark.SparkContext.getExecutorThreadDump(SparkContext.scala:758)\n", "app//org.apache.spark.status.api.v1.AbstractApplicationResource.$anonfun$threadDump$1(OneApplicationResource.scala:63)\n", "app//org.apache.spark.status.api.v1.AbstractApplicationResource$$Lambda$3093/0x00007f8d40e213e0.apply(Unknown Source)\n", "app//org.apache.spark.status.api.v1.BaseAppResource.$anonfun$withUI$1(ApiRootResource.scala:146)\n", "app//org.apache.spark.status.api.v1.BaseAppResource$$Lambda$2890/0x00007f8d40d93d80.apply(Unknown Source)\n", "app//org.apache.spark.ui.SparkUI.withSparkUI(SparkUI.scala:172)\n", "app//org.apache.spark.status.api.v1.BaseAppResource.withUI(ApiRootResource.scala:141)\n", "app//org.apache.spark.status.api.v1.BaseAppResource.withUI$(ApiRootResource.scala:139)\n", "app//org.apache.spark.status.api.v1.AbstractApplicationResource.withUI(OneApplicationResource.scala:33)\n", "app//org.apache.spark.status.api.v1.AbstractApplicationResource.threadDump(OneApplicationResource.scala:58)\n", "java.base@17.0.20.1/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n", "java.base@17.0.20.1/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n", "java.base@17.0.20.1/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n", "java.base@17.0.20.1/java.lang.reflect.Method.invoke(Method.java:569)\n", "app//org.glassfish.jersey.server.model.internal.ResourceMethodInvocationHandlerFactory.lambda$static$0(ResourceMethodInvocationHandlerFactory.java:52)\n", "app//org.glassfish.jersey.server.model.internal.ResourceMethodInvocationHandlerFactory$$Lambda$1767/0x00007f8d40b12818.invoke(Unknown Source)\n", "app//org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher$1.run(AbstractJavaResourceMethodDispatcher.java:146)\n", "app//org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.invoke(AbstractJavaResourceMethodDispatcher.java:189)\n", "app//org.glassfish.jersey.server.model.internal.JavaResourceMethodDispatcherProvider$TypeOutInvoker.doDispatch(JavaResourceMethodDispatcherProvider.java:219)\n", "app//org.glassfish.jersey.server.model.internal.AbstractJavaResourceMethodDispatcher.dispatch(AbstractJavaResourceMethodDispatcher.java:93)\n", "app//org.glassfish.jersey.server.model.ResourceMethodInvoker.invoke(ResourceMethodInvoker.java:478)\n", "app//org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:400)\n", "app//org.glassfish.jersey.server.model.ResourceMethodInvoker.apply(ResourceMethodInvoker.java:81)\n", "app//org.glassfish.jersey.server.ServerRuntime$1.run(ServerRuntime.java:274)\n", "app//org.glassfish.jersey.internal.Errors$1.call(Errors.java:248)\n", "app//org.glassfish.jersey.internal.Errors$1.call(Errors.java:244)\n", "app//org.glassfish.jersey.internal.Errors.process(Errors.java:292)\n", "app//org.glassfish.jersey.internal.Errors.process(Errors.java:274)\n", "app//org.glassfish.jersey.internal.Errors.process(Errors.java:244)\n", "app//org.glassfish.jersey.process.internal.RequestScope.runInScope(RequestScope.java:266)\n", "app//org.glassfish.jersey.server.ServerRuntime.process(ServerRuntime.java:253)\n", "app//org.glassfish.jersey.server.ApplicationHandler.handle(ApplicationHandler.java:696)\n", "app//org.glassfish.jersey.servlet.WebComponent.serviceImpl(WebComponent.java:398)\n", "app//org.glassfish.jersey.servlet.WebComponent.service(WebComponent.java:350)\n", "app//org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:358)\n", "app//org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:312)\n", "app//org.glassfish.jersey.servlet.ServletContainer.service(ServletContainer.java:205)\n", "app//org.sparkproject.jetty.ee10.servlet.ServletHolder.handle(ServletHolder.java:754)\n", "app//org.sparkproject.jetty.ee10.servlet.ServletHandler$ChainEnd.doFilter(ServletHandler.java:1622)\n", "app//org.apache.spark.ui.HttpSecurityFilter.doFilter(HttpSecurityFilter.scala:100)\n", "app//org.sparkproject.jetty.ee10.servlet.FilterHolder.doFilter(FilterHolder.java:205)\n", "app//org.sparkproject.jetty.ee10.servlet.ServletHandler$Chain.doFilter(ServletHandler.java:1594)\n", "app//org.sparkproject.jetty.ee10.servlet.ServletHandler$MappedServlet.handle(ServletHandler.java:1556)\n", "app//org.sparkproject.jetty.ee10.servlet.ServletChannel.dispatch(ServletChannel.java:871)\n", "app//org.sparkproject.jetty.ee10.servlet.ServletChannel.handle(ServletChannel.java:449)\n", "app//org.sparkproject.jetty.ee10.servlet.ServletHandler.handle(ServletHandler.java:469)\n", "app//org.sparkproject.jetty.server.handler.ContextHandler.handle(ContextHandler.java:1226)\n", "app//org.sparkproject.jetty.compression.server.CompressionHandler.handle(CompressionHandler.java:343)\n", "app//org.sparkproject.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:178)\n", "app//org.sparkproject.jetty.server.Server.handle(Server.java:197)\n", "app//org.sparkproject.jetty.server.internal.HttpChannelState$HandlerInvoker.run(HttpChannelState.java:788)\n", "app//org.sparkproject.jetty.server.internal.HttpConnection.onFillable(HttpConnection.java:420)\n", "app//org.sparkproject.jetty.server.internal.HttpConnection$FillableCallback.succeeded(HttpConnection.java:1809)\n", "app//org.sparkproject.jetty.io.FillInterest.fillable(FillInterest.java:105)\n", "app//org.sparkproject.jetty.io.SelectableChannelEndPoint$1.run(SelectableChannelEndPoint.java:54)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.runTask(AdaptiveExecutionStrategy.java:492)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.epcRunTask(AdaptiveExecutionStrategy.java:428)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.consumeTask(AdaptiveExecutionStrategy.java:401)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:255)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 52,
+  "threadName" : "SparkUI-52-acceptor-0@50ad5d60-osjs.ServerConnector@5e6aa905{HTTP/1.1, (http/1.1)}{127.0.0.1:4140}",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.Net.accept(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.ServerSocketChannelImpl.implAccept(ServerSocketChannelImpl.java:425)\n", "java.base@17.0.20.1/sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:391)\n", "app//org.sparkproject.jetty.server.ServerConnector.accept(ServerConnector.java:389)\n", "app//org.sparkproject.jetty.server.AbstractConnector$Acceptor.run(AbstractConnector.java:713)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@714b0b1c" ],
+  "synchronizers" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@714b0b1c" ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 3
+}, {
+  "threadId" : 74,
+  "threadName" : "SparkUI-74",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@461413d8\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@461413d8" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@461413d8" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 76,
+  "threadName" : "SparkUI-76",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.EPoll.wait(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.EPollSelectorImpl.doSelect(EPollSelectorImpl.java:118)\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:129)\n\t-  locked sun.nio.ch.EPollSelectorImpl@42c358be\n", "java.base@17.0.20.1/sun.nio.ch.SelectorImpl.select(SelectorImpl.java:146)\n", "app//org.sparkproject.jetty.io.ManagedSelector.nioSelect(ManagedSelector.java:183)\n", "app//org.sparkproject.jetty.io.ManagedSelector.select(ManagedSelector.java:190)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.select(ManagedSelector.java:617)\n", "app//org.sparkproject.jetty.io.ManagedSelector$SelectorProducer.produce(ManagedSelector.java:551)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.produceTask(AdaptiveExecutionStrategy.java:509)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.tryProduce(AdaptiveExecutionStrategy.java:251)\n", "app//org.sparkproject.jetty.util.thread.strategy.AdaptiveExecutionStrategy.run(AdaptiveExecutionStrategy.java:204)\n", "app//org.sparkproject.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:317)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:1009)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.doRunJob(QueuedThreadPool.java:1240)\n", "app//org.sparkproject.jetty.util.thread.QueuedThreadPool$Runner.run(QueuedThreadPool.java:1194)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "sun.nio.ch.EPollSelectorImpl@42c358be" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "sun.nio.ch.EPollSelectorImpl@42c358be" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 75,
+  "threadName" : "SparkUI-JettyScheduler-1",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4b1c0e8c\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)\n", "java.base@17.0.20.1/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4b1c0e8c)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4b1c0e8c",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 81,
+  "threadName" : "stderr reader for /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.io.FileInputStream.readBytes(Native Method)\n", "java.base@17.0.20.1/java.io.FileInputStream.read(FileInputStream.java:276)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.read1(BufferedInputStream.java:284)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.read(BufferedInputStream.java:343)\n\t-  locked java.lang.ProcessImpl$ProcessPipeInputStream@330a8803\n", "java.base@17.0.20.1/java.io.FilterInputStream.read(FilterInputStream.java:106)\n", "app//org.apache.spark.util.RedirectThread.$anonfun$run$3(Utils.scala:3348)\n", "app//org.apache.spark.util.RedirectThread$$Lambda$2307/0x00007f8d40c6d210.apply$mcV$sp(Unknown Source)\n", "app//scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)\n", "app//org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)\n", "app//org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)\n", "app//org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)\n", "app//org.apache.spark.util.RedirectThread.$anonfun$run$2(Utils.scala:3355)\n", "app//org.apache.spark.util.RedirectThread$$Lambda$2305/0x00007f8d40c6cc50.apply$mcV$sp(Unknown Source)\n", "app//scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)\n", "app//scala.util.control.Exception$Catch.apply(Exception.scala:227)\n", "app//org.apache.spark.util.RedirectThread.run(Utils.scala:3354)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.lang.ProcessImpl$ProcessPipeInputStream@330a8803" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "java.lang.ProcessImpl$ProcessPipeInputStream@330a8803" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 80,
+  "threadName" : "stdout reader for /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.io.FileInputStream.readBytes(Native Method)\n", "java.base@17.0.20.1/java.io.FileInputStream.read(FileInputStream.java:276)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.fill(BufferedInputStream.java:244)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.read1(BufferedInputStream.java:284)\n", "java.base@17.0.20.1/java.io.BufferedInputStream.read(BufferedInputStream.java:343)\n\t-  locked java.lang.ProcessImpl$ProcessPipeInputStream@fec1b9a\n", "java.base@17.0.20.1/java.io.DataInputStream.read(DataInputStream.java:102)\n", "app//org.apache.spark.util.RedirectThread.$anonfun$run$3(Utils.scala:3348)\n", "app//org.apache.spark.util.RedirectThread$$Lambda$2307/0x00007f8d40c6d210.apply$mcV$sp(Unknown Source)\n", "app//scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)\n", "app//org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)\n", "app//org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)\n", "app//org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)\n", "app//org.apache.spark.util.RedirectThread.$anonfun$run$2(Utils.scala:3355)\n", "app//org.apache.spark.util.RedirectThread$$Lambda$2305/0x00007f8d40c6cc50.apply$mcV$sp(Unknown Source)\n", "app//scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)\n", "app//scala.util.control.Exception$Catch.apply(Exception.scala:227)\n", "app//org.apache.spark.util.RedirectThread.run(Utils.scala:3354)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.lang.ProcessImpl$ProcessPipeInputStream@fec1b9a" ],
+  "synchronizers" : [ ],
+  "monitors" : [ "java.lang.ProcessImpl$ProcessPipeInputStream@fec1b9a" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 84,
+  "threadName" : "task-result-getter-0",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 85,
+  "threadName" : "task-result-getter-1",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 88,
+  "threadName" : "task-result-getter-2",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 89,
+  "threadName" : "task-result-getter-3",
+  "threadState" : "WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/jdk.internal.misc.Unsafe.park(Native Method)\n\t-  waiting on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074\n", "java.base@17.0.20.1/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)\n", "java.base@17.0.20.1/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)\n", "java.base@17.0.20.1/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1630)\n", "java.base@17.0.20.1/java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:435)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)\n", "java.base@17.0.20.1/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "Lock(java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074)",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "lockName" : "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@6b543074",
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 26,
+  "threadName" : "Thread-2",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.Net.accept(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl.accept(NioSocketImpl.java:760)\n", "java.base@17.0.20.1/java.net.ServerSocket.implAccept(ServerSocket.java:675)\n", "java.base@17.0.20.1/java.net.ServerSocket.platformImplAccept(ServerSocket.java:641)\n", "java.base@17.0.20.1/java.net.ServerSocket.implAccept(ServerSocket.java:617)\n", "java.base@17.0.20.1/java.net.ServerSocket.implAccept(ServerSocket.java:574)\n", "java.base@17.0.20.1/java.net.ServerSocket.accept(ServerSocket.java:532)\n", "app//py4j.GatewayServer.run(GatewayServer.java:685)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@7264a852" ],
+  "synchronizers" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@7264a852" ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : false,
+  "priority" : 5
+}, {
+  "threadId" : 27,
+  "threadName" : "Thread-3",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.SocketDispatcher.read0(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:47)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl.tryRead(NioSocketImpl.java:266)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:317)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:355)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:808)\n", "java.base@17.0.20.1/java.net.Socket$SocketInputStream.read(Socket.java:966)\n", "java.base@17.0.20.1/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:287)\n", "java.base@17.0.20.1/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:330)\n", "java.base@17.0.20.1/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:190)\n\t-  locked java.io.InputStreamReader@7a7067ce\n", "java.base@17.0.20.1/java.io.InputStreamReader.read(InputStreamReader.java:177)\n", "java.base@17.0.20.1/java.io.BufferedReader.fill(BufferedReader.java:162)\n", "java.base@17.0.20.1/java.io.BufferedReader.readLine(BufferedReader.java:329)\n\t-  locked java.io.InputStreamReader@7a7067ce\n", "java.base@17.0.20.1/java.io.BufferedReader.readLine(BufferedReader.java:396)\n", "app//py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:175)\n", "app//py4j.ClientServerConnection.run(ClientServerConnection.java:108)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@1130faf9", "java.io.InputStreamReader@7a7067ce", "java.io.InputStreamReader@7a7067ce" ],
+  "synchronizers" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@1130faf9" ],
+  "monitors" : [ "java.io.InputStreamReader@7a7067ce", "java.io.InputStreamReader@7a7067ce" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : false,
+  "priority" : 5
+}, {
+  "threadId" : 43,
+  "threadName" : "Thread-5",
+  "threadState" : "RUNNABLE",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/sun.nio.ch.SocketDispatcher.read0(Native Method)\n", "java.base@17.0.20.1/sun.nio.ch.SocketDispatcher.read(SocketDispatcher.java:47)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl.tryRead(NioSocketImpl.java:266)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:317)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:355)\n", "java.base@17.0.20.1/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:808)\n", "java.base@17.0.20.1/java.net.Socket$SocketInputStream.read(Socket.java:966)\n", "java.base@17.0.20.1/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:287)\n", "java.base@17.0.20.1/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:330)\n", "java.base@17.0.20.1/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:190)\n\t-  locked java.io.InputStreamReader@58ecfae1\n", "java.base@17.0.20.1/java.io.InputStreamReader.read(InputStreamReader.java:177)\n", "java.base@17.0.20.1/java.io.BufferedReader.fill(BufferedReader.java:162)\n", "java.base@17.0.20.1/java.io.BufferedReader.readLine(BufferedReader.java:329)\n\t-  locked java.io.InputStreamReader@58ecfae1\n", "java.base@17.0.20.1/java.io.BufferedReader.readLine(BufferedReader.java:396)\n", "app//py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:175)\n", "app//py4j.ClientServerConnection.run(ClientServerConnection.java:108)\n", "java.base@17.0.20.1/java.lang.Thread.run(Thread.java:840)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@6c379b64", "java.io.InputStreamReader@58ecfae1", "java.io.InputStreamReader@58ecfae1" ],
+  "synchronizers" : [ "java.util.concurrent.locks.ReentrantLock$NonfairSync@6c379b64" ],
+  "monitors" : [ "java.io.InputStreamReader@58ecfae1", "java.io.InputStreamReader@58ecfae1" ],
+  "suspended" : false,
+  "inNative" : true,
+  "isDaemon" : false,
+  "priority" : 5
+}, {
+  "threadId" : 152,
+  "threadName" : "Worker Monitor for /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Thread.sleep(Native Method)\n", "app//org.apache.spark.api.python.BasePythonRunner$MonitorThread.monitorWorker(PythonRunner.scala:736)\n", "app//org.apache.spark.api.python.BasePythonRunner$MonitorThread.run(PythonRunner.scala:757)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 177,
+  "threadName" : "Worker Monitor for /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Thread.sleep(Native Method)\n", "app//org.apache.spark.api.python.BasePythonRunner$MonitorThread.monitorWorker(PythonRunner.scala:736)\n", "app//org.apache.spark.api.python.BasePythonRunner$MonitorThread.run(PythonRunner.scala:757)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+}, {
+  "threadId" : 178,
+  "threadName" : "Worker Monitor for /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python",
+  "threadState" : "TIMED_WAITING",
+  "stackTrace" : {
+    "elems" : [ "java.base@17.0.20.1/java.lang.Thread.sleep(Native Method)\n", "app//org.apache.spark.api.python.BasePythonRunner$MonitorThread.monitorWorker(PythonRunner.scala:736)\n", "app//org.apache.spark.api.python.BasePythonRunner$MonitorThread.run(PythonRunner.scala:757)\n" ]
+  },
+  "blockedByLock" : "",
+  "holdingLocks" : [ ],
+  "synchronizers" : [ ],
+  "monitors" : [ ],
+  "suspended" : false,
+  "inNative" : false,
+  "isDaemon" : true,
+  "priority" : 5
+} ]

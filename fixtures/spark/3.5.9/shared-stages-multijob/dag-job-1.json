@@ -1,0 +1,124 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 1,
+  "stages": [
+    {
+      "stageId": 2,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 2 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster0",
+          "name": "parallelize",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 1,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/shared_stages_multijob.py:9",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 2,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/shared_stages_multijob.py:9",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:289",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster0"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 1
+        },
+        {
+          "from": 1,
+          "to": 2
+        }
+      ]
+    },
+    {
+      "stageId": 3,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 3",
+      "clusters": [
+        {
+          "id": "cluster1",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster2",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 6,
+          "name": "PythonRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/shared_stages_multijob.py:13",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 3,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster1"
+        },
+        {
+          "id": 4,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:160",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster2"
+        }
+      ],
+      "edges": [
+        {
+          "from": 3,
+          "to": 4
+        },
+        {
+          "from": 4,
+          "to": 6
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 2,
+      "to": 3,
+      "fromStage": 2,
+      "toStage": 3
+    }
+  ]
+}

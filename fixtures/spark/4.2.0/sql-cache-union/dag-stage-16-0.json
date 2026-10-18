@@ -1,0 +1,76 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 16,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 16",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_252",
+          "name": "AQEShuffleRead",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_259",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_260",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 36,
+          "name": "ShuffledRowRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_252"
+        },
+        {
+          "id": 37,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_259"
+        },
+        {
+          "id": 38,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_260"
+        }
+      ],
+      "edges": [
+        {
+          "from": 36,
+          "to": 37
+        },
+        {
+          "from": 37,
+          "to": 38
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 35,
+      "to": 36,
+      "fromStage": null,
+      "toStage": 16
+    }
+  ]
+}

@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    #apps_paginate span {font-weight:normal}
+    #apps .progress {width:8em}
+    #apps_processing {top:-1.5em; font-size:1em;
+      color:#000; background:#fefefe}
+    #apps .queue {width:6em}
+    #apps .ui {width:8em}
+  </style>
+  <title>
+    FINISHED Applications
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    appsDataTable =  $('#apps').dataTable({bStateSave : true, "fnStateSave": function (oSettings, oData) {  data = oData.aoSearchCols;for(i =0 ; i < data.length; i ++) {data[i].sSearch = ""} sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, "fnStateLoad": function (oSettings) { return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, bJQueryUI:true, sPaginationType: 'full_numbers', iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100], 'aaData': appsTableData, bDeferRender: true, bProcessing: true
+, aoColumnDefs: [
+{'sType':'natural', 'aTargets': [0], 'mRender': parseHadoopID },
+{'sType':'num-ignore-str', 'aTargets': [7, 8, 9], 'mRender': renderHadoopDate },
+{'sType':'num-ignore-str', 'aTargets': [12, 13, 14, 15, 16] },
+{'sType':'numeric', bSearchable:false, 'aTargets':[21], 'mRender': parseHadoopProgress }
+], aaSorting: [[0, 'desc']]}).fnSetFilteringDelay(188);
+    });
+  </script>
+  </head><body><div id="jsnotice" class="ui-state-error" style="display: none;">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/static/hadoop-st.png">
+            </div>
+            <h1>
+              FINISHED Applications
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav" class="ui-accordion ui-widget ui-helper-reset" role="tablist">
+            <h3 class="ui-accordion-header ui-corner-top ui-state-default ui-accordion-header-active ui-state-active ui-accordion-icons" role="tab" id="ui-id-1" aria-controls="ui-id-2" aria-selected="true" aria-expanded="true" tabindex="0"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span>
+              Cluster
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active" id="ui-id-2" aria-labelledby="ui-id-1" role="tabpanel" aria-hidden="false" style="height: 222.766px;">
+              <li>
+                <a href="/cluster/cluster">About</a>
+              </li><li>
+                <a href="/cluster/nodes">Nodes</a>
+              </li><li>
+                <a href="/cluster/nodelabels">Node Labels</a>
+              </li><li>
+                <a href="/cluster/apps">Applications</a>
+                <ul>
+                  <li>
+                  </li><li>
+                    <a href="/cluster/apps/NEW">NEW</a>
+                  </li><li>
+                    <a href="/cluster/apps/NEW_SAVING">NEW_SAVING</a>
+                  </li><li>
+                    <a href="/cluster/apps/SUBMITTED">SUBMITTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/ACCEPTED">ACCEPTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/RUNNING">RUNNING</a>
+                  </li><li>
+                    <a href="/cluster/apps/FINISHED">FINISHED</a>
+                  </li><li>
+                    <a href="/cluster/apps/FAILED">FAILED</a>
+                  </li><li>
+                    <a href="/cluster/apps/KILLED">KILLED</a>
+                </li></ul>
+              </li><li>
+                <a href="/cluster/scheduler">Scheduler</a>
+            </li></ul>
+            <h3 class="ui-accordion-header ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons" role="tab" id="ui-id-3" aria-controls="ui-id-4" aria-selected="false" aria-expanded="false" tabindex="-1"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>
+              Tools
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content" id="ui-id-4" aria-labelledby="ui-id-3" role="tabpanel" aria-hidden="true" style="display: none; height: 222.766px;">
+              <li>
+                <a href="/conf">Configuration</a>
+              </li><li>
+                <a href="/logs">Local logs</a>
+              </li><li>
+                <a href="/stacks">Server stacks</a>
+              </li><li>
+                <a href="/jmx?qry=Hadoop:*">Server metrics</a>
+            </li></ul>
+          </div>
+        </td>
+        <td class="content">
+          <style type="text/css">
+            .metrics {margin-bottom:5px}
+          </style>
+          <div class="metrics">
+            <h3>
+              Cluster Metrics
+            </h3>
+            <table id="metricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Apps Submitted
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Pending
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Running
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Completed
+                  </th>
+                  <th class="ui-state-default">
+                    Containers Running
+                  </th>
+                  <th class="ui-state-default">
+                    Used Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Total Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Reserved Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Physical Mem Used %
+                  </th>
+                  <th class="ui-state-default">
+                    Physical VCores Used %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    3
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    2
+                  </td>
+                  <td>
+                    &lt;memory:1 GB, vCores:2&gt;
+                  </td>
+                  <td>
+                    &lt;memory:9 GB, vCores:12&gt;
+                  </td>
+                  <td>
+                    &lt;memory:0 B, vCores:0&gt;
+                  </td>
+                  <td>
+                    214
+                  </td>
+                  <td>
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h3>
+              Cluster Nodes Metrics
+            </h3>
+            <table id="nodemetricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Active Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Decommissioning Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Decommissioned Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Lost Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Unhealthy Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Rebooted Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Shutdown Nodes
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    <a href="/cluster/nodes">3</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/decommissioning">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/decommissioned">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/lost">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/unhealthy">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/rebooted">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/shutdown">0</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h3>
+              Scheduler Metrics
+            </h3>
+            <table id="schedulermetricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Scheduler Type
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduling Resource Type
+                  </th>
+                  <th class="ui-state-default">
+                    Minimum Allocation
+                  </th>
+                  <th class="ui-state-default">
+                    Maximum Allocation
+                  </th>
+                  <th class="ui-state-default">
+                    Maximum Cluster Application Priority
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduler Busy %
+                  </th>
+                  <th class="ui-state-default">
+                    RM Dispatcher EventQueue Size
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduler Dispatcher EventQueue Size
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    Capacity Scheduler
+                  </td>
+                  <td>
+                    [memory-mb (unit=Mi), vcores]
+                  </td>
+                  <td>
+                    &lt;memory:256, vCores:1&gt;
+                  </td>
+                  <td>
+                    &lt;memory:3072, vCores:4&gt;
+                  </td>
+                  <td>
+                    10
+                  </td>
+                  <td>
+                    0
+                  </td>
+                  <td>
+                    0
+                  </td>
+                  <td>
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="apps_wrapper" class="dataTables_wrapper no-footer"><div class="dataTables_length" id="apps_length"><label>Show <select name="apps_length" aria-controls="apps" class=""><option value="20">20</option><option value="40">40</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select> entries</label></div><div id="apps_filter" class="dataTables_filter"><label>Search:<input type="search" class="" placeholder="" aria-controls="apps"></label></div><div id="apps_processing" class="dataTables_processing" style="display: none;">Processing...</div><table id="apps" class="dataTable no-footer" aria-describedby="apps_info" style="width: 2598px;">
+            <thead>
+              <tr><th class="id sorting sorting_desc" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-sort="descending" aria-label="
+                  ID
+                : activate to sort column ascending" style="width: 203px;">
+                  ID
+                </th><th class="user sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  User
+                : activate to sort column ascending" style="width: 32px;">
+                  User
+                </th><th class="name sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Name
+                : activate to sort column ascending" style="width: 40px;">
+                  Name
+                </th><th class="type sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Application Type
+                : activate to sort column ascending" style="width: 79px;">
+                  Application Type
+                </th><th class="apptag sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Application Tags
+                : activate to sort column ascending" style="width: 103px;">
+                  Application Tags
+                </th><th class="queue sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Queue
+                : activate to sort column ascending" style="width: 56px;">
+                  Queue
+                </th><th class="priority sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Application Priority
+                : activate to sort column ascending" style="width: 79px;">
+                  Application Priority
+                </th><th class="starttime sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  StartTime
+                : activate to sort column ascending" style="width: 67px;">
+                  StartTime
+                </th><th class="IDlaunchtime sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  LaunchTime
+                : activate to sort column ascending" style="width: 85px;">
+                  LaunchTime
+                </th><th class="finishtime sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  FinishTime
+                : activate to sort column ascending" style="width: 76px;">
+                  FinishTime
+                </th><th class="state sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  State
+                : activate to sort column ascending" style="width: 51px;">
+                  State
+                </th><th class="finalstatus sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  FinalStatus
+                : activate to sort column ascending" style="width: 78px;">
+                  FinalStatus
+                </th><th class="runningcontainer sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Running Containers
+                : activate to sort column ascending" style="width: 76px;">
+                  Running Containers
+                </th><th class="allocatedCpu sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Allocated CPU VCores
+                : activate to sort column ascending" style="width: 65px;">
+                  Allocated CPU VCores
+                </th><th class="allocatedMemory sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Allocated Memory MB
+                : activate to sort column ascending" style="width: 65px;">
+                  Allocated Memory MB
+                </th><th class="allocatedGpu sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Allocated GPUs
+                : activate to sort column ascending" style="width: 65px;">
+                  Allocated GPUs
+                </th><th class="reservedCpu sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Reserved CPU VCores
+                : activate to sort column ascending" style="width: 65px;">
+                  Reserved CPU VCores
+                </th><th class="reservedMemory sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Reserved Memory MB
+                : activate to sort column ascending" style="width: 65px;">
+                  Reserved Memory MB
+                </th><th class="reservedGpu sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Reserved GPUs
+                : activate to sort column ascending" style="width: 65px;">
+                  Reserved GPUs
+                </th><th class="queuePercentage sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  % of Queue
+                : activate to sort column ascending" style="width: 45px;">
+                  % of Queue
+                </th><th class="clusterPercentage sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  % of Cluster
+                : activate to sort column ascending" style="width: 50px;">
+                  % of Cluster
+                </th><th class="progress sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Progress
+                : activate to sort column ascending" style="width: 65px;">
+                  Progress
+                </th><th class="ui sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Tracking UI
+                : activate to sort column ascending" style="width: 60px;">
+                  Tracking UI
+                </th><th class="blacklisted sorting" tabindex="0" aria-controls="apps" rowspan="1" colspan="1" aria-label="
+                  Blacklisted Nodes
+                : activate to sort column ascending" style="width: 76px;">
+                  Blacklisted Nodes
+                </th></tr>
+            </thead>
+            <script type="text/javascript">
+              var appsTableData=[
+["<a href='/cluster/app/application_1791901196446_0001'>application_1791901196446_0001</a>","alice","ys-finished-wc","SPARK","finished,burrow","root.default","0","1791901294521","1791901295723","1791901310852","FINISHED","SUCCEEDED","N/A","N/A","N/A","N/A","N/A","N/A","N/A","0.0","0.0","<br title='100.0'> <div class='ui-progressbar ui-widget ui-widget-content ui-corner-all' title='100.0%'> <div class='ui-progressbar-value ui-widget-header ui-corner-left' style='width:100.0%'> </div> </div>","<a href='http://smadayma:8088/proxy/application_1791901196446_0001/'>History</a>","0"]
+]
+            </script>
+            <tbody>
+            <tr class="odd"><td class="sorting_1"><a href="/cluster/app/application_1791901196446_0001">application_1791901196446_0001</a></td><td>alice</td><td>ys-finished-wc</td><td>SPARK</td><td>finished,burrow</td><td>root.default</td><td>0</td><td>Tue Oct 13 19:51:34 +0550 2026</td><td>Tue Oct 13 19:51:35 +0550 2026</td><td>Tue Oct 13 19:51:50 +0550 2026</td><td>FINISHED</td><td>SUCCEEDED</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td><td>N/A</td><td>0.0</td><td>0.0</td><td><br title="100.0"> <div class="ui-progressbar ui-widget ui-widget-content ui-corner-all" title="100.0%"> <div class="ui-progressbar-value ui-widget-header ui-corner-left" style="width:100.0%"> </div> </div></td><td><a href="http://smadayma:8088/proxy/application_1791901196446_0001/">History</a></td><td>0</td></tr></tbody>
+          </table><div class="dataTables_info" id="apps_info" role="status" aria-live="polite">Showing 1 to 1 of 1 entries</div><div class="dataTables_paginate paging_full_numbers" id="apps_paginate"><a class="paginate_button first disabled" aria-controls="apps" data-dt-idx="0" tabindex="-1" id="apps_first">First</a><a class="paginate_button previous disabled" aria-controls="apps" data-dt-idx="1" tabindex="-1" id="apps_previous">Previous</a><span><a class="paginate_button current" aria-controls="apps" data-dt-idx="2" tabindex="0">1</a></span><a class="paginate_button next disabled" aria-controls="apps" data-dt-idx="3" tabindex="-1" id="apps_next">Next</a><a class="paginate_button last disabled" aria-controls="apps" data-dt-idx="4" tabindex="-1" id="apps_last">Last</a></div></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body></html>

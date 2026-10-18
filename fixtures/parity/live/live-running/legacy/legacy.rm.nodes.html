@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    #nodes_paginate span {font-weight:normal}
+    #nodes .progress {width:8em}
+    #nodes_processing {top:-1.5em; font-size:1em;
+      color:#000; background:#fefefe}
+    #nodes .healthStatus {width:10em}
+    #nodes .healthReport {width:10em}
+  </style>
+  <title>
+    Nodes of the cluster
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    nodesDataTable =  $('#nodes').dataTable({bStateSave : true, "fnStateSave": function (oSettings, oData) {  data = oData.aoSearchCols;for(i =0 ; i < data.length; i ++) {data[i].sSearch = ""} sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, "fnStateLoad": function (oSettings) { return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, bJQueryUI:true, sPaginationType: 'full_numbers', iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100], 'aaData': nodeTableData, bDeferRender: true, bProcessing: true, aoColumnDefs: [{'bSearchable': false, 'aTargets': [ 7 ]}, {'sType': 'title-numeric', 'bSearchable': false, 'aTargets': [ 9, 10 ] }, {'sType': 'title-numeric', 'aTargets': [ 5 ]}]}).fnSetFilteringDelay(188);
+    });
+  </script>
+  </head><body><div id="jsnotice" class="ui-state-error" style="display: none;">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/static/hadoop-st.png">
+            </div>
+            <h1>
+              Nodes of the cluster
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav" class="ui-accordion ui-widget ui-helper-reset" role="tablist">
+            <h3 class="ui-accordion-header ui-corner-top ui-state-default ui-accordion-header-active ui-state-active ui-accordion-icons" role="tab" id="ui-id-1" aria-controls="ui-id-2" aria-selected="true" aria-expanded="true" tabindex="0"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span>
+              Cluster
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active" id="ui-id-2" aria-labelledby="ui-id-1" role="tabpanel" aria-hidden="false" style="height: 222.766px;">
+              <li>
+                <a href="/cluster/cluster">About</a>
+              </li><li>
+                <a href="/cluster/nodes">Nodes</a>
+              </li><li>
+                <a href="/cluster/nodelabels">Node Labels</a>
+              </li><li>
+                <a href="/cluster/apps">Applications</a>
+                <ul>
+                  <li>
+                  </li><li>
+                    <a href="/cluster/apps/NEW">NEW</a>
+                  </li><li>
+                    <a href="/cluster/apps/NEW_SAVING">NEW_SAVING</a>
+                  </li><li>
+                    <a href="/cluster/apps/SUBMITTED">SUBMITTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/ACCEPTED">ACCEPTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/RUNNING">RUNNING</a>
+                  </li><li>
+                    <a href="/cluster/apps/FINISHED">FINISHED</a>
+                  </li><li>
+                    <a href="/cluster/apps/FAILED">FAILED</a>
+                  </li><li>
+                    <a href="/cluster/apps/KILLED">KILLED</a>
+                </li></ul>
+              </li><li>
+                <a href="/cluster/scheduler">Scheduler</a>
+            </li></ul>
+            <h3 class="ui-accordion-header ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons" role="tab" id="ui-id-3" aria-controls="ui-id-4" aria-selected="false" aria-expanded="false" tabindex="-1"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>
+              Tools
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content" id="ui-id-4" aria-labelledby="ui-id-3" role="tabpanel" aria-hidden="true" style="display: none; height: 222.766px;">
+              <li>
+                <a href="/conf">Configuration</a>
+              </li><li>
+                <a href="/logs">Local logs</a>
+              </li><li>
+                <a href="/stacks">Server stacks</a>
+              </li><li>
+                <a href="/jmx?qry=Hadoop:*">Server metrics</a>
+            </li></ul>
+          </div>
+        </td>
+        <td class="content">
+          <style type="text/css">
+            .metrics {margin-bottom:5px}
+          </style>
+          <div class="metrics">
+            <h3>
+              Cluster Metrics
+            </h3>
+            <table id="metricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Apps Submitted
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Pending
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Running
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Completed
+                  </th>
+                  <th class="ui-state-default">
+                    Containers Running
+                  </th>
+                  <th class="ui-state-default">
+                    Used Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Total Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Reserved Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Physical Mem Used %
+                  </th>
+                  <th class="ui-state-default">
+                    Physical VCores Used %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    3
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    2
+                  </td>
+                  <td>
+                    &lt;memory:1 GB, vCores:2&gt;
+                  </td>
+                  <td>
+                    &lt;memory:9 GB, vCores:12&gt;
+                  </td>
+                  <td>
+                    &lt;memory:0 B, vCores:0&gt;
+                  </td>
+                  <td>
+                    210
+                  </td>
+                  <td>
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h3>
+              Cluster Nodes Metrics
+            </h3>
+            <table id="nodemetricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Active Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Decommissioning Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Decommissioned Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Lost Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Unhealthy Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Rebooted Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Shutdown Nodes
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    <a href="/cluster/nodes">3</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/decommissioning">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/decommissioned">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/lost">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/unhealthy">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/rebooted">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/shutdown">0</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h3>
+              Scheduler Metrics
+            </h3>
+            <table id="schedulermetricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Scheduler Type
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduling Resource Type
+                  </th>
+                  <th class="ui-state-default">
+                    Minimum Allocation
+                  </th>
+                  <th class="ui-state-default">
+                    Maximum Allocation
+                  </th>
+                  <th class="ui-state-default">
+                    Maximum Cluster Application Priority
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduler Busy %
+                  </th>
+                  <th class="ui-state-default">
+                    RM Dispatcher EventQueue Size
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduler Dispatcher EventQueue Size
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    Capacity Scheduler
+                  </td>
+                  <td>
+                    [memory-mb (unit=Mi), vcores]
+                  </td>
+                  <td>
+                    &lt;memory:256, vCores:1&gt;
+                  </td>
+                  <td>
+                    &lt;memory:3072, vCores:4&gt;
+                  </td>
+                  <td>
+                    10
+                  </td>
+                  <td>
+                    0
+                  </td>
+                  <td>
+                    0
+                  </td>
+                  <td>
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="nodes_wrapper" class="dataTables_wrapper no-footer"><div class="dataTables_length" id="nodes_length"><label>Show <select name="nodes_length" aria-controls="nodes" class=""><option value="20">20</option><option value="40">40</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select> entries</label></div><div id="nodes_filter" class="dataTables_filter"><label>Search:<input type="search" class="" placeholder="" aria-controls="nodes"></label></div><div id="nodes_processing" class="dataTables_processing" style="display: none;">Processing...</div><table id="nodes" class="dataTable no-footer" aria-describedby="nodes_info" style="width: 1437px;">
+            <thead>
+              <tr><th class="nodelabels sorting sorting_asc" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-sort="ascending" aria-label="
+                  Node Labels
+                : activate to sort column descending" style="width: 46px;">
+                  Node Labels
+                </th><th class="rack sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Rack
+                : activate to sort column ascending" style="width: 35px;">
+                  Rack
+                </th><th class="state sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Node State
+                : activate to sort column ascending" style="width: 51px;">
+                  Node State
+                </th><th class="nodeaddress sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Node Address
+                : activate to sort column ascending" style="width: 80px;">
+                  Node Address
+                </th><th class="nodehttpaddress sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Node HTTP Address
+                : activate to sort column ascending" style="width: 80px;">
+                  Node HTTP Address
+                </th><th class="lastHealthUpdate sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Last health-update
+                : activate to sort column ascending" style="width: 48px;">
+                  Last health-update
+                </th><th class="healthReport sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Health-report
+                : activate to sort column ascending" style="width: 49px;">
+                  Health-report
+                </th><th class="containers sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Containers
+                : activate to sort column ascending" style="width: 76px;">
+                  Containers
+                </th><th class="allocationTags sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Allocation Tags
+                : activate to sort column ascending" style="width: 70px;">
+                  Allocation Tags
+                </th><th class="mem sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Mem Used
+                : activate to sort column ascending" style="width: 36px;">
+                  Mem Used
+                </th><th class="mem sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Mem Avail
+                : activate to sort column ascending" style="width: 34px;">
+                  Mem Avail
+                </th><th class="mem sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Phys Mem Used %
+                : activate to sort column ascending" style="width: 36px;">
+                  Phys Mem Used %
+                </th><th class="vcores sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  VCores Used
+                : activate to sort column ascending" style="width: 51px;">
+                  VCores Used
+                </th><th class="vcores sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  VCores Avail
+                : activate to sort column ascending" style="width: 51px;">
+                  VCores Avail
+                </th><th class="vcores sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Phys VCores Used %
+                : activate to sort column ascending" style="width: 51px;">
+                  Phys VCores Used %
+                </th><th class="nodeManagerVersion sorting" tabindex="0" aria-controls="nodes" rowspan="1" colspan="1" aria-label="
+                  Version
+                : activate to sort column ascending" style="width: 52px;">
+                  Version
+                </th></tr>
+            </thead>
+            <script type="text/javascript">
+              var nodeTableData=[
+["ssd","/rack1","RUNNING","127.0.0.3:8041","<a href='//127.0.0.3:8042'>127.0.0.3:8042</a>","<br title='1791901559392'>Tue Oct 13 19:55:59 +0530 2026","","2","","<br title='1024'>1 GB","<br title='2048'>2 GB","74","2","2","17","3.4.3"],
+["gpu","/rack1","RUNNING","127.0.0.2:8041","<a href='//127.0.0.2:8042'>127.0.0.2:8042</a>","<br title='1791901559143'>Tue Oct 13 19:55:59 +0530 2026","","0","","<br title='0'>0 B","<br title='3072'>3 GB","73","0","4","15","3.4.3"],
+["","/rack2","RUNNING","127.0.0.4:8041","<a href='//127.0.0.4:8042'>127.0.0.4:8042</a>","<br title='1791901559821'>Tue Oct 13 19:55:59 +0530 2026","","0","","<br title='0'>0 B","<br title='3072'>3 GB","63","0","4","16","3.4.3"]
+]
+            </script>
+            <tbody>
+            <tr class="odd"><td class="sorting_1"></td><td>/rack2</td><td>RUNNING</td><td>127.0.0.4:8041</td><td><a href="//127.0.0.4:8042">127.0.0.4:8042</a></td><td><br title="1791901559821">Tue Oct 13 19:55:59 +0530 2026</td><td></td><td>0</td><td></td><td><br title="0">0 B</td><td><br title="3072">3 GB</td><td>63</td><td>0</td><td>4</td><td>16</td><td>3.4.3</td></tr><tr class="even"><td class="sorting_1">gpu</td><td>/rack1</td><td>RUNNING</td><td>127.0.0.2:8041</td><td><a href="//127.0.0.2:8042">127.0.0.2:8042</a></td><td><br title="1791901559143">Tue Oct 13 19:55:59 +0530 2026</td><td></td><td>0</td><td></td><td><br title="0">0 B</td><td><br title="3072">3 GB</td><td>73</td><td>0</td><td>4</td><td>15</td><td>3.4.3</td></tr><tr class="odd"><td class="sorting_1">ssd</td><td>/rack1</td><td>RUNNING</td><td>127.0.0.3:8041</td><td><a href="//127.0.0.3:8042">127.0.0.3:8042</a></td><td><br title="1791901559392">Tue Oct 13 19:55:59 +0530 2026</td><td></td><td>2</td><td></td><td><br title="1024">1 GB</td><td><br title="2048">2 GB</td><td>74</td><td>2</td><td>2</td><td>17</td><td>3.4.3</td></tr></tbody>
+          </table><div class="dataTables_info" id="nodes_info" role="status" aria-live="polite">Showing 1 to 3 of 3 entries</div><div class="dataTables_paginate paging_full_numbers" id="nodes_paginate"><a class="paginate_button first disabled" aria-controls="nodes" data-dt-idx="0" tabindex="-1" id="nodes_first">First</a><a class="paginate_button previous disabled" aria-controls="nodes" data-dt-idx="1" tabindex="-1" id="nodes_previous">Previous</a><span><a class="paginate_button current" aria-controls="nodes" data-dt-idx="2" tabindex="0">1</a></span><a class="paginate_button next disabled" aria-controls="nodes" data-dt-idx="3" tabindex="-1" id="nodes_next">Next</a><a class="paginate_button last disabled" aria-controls="nodes" data-dt-idx="4" tabindex="-1" id="nodes_last">Last</a></div></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body></html>

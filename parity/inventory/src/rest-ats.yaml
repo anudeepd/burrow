@@ -1,0 +1,186 @@
+# Out-of-scope upstreams that UI2 renders: ATS v2 (timeline) and the YARN Services (dashService) API.
+#
+# Why they are here: PLAN.md §1 excludes ATS v2 / flow activity and the YARN native services UI from the product,
+# but the P0 inventory must still account for every endpoint a UI2 page uses, so the ui2-extra.yaml items can cite a
+# real resource id instead of a dangling one.  None of these is in docs/contracts/api.md §3 and none is proxied by
+# the product; `allowlist: false` everywhere.
+#
+# Source of the paths: UI2's own Ember adapters (they are the interface definition available for ATS v2 -
+# the ATS v2 server is the separate hadoop-timeline-service project, not part of the Hadoop 3.4.3 tree).
+# `restNameSpace: timelineV2` resolves to <yarn.timeline-service.http-webapp.address> + /ws/v2/timeline,
+# `timelineV2Log` to the ATS v2 log endpoint, `dashService` to the YARN Services API base.
+version: 1
+entities:
+- id: atsflow
+  description: an ATS v2 flow (GET /ws/v2/timeline[/clusters/{clusterId}]/flows)
+  roots: []
+- id: atsflowrun
+  description: an ATS v2 flow run (GET /ws/v2/timeline/run-uid/{flowrunuid})
+  roots: []
+- id: atsapp
+  description: an ATS v2 application entry (GET /ws/v2/timeline/apps/{appId}?fields=ALL)
+  roots: []
+- id: atscomponent
+  description: an ATS v2 COMPONENT entity (GET /ws/v2/timeline/apps/{appId}/entities/COMPONENT?fields=ALL)
+  roots: []
+- id: atscomponentinstance
+  description: an ATS v2 COMPONENT_INSTANCE entity
+  roots: []
+- id: atsserviceinfo
+  description: an ATS v2 SERVICE_ATTEMPT / SERVICE entity
+  roots: []
+- id: atsmetrics
+  description: an ATS v2 flow-run metrics map (name -> value)
+  roots: []
+- id: atslog
+  description: an ATS v2 application log file (GET /ws/v2/applicationlog/containers/{containerId}/logs/{file})
+  roots: []
+objects: {}
+resources:
+- id: ats.flows
+  daemon: common
+  method: GET
+  path: /ws/v2/timeline/flows
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - {name: 'clusters/{clusterId}/flows', in: path, type: string, required: false, values: [], doc: 'when env.app.clusterId is set UI2 inserts /clusters/{clusterId} before /flows', source: 'ui2/yarn-ui/adapters/yarn-flow-activity.js:11'}
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: '{"flows":[…]}" (ATS v2 FlowActivityEntity list)', contentType: application/json}
+  errors: []
+  when: ['other:ATS v2 (timeline service) configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/yarn-flow-activity.js:6
+  note: 'Out of product scope (PLAN.md §1: ATS v2 / flow activity). UI2 yarn-flow-activity.'
+- id: ats.flow-runs
+  daemon: common
+  method: GET
+  path: /ws/v2/timeline/flow-uid/{flowuid}/runs
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - {name: flowuid, in: path, type: string, required: true, values: [], doc: 'flow uid', source: 'ui2/yarn-ui/adapters/yarn-flowrun-brief.js:11'}
+  - {name: fields, in: query, type: string, required: false, values: [ALL], doc: 'UI2 always sends fields=ALL', source: 'ui2/yarn-ui/adapters/yarn-flowrun-brief.js:11'}
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: '{"runs":[…]}"', contentType: application/json}
+  errors: []
+  when: ['other:ATS v2 configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/yarn-flowrun-brief.js:6
+  note: 'Out of product scope.'
+- id: ats.flow-run
+  daemon: common
+  method: GET
+  path: /ws/v2/timeline/run-uid/{flowrunuid}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - {name: flowrunuid, in: path, type: string, required: true, values: [], doc: 'flow run uid', source: 'ui2/yarn-ui/adapters/yarn-flowrun.js:11'}
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: '{"flowrun":{…},"metrics":[…]}" (FlowRunEntity + metrics)', contentType: application/json}
+  errors: []
+  when: ['other:ATS v2 configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/yarn-flowrun.js:6
+  note: 'Out of product scope.'
+- id: ats.flow-run-apps
+  daemon: common
+  method: GET
+  path: /ws/v2/timeline/run-uid/{flowrunuid}/apps
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - {name: flowrunuid, in: path, type: string, required: true, values: [], doc: 'flow run uid', source: 'ui2/yarn-ui/adapters/yarn-flowrun-brief.js:11'}
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: '{"apps":[…]}"', contentType: application/json}
+  errors: []
+  when: ['other:ATS v2 configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/routes/yarn-flowrun.js:1
+  note: 'Out of product scope.'
+- id: ats.app
+  daemon: common
+  method: GET
+  path: /ws/v2/timeline/apps/{appId}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - {name: appId, in: path, type: string, required: true, values: [], doc: 'YARN application id', source: 'ui2/yarn-ui/adapters/yarn-app-timeline.js:14'}
+  - {name: fields, in: query, type: string, required: false, values: [ALL], doc: 'UI2 always sends fields=ALL', source: 'ui2/yarn-ui/adapters/yarn-app-timeline.js:14'}
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: '{"app":{…}}" (TimelineEntity with configs/metrics)', contentType: application/json}
+  errors: []
+  when: ['other:ATS v2 configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/yarn-app-timeline.js:6
+  note: 'Out of product scope. UI2 yarn-app.configs / .components read configs and COMPONENT entities from it.'
+- id: ats.entities
+  daemon: common
+  method: GET
+  path: /ws/v2/timeline/apps/{appId}/entities/{entityType}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - {name: appId, in: path, type: string, required: true, values: [], doc: 'YARN application id', source: 'ui2/yarn-ui/adapters/yarn-timeline-appattempt.js:1'}
+  - {name: entityType, in: path, type: string, required: true, values: [COMPONENT, COMPONENT_INSTANCE, SERVICE_ATTEMPT, YARN_APPLICATION_ATTEMPT, YARN_CONTAINER], doc: 'ATS v2 entity type', source: 'ui2/yarn-ui/adapters/yarn-timeline-appattempt.js:1'}
+  - {name: fields, in: query, type: string, required: false, values: [ALL], doc: 'UI2 always sends fields=ALL', source: 'ui2/yarn-ui/adapters/yarn-timeline-appattempt.js:1'}
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: '{"entities":[…]}"', contentType: application/json}
+  errors: []
+  when: ['other:ATS v2 configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/yarn-timeline-appattempt.js:1
+  note: 'Out of product scope.'
+- id: ats.health
+  daemon: common
+  method: GET
+  path: /ws/v2/timeline/health
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params: []
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: 'ATS v2 health JSON ({"info":…})', contentType: application/json}
+  errors: []
+  when: ['other:ATS v2 configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/timeline-health.js:1
+  note: 'Out of product scope; UI2 hides timeline pages when the health check fails.'
+- id: ats.log
+  daemon: common
+  method: GET
+  path: /ws/v2/applicationlog/containers/{containerId}/logs/{file}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - {name: containerId, in: path, type: string, required: true, values: [], doc: 'container id', source: 'ui2/yarn-ui/adapters/yarn-app-log.js:18'}
+  - {name: file, in: path, type: string, required: true, values: [], doc: 'log file name (stdout/stderr/...)' , source: 'ui2/yarn-ui/adapters/yarn-app-log.js:18'}
+  produces: [text/plain]
+  response: {object: null, jsonRoot: null, shape: 'plain text log body (Accept: text/plain)', contentType: text/plain}
+  errors: []
+  when: ['other:ATS v2 configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/yarn-app-log.js:9
+  note: 'Out of product scope: our product serves finished-app logs from JHS/ATS v1 (see rest-daemon.yaml jhs.*).'
+- id: dashservice.services
+  daemon: common
+  method: POST
+  path: /app/v1/services
+  contractPath: null
+  allowlist: false
+  readOnly: false
+  params: []
+  produces: [application/json]
+  response: {object: null, jsonRoot: null, shape: 'YARN Services API payload', contentType: application/json}
+  errors: []
+  when: ['other:YARN Services API (dashService) configured - out of product scope']
+  acl: ''
+  source: ui2/yarn-ui/adapters/yarn-service.js:4
+  note: 'Out of product scope (PLAN.md §1: YARN native services UI). UI2 yarn-services/yarn-deploy-service; also PUT/DELETE /app/v1/services/{serviceName}.'

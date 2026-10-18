@@ -1,0 +1,11 @@
+{
+  "error": {
+    "code": "upstream_status",
+    "message": "RM answered 503",
+    "upstream": {
+      "url": "http://rm:8088/ws/v1/cluster/apps",
+      "status": 503
+    },
+    "hint": "check ResourceManager HA state"
+  }
+}

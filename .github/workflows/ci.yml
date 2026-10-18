@@ -1,0 +1,270 @@
+name: Burrow CI and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish built wheels to GitHub Releases and PyPI
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  # ---------------------------------------------------------------- web build
+  web:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.3"
+      - name: install
+        working-directory: web
+        run: bun install --frozen-lockfile
+      - name: lint
+        working-directory: web
+        run: bun run lint
+      - name: typecheck
+        working-directory: web
+        run: bun run typecheck
+      - name: unit tests
+        working-directory: web
+        run: bun run test
+      - name: build (SPA)
+        working-directory: web
+        run: bun run build
+      - name: install Chromium and Firefox for browser regressions
+        working-directory: web
+        run: bunx playwright install --with-deps chromium firefox
+      - name: browser regressions (Chromium, DAG frame budget, Firefox)
+        working-directory: web
+        env:
+          PW_SNAPSHOT_DIR: e2e/__screenshots__/linux
+        run: bun run e2e --project=firefox
+      - name: bundle budget
+        working-directory: web
+        run: bun run scripts/check-bundle-budget.ts
+      - uses: actions/upload-artifact@v7
+        with:
+          name: web-dist
+          path: web/dist/client
+
+  # -------------------------------------------------------------- rust checks
+  rust:
+    needs: web
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/download-artifact@v8
+        with:
+          name: web-dist
+          path: crates/burrow/assets
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      # offline tests only: live-cluster tests are gated on BURROW_LIVE=1
+      - run: cargo test --workspace
+
+  # ------------------------------------------------------------------- wheels
+  wheel:
+    needs: [web, rust]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu # manylinux
+            runner: ubuntu-24.04
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+          - target: x86_64-unknown-linux-musl # musllinux (alpine images)
+            runner: ubuntu-24.04
+          - target: aarch64-apple-darwin
+            runner: macos-15
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
+          - target: x86_64-pc-windows-msvc
+            runner: windows-2025
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v8
+        with:
+          name: web-dist
+          path: crates/burrow/assets
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          command: build
+          args: --release --manifest-path crates/burrow/Cargo.toml --out dist --compatibility ${{ startsWith(matrix.target, 'x86_64-unknown-linux-musl') && 'musllinux_1_2' || '' }}
+      - name: install smoke (x86_64 glibc Linux only)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: |
+          python -m venv /tmp/smoke && /tmp/smoke/bin/pip install dist/*.whl
+          /tmp/smoke/bin/burrow --version
+          /tmp/smoke/bin/burrow --help >/dev/null
+          # serves the embedded SPA and answers /api/healthz without any cluster
+          setsid /tmp/smoke/bin/burrow --no-open --port 8899 --rm http://127.0.0.1:1 &
+          for i in $(seq 1 40); do curl -sf http://127.0.0.1:8899/api/healthz && break || sleep 0.25; done
+          curl -sf http://127.0.0.1:8899/ | grep -qi '<div' && echo "SPA shell served"
+          pkill -f 'burrow --no-open --port 8899' || true
+      - uses: actions/upload-artifact@v7
+        with:
+          name: wheel-${{ matrix.target }}
+          path: dist/*.whl
+
+  # ------------------------------------------------------------ parity replay
+  # The differential parity proof (PLAN §8) runs from recorded fixtures, so CI
+  # needs no Hadoop cluster: P1 REST-key coverage, P2 legacy-vs-ours, P3 wire.
+  parity-replay:
+    needs: web
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.3"
+      - name: install harness
+        working-directory: parity/harness
+        run: bun install --frozen-lockfile
+      - name: install chromium for playwright
+        working-directory: parity/harness
+        run: bunx playwright install --with-deps chromium
+      - name: replay recorded fixtures and assert parity
+        working-directory: parity/harness
+        run: bun run run.mjs --fixtures fixtures/parity/live --assert-no-network --report parity/report
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: parity-report
+          path: parity/report
+
+  # ------------------------------------------------------------ release files
+  prepare-release:
+    if: ${{ inputs.publish }}
+    needs: [wheel, parity-replay]
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Validate release version and package name
+        id: release
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != "branch" || "$GITHUB_REF_NAME" != "master" ]]; then
+            echo "Dispatch this workflow from the master branch to publish." >&2
+            exit 1
+          fi
+          VERSION="$(python3 - <<'PYCODE'
+          import re
+          import tomllib
+          from pathlib import Path
+
+          project = tomllib.loads(Path("pyproject.toml").read_text())["project"]
+          workspace = tomllib.loads(Path("Cargo.toml").read_text())["workspace"]["package"]
+          if project["name"] != "yarn-burrow":
+              raise SystemExit(f"Expected Python distribution yarn-burrow, got {project['name']!r}")
+          if project["version"] != workspace["version"]:
+              raise SystemExit("pyproject.toml and Cargo.toml workspace versions do not match")
+          version = project["version"]
+          if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[a-zA-Z0-9.+-]+)?", version):
+              raise SystemExit(f"Invalid release version in project manifests: {version!r}")
+          print(version)
+          PYCODE
+          )"
+          TAG="v${VERSION}"
+          if git show-ref --verify --quiet "refs/tags/${TAG}"; then
+            echo "Tag ${TAG} already exists; use a new version for a release." >&2
+            exit 1
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+      - name: Download wheels built by this workflow
+        uses: actions/download-artifact@v8
+        with:
+          pattern: wheel-*
+          path: dist
+          merge-multiple: true
+      - name: Verify wheel set
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import os
+
+          wheels = sorted(Path("dist").glob("*.whl"))
+          expected_prefix = f"yarn_burrow-{os.environ['VERSION']}-"
+          if len(wheels) != 6:
+              raise SystemExit(f"Expected 6 platform wheels, found {len(wheels)}: {[p.name for p in wheels]}")
+          wrong = [p.name for p in wheels if not p.name.startswith(expected_prefix)]
+          if wrong:
+              raise SystemExit(f"Wheel names do not match {expected_prefix!r}: {wrong}")
+          print("Validated wheels:")
+          for wheel in wheels:
+              print(f"- {wheel.name}")
+          PYCODE
+      - name: Save validated release files
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist
+          path: dist/*.whl
+          if-no-files-found: error
+          retention-days: 30
+
+  github-release:
+    if: ${{ inputs.publish }}
+    name: Attach wheels to GitHub Release
+    needs: prepare-release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download validated wheels
+        uses: actions/download-artifact@v8
+        with:
+          name: release-dist
+          path: dist
+      - name: Create GitHub Release and attach wheels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare-release.outputs.tag }}
+        run: |
+          gh release create "$TAG" dist/*.whl \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Burrow $TAG" \
+            --generate-notes
+
+  pypi-publish:
+    if: ${{ inputs.publish }}
+    name: Publish wheels to PyPI
+    needs: prepare-release
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/project/yarn-burrow/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Download validated wheels
+        uses: actions/download-artifact@v8
+        with:
+          name: release-dist
+          path: dist
+      - name: Publish yarn-burrow to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

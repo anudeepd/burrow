@@ -1,0 +1,494 @@
+{
+ "routeKey": "/apps/application_1791901196446_0003/attempts/appattempt_1791901196446_0003_000001",
+ "url": "http://127.0.0.1:8787/apps/application_1791901196446_0003/attempts/appattempt_1791901196446_0003_000001?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.name",
+   "raw": "ys-accepted",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.state",
+   "raw": "ACCEPTED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": null,
+   "text": "UNDEFINED",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.id",
+   "raw": "application_1791901196446_0003",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0003",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.user",
+   "raw": "carol",
+   "yn": false,
+   "fmt": null,
+   "text": "carol",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.queue",
+   "raw": "root.adhoc",
+   "yn": false,
+   "fmt": null,
+   "text": "root.adhoc",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.elapsedTime",
+   "raw": "555658",
+   "yn": false,
+   "fmt": "ms",
+   "text": "9m 15s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.trackingUrl",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "Unassigned",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.appAttemptState",
+   "raw": "SCHEDULED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Scheduled",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.appAttemptId",
+   "raw": "appattempt_1791901196446_0003_000001",
+   "yn": false,
+   "fmt": null,
+   "text": "appattempt_1791901196446_0003_000001",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.startTime",
+   "raw": "1791901326650",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.finishedTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "In progress",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.elapsedText",
+   "raw": "555679",
+   "yn": false,
+   "fmt": "ms",
+   "text": "9m 15s",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.containerId",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "Unassigned",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.hostPortText",
+   "raw": "N/A",
+   "yn": false,
+   "fmt": null,
+   "text": "N/A",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.host",
+   "raw": "N/A",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.rpcPort",
+   "raw": "-1",
+   "yn": false,
+   "fmt": "int",
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.nodeId",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "Unassigned",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.nodeHttpAddress",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.exportPorts",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "None",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.trackingUiText",
+   "raw": "ApplicationMaster",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0003/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.logsLink",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "Not available",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.diagnosticsInfo",
+   "raw": "[Tue Oct 13 20:01:21 +0530 2026] Application is Activated, waiting for resources to be assigned for AM. Skipping assigning to Node in Ignore Exclusivity mode.  Last Node which was processed for the application : 127.0.0.3:8041 ( Partition : [ssd], Total resource : <memory:3072, vCores:4>, Available resource : <memory:2048, vCores:2> ). Details : AM Partition = <DEFAULT_PARTITION> ; Partition Resource = <memory:3072, vCores:4> ; Queue's Absolute capacity = 5.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 5.0 % ; Queue's capacity (absolute resource) = <memory:153, vCores:0> ; Queue's used capacity (absolute resource) = <memory:0, vCores:0> ; Queue's max capacity (absolute resource) = <memory:153, vCores:0> ; ",
+   "yn": false,
+   "fmt": null,
+   "text": "[Tue Oct 13 20:01:21 +0530 2026] Application is Activated, waiting for resources to be assigned for AM. Skipping assigning to Node in Ignore Exclusivity mode. Last Node which was processed for the application : 127.0.0.3:8041 ( Partition : [ssd], Total resource : <memory:3072, vCores:4>, Available resource : <memory:2048, vCores:2> ). Details : AM Partition = <DEFAULT_PARTITION> ; Partition Resource = <memory:3072, vCores:4> ; Queue's Absolute capacity = 5.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 5.0 % ; Queue's capacity (absolute resource) = <memory:153, vCores:0> ; Queue's used capacity (absolute resource) = <memory:0, vCores:0> ; Queue's max capacity (absolute resource) = <memory:153, vCores:0> ;",
+   "tag": "pre"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.totalOutstandingResourceRequestsText",
+   "raw": "Total Outstanding Resource Requests: <memory:768, vCores:1>",
+   "yn": false,
+   "fmt": null,
+   "text": "Total Outstanding Resource Requests: <memory:768, vCores:1>",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.allocationRequestId",
+   "raw": "-1",
+   "yn": false,
+   "fmt": null,
+   "text": "-1",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.resourceName",
+   "raw": "*",
+   "yn": false,
+   "fmt": null,
+   "text": "*",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.numContainers",
+   "raw": "1",
+   "yn": false,
+   "fmt": null,
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.relaxLocality",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "true",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.nodeLabelExpression",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.allocationTags",
+   "raw": "[]",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.placementConstraint",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "-1-0-*-GUARANTEED",
+   "field": "app.resourceRequests.executionTypeRequest.executionType",
+   "raw": "GUARANTEED",
+   "yn": false,
+   "fmt": null,
+   "text": "GUARANTEED",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.appBlacklistedNodesText",
+   "raw": "-",
+   "yn": false,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.blacklistedNodes",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.rmBlacklistedNodesText",
+   "raw": "-",
+   "yn": false,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.nodesBlacklistedBySystem",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.nodeLocalContainers.by.nodeLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.nodeLocalContainers.by.rackLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.nodeLocalContainers.by.offSwitchRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.rackLocalContainers.by.nodeLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.rackLocalContainers.by.rackLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.rackLocalContainers.by.offSwitchRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.offSwitchContainers.by.nodeLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.offSwitchContainers.by.rackLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0003_000001",
+   "field": "attempt.derived.localityStatistics.offSwitchContainers.by.offSwitchRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "application_1791901196446_0003",
+  "appattempt_1791901196446_0003_000001",
+  "-1-0-*-GUARANTEED"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nys-accepted\nAccepted\nUNDEFINED\napplication_1791901196446_0003\n·\nUser carol\n·\nType SPARK\n·\nQueue root.adhoc\n·\nPriority 0\n·\nelapsed\n9m 15s\nUnassigned\nYARN application page\nOpen in burrow\n\nSpark UI unavailable\n\napplication application_1791901196446_0003 is ACCEPTED: its Spark driver web UI is not running yet\n\nNext: the RM proxy serves a Spark UI only once the application is RUNNING\n\nOverview\nAttempts\nLogs\nSpark\nAttempt 1\nScheduled\nCopy attempt ID\nappattempt_1791901196446_0003_000001\nStarted\tFinished\tDuration\tRetained containers\n2026-10-13 19:52:06\tIn progress\t9m 15s\t0\nApplication master\nApplication master\nContainer\tUnassigned\nHost / RPC port\tN/A\n\nNode ID\tUnassigned\nNode HTTP address\t\nExposed ports\tNone\nAllocated resources\tNot retained by the ResourceManager\nTracking and diagnostics\nTracking and diagnostics\nAttempt tracking\tApplicationMaster\nApplication tracking\tUnassigned\nAggregated logs\tNot available\nDiagnostics\t\n[Tue Oct 13 20:01:21 +0530 2026] Application is Activated, waiting for resources to be assigned for AM. Skipping assigning to Node in Ignore Exclusivity mode.  Last Node which was processed for the application : 127.0.0.3:8041 ( Partition : [ssd], Total resource : <memory:3072, vCores:4>, Available resource : <memory:2048, vCores:2> ). Details : AM Partition = <DEFAULT_PARTITION> ; Partition Resource = <memory:3072, vCores:4> ; Queue's Absolute capacity = 5.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 5.0 % ; Queue's capacity (absolute resource) = <memory:153, vCores:0> ; Queue's used capacity (absolute resource) = <memory:0, vCores:0> ; Queue's max capacity (absolute resource) = <memory:153, vCores:0> ; \n\nApplication diagnostics\tView application details\nContainers\n0 retained\n\nNo container records are currently available.\n\nThe ResourceManager has not returned any containers for this attempt.\n\nOutstanding resource requests\n768 MiB · 1 vCores\nTotal Outstanding Resource Requests: <memory:768, vCores:1>\nSort\nColumns\n10/10\nExport\nPriority\nRequest ID\nLocation\nContainers\nRelax locality\nNode label\nAllocation tags\nPlacement constraint\nExecution type\nResources each\n0\n-1\n*\n1\ntrue\n—\nGUARANTEED\n768 MiB · 1 vCores\n1 row\nshift-click header: multi-sort\nScheduling details\nNode exclusions\nNode exclusions\nExcluded by application\t-\nExcluded by system\t-\nContainer locality · unavailable\n\nThe ResourceManager does not report locality counts for this attempt. A dash means unavailable, not zero.\n\nContainers / request locality\tNode Local Request\tRack Local Request\tOff Switch Request\nNum Node Local Containers (satisfied by)\t—\t—\t—\nNum Rack Local Containers (satisfied by)\t—\t—\t—\nNum Off Switch Containers (satisfied by)\t—\t—\t—"
+}

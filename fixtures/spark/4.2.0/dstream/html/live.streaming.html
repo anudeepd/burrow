@@ -1,0 +1,597 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="d52348f2-790a-4ff6-b249-436f62fa4fa5">setUIRoot('')</script>
+        <script nonce="d52348f2-790a-4ff6-b249-436f62fa4fa5">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="d52348f2-790a-4ff6-b249-436f62fa4fa5">setAppBasePath('')</script>
+        
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-dstream - Streaming Statistics</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/streaming/">Streaming</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-dstream" class="text-nowrap">burrow-dstream</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Streaming Statistics
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <script src="/static/d3.min.js"></script><link rel="stylesheet" href="/static/streaming-page.css" type="text/css"/><script type="module" src="/static/streaming-page.js"></script><script type="module" nonce="d52348f2-790a-4ff6-b249-436f62fa4fa5">
+import {getOnClickTimelineFunction} from "/static/streaming-page.js";
+
+onClickTimeline = getOnClickTimelineFunction();
+</script><div>Running batches of
+      <strong>
+        1 second 
+      </strong>
+      for
+      <strong>
+        11 seconds 696 ms
+      </strong>
+      since
+      <strong>
+        2026/10/03 12:38:29
+      </strong>
+      (<strong>11</strong>
+      completed batches, <strong>0</strong> records)
+    </div><br/><script nonce="d52348f2-790a-4ff6-b249-436f62fa4fa5">var timeFormat = {};
+timeFormat[1791011310000] = '12:38:30';
+timeFormat[1791011311000] = '12:38:31';
+timeFormat[1791011312000] = '12:38:32';
+timeFormat[1791011313000] = '12:38:33';
+timeFormat[1791011314000] = '12:38:34';
+timeFormat[1791011315000] = '12:38:35';
+timeFormat[1791011316000] = '12:38:36';
+timeFormat[1791011317000] = '12:38:37';
+timeFormat[1791011318000] = '12:38:38';
+timeFormat[1791011319000] = '12:38:39';
+timeFormat[1791011320000] = '12:38:40';</script><script nonce="d52348f2-790a-4ff6-b249-436f62fa4fa5">var timeTipStrings = {};
+timeTipStrings[1791011310000] = timeFormat[1791011310000];
+timeTipStrings[1791011311000] = timeFormat[1791011311000];
+timeTipStrings[1791011312000] = timeFormat[1791011312000];
+timeTipStrings[1791011313000] = timeFormat[1791011313000];
+timeTipStrings[1791011314000] = timeFormat[1791011314000];
+timeTipStrings[1791011315000] = timeFormat[1791011315000];
+timeTipStrings[1791011316000] = timeFormat[1791011316000];
+timeTipStrings[1791011317000] = timeFormat[1791011317000];
+timeTipStrings[1791011318000] = timeFormat[1791011318000];
+timeTipStrings[1791011319000] = timeFormat[1791011319000];
+timeTipStrings[1791011320000] = timeFormat[1791011320000];</script><table id="stat-table" class="table table-bordered" style="width: auto">
+      <thead>
+        <tr>
+          <th style="width: 160px;"></th>
+          <th style="width: 492px;">Timelines (Last 11 batches, 0 active, 11 completed)</th>
+          <th style="width: 350px;">Histograms</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div>
+              <span class="expand-input-rate">
+                    <span class="expand-input-rate-arrow arrow-closed"></span>
+                    <a data-bs-toggle="tooltip" title="Show/hide details of each receiver">
+      <strong>Input Rate</strong>
+    </a>
+                  </span>
+              </div>
+              
+              <div>Avg: 0.00 records/sec</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="all-stream-records-timeline"></div></td>
+          <td class="histogram"><div id="all-stream-records-histogram"></div></td>
+        </tr>
+      <tr id="inputs-table" class="d-none">
+          <td colspan="3">
+            <table class="table table-bordered" style="width: auto">
+      <thead>
+        <tr>
+          <th style="width: 151px;"></th>
+          <th style="width: 167px; padding: 8px 0 8px 0"><div style="margin: 0 8px 0 8px">Status</div></th>
+          <th style="width: 167px; padding: 8px 0 8px 0"><div style="margin: 0 8px 0 8px">Executor ID / Host</div></th>
+          <th style="width: 166px; padding: 8px 0 8px 0"><div style="margin: 0 8px 0 8px">Last Error Time</div></th>
+          <th>Last Error Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+      <td rowspan="2" style="vertical-align: middle; width: 151px;">
+        <div style="width: 151px;">
+          <div style="word-wrap: break-word;"><strong>Queue stream [0]</strong></div>
+          <div>Avg: 0.00 records/sec</div>
+        </div>
+      </td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td><div style="width: 342px;">-</div></td>
+    </tr><tr>
+      <td colspan="3" class="timeline">
+        <div id="stream-0-records-timeline"></div>
+      </td>
+      <td class="histogram"><div id="stream-0-records-histogram"></div></td>
+    </tr>
+      </tbody>
+    </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Scheduling Delay <sup>
+      (<a data-bs-toggle="tooltip" title="Time taken by Streaming scheduler to submit jobs of a batch">?</a>)
+    </sup></strong></div>
+              <div>Avg: 806 ms</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="scheduling-delay-timeline"></div></td>
+          <td class="histogram"><div id="scheduling-delay-histogram"></div></td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Processing Time <sup>
+      (<a data-bs-toggle="tooltip" title="Time taken to process all jobs of a batch">?</a>)
+    </sup></strong></div>
+              <div>Avg: 975 ms</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="processing-time-timeline"></div></td>
+          <td class="histogram"><div id="processing-time-histogram"></div></td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Total Delay <sup>
+      (<a data-bs-toggle="tooltip" title="Total time taken to handle a batch">?</a>)
+    </sup></strong></div>
+              <div>Avg: 1 second 782 ms</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="total-delay-timeline"></div></td>
+          <td class="histogram"><div id="total-delay-histogram"></div></td>
+        </tr>
+      </tbody>
+    </table><script type="module" nonce="d52348f2-790a-4ff6-b249-436f62fa4fa5">
+import {registerTimeline} from "/static/streaming-page.js";
+import {drawHistogram} from "/static/streaming-page.js";
+import {registerHistogram} from "/static/streaming-page.js";
+import {drawTimeline} from "/static/streaming-page.js";
+
+$(document).ready(function() {
+    var v1 = [{"x": 1791011310000, "y": 0.0},{"x": 1791011311000, "y": 0.0},{"x": 1791011312000, "y": 0.0},{"x": 1791011313000, "y": 0.0},{"x": 1791011314000, "y": 0.0},{"x": 1791011315000, "y": 0.0},{"x": 1791011316000, "y": 0.0},{"x": 1791011317000, "y": 0.0},{"x": 1791011318000, "y": 0.0},{"x": 1791011319000, "y": 0.0},{"x": 1791011320000, "y": 0.0}];
+var v2 = [{"x": 1791011310000, "y": 0.004},{"x": 1791011311000, "y": 1.273},{"x": 1791011312000, "y": 1.423},{"x": 1791011313000, "y": 1.382},{"x": 1791011314000, "y": 1.289},{"x": 1791011315000, "y": 1.095},{"x": 1791011316000, "y": 0.909},{"x": 1791011317000, "y": 0.704},{"x": 1791011318000, "y": 0.465},{"x": 1791011319000, "y": 0.252},{"x": 1791011320000, "y": 0.08}];
+var v3 = [{"x": 1791011310000, "y": 2.2},{"x": 1791011311000, "y": 1.236},{"x": 1791011312000, "y": 1.012},{"x": 1791011313000, "y": 0.918},{"x": 1791011314000, "y": 0.791},{"x": 1791011315000, "y": 0.77},{"x": 1791011316000, "y": 0.733},{"x": 1791011317000, "y": 0.785},{"x": 1791011318000, "y": 0.831},{"x": 1791011319000, "y": 0.746},{"x": 1791011320000, "y": 0.713}];
+var v4 = [{"x": 1791011310000, "y": 2.204},{"x": 1791011311000, "y": 2.509},{"x": 1791011312000, "y": 2.435},{"x": 1791011313000, "y": 2.3},{"x": 1791011314000, "y": 2.08},{"x": 1791011315000, "y": 1.865},{"x": 1791011316000, "y": 1.642},{"x": 1791011317000, "y": 1.489},{"x": 1791011318000, "y": 1.296},{"x": 1791011319000, "y": 0.998},{"x": 1791011320000, "y": 0.793}];
+registerTimeline(0.0, 0.0);
+registerHistogram(v1.map(function(d) { return d.y; }), 0.0, 0.0);
+var v5 = [{"x": 1791011310000, "y": 0.0},{"x": 1791011311000, "y": 0.0},{"x": 1791011312000, "y": 0.0},{"x": 1791011313000, "y": 0.0},{"x": 1791011314000, "y": 0.0},{"x": 1791011315000, "y": 0.0},{"x": 1791011316000, "y": 0.0},{"x": 1791011317000, "y": 0.0},{"x": 1791011318000, "y": 0.0},{"x": 1791011319000, "y": 0.0},{"x": 1791011320000, "y": 0.0}];
+registerTimeline(0.0, 0.0);
+registerHistogram(v5.map(function(d) { return d.y; }), 0.0, 0.0);
+registerTimeline(0.0, 2.509);
+registerHistogram(v2.map(function(d) { return d.y; }), 0.0, 2.509);
+registerTimeline(0.0, 2.509);
+registerHistogram(v3.map(function(d) { return d.y; }), 0.0, 2.509);
+registerTimeline(0.0, 2.509);
+registerHistogram(v4.map(function(d) { return d.y; }), 0.0, 2.509);
+    drawTimeline('#all-stream-records-timeline', v1, 1791011310000, 1791011320000, 0.0, 0.0, 'records/sec');
+drawHistogram('#all-stream-records-histogram', v1.map(function(d) { return d.y; }), 0.0, 0.0, 'records/sec');
+drawTimeline('#stream-0-records-timeline', v5, 1791011310000, 1791011320000, 0.0, 0.0, 'records/sec');
+drawHistogram('#stream-0-records-histogram', v5.map(function(d) { return d.y; }), 0.0, 0.0, 'records/sec');
+drawTimeline('#scheduling-delay-timeline', v2, 1791011310000, 1791011320000, 0.0, 2.509, 'sec');
+drawHistogram('#scheduling-delay-histogram', v2.map(function(d) { return d.y; }), 0.0, 2.509, 'sec');
+drawTimeline('#processing-time-timeline', v3, 1791011310000, 1791011320000, 0.0, 2.509, 'sec', 1.0);
+drawHistogram('#processing-time-histogram', v3.map(function(d) { return d.y; }), 0.0, 2.509, 'sec', 1.0);
+drawTimeline('#total-delay-timeline', v4, 1791011310000, 1791011320000, 0.0, 2.509, 'sec');
+drawHistogram('#total-delay-histogram', v4.map(function(d) { return d.y; }), 0.0, 2.509, 'sec');
+});</script><div class="row">
+          <div class="col-12">
+            <span id="completedBatches" class="collapse-table" data-bs-toggle="collapse" data-bs-target="#aggregated-completedBatches" aria-expanded="true" aria-controls="aggregated-completedBatches" data-collapse-name="collapse-aggregated-completedBatches">
+              <h4>
+                <span class="collapse-table-arrow arrow-open"></span>
+                <a>Completed Batches (last 11
+                  out of 11)</a>
+              </h4>
+            </span>
+            <div class="collapsible-table collapse show" id="aggregated-completedBatches">
+              <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedBatches-table-top-page" method="get" action="/streaming/?&completedBatches.sort=Batch+Time&completedBatches.desc=true#completedBatches" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedBatches.desc" value="true"/><input type="hidden" name="completedBatches.sort" value="Batch Time"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedBatches.page" id="form-completedBatches-table-top-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedBatches-table-top-page-size" name="completedBatches.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completedBatches-table">
+          <thead>
+      <tr><th>
+            <a href="/streaming/?&completedBatches.sort=Batch+Time&completedBatches.desc=false&completedBatches.pageSize=100#completedBatches">
+              <span data-bs-toggle="tooltip" title="">
+      Batch Time&nbsp;&#x25BE;
+    </span>
+            </a>
+          </th><th>
+              <a href="/streaming/?&completedBatches.sort=Records&completedBatches.pageSize=100#completedBatches">
+                <span data-bs-toggle="tooltip" title="">
+      Records
+    </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&completedBatches.sort=Scheduling+Delay&completedBatches.pageSize=100#completedBatches">
+                <span data-bs-toggle="tooltip" title="Time taken by Streaming scheduler to submit jobs of a batch">
+      Scheduling Delay
+    </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&completedBatches.sort=Processing+Time&completedBatches.pageSize=100#completedBatches">
+                <span data-bs-toggle="tooltip" title="Time taken to process all jobs of a batch">
+      Processing Time
+    </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&completedBatches.sort=Total+Delay&completedBatches.pageSize=100#completedBatches">
+                <span data-bs-toggle="tooltip" title="Total time taken to handle a batch">
+      Total Delay
+    </span>
+              </a>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Output Ops: Succeeded/Total
+    </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr>
+      <td id="batch-1791011320000" isFailed="false">
+        <a href="batch?id=1791011320000">
+          2026/10/03 12:38:40
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 80 ms </td>
+      <td> 0.7 s </td>
+      <td> 0.8 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011319000" isFailed="false">
+        <a href="batch?id=1791011319000">
+          2026/10/03 12:38:39
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 0.3 s </td>
+      <td> 0.7 s </td>
+      <td> 1.0 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011318000" isFailed="false">
+        <a href="batch?id=1791011318000">
+          2026/10/03 12:38:38
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 0.5 s </td>
+      <td> 0.8 s </td>
+      <td> 1 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011317000" isFailed="false">
+        <a href="batch?id=1791011317000">
+          2026/10/03 12:38:37
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 0.7 s </td>
+      <td> 0.8 s </td>
+      <td> 1 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011316000" isFailed="false">
+        <a href="batch?id=1791011316000">
+          2026/10/03 12:38:36
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 0.9 s </td>
+      <td> 0.7 s </td>
+      <td> 2 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011315000" isFailed="false">
+        <a href="batch?id=1791011315000">
+          2026/10/03 12:38:35
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 1 s </td>
+      <td> 0.8 s </td>
+      <td> 2 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011314000" isFailed="false">
+        <a href="batch?id=1791011314000">
+          2026/10/03 12:38:34
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 1 s </td>
+      <td> 0.8 s </td>
+      <td> 2 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011313000" isFailed="false">
+        <a href="batch?id=1791011313000">
+          2026/10/03 12:38:33
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 1 s </td>
+      <td> 0.9 s </td>
+      <td> 2 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011312000" isFailed="false">
+        <a href="batch?id=1791011312000">
+          2026/10/03 12:38:32
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 1 s </td>
+      <td> 1 s </td>
+      <td> 2 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011311000" isFailed="false">
+        <a href="batch?id=1791011311000">
+          2026/10/03 12:38:31
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 1 s </td>
+      <td> 1 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011310000" isFailed="false">
+        <a href="batch?id=1791011310000">
+          2026/10/03 12:38:30
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 4 ms </td>
+      <td> 2 s </td>
+      <td> 2 s </td><td class="progress-cell">
+      <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+    </td>
+    </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedBatches-table-bottom-page" method="get" action="/streaming/?&completedBatches.sort=Batch+Time&completedBatches.desc=true#completedBatches" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedBatches.desc" value="true"/><input type="hidden" name="completedBatches.sort" value="Batch Time"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedBatches.page" id="form-completedBatches-table-bottom-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedBatches-table-bottom-page-size" name="completedBatches.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+      </div>
+            </div>
+          </div>
+        </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:38:24</span><span id="footer-uptime" data-start-time="1791011304234"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

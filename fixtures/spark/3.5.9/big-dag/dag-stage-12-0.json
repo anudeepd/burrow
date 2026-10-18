@@ -1,0 +1,278 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 12,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 12",
+      "clusters": [
+        {
+          "id": "cluster7",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster8",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster15",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster16",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster23",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster24",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster25",
+          "name": "union",
+          "parentId": null
+        },
+        {
+          "id": "cluster26",
+          "name": "union",
+          "parentId": null
+        },
+        {
+          "id": "cluster27",
+          "name": "union",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 49,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 50,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 52,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 54,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 56,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:23",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 57,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:23",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 15,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster7"
+        },
+        {
+          "id": 16,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:160",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster8"
+        },
+        {
+          "id": 31,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster15"
+        },
+        {
+          "id": 32,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:160",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster16"
+        },
+        {
+          "id": 47,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster23"
+        },
+        {
+          "id": 48,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:160",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster24"
+        },
+        {
+          "id": 51,
+          "name": "UnionRDD",
+          "callsite": "union at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster25"
+        },
+        {
+          "id": 53,
+          "name": "UnionRDD",
+          "callsite": "union at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster26"
+        },
+        {
+          "id": 55,
+          "name": "UnionRDD",
+          "callsite": "union at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster27"
+        }
+      ],
+      "edges": [
+        {
+          "from": 15,
+          "to": 16
+        },
+        {
+          "from": 31,
+          "to": 32
+        },
+        {
+          "from": 47,
+          "to": 48
+        },
+        {
+          "from": 48,
+          "to": 49
+        },
+        {
+          "from": 16,
+          "to": 50
+        },
+        {
+          "from": 49,
+          "to": 51
+        },
+        {
+          "from": 50,
+          "to": 51
+        },
+        {
+          "from": 32,
+          "to": 52
+        },
+        {
+          "from": 51,
+          "to": 53
+        },
+        {
+          "from": 52,
+          "to": 53
+        },
+        {
+          "from": 48,
+          "to": 54
+        },
+        {
+          "from": 53,
+          "to": 55
+        },
+        {
+          "from": 54,
+          "to": 55
+        },
+        {
+          "from": 55,
+          "to": 56
+        },
+        {
+          "from": 56,
+          "to": 57
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 14,
+      "to": 15,
+      "fromStage": null,
+      "toStage": 12
+    },
+    {
+      "from": 30,
+      "to": 31,
+      "fromStage": null,
+      "toStage": 12
+    },
+    {
+      "from": 46,
+      "to": 47,
+      "fromStage": null,
+      "toStage": 12
+    }
+  ]
+}

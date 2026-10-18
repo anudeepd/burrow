@@ -1,0 +1,192 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="7bb57328-c497-46ad-b4fc-1fb0710e5b3a">setUIRoot('')</script>
+        <script nonce="7bb57328-c497-46ad-b4fc-1fb0710e5b3a">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="7bb57328-c497-46ad-b4fc-1fb0710e5b3a">setAppBasePath('')</script>
+        
+        <link rel="stylesheet" href="/static/dataTables.bootstrap5.min.css" type="text/css"/><link rel="stylesheet" href="/static/jquery.dataTables.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui-dataTables.css" type="text/css"/><script src="/static/jquery.dataTables.min.js"></script><script src="/static/dataTables.bootstrap5.min.js"></script>
+        <link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/timeline-view.js"></script>
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-window-sql - Details for Query 0</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-window-sql" class="text-nowrap">burrow-window-sql</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Details for Query 0
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-3">
+          <table id="sql-execution-table" class="table table-striped compact cell-border" style="width:100%" data-execution-id="0">
+          </table>
+          
+          <div id="plan-viz-download-btn-container">
+            <select id="plan-viz-format-select">
+              <option value="svg">SVG</option>
+              <option value="dot">DOT</option>
+              <option value="txt">TXT</option>
+            </select>
+            <label for="plan-viz-format-select">
+              <a id="plan-viz-download-btn" class="downloadbutton">Download</a>
+            </label>
+            <button id="copy-plan-btn" class="btn btn-sm btn-outline-secondary ms-2" type="button" title="Copy physical plan to clipboard">
+              📋 Copy Plan</button>
+            <button id="copy-link-btn" class="btn btn-sm btn-outline-secondary ms-1" type="button" title="Copy shareable link to this execution">
+              🔗 Copy Link</button>
+          </div>
+          <script src="/static/sql/sql-table-utils.js"></script>
+          <script src="/static/sql/executionpage.js"></script>
+        </div><div>
+      <div>
+        <span data-action="togglePlanViz">
+          <h4>
+            <span id="plan-viz-graph-arrow" class="arrow-open"></span>
+            <a>Plan Visualization</a>
+          </h4>
+        </span>
+      </div>
+
+      <div id="plan-viz-content" class="row">
+        <div id="plan-viz-graph-col" class="col-12">
+          <div id="plan-viz-graph">
+            <div>
+              <input type="checkbox" id="stageId-and-taskId-checkbox"></input>
+              <span>Show the Stage ID and Task ID that corresponds to the max metric</span>
+            </div>
+            <div>
+              <input type="checkbox" id="detailed-labels-checkbox"></input>
+              <span>Show metrics in graph nodes (detailed mode)</span>
+            </div>
+            <div id="plan-viz-zoom-toolbar" class="plan-viz-zoom-toolbar">
+              <div id="plan-viz-search-collapsed" class="btn-group btn-group-sm me-2" role="group" aria-label="Search">
+                <button id="plan-viz-search-toggle" type="button" class="btn btn-light border" title="Find node (/)">🔍</button>
+              </div>
+              <div id="plan-viz-search-expanded" class="input-group input-group-sm me-2 d-none" role="group" aria-label="Search">
+                <input id="plan-viz-search-input" type="search" autocomplete="off" class="form-control form-control-sm border" placeholder="Find node..." aria-label="Find node"/>
+                <span id="plan-viz-search-count" class="input-group-text bg-light"></span>
+                <button id="plan-viz-search-prev" type="button" class="btn btn-light border" title="Previous match (Shift+Enter)">↑</button>
+                <button id="plan-viz-search-next" type="button" class="btn btn-light border" title="Next match (Enter)">↓</button>
+                <button id="plan-viz-search-close" type="button" class="btn btn-light border" title="Close search (Esc)">&times;</button>
+              </div>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Zoom controls">
+                <button id="plan-viz-zoom-out" type="button" class="btn btn-light border" title="Zoom out (-)">−</button>
+                <button id="plan-viz-zoom-reset" type="button" class="btn btn-light border" title="Reset zoom to fit (0)">
+                  <span id="plan-viz-zoom-level">100%</span>
+                </button>
+                <button id="plan-viz-zoom-in" type="button" class="btn btn-light border" title="Zoom in (+)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="plan-viz-details-col" class="col-4 d-none">
+          <div id="plan-viz-details-panel" class="sticky-top" style="top: 4rem; z-index: 1;">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold" id="plan-viz-details-title">Details</span>
+                <button id="plan-viz-panel-close" class="btn btn-sm btn-close" type="button" title="Close panel"></button>
+              </div>
+              <div class="card-body" id="plan-viz-details-body">
+                <p class="text-muted mb-0">Click a node to view details</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="plan-viz-metadata" style="display:none">
+        <div class="dot-file">
+          digraph G {
+  0 [id=&quot;node0&quot; label=&quot;Execute CreateViewCommand&quot; tooltip=&quot;Execute CreateViewCommand&quot;];
+}
+        </div>
+        <div class="node-details">
+          {
+  &quot;node0&quot;:{&quot;name&quot;:&quot;Execute CreateViewCommand&quot;,&quot;desc&quot;:&quot;Execute CreateViewCommand&quot;,&quot;metrics&quot;:[]}
+}
+        </div>
+      </div>
+      <link rel="stylesheet" href="/static/sql/spark-sql-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/sql/spark-sql-viz.js"></script>
+    </div><div>
+      <span class="collapse-table" data-bs-toggle="collapse" data-bs-target="#physical-plan-details" aria-expanded="false" aria-controls="physical-plan-details" data-collapse-name="collapse-plan-details">
+        <h4>
+          <span class="collapse-table-arrow arrow-closed"></span>
+          <a>Plan Details</a>
+        </h4>
+      </span>
+      <div class="collapsible-table collapse" id="physical-plan-details">
+        <pre>== Physical Plan ==
+Execute CreateViewCommand (1)
+   +- CreateViewCommand (2)
+         +- LogicalRDD (3)
+
+
+(1) Execute CreateViewCommand
+Output: []
+
+(2) CreateViewCommand
+Arguments: `emp`, false, true, LocalTempView, UNSUPPORTED, true
+
+(3) LogicalRDD
+Arguments: [id#0L, dept#1, sal#2L, yr#3L], false
+
+</pre>
+      </div>
+    </div><br/>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:36:11</span><span id="footer-uptime" data-start-time="1791011171500"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

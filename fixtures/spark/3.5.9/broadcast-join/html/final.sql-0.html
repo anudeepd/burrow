@@ -1,0 +1,288 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery-3.5.1.min.js"></script><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/timeline-view.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script>setUIRoot('')</script>
+        <script>setAppBasePath('')</script>
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-broadcast-join - Details for Query 0</title>
+      </head>
+      <body>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img src="/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">3.5.9</span>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-broadcast-join" class="text-nowrap">burrow-broadcast-join</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+          </div>
+        </nav>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <h3 style="vertical-align: bottom; white-space: nowrap; overflow: hidden;
+                text-overflow: ellipsis;">
+                Details for Query 0
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+          <ul class="list-unstyled">
+            <li>
+              <strong>Submitted Time: </strong>2026/10/03 12:40:43
+            </li>
+            <li>
+              <strong>Duration: </strong>2 s
+            </li>
+            
+            <li class="job-url">
+            <strong>Succeeded Jobs: </strong>
+            <a href="/jobs/job/?id=0">0</a><span>&nbsp;</span><a href="/jobs/job/?id=1">1</a><span>&nbsp;</span><a href="/jobs/job/?id=2">2</a><span>&nbsp;</span>
+          </li>
+            
+          </ul>
+        </div><div>
+          <input type="checkbox" id="stageId-and-taskId-checkbox"></input>
+          <span>Show the Stage ID and Task ID that corresponds to the max metric</span>
+        </div><div>
+      <div id="plan-viz-graph"></div>
+      <div id="plan-viz-metadata" style="display:none">
+        <div class="dot-file">
+          digraph G {
+  0 [labelType=&quot;html&quot; label=&quot;&lt;br&gt;&lt;b&gt;AdaptiveSparkPlan&lt;/b&gt;&lt;br&gt;&lt;br&gt;&quot;];
+
+  subgraph cluster1 {
+    isCluster=&quot;true&quot;;
+    label=&quot;WholeStageCodegen (3)\n \nduration: 20 ms&quot;;
+      2 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;HashAggregate&lt;/b&gt;&lt;br&gt;&lt;br&gt;spill size: 0.0 B&lt;br&gt;time in aggregation build: 13 ms&lt;br&gt;peak memory: 8.2 MiB&lt;br&gt;number of output rows: 50&lt;br&gt;number of sort fallback tasks: 0&lt;br&gt;avg hash probes per key: 1&quot;];
+  }
+     
+  3 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;AQEShuffleRead&lt;/b&gt;&lt;br&gt;&lt;br&gt;number of partitions: 1&lt;br&gt;partition data size: 2.7 KiB&lt;br&gt;number of coalesced partitions: 1&quot;];
+  4 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;Exchange&lt;/b&gt;&lt;br&gt;&lt;br&gt;shuffle records written: 200&lt;br&gt;local merged chunks fetched: 0&lt;br&gt;shuffle write time total (min, med, max (stageId: taskId))&lt;br&gt;25 ms (2 ms, 10 ms, 10 ms (stage 1.0: task 1))&lt;br&gt;remote merged bytes read: 0.0 B&lt;br&gt;local merged blocks fetched: 0&lt;br&gt;corrupt merged block chunks: 0&lt;br&gt;remote merged reqs duration: 0 ms&lt;br&gt;remote merged blocks fetched: 0&lt;br&gt;records read: 200&lt;br&gt;local bytes read: 2.6 KiB&lt;br&gt;fetch wait time: 0 ms&lt;br&gt;remote bytes read: 0.0 B&lt;br&gt;merged fetch fallback count: 0&lt;br&gt;local blocks read: 4&lt;br&gt;remote merged chunks fetched: 0&lt;br&gt;remote blocks read: 0&lt;br&gt;data size total (min, med, max (stageId: taskId))&lt;br&gt;6.3 KiB (1600.0 B, 1600.0 B, 1600.0 B (stage 1.0: task 2))&lt;br&gt;local merged bytes read: 0.0 B&lt;br&gt;number of partitions: 4&lt;br&gt;remote reqs duration: 0 ms&lt;br&gt;remote bytes read to disk: 0.0 B&lt;br&gt;shuffle bytes written total (min, med, max (stageId: taskId))&lt;br&gt;2.6 KiB (671.0 B, 671.0 B, 671.0 B (stage 1.0: task 2))&quot;];
+
+  subgraph cluster5 {
+    isCluster=&quot;true&quot;;
+    label=&quot;WholeStageCodegen (2)\n \nduration: total (min, med, max (stageId: taskId))\n352 ms (37 ms, 138 ms, 138 ms (stage 1.0: task 2))&quot;;
+      6 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;HashAggregate&lt;/b&gt;&lt;br&gt;&lt;br&gt;spill size: 0.0 B&lt;br&gt;time in aggregation build total (min, med, max (stageId: taskId))&lt;br&gt;121 ms (20 ms, 40 ms, 40 ms (stage 1.0: task 2))&lt;br&gt;peak memory total (min, med, max (stageId: taskId))&lt;br&gt;1024.0 KiB (256.0 KiB, 256.0 KiB, 256.0 KiB (stage 1.0: task 2))&lt;br&gt;number of output rows: 200&lt;br&gt;number of sort fallback tasks: 0&lt;br&gt;avg hash probes per key: 0&quot;];    
+  7 [labelType=&quot;html&quot; label=&quot;&lt;br&gt;&lt;b&gt;Project&lt;/b&gt;&lt;br&gt;&lt;br&gt;&quot;];    
+  8 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;BroadcastHashJoin&lt;/b&gt;&lt;br&gt;&lt;br&gt;number of output rows: 100,000&quot;];    
+  9 [labelType=&quot;html&quot; label=&quot;&lt;br&gt;&lt;b&gt;Project&lt;/b&gt;&lt;br&gt;&lt;br&gt;&quot;];    
+  10 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;Filter&lt;/b&gt;&lt;br&gt;&lt;br&gt;number of output rows: 100,000&quot;];    
+  11 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;Range&lt;/b&gt;&lt;br&gt;&lt;br&gt;number of output rows: 100,000&quot;];
+  }
+     
+  12 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;BroadcastExchange&lt;/b&gt;&lt;br&gt;&lt;br&gt;time to broadcast: 9 ms&lt;br&gt;time to build: 40 ms&lt;br&gt;time to collect: 926 ms&lt;br&gt;number of output rows: 50&lt;br&gt;data size: 1024.4 KiB&quot;];
+
+  subgraph cluster13 {
+    isCluster=&quot;true&quot;;
+    label=&quot;WholeStageCodegen (1)\n \nduration: 3 ms&quot;;
+      14 [labelType=&quot;html&quot; label=&quot;&lt;br&gt;&lt;b&gt;Project&lt;/b&gt;&lt;br&gt;&lt;br&gt;&quot;];    
+  15 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;Range&lt;/b&gt;&lt;br&gt;&lt;br&gt;number of output rows: 50&quot;];
+  }
+     
+  2-&gt;0;
+
+  3-&gt;2;
+
+  4-&gt;3;
+
+  6-&gt;4;
+
+  7-&gt;6;
+
+  8-&gt;7;
+
+  9-&gt;8;
+
+  10-&gt;9;
+
+  11-&gt;10;
+
+  12-&gt;8;
+
+  14-&gt;12;
+
+  15-&gt;14;
+
+}
+        </div>
+        <div id="plan-viz-metadata-size">16</div>
+        <div id="plan-meta-data-0">AdaptiveSparkPlan isFinalPlan=true</div><div id="plan-meta-data-2">HashAggregate(keys=[name#9], functions=[count(1)])</div><div id="plan-meta-data-1">WholeStageCodegen (3)</div><div id="plan-meta-data-3">AQEShuffleRead coalesced</div><div id="plan-meta-data-4">Exchange hashpartitioning(name#9, 4), ENSURE_REQUIREMENTS, [plan_id=105]</div><div id="plan-meta-data-6">HashAggregate(keys=[name#9], functions=[partial_count(1)])</div><div id="plan-meta-data-7">Project [name#9]</div><div id="plan-meta-data-8">BroadcastHashJoin [k#2L], [k#8L], Inner, BuildRight, false</div><div id="plan-meta-data-9">Project [(id#0L % 50) AS k#2L]</div><div id="plan-meta-data-10">Filter isnotnull((id#0L % 50))</div><div id="plan-meta-data-11">Range (0, 100000, step=1, splits=4)</div><div id="plan-meta-data-5">WholeStageCodegen (2)</div><div id="plan-meta-data-12">BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]),false), [plan_id=60]</div><div id="plan-meta-data-14">Project [id#6L AS k#8L, concat(n, cast(id#6L as string)) AS name#9]</div><div id="plan-meta-data-15">Range (0, 50, step=1, splits=1)</div><div id="plan-meta-data-13">WholeStageCodegen (1)</div>
+      </div>
+      <link rel="stylesheet" href="/static/sql/spark-sql-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/sql/spark-sql-viz.js"></script>
+      <script>$(function() { if (shouldRenderPlanViz()) { renderPlanViz(); } })</script>
+    </div><div>
+      <span style="cursor: pointer;" onclick="clickPhysicalPlanDetails();">
+        <span id="physical-plan-details-arrow" class="arrow-closed"></span>
+        <a>Details</a>
+      </span>
+    </div><div id="physical-plan-details" style="display: none;">
+      <pre>== Physical Plan ==
+AdaptiveSparkPlan (21)
++- == Final Plan ==
+   * HashAggregate (14)
+   +- AQEShuffleRead (13)
+      +- ShuffleQueryStage (12), Statistics(sizeInBytes=6.3 KiB, rowCount=200)
+         +- Exchange (11)
+            +- * HashAggregate (10)
+               +- * Project (9)
+                  +- * BroadcastHashJoin Inner BuildRight (8)
+                     :- * Project (3)
+                     :  +- * Filter (2)
+                     :     +- * Range (1)
+                     +- BroadcastQueryStage (7), Statistics(sizeInBytes=1024.4 KiB, rowCount=50)
+                        +- BroadcastExchange (6)
+                           +- * Project (5)
+                              +- * Range (4)
++- == Initial Plan ==
+   HashAggregate (20)
+   +- Exchange (19)
+      +- HashAggregate (18)
+         +- Project (17)
+            +- BroadcastHashJoin Inner BuildRight (16)
+               :- Project (3)
+               :  +- Filter (2)
+               :     +- Range (1)
+               +- BroadcastExchange (15)
+                  +- Project (5)
+                     +- Range (4)
+
+
+(1) Range [codegen id : 2]
+Output [1]: [id#0L]
+Arguments: Range (0, 100000, step=1, splits=Some(4))
+
+(2) Filter [codegen id : 2]
+Input [1]: [id#0L]
+Condition : isnotnull((id#0L % 50))
+
+(3) Project [codegen id : 2]
+Output [1]: [(id#0L % 50) AS k#2L]
+Input [1]: [id#0L]
+
+(4) Range [codegen id : 1]
+Output [1]: [id#6L]
+Arguments: Range (0, 50, step=1, splits=Some(1))
+
+(5) Project [codegen id : 1]
+Output [2]: [id#6L AS k#8L, concat(n, cast(id#6L as string)) AS name#9]
+Input [1]: [id#6L]
+
+(6) BroadcastExchange
+Input [2]: [k#8L, name#9]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, false]),false), [plan_id=60]
+
+(7) BroadcastQueryStage
+Output [2]: [k#8L, name#9]
+Arguments: 0
+
+(8) BroadcastHashJoin [codegen id : 2]
+Left keys [1]: [k#2L]
+Right keys [1]: [k#8L]
+Join type: Inner
+Join condition: None
+
+(9) Project [codegen id : 2]
+Output [1]: [name#9]
+Input [3]: [k#2L, k#8L, name#9]
+
+(10) HashAggregate [codegen id : 2]
+Input [1]: [name#9]
+Keys [1]: [name#9]
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count#22L]
+Results [2]: [name#9, count#23L]
+
+(11) Exchange
+Input [2]: [name#9, count#23L]
+Arguments: hashpartitioning(name#9, 4), ENSURE_REQUIREMENTS, [plan_id=105]
+
+(12) ShuffleQueryStage
+Output [2]: [name#9, count#23L]
+Arguments: 1
+
+(13) AQEShuffleRead
+Input [2]: [name#9, count#23L]
+Arguments: coalesced
+
+(14) HashAggregate [codegen id : 3]
+Input [2]: [name#9, count#23L]
+Keys [1]: [name#9]
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#18L]
+Results [2]: [name#9, count(1)#18L AS count#19L]
+
+(15) BroadcastExchange
+Input [2]: [k#8L, name#9]
+Arguments: HashedRelationBroadcastMode(List(input[0, bigint, false]),false), [plan_id=35]
+
+(16) BroadcastHashJoin
+Left keys [1]: [k#2L]
+Right keys [1]: [k#8L]
+Join type: Inner
+Join condition: None
+
+(17) Project
+Output [1]: [name#9]
+Input [3]: [k#2L, k#8L, name#9]
+
+(18) HashAggregate
+Input [1]: [name#9]
+Keys [1]: [name#9]
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count#22L]
+Results [2]: [name#9, count#23L]
+
+(19) Exchange
+Input [2]: [name#9, count#23L]
+Arguments: hashpartitioning(name#9, 4), ENSURE_REQUIREMENTS, [plan_id=40]
+
+(20) HashAggregate
+Input [2]: [name#9, count#23L]
+Keys [1]: [name#9]
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#18L]
+Results [2]: [name#9, count(1)#18L AS count#19L]
+
+(21) AdaptiveSparkPlan
+Output [2]: [name#9, count#19L]
+Arguments: isFinalPlan=true
+
+</pre>
+    </div><script>
+      function clickPhysicalPlanDetails() {
+        $('#physical-plan-details').toggle();
+        $('#physical-plan-details-arrow').toggleClass('arrow-open').toggleClass('arrow-closed');
+      }
+    </script><br/>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>

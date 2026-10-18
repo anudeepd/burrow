@@ -1,0 +1,245 @@
+# Hand-written overrides for the generated registry (parity/inventory/field-ids.yaml).
+# Format: see FORMAT.md "Registry rows".  Edit THIS file, never field-ids.yaml.
+#
+# `fields`     : per-field-id overrides (format/normaliser/unit/status/waiver/note).
+# `groups`     : prefix-based waiver categories for whole families of keys.
+# `unmappedPaths`: REST JSON paths that deliberately get no field id (they still need a reason here - no silent skips).
+version: 1
+
+fields:
+  # ---- scheduler activities: recorded only with the flag on, and no YARN page renders them
+  queue.type:
+    waiver: {category: internal, reason: 'JAXB @XmlType polymorphism discriminator injected by the JSON provider; consumed to pick the queue shape, never rendered.'}
+  scheduler.type:
+    waiver: {category: internal, reason: 'JAXB @XmlType polymorphism discriminator ("capacityScheduler"/"fairScheduler"/"fifoScheduler"); the legacy page shows the human name via scheduler.derived.schedulerName / scheduler.schedulerType.'}
+  conf.versionID:
+    format: int
+    normaliser: int
+  nm.container.logs.containerLogInfo:
+    note: 'containerLogInfo is the log-file array; each element registers the same ids as any other log file (log.fileName, log.fileSize, log.lastModifiedTime).'
+  static.error.proxyRedirect:
+    note: 'Declared in src/legacy-apps.yaml (legacy.rm.failure.message.text).'
+
+groups:
+  - prefixes: [activities., appactivity.]
+    category: unused-by-any-ui
+    reason: 'Scheduler allocation activities (RMWSConsts.SCHEDULER_ACTIVITIES / SCHEDULER_APP_ACTIVITIES). Only populated while yarn.resourcemanager.scheduler.activities.enable=true, and neither the legacy Hamlet pages nor UI2 render them; our scheduler page uses them for the live allocation feed, so the harness must render or waive them explicitly.'
+  - prefixes: [appstat.]
+    category: unused-by-any-ui
+    reason: 'Application counters by state/type (GET /appstatistics). Neither the legacy pages (which use cluster.metrics.apps* plus the state tabs) nor UI2 render this endpoint.'
+  - prefixes: ['app.resourceInfo.', 'app.resourceRequests.']
+    category: unused-by-any-ui
+    reason: 'Per-partition resource usage and outstanding resource requests (3.x additions). Not rendered by the legacy application page or by UI2; our SPA may show them in the app drawer.'
+  - prefixes: ['scheduler.health.', 'queue.health.']
+    category: unused-by-any-ui
+    reason: 'CapacitySchedulerHealthInfo is rendered by CapacitySchedulerPage only inside the "Scheduler Health" block for the operations it lists explicitly; the rest of the structure (aggregate counts, per-operation details) is not displayed.'
+  - prefixes: ['queue.capacities.', 'queue.resourceUsagesByPartition.', 'queue.resources.', 'scheduler.capacities.']
+    category: unused-by-any-ui
+    reason: 'Per-partition (label) capacity and usage detail. The legacy CapacitySchedulerPage renders only the default partition; other labels are not shown.'
+  - prefixes: ['queue.autoQueue', 'scheduler.autoQueue', 'queue.leafQueueTemplate', 'scheduler.leafQueueTemplate']
+    category: unused-by-any-ui
+    reason: 'Auto-creation queue template properties; not rendered by any YARN page.'
+  - prefixes: ['queue.capacityVectorInfo', 'scheduler.queueCapacityVectorInfo']
+    category: rendered-elsewhere
+    reason: 'The legacy page renders the configured capacity vector via the derived queue/scheduler capacity strings; the raw vector entries are not displayed.'
+  - prefixes: ['queueacl.', 'jmx.']
+    category: unused-by-any-ui
+    reason: 'Queue access check / JMX bean echo: the legacy Tools pages dump raw JSON/text and UI2 renders the raw response, so these keys have no per-field UI mapping.'
+
+unmappedPaths:
+  - path: nodeToLabels.entry[].key
+    category: other
+    reason: 'The java.util.Map entry key is the node id that indexes the map; the node id itself is registered as node.id via rm.nodes (nodes.node[].id) and the label names via nodelabel.name.'
+  - path: remoteLogDirPathResult.paths.fileController
+    category: rendered-elsewhere
+    reason: 'Registered as log.fileController through the LogRemoteLogPathEntry entity root (paths[]).'
+  - path: remoteLogDirPathResult.paths.path
+    category: rendered-elsewhere
+    reason: 'Registered as log.path through the LogRemoteLogPathEntry entity root (paths[]).'
+  - path: containerLogInfo.fileName
+    category: rendered-elsewhere
+    reason: 'Registered as log.fileName (the NM container-log meta resource shares the LogContainerLogFileInfo shape).'
+  - path: containerLogInfo.fileSize
+    category: rendered-elsewhere
+    reason: 'Registered as log.fileSize.'
+  - path: containerLogInfo.lastModifiedTime
+    category: rendered-elsewhere
+    reason: 'Registered as log.lastModifiedTime.'
+  - path: configversion.versionID
+    category: rendered-elsewhere
+    reason: 'Registered as conf.versionID.'
+
+# ---------------------------------------------------------------------------------------------------
+# extraFields: ids that no JSON walk can discover.
+#   * the /conf XML representation (UI2 parses <property><name>/<source>/<value>; the JSON form is Accept-driven)
+#   * the /logs HTML directory listing (scraped, not JSON)
+#   * the raw text body of a log-file endpoint
+#   * JMX attribute names (dynamic; the tree is walked, the names are data)
+#   * client-side model fields UI2 composes from a URL
+# ---------------------------------------------------------------------------------------------------
+extraFields:
+  # Burrow-only derived values: register them for the parity DOM contract, but mark them
+  # waivable because the stock legacy/UI2 inventories have no comparable fields.
+  node.derived.nmContainerMemoryMB:
+    entity: node
+    path: derived.nmContainerMemoryMB
+    origin: derived
+    type: long
+    unit: MB
+    nullable: true
+    format: mb
+    derivation: Sum totalMemoryNeededMB for RUNNING rows from the NodeManager container list; null until that list is available.
+    status: waivable
+    waiver: {category: other, reason: Burrow-only summary; no directly comparable stock YARN UI field.}
+  node.derived.nmContainerVCores:
+    entity: node
+    path: derived.nmContainerVCores
+    origin: derived
+    type: int
+    unit: vCores
+    nullable: true
+    format: int
+    derivation: Sum totalVCoresNeeded for RUNNING rows from the NodeManager container list; null until that list is available.
+    status: waivable
+    waiver: {category: other, reason: Burrow-only summary; no directly comparable stock YARN UI field.}
+  node.derived.nmRunningContainers:
+    entity: node
+    path: derived.nmRunningContainers
+    origin: derived
+    type: int
+    unit: count
+    nullable: true
+    format: int
+    derivation: Count RUNNING rows from the NodeManager container list; null until that list is available.
+    status: waivable
+    waiver: {category: other, reason: Burrow-only summary; no directly comparable stock YARN UI field.}
+  cluster.metrics.derived.averageNodeMemoryUtilization:
+    entity: cluster.metrics
+    path: derived.averageNodeMemoryUtilization
+    origin: derived
+    type: double
+    unit: percent
+    nullable: true
+    format: percent-1dp
+    derivation: Arithmetic mean of finite memUtilization values from active RUNNING or UNHEALTHY nodes; null when none report.
+    status: waivable
+    waiver: {category: other, reason: Burrow-only cluster summary; no directly comparable stock YARN UI field.}
+  cluster.metrics.derived.defaultPartitionMemoryPct:
+    entity: cluster.metrics
+    path: derived.defaultPartitionMemoryPct
+    origin: derived
+    type: double
+    unit: percent
+    nullable: true
+    format: percent-1dp
+    derivation: allocatedMB / totalMB × 100 for the ResourceManager's default partition; null when totalMB is unavailable or zero.
+    status: waivable
+    waiver: {category: other, reason: Burrow-only cluster summary; no directly comparable stock YARN UI field.}
+  conf.key:
+    entity: conf
+    path: properties[].key
+    rest: [{resource: daemon.conf, jsonPath: 'properties[].key'}]
+    type: string
+    note: 'JSON form of /conf (Accept: application/json, ConfServlet/Configuration.appendJSONProperty): {"properties":[{"key":…,"value":…,"resource":…,"isFinal":…}]}. Live-verified.'
+  conf.value:
+    entity: conf
+    path: properties[].value
+    rest: [{resource: daemon.conf, jsonPath: 'properties[].value'}, {resource: daemon.conf, jsonPath: 'property[].value'}]
+    type: string
+    note: 'Hadoop prints "<redacted>" for keys marked as sensitive (Configuration.java REDACTED / appendJSONProperty). The XML form (property/value) carries the same text.'
+  conf.resource:
+    entity: conf
+    path: properties[].resource
+    rest: [{resource: daemon.conf, jsonPath: 'properties[].resource'}]
+    type: string
+    nullable: true
+    note: 'Name of the file the value came from (.xml source); absent for programmatically-set properties -> data-yv="" + data-yn="1".'
+  conf.isFinal:
+    entity: conf
+    path: properties[].isFinal
+    rest: [{resource: daemon.conf, jsonPath: 'properties[].isFinal'}]
+    type: boolean
+    note: 'true when the property cannot be overridden in the running daemon.'
+  conf.name:
+    entity: conf
+    path: 'property[].name'
+    rest: [{resource: daemon.conf, jsonPath: 'property[].name'}]
+    type: string
+    note: 'XML form of /conf (<property><name>…), which is what UI2 yarn-conf parses; the JSON form uses conf.key.'
+  conf.source:
+    entity: conf
+    path: 'property[].source'
+    rest: [{resource: daemon.conf, jsonPath: 'property[].source'}]
+    type: string
+    nullable: true
+    note: 'XML <property><source> element; the JSON form exposes the same information as conf.resource.'
+  log.name:
+    entity: log
+    path: listing.name
+    rest: [{resource: daemon.logs, jsonPath: 'listing[].name'}]
+    type: string
+    note: 'Scraped from the /logs HTML directory listing (a Jetty default-ServletContextHandler listing, not JSON): {{name,size,lastModified}} are the anchor text + Size/Last-Modified columns.'
+  log.size:
+    entity: log
+    path: listing.size
+    rest: [{resource: daemon.logs, jsonPath: 'listing[].size'}]
+    type: int
+    unit: bytes
+  log.lastModified:
+    entity: log
+    path: listing.lastModified
+    rest: [{resource: daemon.logs, jsonPath: 'listing[].lastModified'}]
+    type: long
+    unit: epoch-ms
+    nullable: true
+    note: 'The listing exposes a formatted date string; an epoch value is only available when the backend derives one.'
+  log.modified:
+    entity: log
+    path: listing.modified
+    rest: [{resource: daemon.logs, jsonPath: 'listing[].modified'}]
+    type: string
+    note: 'Verbatim Last-Modified text of the listing row, e.g. "Oct 3, 2026, 12:31:04 PM".'
+  log.isDir:
+    entity: log
+    path: listing.isDir
+    rest: [{resource: daemon.logs, jsonPath: 'listing[].isDir'}]
+    type: boolean
+  log.content:
+    entity: log
+    path: content
+    rest: [{resource: daemon.logs.file, jsonPath: ''}]
+    type: string
+    note: 'The raw text body of GET /logs/{file} (also the shape of the container-log file endpoints).'
+  jmx.attributes:
+    entity: jmx
+    path: attributes
+    rest: [{resource: daemon.jmx, jsonPath: 'beans[].<attrName>'}]
+    type: map
+    note: 'MBean attribute names are dynamic data, not a fixed schema (JMXJsonServlet writes every readable attribute inline, skipping names containing = : or space). Attribute-level parity must use parity/waivers.yaml with the observed name set.'
+
+  # ---- map-shaped REST fields the JSON walk cannot expand (the keys are data, the values are the datum)
+  node.nodeLabels:
+    entity: node
+    path: 'nodeLabels.*'
+    rest:
+      - {resource: rm.nodes, jsonPath: 'nodes.node[].nodeLabels.*'}
+      - {resource: rm.node, jsonPath: 'node.nodeLabels.*'}
+    type: any
+    nullable: true
+    note: 'Node label -> value map (RMNodeInfo.nodeLabels). The legacy nodes page renders the label *names* (the "Node Labels" column, nodelabel.name); the map values are carried here so no emitted key is undeclared.'
+  queue.nodeLabels:
+    entity: queue
+    path: 'nodeLabels.*'
+    rest:
+      - {resource: rm.scheduler, jsonPath: 'scheduler.schedulerInfo.queues.queue[].nodeLabels.*'}
+      - {resource: rm.scheduler, jsonPath: 'scheduler.schedulerInfo.queues.queue[].queues.queue[].nodeLabels.*'}
+    type: any
+    nullable: true
+    note: 'Queue label -> value map (QueueInfo.nodeLabels); the scheduler page renders the label names, the map values are declared here so the emitted keys are accounted for.'
+  nodelabel.labelsToNodes:
+    entity: nodelabel
+    path: 'entry.*.value.nodes.*'
+    rest:
+      - {resource: rm.label-mappings, jsonPath: 'labelsToNodes.entry.*.value.nodes.*'}
+    type: string
+    note: 'Label -> node-id list from GET /label-mappings (LabelsToNodesInfo): the map key is the label name (nodelabel.name) and each element is a node id (node.id). The legacy Node Labels page shows the node list per label; our catalogue renders the same set as node entities.'

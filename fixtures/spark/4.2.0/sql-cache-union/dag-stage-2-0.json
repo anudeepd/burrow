@@ -1,0 +1,94 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 2,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 2",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_52",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_61",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_6",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        },
+        {
+          "id": "cluster_7",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 4,
+          "name": "ShuffledRowRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_52"
+        },
+        {
+          "id": 5,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_61"
+        },
+        {
+          "id": 6,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_6"
+        },
+        {
+          "id": 7,
+          "name": "In-memory table tc",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": true,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_7"
+        }
+      ],
+      "edges": [
+        {
+          "from": 4,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 6
+        },
+        {
+          "from": 6,
+          "to": 7
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 3,
+      "to": 4,
+      "fromStage": null,
+      "toStage": 2
+    }
+  ]
+}

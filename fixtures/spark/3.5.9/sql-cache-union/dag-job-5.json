@@ -1,0 +1,329 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 5,
+  "stages": [
+    {
+      "stageId": 10,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 10 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster2",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster1",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster2"
+        },
+        {
+          "id": 1,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster2"
+        },
+        {
+          "id": 2,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster2"
+        },
+        {
+          "id": 3,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster1"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 1
+        },
+        {
+          "from": 1,
+          "to": 2
+        },
+        {
+          "from": 2,
+          "to": 3
+        }
+      ]
+    },
+    {
+      "stageId": 11,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 11",
+      "clusters": [
+        {
+          "id": "cluster10",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster6",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster11",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        },
+        {
+          "id": "cluster12",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        },
+        {
+          "id": "cluster60",
+          "name": "Scan In-memory table tc",
+          "parentId": null
+        },
+        {
+          "id": "cluster56",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster65",
+          "name": "Scan In-memory table tc",
+          "parentId": null
+        },
+        {
+          "id": "cluster61",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster55",
+          "name": "Union",
+          "parentId": null
+        },
+        {
+          "id": "cluster66",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 4,
+          "name": "ShuffledRowRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster10"
+        },
+        {
+          "id": 5,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster6"
+        },
+        {
+          "id": 6,
+          "name": "MapPartitionsRDD",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster11"
+        },
+        {
+          "id": 7,
+          "name": "In-memory table tc",
+          "callsite": "sql at NativeMethodAccessorImpl.java:0",
+          "cached": true,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster12"
+        },
+        {
+          "id": 21,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster60"
+        },
+        {
+          "id": 22,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster60"
+        },
+        {
+          "id": 23,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster60"
+        },
+        {
+          "id": 24,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster56"
+        },
+        {
+          "id": 25,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster65"
+        },
+        {
+          "id": 26,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster65"
+        },
+        {
+          "id": 27,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster65"
+        },
+        {
+          "id": 28,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster61"
+        },
+        {
+          "id": 29,
+          "name": "UnionRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster55"
+        },
+        {
+          "id": 30,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:12",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster66"
+        }
+      ],
+      "edges": [
+        {
+          "from": 4,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 6
+        },
+        {
+          "from": 6,
+          "to": 7
+        },
+        {
+          "from": 7,
+          "to": 21
+        },
+        {
+          "from": 21,
+          "to": 22
+        },
+        {
+          "from": 22,
+          "to": 23
+        },
+        {
+          "from": 23,
+          "to": 24
+        },
+        {
+          "from": 7,
+          "to": 25
+        },
+        {
+          "from": 25,
+          "to": 26
+        },
+        {
+          "from": 26,
+          "to": 27
+        },
+        {
+          "from": 27,
+          "to": 28
+        },
+        {
+          "from": 24,
+          "to": 29
+        },
+        {
+          "from": 28,
+          "to": 29
+        },
+        {
+          "from": 29,
+          "to": 30
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 3,
+      "to": 4,
+      "fromStage": 10,
+      "toStage": 11
+    }
+  ]
+}

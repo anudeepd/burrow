@@ -1,0 +1,39 @@
+[
+  {
+    "completionTime": "1791823074639",
+    "description": "createOrReplaceTempView at BurrowSqlDemo.scala:11",
+    "duration": 3,
+    "failedJobIds": [],
+    "id": 0,
+    "runningJobIds": [],
+    "status": "COMPLETED",
+    "submissionTime": "1791823074636",
+    "successJobIds": []
+  },
+  {
+    "completionTime": "1791823074752",
+    "description": "createOrReplaceTempView at BurrowSqlDemo.scala:14",
+    "duration": 1,
+    "failedJobIds": [],
+    "id": 1,
+    "runningJobIds": [],
+    "status": "COMPLETED",
+    "submissionTime": "1791823074751",
+    "successJobIds": []
+  },
+  {
+    "completionTime": "1791823077577",
+    "description": "collect at BurrowSqlDemo.scala:21",
+    "duration": 2340,
+    "failedJobIds": [],
+    "id": 2,
+    "runningJobIds": [],
+    "status": "COMPLETED",
+    "submissionTime": "1791823075237",
+    "successJobIds": [
+      0,
+      1,
+      2
+    ]
+  }
+]

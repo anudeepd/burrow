@@ -1,0 +1,90 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 4,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 4",
+      "clusters": [
+        {
+          "id": "cluster0",
+          "name": "parallelize",
+          "parentId": null
+        },
+        {
+          "id": "cluster43_1791011631000",
+          "name": "window @ 12:43:51",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 40,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": true,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 87,
+          "name": "PythonRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 88,
+          "name": "PairwiseRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:289",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster0"
+        },
+        {
+          "id": 86,
+          "name": "UnionRDD",
+          "callsite": "window at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster43_1791011631000"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 40
+        },
+        {
+          "from": 40,
+          "to": 86
+        },
+        {
+          "from": 86,
+          "to": 87
+        },
+        {
+          "from": 87,
+          "to": 88
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

@@ -1,0 +1,105 @@
+# Legacy RM UI — /cluster/cluster (About) and the application list pages (/cluster, /cluster/apps[/{state}], /cluster/queue/{q}).
+# Sources (RM webapp pkg unless noted): RMWebApp.java, RmController.java, RmView.java, AboutPage/AboutBlock, AppsBlockWithMetrics, RMAppsBlock,
+#   ColumnHeader (RM), hadoop-yarn-server-common .../webapp/{AppsBlock,WebPageUtils}.java, hadoop-yarn-common .../webapp/view/InfoBlock.java,
+#   hadoop-yarn-common static yarn.dt.plugins.js (renderHadoopDate/parseHadoopProgress), DataTables 1.11.5 defaults.
+version: 1
+derived:
+  - {id: cluster.info.derived.rmVersionText, entity: cluster.info, type: string, format: none, from: [cluster.info.resourceManagerBuildVersion, cluster.info.resourceManagerVersionBuiltOn], derivation: 'cinfo.getRMBuildVersion() + " on " + cinfo.getRMVersionBuiltOn()', source: "AboutBlock.java:51"}
+  - {id: cluster.info.derived.hadoopVersionText, entity: cluster.info, type: string, format: none, from: [cluster.info.hadoopBuildVersion, cluster.info.hadoopVersionBuiltOn], derivation: 'cinfo.getHadoopBuildVersion() + " on " + cinfo.getHadoopVersionBuiltOn()', source: "AboutBlock.java:53"}
+  - {id: app.derived.allocatedGpus, entity: app, type: long, format: int, from: [], derivation: '(isAppInCompletedState && app.getAllocatedGpus() <= 0) ? UNAVAILABLE : String.valueOf(app.getAllocatedGpus());  allocatedGpus = ApplicationResourceUsageReport.getUsedResources().getResourceValue("yarn.io/gpu") if resource type yarn.io/gpu is configured else -1', source: "RMAppsBlock.java:178", restGap: true, altSource: "none for current usage in /apps/{id}; app.resourceSecondsMap has cumulative gpu-seconds only; app.resourceInfo.resourceUsagesByPartition[].used.resourceInformations (Capacity only) [INFERENCE - verify live]"}
+  - {id: app.derived.reservedGpus, entity: app, type: long, format: int, from: [], derivation: '(isAppInCompletedState && app.getReservedGpus() <= 0) ? UNAVAILABLE : String.valueOf(app.getReservedGpus())', source: "RMAppsBlock.java:187", restGap: true, altSource: "app.resourceInfo.resourceUsagesByPartition[].reserved.resourceInformations (Capacity only) [INFERENCE - verify live]"}
+  - {id: app.derived.blacklistedNodesCount, entity: app, type: int, format: int, from: [attempt.blacklistedNodes], derivation: 'appAttempt = rmApp.getRMAppAttempt(ApplicationAttemptId.fromString(app.getCurrentAppAttemptId())); nodes = appAttempt.getBlacklistedNodes(); N/A if null else String.valueOf(nodes.size())', source: "RMAppsBlock.java:121-133", restGap: true, altSource: "count of comma-separated ids in attempt.blacklistedNodes of the current attempt (rm.app.attempts) [INFERENCE: REST joins sattempt.getBlacklistedNodes() with ', ' only if hasAccess and scheduler attempt exists]"}
+  - {id: app.derived.trackingUiText, entity: app, type: string, format: none, from: [app.trackingUI, app.trackingUrl, app.state], derivation: 'trackingUrl null||"N/A"||state==NEW ? "Unassigned" : Apps.isApplicationFinalState(state) ? "History" : "ApplicationMaster"', source: "RMAppsBlock.java:207-212", note: "REST app.trackingUI = UNASSIGNED|ApplicationMaster|History (AppInfo.java:158, upper-case UNASSIGNED, and keyed on finishTime==0 / NEW,NEW_SAVING,SUBMITTED,ACCEPTED) - compare case-insensitively and re-check ACCEPTED/SUBMITTED edge cases live"}
+  - {id: app.derived.hrefTracking, entity: app, type: string, format: url, from: [app.trackingUrl], derivation: 'trackingURL == null || "N/A" || state NEW ? "#" : app.getTrackingUrl()', source: "RMAppsBlock.java:201-205"}
+pages:
+  - id: legacy.rm.cluster-about
+    daemon: rm
+    route: /cluster/cluster
+    title: "About the Cluster"
+    classes: [RmController#about, AboutPage, AboutBlock, MetricsOverviewTable, InfoBlock, NavBlock]
+    includes: [legacy.rm.shared.chrome, legacy.rm.shared.metrics]
+    sections:
+      - id: legacy.rm.cluster-about.overview
+        title: "Cluster overview"
+        source: "AboutBlock.java:43"
+        items:
+          - {id: legacy.rm.cluster-about.overview.title, label: "Cluster overview", kind: title, field: static.section.clusterOverview, format: none, source: "AboutBlock.java:43", note: "th colspan=2 of InfoBlock table (ResponseInfo.about())"}
+          - {id: legacy.rm.cluster-about.overview.cluster-id, label: "Cluster ID:", kind: kv, field: cluster.info.id, rest: {resource: rm.info, path: "clusterInfo.id"}, format: int, normaliser: int, source: "AboutBlock.java:44", note: "ClusterInfo.getClusterId() = ResourceManager.getClusterTimeStamp() (epoch ms of RM start), printed raw (NOT date formatted)"}
+          - {id: legacy.rm.cluster-about.overview.state, label: "ResourceManager state:", kind: kv, field: cluster.info.state, rest: {resource: rm.info, path: "clusterInfo.state"}, format: enum, source: "AboutBlock.java:45", note: "STATE enum name, e.g. STARTED"}
+          - {id: legacy.rm.cluster-about.overview.ha-state, label: "ResourceManager HA state:", kind: kv, field: cluster.info.haState, rest: {resource: rm.info, path: "clusterInfo.haState"}, format: enum, source: "AboutBlock.java:46", note: "HAServiceState: INITIALIZING|ACTIVE|STANDBY|STOPPING; non-HA RM reports ACTIVE"}
+          - {id: legacy.rm.cluster-about.overview.ha-zk, label: "ResourceManager HA zookeeper connection state:", kind: kv, field: cluster.info.haZooKeeperConnectionState, rest: {resource: rm.info, path: "clusterInfo.haZooKeeperConnectionState"}, format: none, source: "AboutBlock.java:47", note: "string such as 'ResourceManager HA is not enabled.'"}
+          - {id: legacy.rm.cluster-about.overview.statestore, label: "ResourceManager RMStateStore:", kind: kv, field: cluster.info.rmStateStoreName, rest: {resource: rm.info, path: "clusterInfo.rmStateStoreName"}, format: none, source: "AboutBlock.java:49", note: "fully-qualified class name"}
+          - {id: legacy.rm.cluster-about.overview.started-on, label: "ResourceManager started on:", kind: kv, field: cluster.info.startedOn, rest: {resource: rm.info, path: "clusterInfo.startedOn"}, derivation: "Times.format(cinfo.getStartedOn())", format: epoch-datetime, normaliser: epoch, nullDisplay: "N/A", source: "AboutBlock.java:50", note: "Java DateTimeFormatter 'EEE MMM dd HH:mm:ss Z yyyy' in RM JVM default zone; N/A when ts<=0"}
+          - {id: legacy.rm.cluster-about.overview.rm-version, label: "ResourceManager version:", kind: kv, field: cluster.info.derived.rmVersionText, fields: [cluster.info.resourceManagerBuildVersion, cluster.info.resourceManagerVersionBuiltOn], rest: {resource: rm.info, path: "clusterInfo.resourceManagerBuildVersion"}, derivation: 'cinfo.getRMBuildVersion() + " on " + cinfo.getRMVersionBuiltOn()', format: none, source: "AboutBlock.java:51"}
+          - {id: legacy.rm.cluster-about.overview.hadoop-version, label: "Hadoop version:", kind: kv, field: cluster.info.derived.hadoopVersionText, fields: [cluster.info.hadoopBuildVersion, cluster.info.hadoopVersionBuiltOn], rest: {resource: rm.info, path: "clusterInfo.hadoopBuildVersion"}, derivation: 'cinfo.getHadoopBuildVersion() + " on " + cinfo.getHadoopVersionBuiltOn()', format: none, source: "AboutBlock.java:53"}
+  - id: legacy.rm.apps
+    daemon: rm
+    route: "/cluster | /cluster/apps | /cluster/apps/{app.state} | /cluster/queue/{queue.name} | /cluster/failure(no)"
+    title: "{app.state|All} Applications"
+    titleDynamic: true
+    query:
+      - {name: app.state, doc: "path param (RMWebApp: pajoin(\"/apps\", APP_STATE)); comma separated YarnApplicationState names; empty => All; AppsBlock.fetchData splits on ',' and YarnApplicationState.valueOf(trim)"}
+      - {name: apps.num, doc: "limit of applications returned (AppsBlock.fetchData -> request.setLimit)"}
+      - {name: app.started-time.begin, doc: "epoch ms lower bound (must be >=0)"}
+      - {name: app.started-time.end, doc: "epoch ms upper bound (must be >=begin)"}
+      - {name: queue.name, doc: "route /cluster/queue/{queue.name} only changes the TITLE to 'Queue <name>' (RmController.queue); it does NOT filter the table"}
+    classes: [RmController#index, RmController#queue, RmView, AppsBlockWithMetrics, MetricsOverviewTable, RMAppsBlock, AppsBlock, ColumnHeader, WebPageUtils, NavBlock]
+    includes: [legacy.rm.shared.chrome, legacy.rm.shared.metrics]
+    sections:
+      - id: legacy.rm.apps.page
+        title: null
+        source: "RmView.java:45"
+        items:
+          - {id: legacy.rm.apps.page.title, label: "Applications", kind: title, dynamic: true, field: static.page.apps.title, format: none, source: "RmView.java:45", note: "<title>/h1 = sjoin(reqState-or-'All', 'Applications') e.g. 'RUNNING Applications'. AppsBlock.render() later calls setTitle('Applications') but after the header was rendered, so it is NOT visible [INFERENCE - verify live]. /cluster/queue/{q} sets 'Queue <q>' in the controller but RmView.preHead overwrites it with the Applications title [INFERENCE - verify live]."}
+      - id: legacy.rm.apps.table
+        title: null
+        source: "RMAppsBlock.java:56"
+        items:
+          - {id: legacy.rm.apps.table.id, label: "ID", kind: column, field: app.id, rest: {resource: rm.apps, path: "apps.app[].id"}, derivation: "<a href=/cluster/app/{app.getAppId()}>{appId}</a>", format: url, normaliser: html-strip, source: "RMAppsBlock.java:57", note: "link to /cluster/app/<id>; default sort desc on column 0 (natural sort)"}
+          - {id: legacy.rm.apps.table.user, label: "User", kind: column, field: app.user, rest: {resource: rm.apps, path: "apps.app[].user"}, format: html-escaped, source: "RMAppsBlock.java:58"}
+          - {id: legacy.rm.apps.table.name, label: "Name", kind: column, field: app.name, rest: {resource: rm.apps, path: "apps.app[].name"}, format: html-escaped, source: "RMAppsBlock.java:59"}
+          - {id: legacy.rm.apps.table.type, label: "Application Type", kind: column, field: app.applicationType, rest: {resource: rm.apps, path: "apps.app[].applicationType"}, format: html-escaped, source: "RMAppsBlock.java:60"}
+          - {id: legacy.rm.apps.table.tags, label: "Application Tags", kind: column, field: app.applicationTags, rest: {resource: rm.apps, path: "apps.app[].applicationTags"}, format: html-escaped, nullDisplay: "", source: "RMAppsBlock.java:61", note: "comma-joined; null => empty string"}
+          - {id: legacy.rm.apps.table.queue, label: "Queue", kind: column, field: app.queue, rest: {resource: rm.apps, path: "apps.app[].queue"}, format: html-escaped, source: "RMAppsBlock.java:62"}
+          - {id: legacy.rm.apps.table.priority, label: "Application Priority", kind: column, field: app.priority, rest: {resource: rm.apps, path: "apps.app[].priority"}, format: int, normaliser: int, source: "RMAppsBlock.java:63", note: "0 when app has no priority"}
+          - {id: legacy.rm.apps.table.starttime, label: "StartTime", kind: column, field: app.startedTime, rest: {resource: rm.apps, path: "apps.app[].startedTime"}, format: epoch-datetime, normaliser: na-as-null+epoch, nullDisplay: "N/A", source: "RMAppsBlock.java:64", note: "JS renderHadoopDate: 'Sat Oct 3 14:05:09 +0200 2026' (day NOT zero padded, offset +HHMM, BROWSER time zone); data '0' or '-1' => N/A"}
+          - {id: legacy.rm.apps.table.launchtime, label: "LaunchTime", kind: column, field: app.launchTime, rest: {resource: rm.apps, path: "apps.app[].launchTime"}, format: epoch-datetime, normaliser: na-as-null+epoch, nullDisplay: "N/A", source: "RMAppsBlock.java:65", note: "ColumnHeader selector is '.IDlaunchtime' (sic, typo in source)"}
+          - {id: legacy.rm.apps.table.finishtime, label: "FinishTime", kind: column, field: app.finishedTime, rest: {resource: rm.apps, path: "apps.app[].finishedTime"}, format: epoch-datetime, normaliser: na-as-null+epoch, nullDisplay: "N/A", source: "RMAppsBlock.java:66"}
+          - {id: legacy.rm.apps.table.state, label: "State", kind: column, field: app.state, rest: {resource: rm.apps, path: "apps.app[].state"}, format: enum, nullDisplay: "N/A", source: "RMAppsBlock.java:67"}
+          - {id: legacy.rm.apps.table.finalstatus, label: "FinalStatus", kind: column, field: app.finalStatus, rest: {resource: rm.apps, path: "apps.app[].finalStatus"}, format: enum, source: "RMAppsBlock.java:68"}
+          - {id: legacy.rm.apps.table.running-containers, label: "Running Containers", kind: column, field: app.runningContainers, rest: {resource: rm.apps, path: "apps.app[].runningContainers"}, format: int, normaliser: na-as-null, nullDisplay: "N/A", when: ["value:-1"], source: "RMAppsBlock.java:69"}
+          - {id: legacy.rm.apps.table.allocated-vcores, label: "Allocated CPU VCores", kind: column, field: app.allocatedVCores, rest: {resource: rm.apps, path: "apps.app[].allocatedVCores"}, format: int, normaliser: na-as-null, nullDisplay: "N/A", when: ["value:-1"], source: "RMAppsBlock.java:70", note: "legacy AppInfo.allocatedCpuVcores defaults 0 (never -1 in 3.4.3); N/A branch is dead for completed apps"}
+          - {id: legacy.rm.apps.table.allocated-mb, label: "Allocated Memory MB", kind: column, field: app.allocatedMB, rest: {resource: rm.apps, path: "apps.app[].allocatedMB"}, format: int, normaliser: na-as-null, nullDisplay: "N/A", when: ["value:-1"], source: "RMAppsBlock.java:71"}
+          - {id: legacy.rm.apps.table.allocated-gpus, label: "Allocated GPUs", kind: column, field: app.derived.allocatedGpus, rest: null, derivation: "(isAppInCompletedState && app.getAllocatedGpus() <= 0) ? UNAVAILABLE : String.valueOf(app.getAllocatedGpus())", format: int, normaliser: na-as-null, nullDisplay: "N/A", when: ["fact:gpuResourceTypeConfigured"], source: "RMAppsBlock.java:72", restGap: true, note: "-1 when yarn.io/gpu is not a configured resource type => column shows '-1' for running apps (completed apps show N/A)"}
+          - {id: legacy.rm.apps.table.reserved-vcores, label: "Reserved CPU VCores", kind: column, field: app.reservedVCores, rest: {resource: rm.apps, path: "apps.app[].reservedVCores"}, format: int, normaliser: na-as-null, nullDisplay: "N/A", when: ["value:-1"], source: "RMAppsBlock.java:73"}
+          - {id: legacy.rm.apps.table.reserved-mb, label: "Reserved Memory MB", kind: column, field: app.reservedMB, rest: {resource: rm.apps, path: "apps.app[].reservedMB"}, format: int, normaliser: na-as-null, nullDisplay: "N/A", when: ["value:-1"], source: "RMAppsBlock.java:74"}
+          - {id: legacy.rm.apps.table.reserved-gpus, label: "Reserved GPUs", kind: column, field: app.derived.reservedGpus, rest: null, derivation: "(isAppInCompletedState && app.getReservedGpus() <= 0) ? UNAVAILABLE : String.valueOf(app.getReservedGpus())", format: int, normaliser: na-as-null, nullDisplay: "N/A", when: ["fact:gpuResourceTypeConfigured"], source: "RMAppsBlock.java:75", restGap: true}
+          - {id: legacy.rm.apps.table.queue-pct, label: "% of Queue", kind: column, field: app.queueUsagePercentage, rest: {resource: rm.apps, path: "apps.app[].queueUsagePercentage"}, derivation: 'String.format("%.1f", appReport.getApplicationResourceUsageReport().getQueueUsagePercentage()); "N/A" when usage report null', format: float-1dp, normaliser: na-as-null, nullDisplay: "N/A", source: "RMAppsBlock.java:76", note: "no % sign in the cell"}
+          - {id: legacy.rm.apps.table.cluster-pct, label: "% of Cluster", kind: column, field: app.clusterUsagePercentage, rest: {resource: rm.apps, path: "apps.app[].clusterUsagePercentage"}, derivation: 'String.format("%.1f", ...getClusterUsagePercentage())', format: float-1dp, normaliser: na-as-null, nullDisplay: "N/A", source: "RMAppsBlock.java:77"}
+          - {id: legacy.rm.apps.table.progress, label: "Progress", kind: chart, field: app.progress, rest: {resource: rm.apps, path: "apps.app[].progress"}, derivation: 'percent = StringUtils.format("%.1f", app.getProgress()); bar width=percent%, title attr = percent + "%"', format: progress-bar, normaliser: percent, source: "RMAppsBlock.java:78", note: "progress = report.getProgress()*100 (AppInfo.java:138); REST progress = RMApp.getProgress()*100 - same source value; 1-dp rounding"}
+          - {id: legacy.rm.apps.table.tracking-ui, label: "Tracking UI", kind: link, field: app.derived.trackingUiText, fields: [app.trackingUI, app.trackingUrl, app.state], rest: {resource: rm.apps, path: "apps.app[].trackingUI"}, derivation: 'trackingUrl null||"N/A"||state==NEW ? "Unassigned" : Apps.isApplicationFinalState(state) ? "History" : "ApplicationMaster"; href = trackingUrl or "#"', format: none, normaliser: lowercase, source: "RMAppsBlock.java:79", note: "link text 'Unassigned' | 'History' | 'ApplicationMaster'; REST trackingUI is 'UNASSIGNED'|..."}
+          - {id: legacy.rm.apps.table.tracking-href, label: null, kind: link, field: app.trackingUrl, rest: {resource: rm.apps, path: "apps.app[].trackingUrl"}, format: url, nullDisplay: "#", source: "RMAppsBlock.java:201", note: "href of the Tracking UI anchor; not shown as text"}
+          - {id: legacy.rm.apps.table.blacklisted, label: "Blacklisted Nodes", kind: column, field: app.derived.blacklistedNodesCount, rest: null, derivation: "rmApp.getRMAppAttempt(appAttemptId).getBlacklistedNodes().size() or 'N/A'", format: int, normaliser: na-as-null, nullDisplay: "N/A", source: "RMAppsBlock.java:80", restGap: true}
+      - id: legacy.rm.apps.datatable
+        title: null
+        source: "JQueryUI.java:205"
+        items:
+          - {id: legacy.rm.apps.datatable.length, label: "Show _MENU_ entries", kind: legend, field: static.datatable.length, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js", note: "DataTables default; menu = 20,40,60,80,100, default page size 20 (JQueryUI.tableInit: iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100])"}
+          - {id: legacy.rm.apps.datatable.search, label: "Search:", kind: button, field: static.datatable.search, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js", note: "free-text filter over all columns; 'bSearchable:false' on progress column"}
+          - {id: legacy.rm.apps.datatable.info, label: "Showing _START_ to _END_ of _TOTAL_ entries", kind: legend, field: static.datatable.info, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js"}
+          - {id: legacy.rm.apps.datatable.info-empty, label: "Showing 0 to 0 of 0 entries", kind: legend, field: static.datatable.infoEmpty, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js"}
+          - {id: legacy.rm.apps.datatable.info-filtered, label: "(filtered from _MAX_ total entries)", kind: legend, field: static.datatable.infoFiltered, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js"}
+          - {id: legacy.rm.apps.datatable.empty, label: "No data available in table", kind: legend, field: static.datatable.empty, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js"}
+          - {id: legacy.rm.apps.datatable.processing, label: "Processing...", kind: legend, field: static.datatable.processing, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js", note: "bProcessing:true"}
+          - {id: legacy.rm.apps.datatable.pager, label: "First", kind: button, field: static.datatable.pager, format: none, source: "common-bin/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js", note: "sPaginationType full_numbers: First / Previous / page numbers / Next / Last"}
+  - id: legacy.rm.failure
+    daemon: rm
+    route: /cluster/failure/{app.id}
+    title: "(none set; RmView.preHead title)"
+    classes: [RmController#failure, RedirectionErrorPage, ErrorBlock]
+    sections:
+      - id: legacy.rm.failure.message
+        title: null
+        source: "RedirectionErrorPage.java:31"
+        items:
+          - {id: legacy.rm.failure.message.text, label: "The application master for ", dynamic: true, kind: text, field: static.error.proxyRedirect, fields: [app.id], rest: null, derivation: '"The application master for " + aid + " redirected the resource manager''s web proxy''s request back to the web proxy, which means your request to view the application master''s web UI cannot be fulfilled. The typical cause for this error is a network misconfiguration that causes the resource manager''s web proxy host to resolve to an unexpected IP address on the application master host. Please contact your cluster administrator to resolve the issue."', format: none, source: "RedirectionErrorPage.java:34", scenario: "AM redirects the RM web proxy request back to the proxy (network misconfiguration); reached via WebAppProxyServlet, not via navigation"}

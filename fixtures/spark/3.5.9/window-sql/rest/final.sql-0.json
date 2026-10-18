@@ -1,0 +1,17 @@
+{
+  "id" : 0,
+  "status" : "COMPLETED",
+  "description" : "createOrReplaceTempView at NativeMethodAccessorImpl.java:0",
+  "planDescription" : "== Physical Plan ==\nExecute CreateViewCommand (1)\n   +- CreateViewCommand (2)\n         +- LogicalRDD (3)\n\n\n(1) Execute CreateViewCommand\nOutput: []\n\n(2) CreateViewCommand\nArguments: `emp`, false, true, LocalTempView, true\n\n(3) LogicalRDD\nArguments: [id#0L, dept#1, sal#2L, yr#3L], false\n\n",
+  "submissionTime" : "2026-10-03T07:09:58.711GMT",
+  "duration" : 135,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 0,
+    "nodeName" : "Execute CreateViewCommand",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ ]
+}

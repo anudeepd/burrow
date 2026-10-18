@@ -1,0 +1,89 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 3,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 3",
+      "clusters": [
+        {
+          "id": "cluster46",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster47",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster42_1791011631000",
+          "name": "foreachRDD @ 12:43:51",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 85,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 83,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster46"
+        },
+        {
+          "id": 84,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:160",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster47"
+        },
+        {
+          "id": 114,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:53",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster42_1791011631000"
+        }
+      ],
+      "edges": [
+        {
+          "from": 83,
+          "to": 84
+        },
+        {
+          "from": 84,
+          "to": 85
+        },
+        {
+          "from": 85,
+          "to": 114
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 82,
+      "to": 83,
+      "fromStage": null,
+      "toStage": 3
+    }
+  ]
+}

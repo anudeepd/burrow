@@ -1,0 +1,23 @@
+{
+  "kind": "job",
+  "granularity": "stage",
+  "jobId": 0,
+  "edgesInferred": true,
+  "stages": [
+    {
+      "stageId": 0,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 0",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        0,
+        1
+      ],
+      "status": "COMPLETE"
+    }
+  ],
+  "edges": []
+}

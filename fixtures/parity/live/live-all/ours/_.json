@@ -1,0 +1,1444 @@
+{
+ "routeKey": "/",
+ "url": "http://127.0.0.1:8787/?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.state",
+   "raw": "STARTED",
+   "yn": false,
+   "fmt": "text",
+   "text": "STARTED",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haZooKeeperConnectionState",
+   "raw": "Could not find leader elector. Verify both HA and automatic failover are enabled.",
+   "yn": false,
+   "fmt": "text",
+   "text": "Could not find leader elector. Verify both HA and automatic failover are enabled.",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.rmStateStoreName",
+   "raw": "org.apache.hadoop.yarn.server.resourcemanager.recovery.NullRMStateStore",
+   "yn": false,
+   "fmt": "text",
+   "text": "NullRMStateStore",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.derived.rmVersionText",
+   "raw": "3.4.3 from 9d50c6884666e794e45102260a4017bb31802e1b by stevel source checksum c9603bc1c4231988d03efcad81a27cf on 2026-02-13T14:31Z",
+   "yn": false,
+   "fmt": "text",
+   "text": "3.4.3 on 2026-02-13 20:01:00",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.resourceManagerVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": "text",
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.resourceManagerVersionBuiltOn",
+   "raw": "2026-02-13T14:31Z",
+   "yn": false,
+   "fmt": "text",
+   "text": "2026-02-13 20:01:00",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.derived.hadoopVersionText",
+   "raw": "3.4.3 from 9d50c6884666e794e45102260a4017bb31802e1b by stevel source checksum 2331238c4c2929e66645316a32a8613 on 2026-02-13T14:23Z",
+   "yn": false,
+   "fmt": "text",
+   "text": "3.4.3 on 2026-02-13 19:53:00",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": "text",
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersionBuiltOn",
+   "raw": "2026-02-13T14:23Z",
+   "yn": false,
+   "fmt": "text",
+   "text": "2026-02-13 19:53:00",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsSubmitted",
+   "raw": "3",
+   "yn": false,
+   "fmt": null,
+   "text": "3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsPending",
+   "raw": "1",
+   "yn": false,
+   "fmt": null,
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsRunning",
+   "raw": "1",
+   "yn": false,
+   "fmt": null,
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.derived.appsCompletedAll",
+   "raw": "1",
+   "yn": false,
+   "fmt": null,
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsCompleted",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsFailed",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsKilled",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsFailed",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.appsKilled",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalAllocatedContainersAcrossPartition",
+   "raw": "2",
+   "yn": false,
+   "fmt": null,
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.containersAllocated",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.containersAllocated",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.containersPending",
+   "raw": "1",
+   "yn": false,
+   "fmt": null,
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.containersReserved",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.derived.usedResourcesText",
+   "raw": "<memory:1 GB, vCores:2>",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:1 GB, vCores:2>",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalUsedResourcesAcrossPartition.memory",
+   "raw": "1024",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1 GB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalUsedResourcesAcrossPartition.vCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.derived.totalResourcesText",
+   "raw": "<memory:9 GB, vCores:12>",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:9 GB, vCores:12>",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalClusterResourcesAcrossPartition.memory",
+   "raw": "9216",
+   "yn": false,
+   "fmt": "mb",
+   "text": "9 GB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalClusterResourcesAcrossPartition.vCores",
+   "raw": "12",
+   "yn": false,
+   "fmt": "int",
+   "text": "12",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.derived.reservedResourcesText",
+   "raw": "<memory:0 B, vCores:0>",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:0 B, vCores:0>",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalReservedResourcesAcrossPartition.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalReservedResourcesAcrossPartition.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.utilizedMBPercent",
+   "raw": "221",
+   "yn": false,
+   "fmt": "pct",
+   "text": "221.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.utilizedVirtualCoresPercent",
+   "raw": "50",
+   "yn": false,
+   "fmt": "pct",
+   "text": "50.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.rmSchedulerBusyPercent",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.allocatedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.availableMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.reservedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.pendingMB",
+   "raw": "768",
+   "yn": false,
+   "fmt": "mb",
+   "text": "768 MiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.allocatedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.availableVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.reservedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.pendingVirtualCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.containerAssignedPerSecond",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.activeNodes",
+   "raw": "3",
+   "yn": false,
+   "fmt": "int",
+   "text": "3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.decommissioningNodes",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.decommissionedNodes",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.lostNodes",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.unhealthyNodes",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.rebootedNodes",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.shutdownNodes",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.nodeHostName",
+   "raw": "127.0.0.3",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.3",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.nodeLabels",
+   "raw": "[\"ssd\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "/rack1 · ssd",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.numContainers",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "1024",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.availMemoryMB",
+   "raw": "2048",
+   "yn": false,
+   "fmt": "mb",
+   "text": "2 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Healthy",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.lastHealthUpdate",
+   "raw": "1791901679391",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "19:57:59",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.memUtilization",
+   "raw": "73.72177",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.memUtilization",
+   "raw": "73.72177",
+   "yn": false,
+   "fmt": "pct",
+   "text": "73.7%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.nodeHostName",
+   "raw": "127.0.0.2",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.nodeLabels",
+   "raw": "[\"gpu\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "/rack1 · gpu",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.availMemoryMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Healthy",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.lastHealthUpdate",
+   "raw": "1791901679143",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "19:57:59",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.memUtilization",
+   "raw": "73.70867",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.memUtilization",
+   "raw": "73.70867",
+   "yn": false,
+   "fmt": "pct",
+   "text": "73.7%",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.nodeHostName",
+   "raw": "127.0.0.4",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.4",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.nodeLabels",
+   "raw": "[]",
+   "yn": false,
+   "fmt": "text",
+   "text": "/rack2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.availMemoryMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Healthy",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.lastHealthUpdate",
+   "raw": "1791901679822",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "19:57:59",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.memUtilization",
+   "raw": "74.19312",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.memUtilization",
+   "raw": "74.19312",
+   "yn": false,
+   "fmt": "pct",
+   "text": "74.2%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.derived.schedulerName",
+   "raw": "Capacity Scheduler",
+   "yn": false,
+   "fmt": "text",
+   "text": "Capacity Scheduler",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.type",
+   "raw": "capacityScheduler",
+   "yn": false,
+   "fmt": "text",
+   "text": "capacityScheduler",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.derived.schedulingResourceTypes",
+   "raw": "[memory-mb (unit=Mi), vcores]",
+   "yn": false,
+   "fmt": "text",
+   "text": "[memory-mb (unit=Mi), vcores]",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.derived.minAllocationText",
+   "raw": "<memory:256, vCores:1>",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:256, vCores:1>",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.derived.maxAllocationText",
+   "raw": "<memory:3072, vCores:4>",
+   "yn": false,
+   "fmt": "text",
+   "text": "<memory:3072, vCores:4>",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.derived.maximumClusterPriority",
+   "raw": "10",
+   "yn": false,
+   "fmt": "int",
+   "text": "10",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.schedulerBusy",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.rmDispatcherEventQueueSize",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.schedulerDispatcherEventQueueSize",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.queuePath",
+   "raw": "root.default",
+   "yn": false,
+   "fmt": "text",
+   "text": "root.default",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.absoluteCapacity",
+   "raw": "30.000002",
+   "yn": false,
+   "fmt": "pct",
+   "text": "30.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.absoluteMaxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.numActiveApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.pendingContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.queuePath",
+   "raw": "root.adhoc",
+   "yn": false,
+   "fmt": "text",
+   "text": "root.adhoc",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.absoluteCapacity",
+   "raw": "5",
+   "yn": false,
+   "fmt": "pct",
+   "text": "5.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.absoluteMaxCapacity",
+   "raw": "5",
+   "yn": false,
+   "fmt": "pct",
+   "text": "5.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.numActiveApplications",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.pendingContainers",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.queuePath",
+   "raw": "root.etl",
+   "yn": false,
+   "fmt": "text",
+   "text": "root.etl",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.absoluteCapacity",
+   "raw": "65",
+   "yn": false,
+   "fmt": "pct",
+   "text": "65.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.absoluteMaxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.numActiveApplications",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.numPendingApplications",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.pendingContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.name",
+   "raw": "ys-running-ingest",
+   "yn": false,
+   "fmt": "text",
+   "text": "ys-running-ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.progress",
+   "raw": "10",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.progress",
+   "raw": "10",
+   "yn": false,
+   "fmt": "pct",
+   "text": "10.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.user",
+   "raw": "alice",
+   "yn": false,
+   "fmt": "text",
+   "text": "alice",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.queue",
+   "raw": "root.etl.ingest",
+   "yn": false,
+   "fmt": "text",
+   "text": "root.etl.ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": "text",
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.elapsedTime",
+   "raw": "453696",
+   "yn": false,
+   "fmt": "dur",
+   "text": "7m 33s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.startedTime",
+   "raw": "1791901313958",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:53",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.runningContainers",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.allocatedMB",
+   "raw": "1024",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.allocatedVCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.priority",
+   "raw": "5",
+   "yn": false,
+   "fmt": "int",
+   "text": "5",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.state",
+   "raw": "ACCEPTED",
+   "yn": false,
+   "fmt": "text",
+   "text": "Accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.name",
+   "raw": "ys-accepted",
+   "yn": false,
+   "fmt": "text",
+   "text": "ys-accepted",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.progress",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.progress",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.user",
+   "raw": "carol",
+   "yn": false,
+   "fmt": "text",
+   "text": "carol",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.queue",
+   "raw": "root.adhoc",
+   "yn": false,
+   "fmt": "text",
+   "text": "root.adhoc",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": "text",
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.elapsedTime",
+   "raw": "441006",
+   "yn": false,
+   "fmt": "dur",
+   "text": "7m 21s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.startedTime",
+   "raw": "1791901326648",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:52:06",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.runningContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.allocatedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.allocatedVCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0003",
+   "field": "app.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "127.0.0.3:8041",
+  "127.0.0.2:8041",
+  "127.0.0.4:8041",
+  "root.default",
+  "root.adhoc",
+  "root.etl",
+  "application_1791901196446_0002",
+  "application_1791901196446_0003"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\njust now\nSearch\nCtrl K\nLocal\nUTC\nOverview\nIdentity\nCLUSTER ID\n1791901196446\nRESOURCEMANAGER STATE\nSTARTED\nHA STATE\nActive\nHA ZOOKEEPER CONNECTION STATE\nCould not find leader elector. Verify both HA and automatic failover are enabled.\nRMSTATESTORE\nNullRMStateStore\nSTARTED ON\n2026-10-13 19:49:56\nRESOURCEMANAGER VERSION\n3.4.3 on 2026-02-13 20:01:00\nHADOOP VERSION\n3.4.3 on 2026-02-13 19:53:00\nMetrics\nHISTORY\n5m\n30m\nall\nAPPS SUBMITTED\n3\nAll applications\nAPPS PENDING\n1\nApplications not yet running\nAPPS RUNNING\n1\nRunning applications\nAPPS COMPLETED\n1\n1 finished · 0 failed · 0 killed\nFinished, failed and killed applications\nAPPS FAILED\n0\nFailed applications\nAPPS KILLED\n0\nKilled applications\nCONTAINERS RUNNING\n2\neffective count · allocated 0\nCONTAINERS ALLOCATED\n0\nCONTAINERS PENDING\n1\nCONTAINERS RESERVED\n0\nUSED RESOURCES\n<memory:1 GB, vCores:2>\nThe applications holding these resources\nTOTAL RESOURCES\n<memory:9 GB, vCores:12>\nRESERVED RESOURCES\n<memory:0 B, vCores:0>\n11%\nmemory 1 GiB of 9 GiB\n17%\nvCores 2 of 12\nPHYSICAL MEM USED %\n221.0%\nPHYSICAL VCORES USED %\n50.0%\nSCHEDULER BUSY %\n0.0%\nMEMORY UTILISATION · THIS SESSION\ncollecting\n0%\n50%\n100%\n\ncollecting samples · trend appears after two samples\n\nused / capacity now 11.1%\nvcores now 16.7%\nResourceManager metrics\nMemory\nTOTAL MEMORY\n3 GiB\nALLOCATED MEMORY\n0 B\nAVAILABLE MEMORY\n3 GiB\nRESERVED MEMORY\n0 B\nPENDING MEMORY\n768 MiB\nVirtual cores\nTOTAL VCORES\n4\nALLOCATED VCORES\n0\nAVAILABLE VCORES\n4\nRESERVED VCORES\n0\nPENDING VCORES\n1\nASSIGNMENTS/S\n0\nNode states\nall nodes →\nACTIVE\n3\nNodes in state RUNNING\nDECOMMISSIONING\n0\nNodes in state DECOMMISSIONING\nDECOMMISSIONED\n0\nNodes in state DECOMMISSIONED\nLOST\n0\nNodes in state LOST\nUNHEALTHY\n0\nNodes in state UNHEALTHY\nREBOOTED\n0\nNodes in state REBOOTED\nSHUTDOWN\n0\nNodes in state SHUTDOWN\nRegistered nodes\n3 total\nSort\nColumns\n8/8\nExport\nName\nLabels\nContainers\nMemory\nHealth\nvCores\nState\nPhysical memory\n127.0.0.3\n/rack1 · ssd\n2\n1 GiB used · 2 GiB free\nHealthy\n19:57:59\n2 used · 2 free\nRunning\n73.7%\n127.0.0.2\n/rack1 · gpu\n0\n0 B used · 3 GiB free\nHealthy\n19:57:59\n0 used · 4 free\nRunning\n73.7%\n127.0.0.4\n/rack2\n0\n0 B used · 3 GiB free\nHealthy\n19:57:59\n0 used · 4 free\nRunning\n74.2%\n3 rows\nshift-click header: multi-sort\nScheduler\nqueue tree →\nSCHEDULER TYPE\nCapacity Scheduler\ncapacityScheduler\nSCHEDULING RESOURCE TYPE\n[memory-mb (unit=Mi), vcores]\nMINIMUM ALLOCATION\n<memory:256, vCores:1>\nMAXIMUM ALLOCATION\n<memory:3072, vCores:4>\nMAXIMUM CLUSTER APPLICATION PRIORITY\n10\nSCHEDULER BUSY %\n0\nRM DISPATCHER EVENTQUEUE SIZE\n0\nSCHEDULER DISPATCHER EVENTQUEUE SIZE\n0\nQueue headroom\nSort\nColumns\n6/6\nExport\nQueue\nGuarantee / max\nApps\nContainers\nState\nUsed\nroot.default\n30.0% / 100.0%\n0 active · 0 pending\n0 allocated · 0 pending\nRunning\n0.0%\nroot.adhoc\n5.0% / 5.0%\n1 active · 0 pending\n0 allocated · 1 pending\nRunning\n0.0%\nroot.etl\n65.0% / 100.0%\n— active · — pending\n0 allocated · 0 pending\nRunning\n0.0%\n3 rows\nshift-click header: multi-sort\nActive applications\nin the applications view →\nRunning\nys-running-ingest\n10.0%\nUser\nalice\nQueue\nroot.etl.ingest\nApplication type\nSPARK\nElapsed\n7m 33s\nStarted\nsince 2026-10-13 19:51:53\nRunning containers\n2 containers\nAllocated memory\n1 GiB\nAllocated vCores\n2 vcores\nPriority\n5\nAccepted\nys-accepted\n0.0%\nUser\ncarol\nQueue\nroot.adhoc\nApplication type\nSPARK\nElapsed\n7m 21s\nStarted\nsince 2026-10-13 19:52:06\nRunning containers\n0 containers\nAllocated memory\n0 B\nAllocated vCores\n0 vcores\nPriority\n0"
+}

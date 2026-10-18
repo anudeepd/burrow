@@ -1,0 +1,47 @@
+{
+  "name": "Burrow",
+  "version": "0.1.0",
+  "now": 1767225600000,
+  "readOnly": true,
+  "rm": {
+    "urls": ["http://rm1:8088", "http://rm2:8088"],
+    "active": "http://rm1:8088",
+    "haState": "ACTIVE",
+    "hadoopVersion": "3.4.3",
+    "reachable": true
+  },
+  "services": {
+    "sparkHistory": {
+      "configured": true,
+      "url": "http://shs:18080",
+      "urls": ["http://shs:18080", "http://shs-backup:18080"],
+      "reachable": true,
+      "candidates": [
+        { "url": "http://shs:18080", "reachable": true },
+        { "url": "http://shs-backup:18080", "reachable": false, "reason": "connection refused" }
+      ]
+    },
+    "jobHistory": {
+      "configured": true,
+      "url": "http://jhs:19888",
+      "reachable": false,
+      "reason": "connection refused"
+    },
+    "timeline": {
+      "configured": false
+    }
+  },
+  "features": {
+    "sparkLive": true,
+    "sparkHistory": true,
+    "aggregatedLogs": true,
+    "nodeLogs": true,
+    "events": true,
+    "kerberos": false
+  },
+  "yarn": {
+    "logServerUrl": null,
+    "httpPolicy": "HTTP_ONLY",
+    "scheduler": "capacity"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "jobId" : 4,
+  "name" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/rdd_wordcount.py:29",
+  "submissionTime" : "2026-10-03T07:06:05.037GMT",
+  "completionTime" : "2026-10-03T07:06:05.617GMT",
+  "stageIds" : [ 9, 10, 11, 12 ],
+  "jobTags" : [ ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 14,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 10,
+  "numSkippedTasks" : 4,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 10,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 3,
+  "numSkippedStages" : 1,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

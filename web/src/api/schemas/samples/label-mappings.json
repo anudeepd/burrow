@@ -1,0 +1,43 @@
+{
+  "labelsToNodes": {
+    "entry": [
+      {
+        "key": {
+          "name": "gpu",
+          "exclusivity": true
+        },
+        "value": {
+          "nodes": ["nm2:35000"],
+          "partitionInfo": {
+            "resourceAvailable": {
+              "memory": 4096,
+              "vCores": 4,
+              "resourceInformations": {
+                "resourceInformation": [
+                  {
+                    "attributes": {},
+                    "maximumAllocation": 8192,
+                    "minimumAllocation": 1024,
+                    "name": "memory-mb",
+                    "resourceType": "COUNTABLE",
+                    "units": "Mi",
+                    "value": 4096
+                  },
+                  {
+                    "attributes": {},
+                    "maximumAllocation": 4,
+                    "minimumAllocation": 1,
+                    "name": "vcores",
+                    "resourceType": "COUNTABLE",
+                    "units": "",
+                    "value": 4
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,537 @@
+# UI2 (Ember) routes OUT of product scope per PLAN.md §1 non-goals:
+#   ATS v2 / flow activity+timeline, YARN native services, deploy service, component instances.
+# Also catalogs UI2 router entries that are neither in the in-scope sibling list nor clearly core
+# (yarn-log-service, yarn-nodes-heatmap, timeline-error, notauth/notfound/error) and the
+# yarn-app children that are service/timeline-backed (components/configs/logs/threaddump).
+# Backing sources: UI2 bundle under .cluster/src-extract/ui2/ (beautified .js / decoded .hbs.txt line
+# numbers refer to the leading original-line numbers the extractor keeps).
+# All REST endpoints named here (ats.*, dashservice.*) are OUTSIDE the RM/NM/JHS contract => restGap: true.
+version: 1
+derived:
+  # ---- ATS v2 flow activity (yarn-flow-activity) ----
+  - {id: atsflow.derived.flowName, entity: atsflow, type: string, format: none, from: [], derivation: "payload.info.SYSTEM_INFO_FLOW_NAME", source: "ui2/yarn-ui/serializers/yarn-flow-activity.js:9", restGap: true, altSource: "ATS v2 GET /ws/v2/timeline/flows[] item.info.SYSTEM_INFO_FLOW_NAME"}
+  - {id: atsflow.derived.user, entity: atsflow, type: string, format: none, from: [], derivation: "payload.info.SYSTEM_INFO_USER", source: "ui2/yarn-ui/serializers/yarn-flow-activity.js:11", restGap: true, altSource: "ATS v2 /ws/v2/timeline/flows[] item.info.SYSTEM_INFO_USER"}
+  - {id: atsflow.derived.uid, entity: atsflow, type: string, format: none, from: [], derivation: "payload.info.UID", source: "ui2/yarn-ui/serializers/yarn-flow-activity.js:13", restGap: true, altSource: "ATS v2 /ws/v2/timeline/flows[] item.info.UID"}
+  - {id: atsflow.derived.lastExecDate, entity: atsflow, type: string, format: epoch-datetime, from: [], derivation: "converter.timeStampToDateOnly(payload.info.SYSTEM_INFO_DATE)", source: "ui2/yarn-ui/serializers/yarn-flow-activity.js:10", restGap: true, altSource: "ATS v2 /ws/v2/timeline/flows[] item.info.SYSTEM_INFO_DATE"}
+  # ---- ATS v2 flow run brief (yarn-flow, yarn-flow.runs) ----
+  - {id: atsflowrun.derived.flowName, entity: atsflowrun, type: string, format: none, from: [], derivation: "payload.info.SYSTEM_INFO_FLOW_NAME", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:13", restGap: true, altSource: "ATS v2 GET /ws/v2/timeline/flow-uid/{flowuid}/runs[] item.info.SYSTEM_INFO_FLOW_NAME"}
+  - {id: atsflowrun.derived.runid, entity: atsflowrun, type: string, format: none, from: [], derivation: "payload.info.SYSTEM_INFO_FLOW_RUN_ID", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:14", restGap: true, altSource: "ATS v2 .../runs[] item.info.SYSTEM_INFO_FLOW_RUN_ID"}
+  - {id: atsflowrun.derived.shownid, entity: atsflowrun, type: string, format: none, from: [], derivation: "payload.id", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:15", restGap: true, altSource: "ATS v2 .../runs[] item.id"}
+  - {id: atsflowrun.derived.createTime, entity: atsflowrun, type: string, format: epoch-datetime, from: [], derivation: "converter.timeStampToDate(payload.createdtime)", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:17", restGap: true, altSource: "ATS v2 .../runs[] item.createdtime"}
+  - {id: atsflowrun.derived.endTime, entity: atsflowrun, type: string, format: epoch-datetime, from: [], derivation: "converter.timeStampToDate(payload.info.SYSTEM_INFO_FLOW_RUN_END_TIME)", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:19", restGap: true, altSource: "ATS v2 .../runs[] item.info.SYSTEM_INFO_FLOW_RUN_END_TIME"}
+  - {id: atsflowrun.derived.user, entity: atsflowrun, type: string, format: none, from: [], derivation: "payload.info.SYSTEM_INFO_USER", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:21", restGap: true, altSource: "ATS v2 .../runs[] item.info.SYSTEM_INFO_USER"}
+  - {id: atsflowrun.derived.cpuVCores, entity: atsflowrun, type: int, format: int, from: [], derivation: "metrics.findBy(id,CPU).values[*] (else -1 -> shown N/A)", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:23", restGap: true, altSource: "ATS v2 .../runs[] item.metrics[] id=CPU"}
+  - {id: atsflowrun.derived.memoryUsed, entity: atsflowrun, type: long, format: mb, from: [], derivation: "metrics.findBy(id,MEMORY).values[*] (else -1 -> shown N/A)", source: "ui2/yarn-ui/serializers/yarn-flowrun-brief.js:24", restGap: true, altSource: "ATS v2 .../runs[] item.metrics[] id=MEMORY"}
+  - {id: atsflowrun.derived.runDurationTs, entity: atsflowrun, type: long, format: duration, from: [], derivation: "endTimeRaw - createTimeRaw; if <=0 then Date.now() - createTimeRaw", source: "ui2/yarn-ui/models/yarn-flowrun-brief.js:15", restGap: true, altSource: "computed from ATS v2 .../runs[] createdtime + SYSTEM_INFO_FLOW_RUN_END_TIME"}
+  # ---- ATS v2 flow run full (yarn-flowrun.info, yarn-flowrun.metrics) ----
+  - {id: atsflowrun.derived.metricName, entity: atsflowrun, type: string, format: none, from: [], derivation: "metric.id (MAP:/REDUCE: prefix stripped for display)", source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:6", restGap: true, altSource: "ATS v2 .../run-uid/{uid} item.metrics[].id"}
+  - {id: atsflowrun.derived.metricValue, entity: atsflowrun, type: string, format: none, from: [], derivation: "metric.values[Object.keys(metric.values)[0]]", source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:19", restGap: true, altSource: "ATS v2 .../run-uid/{uid} item.metrics[].values"}
+  # ---- ATS v2 app of a flow run (yarn-flowrun.info Applications, yarn-flowrun-metric) ----
+  - {id: atsapp.derived.appId, entity: atsapp, type: string, format: none, from: [], derivation: "payload.id", source: "ui2/yarn-ui/serializers/yarn-app-flowrun.js:17", restGap: true, altSource: "ATS v2 GET /ws/v2/timeline/run-uid/{uid}/apps[] item.id"}
+  - {id: atsapp.derived.type, entity: atsapp, type: string, format: none, from: [], derivation: "payload.info.YARN_APPLICATION_TYPE", source: "ui2/yarn-ui/serializers/yarn-app-flowrun.js:18", restGap: true, altSource: "ATS v2 .../run-uid/{uid}/apps[] item.info.YARN_APPLICATION_TYPE"}
+  - {id: atsapp.derived.state, entity: atsapp, type: string, format: enum, from: [], derivation: "payload.info.YARN_APPLICATION_STATE || events[YARN_APPLICATION_FINISHED].info.YARN_APPLICATION_STATE", source: "ui2/yarn-ui/serializers/yarn-app-flowrun.js:23", restGap: true, altSource: "ATS v2 .../run-uid/{uid}/apps[] item.info.YARN_APPLICATION_STATE"}
+  - {id: atsapp.derived.elapsedTs, entity: atsapp, type: long, format: duration, from: [], derivation: "finishedTs - startedTs", source: "ui2/yarn-ui/models/yarn-app-flowrun.js:12", restGap: true, altSource: "computed from ATS v2 .../apps[] createdtime + YARN_APPLICATION_FINISHED event.timestamp"}
+  - {id: atsapp.derived.cpuVCores, entity: atsapp, type: int, format: int, from: [], derivation: "metrics.findBy(id,CPU).values[*] (else -1 -> N/A)", source: "ui2/yarn-ui/serializers/yarn-app-flowrun.js:11", restGap: true, altSource: "ATS v2 .../apps[] item.metrics[] id=CPU"}
+  - {id: atsapp.derived.memoryUsed, entity: atsapp, type: long, format: mb, from: [], derivation: "metrics.findBy(id,MEMORY).values[*] (else -1 -> N/A)", source: "ui2/yarn-ui/serializers/yarn-app-flowrun.js:12", restGap: true, altSource: "ATS v2 .../apps[] item.metrics[] id=MEMORY"}
+  - {id: atsapp.derived.metricValue, entity: atsapp, type: string, format: none, from: [], derivation: "first value of item.metrics[metric_id] (sunburst leaf value)", source: "ui2/yarn-ui/routes/yarn-flowrun-metric.js:60", restGap: true, altSource: "ATS v2 run-uid/{uid}/apps[] and entity metrics[].values"}
+  # ---- ATS v2 service component (yarn-app.components, component instances) ----
+  - {id: atscomponent.derived.name, entity: atscomponent, type: string, format: none, from: [], derivation: "payload.id (COMPONENT entity id)", source: "ui2/yarn-ui/serializers/yarn-service-component.js:28", restGap: true, altSource: "ATS v2 GET /ws/v2/timeline/apps/{appId}/entities/COMPONENT?fields=ALL item.id"}
+  - {id: atscomponent.derived.vcores, entity: atscomponent, type: string, format: none, from: [], derivation: "payload.info.RESOURCE_CPU", source: "ui2/yarn-ui/serializers/yarn-service-component.js:29", restGap: true, altSource: "ATS v2 .../entities/COMPONENT item.info.RESOURCE_CPU"}
+  - {id: atscomponent.derived.memory, entity: atscomponent, type: string, format: mb-suffix, from: [], derivation: "payload.info.RESOURCE_MEMORY", source: "ui2/yarn-ui/serializers/yarn-service-component.js:30", restGap: true, altSource: "ATS v2 .../entities/COMPONENT item.info.RESOURCE_MEMORY"}
+  - {id: atscomponent.derived.instances, entity: atscomponent, type: string, format: int, from: [], derivation: "count of COMPONENT_INSTANCE entities with same COMPONENT_NAME (client-computed; serializer default 0)", source: "ui2/yarn-ui/routes/yarn-app/components.js:30", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE grouped by info.COMPONENT_NAME"}
+  - {id: atscomponent.derived.configKey, entity: atscomponent, type: string, format: none, from: [], derivation: "Object.keys(payload.configs)", source: "ui2/yarn-ui/serializers/yarn-service-component.js:11", restGap: true, altSource: "ATS v2 .../entities/COMPONENT item.configs (map key)"}
+  - {id: atscomponent.derived.configValue, entity: atscomponent, type: string, format: none, from: [], derivation: "payload.configs[key] || 'N/A'", source: "ui2/yarn-ui/serializers/yarn-service-component.js:13", restGap: true, altSource: "ATS v2 .../entities/COMPONENT item.configs (map value)"}
+  # ---- ATS v2 component instance (yarn-component-instances.info, yarn-component-instance.info) ----
+  - {id: atscomponentinstance.derived.containerId, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "payload.id", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:9", restGap: true, altSource: "ATS v2 GET /ws/v2/timeline/apps/{appId}/entities/COMPONENT_INSTANCE?fields=ALL item.id"}
+  - {id: atscomponentinstance.derived.component, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "info.COMPONENT_NAME", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:10", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.COMPONENT_NAME"}
+  - {id: atscomponentinstance.derived.instanceName, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "info.COMPONENT_INSTANCE_NAME", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:11", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.COMPONENT_INSTANCE_NAME"}
+  - {id: atscomponentinstance.derived.state, entity: atscomponentinstance, type: string, format: enum, from: [], derivation: "info.STATE", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:12", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.STATE"}
+  - {id: atscomponentinstance.derived.startedDate, entity: atscomponentinstance, type: string, format: epoch-datetime, from: [], derivation: "converter.timeStampToDate(info.LAUNCH_TIME) (N/A when <=0)", source: "ui2/yarn-ui/models/yarn-component-instance.js:22", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.LAUNCH_TIME"}
+  - {id: atscomponentinstance.derived.host, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "info.HOSTNAME", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:15", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.HOSTNAME"}
+  - {id: atscomponentinstance.derived.node, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "info.BARE_HOST", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:16", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.BARE_HOST"}
+  - {id: atscomponentinstance.derived.ipAddr, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "info.IP", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:17", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.IP"}
+  - {id: atscomponentinstance.derived.exposedPorts, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "info.EXPOSED_PORTS", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:18", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.EXPOSED_PORTS"}
+  - {id: atscomponentinstance.derived.exitStatusCode, entity: atscomponentinstance, type: string, format: none, from: [], derivation: "info.EXIT_STATUS_CODE", source: "ui2/yarn-ui/serializers/yarn-component-instance.js:19", restGap: true, altSource: "ATS v2 .../entities/COMPONENT_INSTANCE item.info.EXIT_STATUS_CODE"}
+  - {id: atscomponentinstance.derived.containerLogURL, entity: atscomponentinstance, type: string, format: url, from: [], derivation: "'#/yarn-app/' + appId + '/logs?attempt=' + attemptId + '&containerid=' + containerId", source: "ui2/yarn-ui/models/yarn-component-instance.js:37", restGap: true, altSource: "derived link into yarn-app.logs"}
+  - {id: atscomponentinstance.derived.termLink, entity: atscomponentinstance, type: string, format: url, from: [], derivation: "protocol + '//' + info.BARE_HOST + ':' + nodeManagerPort + '/terminal/terminal.template?container=' + containerId", source: "ui2/yarn-ui/models/yarn-component-instance.js:29", restGap: true, altSource: "NM terminal link (NM host from ATS entity)"}
+  # ---- ATS v2 service attempt (yarn-app.configs) ----
+  - {id: atsserviceinfo.derived.configKey, entity: atsserviceinfo, type: string, format: none, from: [], derivation: "Object.keys(payload.configs)", source: "ui2/yarn-ui/serializers/yarn-service-info.js:12", restGap: true, altSource: "ATS v2 .../entities/SERVICE_ATTEMPT item.configs (map key)"}
+  - {id: atsserviceinfo.derived.configValue, entity: atsserviceinfo, type: string, format: none, from: [], derivation: "payload.configs[key] || 'N/A'", source: "ui2/yarn-ui/serializers/yarn-service-info.js:15", restGap: true, altSource: "ATS v2 .../entities/SERVICE_ATTEMPT item.configs (map value)"}
+  # ---- service/component container metrics (metrics-table component) ----
+  - {id: atsmetrics.derived.containersDesired, entity: atsmetrics, type: int, format: int, from: [], derivation: "metrics.ContainersDesired", source: "ui2/templates/components/metrics-table.hbs.txt:38", restGap: true, altSource: "ATS v2 entity payload item.metrics[] id=ContainersDesired"}
+  - {id: atsmetrics.derived.containersRunning, entity: atsmetrics, type: int, format: int, from: [], derivation: "metrics.ContainersRunning", source: "ui2/templates/components/metrics-table.hbs.txt:39", restGap: true, altSource: "ATS v2 entity payload item.metrics[] id=ContainersRunning"}
+  - {id: atsmetrics.derived.containersReady, entity: atsmetrics, type: int, format: int, from: [], derivation: "metrics.ContainersReady", source: "ui2/templates/components/metrics-table.hbs.txt:40", restGap: true, altSource: "ATS v2 entity payload item.metrics[] id=ContainersReady"}
+  - {id: atsmetrics.derived.containersFailed, entity: atsmetrics, type: int, format: int, from: [], derivation: "metrics.ContainersFailed", source: "ui2/templates/components/metrics-table.hbs.txt:41", restGap: true, altSource: "ATS v2 entity payload item.metrics[] id=ContainersFailed"}
+  - {id: atsmetrics.derived.containersPreempted, entity: atsmetrics, type: int, format: int, from: [], derivation: "metrics.ContainersPreempted", source: "ui2/templates/components/metrics-table.hbs.txt:42", restGap: true, altSource: "ATS v2 entity payload item.metrics[] id=ContainersPreempted"}
+  # ---- ATS v2 application log (yarn-log-service) ----
+  - {id: atslog.derived.logFileName, entity: atslog, type: string, format: none, from: [], derivation: "model.containerLog.logFileName (route param :filename)", source: "ui2/templates/yarn-log-service.hbs.txt:7", restGap: true, altSource: "route param / ATS v2 GET /ws/v2/applicationlog/containers/{cid}/logs/{file}"}
+  - {id: atslog.derived.containerID, entity: atslog, type: string, format: none, from: [], derivation: "model.containerLog.containerID (route param :container_id)", source: "ui2/templates/yarn-log-service.hbs.txt:7", restGap: true, altSource: "route param :container_id"}
+  - {id: atslog.derived.logs, entity: atslog, type: string, format: none, from: [], derivation: "text body of ATS v2 applicationlog response", source: "ui2/yarn-ui/adapters/yarn-app-log.js:18", restGap: true, altSource: "ATS v2 GET /ws/v2/applicationlog/containers/{cid}/logs/{file} (Accept text/plain)"}
+pages:
+  # ================= YARN native services =================
+  - id: ui2.yarn-services
+    daemon: rm
+    route: /yarn-services
+    title: "Services"
+    classes: [YarnServicesRoute, YarnServicesController, app-table-columns, serviceColumns]
+    when: ["other:cluster has applications of type yarn-service (YARN native services)"]
+    note: "out of product scope (PLAN.md §1 non-goal): YARN native services list. Rows come from RM /ws/v1/cluster/apps filtered by applicationTypes=yarn-service (adapters/yarn-app.js), so the row data itself is RM AppInfo, but the page + service semantics are deliberately cut."
+    sections:
+      - id: ui2.yarn-services.chrome
+        title: null
+        source: "ui2/templates/yarn-services.hbs.txt:19"
+        items:
+          - {id: ui2.yarn-services.chrome.home, label: "Home", kind: nav, field: static.breadcrumb.home, format: none, source: "ui2/yarn-ui/controllers/yarn-services.js:18"}
+          - {id: ui2.yarn-services.chrome.services, label: "Services", kind: nav, field: static.breadcrumb.services, format: none, source: "ui2/yarn-ui/controllers/yarn-services.js:21"}
+          - {id: ui2.yarn-services.chrome.new-service, label: "New Service", kind: link, field: static.link.newService, format: url, source: "ui2/templates/yarn-services.hbs.txt:21", note: "href #/yarn-deploy-service"}
+          - {id: ui2.yarn-services.chrome.empty, label: "Could not find any services from this cluster", kind: text, field: static.text.noServices, format: none, when: ["other:no yarn-service applications returned"], source: "ui2/templates/yarn-services.hbs.txt:24"}
+      - id: ui2.yarn-services.table
+        title: null
+        source: "ui2/yarn-ui/controllers/app-table-columns.js:100"
+        items:
+          - {id: ui2.yarn-services.table.service-name, label: "Service Name", kind: column, field: app.name, rest: {resource: rm.apps, path: "app.name"}, format: none, source: "ui2/yarn-ui/controllers/app-table-columns.js:104"}
+          - {id: ui2.yarn-services.table.app-tag, label: "Application Tag", kind: column, field: app.id, rest: {resource: rm.apps, path: "app.id"}, format: none, source: "ui2/yarn-ui/controllers/app-table-columns.js:117", note: "UI2 header/contentPath pair is swapped: header 'Application Tag' renders the application id"}
+          - {id: ui2.yarn-services.table.app-id, label: "Application ID", kind: column, field: app.applicationTags, rest: {resource: rm.apps, path: "app.applicationTags"}, format: none, source: "ui2/yarn-ui/controllers/app-table-columns.js:124", note: "header 'Application ID' renders applicationTags"}
+          - {id: ui2.yarn-services.table.state, label: "State", kind: column, field: app.state, rest: {resource: rm.apps, path: "app.state"}, format: enum, source: "ui2/yarn-ui/controllers/app-table-columns.js:129"}
+          - {id: ui2.yarn-services.table.cluster, label: "%Cluster", kind: column, field: app.clusterUsagePercentage, rest: {resource: rm.apps, path: "app.clusterUsagePercentage"}, format: percent-1dp, source: "ui2/yarn-ui/controllers/app-table-columns.js:135"}
+          - {id: ui2.yarn-services.table.elapsed, label: "Elapsed Time", kind: column, field: app.elapsedTime, rest: {resource: rm.apps, path: "app.elapsedTime"}, format: duration, source: "ui2/yarn-ui/controllers/app-table-columns.js:141"}
+          - {id: ui2.yarn-services.table.user, label: "User", kind: column, field: app.user, rest: {resource: rm.apps, path: "app.user"}, format: none, source: "ui2/yarn-ui/controllers/app-table-columns.js:150"}
+          - {id: ui2.yarn-services.table.queue, label: "Queue", kind: column, field: app.queue, rest: {resource: rm.apps, path: "app.queue"}, format: none, source: "ui2/yarn-ui/controllers/app-table-columns.js:156"}
+          - {id: ui2.yarn-services.table.started, label: "Started Time", kind: column, field: app.startedTime, rest: {resource: rm.apps, path: "app.startedTime"}, format: epoch-datetime, source: "ui2/yarn-ui/controllers/app-table-columns.js:161"}
+          - {id: ui2.yarn-services.table.finished, label: "Finished Time", kind: column, field: app.finishedTime, rest: {resource: rm.apps, path: "app.finishedTime"}, format: epoch-datetime, source: "ui2/yarn-ui/controllers/app-table-columns.js:169", note: "contentPath validatedFinishedTs; rendered via app.formattedFinishedTime"}
+  - id: ui2.yarn-deploy-service
+    daemon: rm
+    route: /yarn-deploy-service
+    title: "New Service"
+    classes: [YarnDeployServiceRoute, YarnDeployServiceController, deploy-service, service-component-table, service-config-table, service-fileconfig-table]
+    when: ["other:YARN native services / dashService (app/v1/services) enabled on RM"]
+    note: "out of product scope (PLAN.md §1 non-goal): YARN native services deploy UI (write path). Pure client-side form: Standard/Custom service definition (Service Name/Queue Name/Service Version/Service Lifetime), Service Components table, Service Configurations table, File Configurations table, Save/Deploy actions, Save Template As. Writes via POST/PUT/DELETE app/v1/services (adapters/yarn-servicedef.js). No read datum => no items."
+    sections: []
+  # ================= component instances / instances =================
+  - id: ui2.yarn-component-instances
+    daemon: rm
+    route: /yarn-component-instances/:component_name
+    title: "Component: {componentName}"
+    titleDynamic: true
+    classes: [YarnComponentInstancesRoute, YarnComponentInstancesController, yarn-component-instances/info, yarn-component-instances/configs]
+    when: ["other:app is a YARN service and ATS v2 holds COMPONENT / COMPONENT_INSTANCE entities for it"]
+    note: "out of product scope (PLAN.md §1 non-goal): YARN native services component-instances UI. Data from ATS v2 timeline (ws/v2/timeline, outside the RM/NM/JHS contract) => restGap. Child routes: .../info, .../configs (query params service, appid)."
+    sections:
+      - id: ui2.yarn-component-instances.nav
+        title: null
+        source: "ui2/templates/yarn-component-instances.hbs.txt:26"
+        items:
+          - {id: ui2.yarn-component-instances.nav.information, label: "Information", kind: nav, field: static.nav.information, format: none, source: "ui2/templates/yarn-component-instances.hbs.txt:26"}
+          - {id: ui2.yarn-component-instances.nav.configurations, label: "Configurations", kind: nav, field: static.nav.configurations, format: none, source: "ui2/templates/yarn-component-instances.hbs.txt:28"}
+          - {id: ui2.yarn-component-instances.nav.services, label: "Services", kind: nav, field: static.breadcrumb.services, format: none, source: "ui2/yarn-ui/controllers/yarn-component-instances.js:19"}
+      - id: ui2.yarn-component-instances.info
+        title: "Component: {componentName}"
+        source: "ui2/templates/yarn-component-instances/info.hbs.txt:4"
+        items:
+          - {id: ui2.yarn-component-instances.info.title, label: "Component: {componentName}", dynamic: true, kind: title, field: atscomponent.derived.name, rest: {resource: ats.entities, path: "id"}, derivation: "params.component_name", format: none, source: "ui2/templates/yarn-component-instances/info.hbs.txt:4", restGap: true}
+          - {id: ui2.yarn-component-instances.info.instance-name, label: "Component Instance", kind: column, field: atscomponentinstance.derived.instanceName, rest: {resource: ats.entities, path: "info.COMPONENT_INSTANCE_NAME"}, format: none, source: "ui2/yarn-ui/controllers/yarn-component-instances/info.js:15", restGap: true}
+          - {id: ui2.yarn-component-instances.info.container-id, label: "Current Container Id", kind: column, field: atscomponentinstance.derived.containerId, rest: {resource: ats.entities, path: "id"}, format: none, source: "ui2/yarn-ui/controllers/yarn-component-instances/info.js:29", restGap: true}
+          - {id: ui2.yarn-component-instances.info.state, label: "State", kind: column, field: atscomponentinstance.derived.state, rest: {resource: ats.entities, path: "info.STATE"}, format: enum, source: "ui2/yarn-ui/controllers/yarn-component-instances/info.js:34", restGap: true}
+          - {id: ui2.yarn-component-instances.info.started, label: "Started Time", kind: column, field: atscomponentinstance.derived.startedDate, rest: {resource: ats.entities, path: "info.LAUNCH_TIME"}, format: epoch-datetime, source: "ui2/yarn-ui/controllers/yarn-component-instances/info.js:38", restGap: true}
+          - {id: ui2.yarn-component-instances.info.logs, label: "Logs", kind: column, field: atscomponentinstance.derived.containerLogURL, rest: {resource: ats.entities, path: "id"}, format: url, source: "ui2/yarn-ui/controllers/yarn-component-instances/info.js:42", restGap: true, note: "link text 'Link' into yarn-app.logs; 'N/A' when absent"}
+          - {id: ui2.yarn-component-instances.info.metrics-title, label: "Component Metrics:", dynamic: true, kind: title, field: static.title.componentMetrics, format: none, source: "ui2/templates/components/metrics-table.hbs.txt:22", note: "type='Component'"}
+          - {id: ui2.yarn-component-instances.info.m-desired, label: "Desired Containers", kind: column, field: atsmetrics.derived.containersDesired, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:29", restGap: true}
+          - {id: ui2.yarn-component-instances.info.m-running, label: "Running Containers", kind: column, field: atsmetrics.derived.containersRunning, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:30", restGap: true}
+          - {id: ui2.yarn-component-instances.info.m-ready, label: "Ready Containers", kind: column, field: atsmetrics.derived.containersReady, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:31", restGap: true}
+          - {id: ui2.yarn-component-instances.info.m-failed, label: "Failed Containers", kind: column, field: atsmetrics.derived.containersFailed, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:32", restGap: true}
+          - {id: ui2.yarn-component-instances.info.m-preempted, label: "Preempted Containers", kind: column, field: atsmetrics.derived.containersPreempted, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:33", restGap: true}
+      - id: ui2.yarn-component-instances.configs
+        title: "Component Configurations"
+        source: "ui2/templates/yarn-component-instances/configs.hbs.txt:23"
+        items:
+          - {id: ui2.yarn-component-instances.configs.title, label: "Component Configurations", kind: title, field: static.title.componentConfigurations, format: none, source: "ui2/templates/yarn-component-instances/configs.hbs.txt:23"}
+          - {id: ui2.yarn-component-instances.configs.name, label: "Name", kind: column, field: atscomponent.derived.configKey, rest: {resource: ats.entities, path: "configs"}, format: none, source: "ui2/templates/yarn-component-instances/configs.hbs.txt:29", restGap: true, note: "config map key"}
+          - {id: ui2.yarn-component-instances.configs.value, label: "Value", kind: column, field: atscomponent.derived.configValue, rest: {resource: ats.entities, path: "configs.*"}, format: none, source: "ui2/templates/yarn-component-instances/configs.hbs.txt:30", restGap: true, note: "config map value"}
+          - {id: ui2.yarn-component-instances.configs.empty, label: "No component configurations available!", kind: text, field: static.text.noComponentConfigs, format: none, when: ["other:component has no configs"], source: "ui2/templates/yarn-component-instances/configs.hbs.txt:48"}
+  - id: ui2.yarn-component-instance
+    daemon: rm
+    route: /yarn-component-instance/:component_name/instances/:instance_name/info
+    title: "Component Instance Information"
+    classes: [YarnComponentInstanceRoute, YarnComponentInstanceController, yarn-component-instance/info]
+    when: ["other:app is a YARN service and ATS v2 holds COMPONENT_INSTANCE entities for it"]
+    note: "out of product scope (PLAN.md §1 non-goal): YARN native services component-instance detail. Data from ATS v2 COMPONENT_INSTANCE (restGap). query params appid, service, containerid."
+    sections:
+      - id: ui2.yarn-component-instance.info
+        title: "Component Instance Information"
+        source: "ui2/templates/yarn-component-instance/info.hbs.txt:22"
+        items:
+          - {id: ui2.yarn-component-instance.info.title, label: "Component Instance Information", kind: title, field: static.title.componentInstance, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:22"}
+          - {id: ui2.yarn-component-instance.info.instance-name, label: "Component Instance", kind: kv, field: atscomponentinstance.derived.instanceName, rest: {resource: ats.entities, path: "info.COMPONENT_INSTANCE_NAME"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:28", restGap: true}
+          - {id: ui2.yarn-component-instance.info.component, label: "Component", kind: kv, field: atscomponentinstance.derived.component, rest: {resource: ats.entities, path: "info.COMPONENT_NAME"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:33", restGap: true}
+          - {id: ui2.yarn-component-instance.info.container-id, label: "Current Container Id", kind: kv, field: atscomponentinstance.derived.containerId, rest: {resource: ats.entities, path: "id"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:37", restGap: true}
+          - {id: ui2.yarn-component-instance.info.state, label: "State", kind: kv, field: atscomponentinstance.derived.state, rest: {resource: ats.entities, path: "info.STATE"}, format: enum, source: "ui2/templates/yarn-component-instance/info.hbs.txt:41", restGap: true}
+          - {id: ui2.yarn-component-instance.info.started, label: "Started Time", kind: kv, field: atscomponentinstance.derived.startedDate, rest: {resource: ats.entities, path: "info.LAUNCH_TIME"}, format: epoch-datetime, source: "ui2/templates/yarn-component-instance/info.hbs.txt:45", restGap: true}
+          - {id: ui2.yarn-component-instance.info.host, label: "Host", kind: kv, field: atscomponentinstance.derived.host, rest: {resource: ats.entities, path: "info.HOSTNAME"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:49", restGap: true}
+          - {id: ui2.yarn-component-instance.info.node, label: "Node", kind: kv, field: atscomponentinstance.derived.node, rest: {resource: ats.entities, path: "info.BARE_HOST"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:53", restGap: true}
+          - {id: ui2.yarn-component-instance.info.ip, label: "IP Address", kind: kv, field: atscomponentinstance.derived.ipAddr, rest: {resource: ats.entities, path: "info.IP"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:57", restGap: true}
+          - {id: ui2.yarn-component-instance.info.ports, label: "Exposed Ports", kind: kv, field: atscomponentinstance.derived.exposedPorts, rest: {resource: ats.entities, path: "info.EXPOSED_PORTS"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:61", restGap: true}
+          - {id: ui2.yarn-component-instance.info.exit, label: "Exit Status Code", kind: kv, field: atscomponentinstance.derived.exitStatusCode, rest: {resource: ats.entities, path: "info.EXIT_STATUS_CODE"}, format: none, source: "ui2/templates/yarn-component-instance/info.hbs.txt:65", restGap: true}
+          - {id: ui2.yarn-component-instance.info.logs, label: "Logs", kind: link, field: atscomponentinstance.derived.containerLogURL, format: url, source: "ui2/templates/yarn-component-instance/info.hbs.txt:70", restGap: true, note: "link text 'Link'"}
+          - {id: ui2.yarn-component-instance.info.terminal, label: "Terminal", kind: link, field: atscomponentinstance.derived.termLink, format: url, source: "ui2/templates/yarn-component-instance/info.hbs.txt:74", restGap: true, note: "link text 'Link'; target NM /terminal/terminal.template"}
+          - {id: ui2.yarn-component-instance.info.empty, label: "No component information available!", kind: text, field: static.text.noComponentInfo, format: none, when: ["other:component instance not found"], source: "ui2/templates/yarn-component-instance/info.hbs.txt:81"}
+  # ================= flow activity / timeline =================
+  - id: ui2.yarn-flow-activity
+    daemon: rm
+    route: /yarn-flow-activity
+    title: "Flow Activity"
+    classes: [YarnFlowActivityRoute, YarnFlowActivityController]
+    when: ["other:ATS v2 timeline server reachable with flow data (ws/v2/timeline/flows)"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 / flow activity. Data from ATS v2 timeline, outside the RM/NM/JHS contract => restGap. Rows are de-duplicated client-side by UID keeping the newest lastExecDate."
+    sections:
+      - id: ui2.yarn-flow-activity.nav
+        title: "Flow Activity"
+        source: "ui2/templates/yarn-flow-activity.hbs.txt:27"
+        items:
+          - {id: ui2.yarn-flow-activity.nav.heading, label: "Flow Activity", kind: title, field: static.title.flowActivity, format: none, source: "ui2/templates/yarn-flow-activity.hbs.txt:27"}
+          - {id: ui2.yarn-flow-activity.nav.link, label: "Flow Activities", kind: nav, field: static.nav.flowActivities, format: none, source: "ui2/templates/yarn-flow-activity.hbs.txt:31"}
+          - {id: ui2.yarn-flow-activity.nav.home, label: "Home", kind: nav, field: static.breadcrumb.home, format: none, source: "ui2/yarn-ui/controllers/yarn-flow-activity.js:71"}
+      - id: ui2.yarn-flow-activity.recent
+        title: "Recent Flow Activities"
+        source: "ui2/templates/yarn-flow-activity.hbs.txt:38"
+        items:
+          - {id: ui2.yarn-flow-activity.recent.title, label: "Recent Flow Activities", kind: title, field: static.title.recentFlowActivities, format: none, source: "ui2/templates/yarn-flow-activity.hbs.txt:38"}
+          - {id: ui2.yarn-flow-activity.recent.flow-name, label: "Flow Name", kind: column, field: atsflow.derived.flowName, rest: {resource: ats.flows, path: "info.SYSTEM_INFO_FLOW_NAME"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flow-activity.js:6", restGap: true}
+          - {id: ui2.yarn-flow-activity.recent.user, label: "User", kind: column, field: atsflow.derived.user, rest: {resource: ats.flows, path: "info.SYSTEM_INFO_USER"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flow-activity.js:11", restGap: true}
+          - {id: ui2.yarn-flow-activity.recent.flow-id, label: "Flow ID", kind: column, field: atsflow.derived.uid, rest: {resource: ats.flows, path: "info.UID"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flow-activity.js:16", restGap: true, note: "linked cell -> yarn-flow.info"}
+          - {id: ui2.yarn-flow-activity.recent.last-exec, label: "Last Execution Date", kind: column, field: atsflow.derived.lastExecDate, rest: {resource: ats.flows, path: "info.SYSTEM_INFO_DATE"}, format: epoch-datetime, source: "ui2/yarn-ui/controllers/yarn-flow-activity.js:30", restGap: true}
+  - id: ui2.yarn-flow
+    daemon: rm
+    route: /yarn-flow/:flow_uid
+    title: "Flow Information"
+    classes: [YarnFlowRoute, YarnFlowController]
+    when: ["other:ATS v2 timeline server reachable and flow_uid exists"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 flow. Runs fetched from ATS v2 flow-uid/{uid}/runs (restGap)."
+    sections:
+      - id: ui2.yarn-flow.nav
+        title: "Flow Information"
+        source: "ui2/templates/yarn-flow.hbs.txt:28"
+        items:
+          - {id: ui2.yarn-flow.nav.heading, label: "Flow Information", kind: title, field: static.title.flowInformation, format: none, source: "ui2/templates/yarn-flow.hbs.txt:28"}
+          - {id: ui2.yarn-flow.nav.info, label: "Flow Info", kind: nav, field: static.nav.flowInfo, format: none, source: "ui2/templates/yarn-flow.hbs.txt:34"}
+          - {id: ui2.yarn-flow.nav.runs, label: "Flow Runs", kind: nav, field: static.nav.flowRuns, format: none, source: "ui2/templates/yarn-flow.hbs.txt:36"}
+  - id: ui2.yarn-flow.info
+    daemon: rm
+    route: /yarn-flow/:flow_uid/info
+    title: "Flow Information"
+    classes: [YarnFlowInfoRoute, YarnFlowInfoController]
+    when: ["other:ATS v2 flow exists"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 flow info; values derived client-side from the flow-run list (restGap)."
+    sections:
+      - id: ui2.yarn-flow.info.detail
+        title: "Flow Information"
+        source: "ui2/templates/yarn-flow/info.hbs.txt:2"
+        items:
+          - {id: ui2.yarn-flow.info.detail.title, label: "Flow Information", kind: title, field: static.title.flowInformation, format: none, source: "ui2/templates/yarn-flow/info.hbs.txt:2"}
+          - {id: ui2.yarn-flow.info.detail.flow-name, label: "Flow Name", kind: kv, field: atsflow.derived.flowName, rest: {resource: ats.flow-runs, path: "[].info.SYSTEM_INFO_FLOW_NAME"}, format: none, source: "ui2/templates/yarn-flow/info.hbs.txt:8", restGap: true}
+          - {id: ui2.yarn-flow.info.detail.user, label: "User", kind: kv, field: atsflow.derived.user, rest: {resource: ats.flow-runs, path: "[].info.SYSTEM_INFO_USER"}, format: none, source: "ui2/templates/yarn-flow/info.hbs.txt:29", restGap: true}
+          - {id: ui2.yarn-flow.info.detail.flow-id, label: "Flow ID", kind: kv, field: atsflow.derived.uid, rest: {resource: ats.flows, path: "info.UID"}, format: none, source: "ui2/templates/yarn-flow/info.hbs.txt:33", restGap: true}
+          - {id: ui2.yarn-flow.info.detail.first-run, label: "First Run Started", kind: kv, field: atsflowrun.derived.createTime, rest: {resource: ats.flow-runs, path: "[].createdtime"}, format: epoch-datetime, source: "ui2/templates/yarn-flow/info.hbs.txt:37", restGap: true, note: "min createTime over runs"}
+          - {id: ui2.yarn-flow.info.detail.last-run, label: "Last Run Finished", kind: kv, field: atsflowrun.derived.endTime, rest: {resource: ats.flow-runs, path: "[].info.SYSTEM_INFO_FLOW_RUN_END_TIME"}, format: epoch-datetime, source: "ui2/templates/yarn-flow/info.hbs.txt:41", restGap: true, note: "max endTime over runs"}
+          - {id: ui2.yarn-flow.info.detail.last-exec, label: "Last Execution Date", kind: kv, field: atsflow.derived.lastExecDate, rest: {resource: ats.flows, path: "info.SYSTEM_INFO_DATE"}, format: epoch-datetime, when: ["value:non-empty"], source: "ui2/templates/yarn-flow/info.hbs.txt:45", restGap: true}
+  - id: ui2.yarn-flow.runs
+    daemon: rm
+    route: /yarn-flow/:flow_uid/runs
+    title: "Flow Runs"
+    classes: [YarnFlowRunsRoute, YarnFlowRunsController]
+    when: ["other:ATS v2 flow has runs"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 flow runs + bar widgets (restGap)."
+    sections:
+      - id: ui2.yarn-flow.runs.widgets
+        title: null
+        source: "ui2/templates/yarn-flow/runs.hbs.txt:23"
+        items:
+          - {id: ui2.yarn-flow.runs.widgets.button, label: "Add Metrics Widget", kind: button, field: static.button.addMetricsWidget, format: none, source: "ui2/templates/yarn-flow/runs.hbs.txt:23"}
+          - {id: ui2.yarn-flow.runs.widgets.duration, label: "Flow Run Vs Run Duration", kind: chart, field: atsflowrun.derived.runDurationTs, format: duration, source: "ui2/templates/yarn-flow/runs.hbs.txt:34", restGap: true}
+          - {id: ui2.yarn-flow.runs.widgets.cpu, label: "Flow Run Vs Cpu Vcores", kind: chart, field: atsflowrun.derived.cpuVCores, format: int, source: "ui2/templates/yarn-flow/runs.hbs.txt:46", restGap: true}
+          - {id: ui2.yarn-flow.runs.widgets.memory, label: "Flow Run Vs Memory Used", kind: chart, field: atsflowrun.derived.memoryUsed, format: mb, source: "ui2/templates/yarn-flow/runs.hbs.txt:58", restGap: true}
+      - id: ui2.yarn-flow.runs.table
+        title: "Flow Runs"
+        source: "ui2/templates/yarn-flow/runs.hbs.txt:66"
+        items:
+          - {id: ui2.yarn-flow.runs.table.title, label: "Flow Runs", kind: title, field: static.title.flowRuns, format: none, source: "ui2/templates/yarn-flow/runs.hbs.txt:66"}
+          - {id: ui2.yarn-flow.runs.table.run-id, label: "Run ID", kind: column, field: atsflowrun.derived.shownid, rest: {resource: ats.flow-runs, path: "[].id"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flow/runs.js:6", restGap: true, note: "linked cell -> yarn-flowrun.info"}
+          - {id: ui2.yarn-flow.runs.table.duration, label: "Run Duration", kind: column, field: atsflowrun.derived.runDurationTs, rest: {resource: ats.flow-runs, path: "[].createdtime"}, format: duration, source: "ui2/yarn-ui/controllers/yarn-flow/runs.js:20", restGap: true}
+          - {id: ui2.yarn-flow.runs.table.cpu, label: "CPU VCores", kind: column, field: atsflowrun.derived.cpuVCores, rest: {resource: ats.flow-runs, path: "[].metrics"}, format: int, nullDisplay: "N/A", source: "ui2/yarn-ui/controllers/yarn-flow/runs.js:28", restGap: true}
+          - {id: ui2.yarn-flow.runs.table.memory, label: "Memory Used", kind: column, field: atsflowrun.derived.memoryUsed, rest: {resource: ats.flow-runs, path: "[].metrics"}, format: mb, nullDisplay: "N/A", source: "ui2/yarn-ui/controllers/yarn-flow/runs.js:39", restGap: true}
+          - {id: ui2.yarn-flow.runs.table.creation, label: "Creation Time", kind: column, field: atsflowrun.derived.createTime, rest: {resource: ats.flow-runs, path: "[].createdtime"}, format: epoch-datetime, source: "ui2/yarn-ui/controllers/yarn-flow/runs.js:50", restGap: true}
+          - {id: ui2.yarn-flow.runs.table.end, label: "End Time", kind: column, field: atsflowrun.derived.endTime, rest: {resource: ats.flow-runs, path: "[].info.SYSTEM_INFO_FLOW_RUN_END_TIME"}, format: epoch-datetime, source: "ui2/yarn-ui/controllers/yarn-flow/runs.js:55", restGap: true}
+  - id: ui2.yarn-flowrun
+    daemon: rm
+    route: /yarn-flowrun/:flowrun_uid
+    title: "Flow Run Information"
+    classes: [YarnFlowrunRoute, YarnFlowrunController]
+    when: ["other:ATS v2 flow run exists"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 flow run (restGap)."
+    sections:
+      - id: ui2.yarn-flowrun.nav
+        title: "Flow Run Information"
+        source: "ui2/templates/yarn-flowrun.hbs.txt:28"
+        items:
+          - {id: ui2.yarn-flowrun.nav.heading, label: "Flow Run Information", kind: title, field: static.title.flowRunInformation, format: none, source: "ui2/templates/yarn-flowrun.hbs.txt:28"}
+          - {id: ui2.yarn-flowrun.nav.info, label: "Information", kind: nav, field: static.nav.information, format: none, source: "ui2/templates/yarn-flowrun.hbs.txt:34"}
+          - {id: ui2.yarn-flowrun.nav.metrics, label: "Metrics", kind: nav, field: static.nav.metrics, format: none, source: "ui2/templates/yarn-flowrun.hbs.txt:36"}
+  - id: ui2.yarn-flowrun.info
+    daemon: rm
+    route: /yarn-flowrun/:flowrun_uid/info
+    title: "Flow Run Info"
+    classes: [YarnFlowrunInfoRoute, YarnFlowrunInfoController]
+    when: ["other:ATS v2 flow run exists"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 flow run info + applications (restGap)."
+    sections:
+      - id: ui2.yarn-flowrun.info.detail
+        title: "Flow Run Info"
+        source: "ui2/templates/yarn-flowrun/info.hbs.txt:3"
+        items:
+          - {id: ui2.yarn-flowrun.info.detail.title, label: "Flow Run Info", kind: title, field: static.title.flowRunInfo, format: none, source: "ui2/templates/yarn-flowrun/info.hbs.txt:3"}
+          - {id: ui2.yarn-flowrun.info.detail.flow-name, label: "Flow Name", kind: kv, field: atsflowrun.derived.flowName, rest: {resource: ats.flow-run, path: "info.SYSTEM_INFO_FLOW_NAME"}, format: none, source: "ui2/templates/yarn-flowrun/info.hbs.txt:9", restGap: true}
+          - {id: ui2.yarn-flowrun.info.detail.run-id, label: "Run ID", kind: kv, field: atsflowrun.derived.shownid, rest: {resource: ats.flow-run, path: "id"}, format: none, source: "ui2/templates/yarn-flowrun/info.hbs.txt:30", restGap: true}
+          - {id: ui2.yarn-flowrun.info.detail.user, label: "Launched By", kind: kv, field: atsflowrun.derived.user, rest: {resource: ats.flow-run, path: "info.SYSTEM_INFO_USER"}, format: none, source: "ui2/templates/yarn-flowrun/info.hbs.txt:34", restGap: true}
+          - {id: ui2.yarn-flowrun.info.detail.seq, label: "Run Sequence ID", kind: kv, field: atsflowrun.derived.runid, rest: {resource: ats.flow-run, path: "info.SYSTEM_INFO_FLOW_RUN_ID"}, format: none, source: "ui2/templates/yarn-flowrun/info.hbs.txt:38", restGap: true}
+          - {id: ui2.yarn-flowrun.info.detail.start, label: "Start Time", kind: kv, field: atsflowrun.derived.createTime, rest: {resource: ats.flow-run, path: "createdtime"}, format: epoch-datetime, source: "ui2/templates/yarn-flowrun/info.hbs.txt:42", restGap: true}
+          - {id: ui2.yarn-flowrun.info.detail.end, label: "End Time", kind: kv, field: atsflowrun.derived.endTime, rest: {resource: ats.flow-run, path: "info.SYSTEM_INFO_FLOW_RUN_END_TIME"}, format: epoch-datetime, source: "ui2/templates/yarn-flowrun/info.hbs.txt:46", restGap: true}
+      - id: ui2.yarn-flowrun.info.widgets
+        title: null
+        source: "ui2/templates/yarn-flowrun/info.hbs.txt:56"
+        items:
+          - {id: ui2.yarn-flowrun.info.widgets.button, label: "Add Metrics Widget", kind: button, field: static.button.addMetricsWidget, format: none, source: "ui2/templates/yarn-flowrun/info.hbs.txt:56"}
+          - {id: ui2.yarn-flowrun.info.widgets.cpu, label: "Application Vs Cpu Vcores", kind: chart, field: atsapp.derived.cpuVCores, format: int, source: "ui2/templates/yarn-flowrun/info.hbs.txt:67", restGap: true}
+          - {id: ui2.yarn-flowrun.info.widgets.memory, label: "Application Vs Memory Used", kind: chart, field: atsapp.derived.memoryUsed, format: mb, source: "ui2/templates/yarn-flowrun/info.hbs.txt:79", restGap: true}
+      - id: ui2.yarn-flowrun.info.apps
+        title: "Applications"
+        source: "ui2/templates/yarn-flowrun/info.hbs.txt:88"
+        items:
+          - {id: ui2.yarn-flowrun.info.apps.title, label: "Applications", kind: title, field: static.title.applications, format: none, source: "ui2/templates/yarn-flowrun/info.hbs.txt:88"}
+          - {id: ui2.yarn-flowrun.info.apps.app-id, label: "Application ID", kind: column, field: atsapp.derived.appId, rest: {resource: ats.flow-run-apps, path: "[].id"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flowrun/info.js:8", restGap: true, note: "linked cell -> yarn-app.attempts"}
+          - {id: ui2.yarn-flowrun.info.apps.type, label: "Application Type", kind: column, field: atsapp.derived.type, rest: {resource: ats.flow-run-apps, path: "[].info.YARN_APPLICATION_TYPE"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flowrun/info.js:22", restGap: true}
+          - {id: ui2.yarn-flowrun.info.apps.state, label: "State", kind: column, field: atsapp.derived.state, rest: {resource: ats.flow-run-apps, path: "[].info.YARN_APPLICATION_STATE"}, format: enum, source: "ui2/yarn-ui/controllers/yarn-flowrun/info.js:27", restGap: true}
+          - {id: ui2.yarn-flowrun.info.apps.elapsed, label: "Elapsed Time", kind: column, field: atsapp.derived.elapsedTs, rest: {resource: ats.flow-run-apps, path: "[].createdtime"}, format: duration, source: "ui2/yarn-ui/controllers/yarn-flowrun/info.js:33", restGap: true}
+          - {id: ui2.yarn-flowrun.info.apps.cpu, label: "CPU VCores", kind: column, field: atsapp.derived.cpuVCores, rest: {resource: ats.flow-run-apps, path: "[].metrics"}, format: int, nullDisplay: "N/A", source: "ui2/yarn-ui/controllers/yarn-flowrun/info.js:41", restGap: true}
+          - {id: ui2.yarn-flowrun.info.apps.memory, label: "Memory Used", kind: column, field: atsapp.derived.memoryUsed, rest: {resource: ats.flow-run-apps, path: "[].metrics"}, format: mb, nullDisplay: "N/A", source: "ui2/yarn-ui/controllers/yarn-flowrun/info.js:52", restGap: true}
+  - id: ui2.yarn-flowrun.metrics
+    daemon: rm
+    route: /yarn-flowrun/:flowrun_uid/metrics
+    title: "Flow Run {flowrun_uid}"
+    titleDynamic: true
+    classes: [YarnFlowrunMetricsRoute, YarnFlowrunMetricsController]
+    when: ["other:ATS v2 flow run exists with metrics"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 flow run metrics table (GENERAL / MAP / REDUCER), restGap."
+    sections:
+      - id: ui2.yarn-flowrun.metrics.general
+        title: "GENERAL Metrics"
+        source: "ui2/templates/yarn-flowrun/metrics.hbs.txt:22"
+        items:
+          - {id: ui2.yarn-flowrun.metrics.general.title, label: "GENERAL Metrics", kind: title, field: static.title.generalMetrics, format: none, source: "ui2/templates/yarn-flowrun/metrics.hbs.txt:22"}
+          - {id: ui2.yarn-flowrun.metrics.general.name, label: "Name", kind: column, field: atsflowrun.derived.metricName, rest: {resource: ats.flow-run, path: "metrics[].id"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:6", restGap: true, note: "metric id"}
+          - {id: ui2.yarn-flowrun.metrics.general.value, label: "Value", kind: column, field: atsflowrun.derived.metricValue, rest: {resource: ats.flow-run, path: "metrics[].values"}, format: none, source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:19", restGap: true, note: "first value of the metric map"}
+      - id: ui2.yarn-flowrun.metrics.map
+        title: "MAP Metrics"
+        source: "ui2/templates/yarn-flowrun/metrics.hbs.txt:26"
+        items:
+          - {id: ui2.yarn-flowrun.metrics.map.title, label: "MAP Metrics", kind: title, field: static.title.mapMetrics, format: none, when: ["other:flow run has MAP: metrics"], source: "ui2/templates/yarn-flowrun/metrics.hbs.txt:26"}
+          - {id: ui2.yarn-flowrun.metrics.map.name, label: "Name", kind: column, field: atsflowrun.derived.metricName, rest: {resource: ats.flow-run, path: "metrics[].id"}, format: none, when: ["other:flow run has MAP: metrics"], source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:6", restGap: true}
+          - {id: ui2.yarn-flowrun.metrics.map.value, label: "Value", kind: column, field: atsflowrun.derived.metricValue, rest: {resource: ats.flow-run, path: "metrics[].values"}, format: none, when: ["other:flow run has MAP: metrics"], source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:19", restGap: true}
+      - id: ui2.yarn-flowrun.metrics.reduce
+        title: "REDUCER Metrics"
+        source: "ui2/templates/yarn-flowrun/metrics.hbs.txt:31"
+        items:
+          - {id: ui2.yarn-flowrun.metrics.reduce.title, label: "REDUCER Metrics", kind: title, field: static.title.reducerMetrics, format: none, when: ["other:flow run has REDUCE: metrics"], source: "ui2/templates/yarn-flowrun/metrics.hbs.txt:31"}
+          - {id: ui2.yarn-flowrun.metrics.reduce.name, label: "Name", kind: column, field: atsflowrun.derived.metricName, rest: {resource: ats.flow-run, path: "metrics[].id"}, format: none, when: ["other:flow run has REDUCE: metrics"], source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:6", restGap: true}
+          - {id: ui2.yarn-flowrun.metrics.reduce.value, label: "Value", kind: column, field: atsflowrun.derived.metricValue, rest: {resource: ats.flow-run, path: "metrics[].values"}, format: none, when: ["other:flow run has REDUCE: metrics"], source: "ui2/yarn-ui/controllers/yarn-flowrun/metrics.js:19", restGap: true}
+  - id: ui2.yarn-flowrun-metric
+    daemon: rm
+    route: /yarn-flowrun-metric/:flowrun_uid/:metric_id
+    title: "Sunburst chart for Metric \"{metric_id}\""
+    titleDynamic: true
+    classes: [YarnFlowrunMetricRoute, sunburst-chart]
+    when: ["other:ATS v2 timeline has metric data for the flow run / apps / tasks"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 per-metric sunburst drill-down (flowrun -> apps -> tasks), restGap."
+    sections:
+      - id: ui2.yarn-flowrun-metric.chart
+        title: null
+        source: "ui2/templates/yarn-flowrun-metric.hbs.txt:4"
+        items:
+          - {id: ui2.yarn-flowrun-metric.chart.title, label: "Sunburst chart for Metric \"{metric_id}\"", dynamic: true, kind: title, field: static.title.sunburst, format: none, source: "ui2/templates/yarn-flowrun-metric.hbs.txt:4"}
+          - {id: ui2.yarn-flowrun-metric.chart.flowrun, label: "(Flowrun: {flowrun.id})", dynamic: true, kind: title, field: atsflowrun.derived.shownid, rest: {resource: ats.flow-run, path: "id"}, format: none, source: "ui2/templates/yarn-flowrun-metric.hbs.txt:22", restGap: true}
+          - {id: ui2.yarn-flowrun-metric.chart.sunburst, label: null, kind: chart, field: atsapp.derived.metricValue, format: none, source: "ui2/templates/yarn-flowrun-metric.hbs.txt:33", restGap: true, note: "sunburst of flowrun/app/task metric values"}
+  # ================= log service (leftover router entry, ATS v2) =================
+  - id: ui2.yarn-log-service
+    daemon: rm
+    route: /yarn-log-service/cluster/:cluster_id/container/:container_id/user/:user_name/filename/:filename
+    title: "Log: {logFileName} [ {containerID} ]"
+    titleDynamic: true
+    classes: [YarnLogServiceRoute]
+    when: ["other:ATS v2 application log service reachable"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 application log service (ws/v2/applicationlog), outside the RM/NM/JHS contract => restGap. 404 redirects to /notfound, other errors to /error."
+    sections:
+      - id: ui2.yarn-log-service.log
+        title: null
+        source: "ui2/templates/yarn-log-service.hbs.txt:7"
+        items:
+          - {id: ui2.yarn-log-service.log.title, label: "Log: {logFileName} [ {containerID} ]", dynamic: true, kind: title, field: atslog.derived.logFileName, fields: [atslog.derived.containerID], rest: {resource: ats.log, path: "filename"}, format: none, source: "ui2/templates/yarn-log-service.hbs.txt:7", restGap: true}
+          - {id: ui2.yarn-log-service.log.content, label: null, kind: text, field: atslog.derived.logs, rest: {resource: ats.log, path: "(text body)"}, format: none, source: "ui2/templates/yarn-log-service.hbs.txt:28", restGap: true}
+          - {id: ui2.yarn-log-service.log.empty, label: "No logs were written in {logFileName}.", dynamic: true, kind: text, field: static.text.noLogs, format: none, when: ["other:log body empty"], source: "ui2/templates/yarn-log-service.hbs.txt:28"}
+  # ================= duplicate heatmap route (core; not claimed by in-scope list) =================
+  - id: ui2.yarn-nodes-heatmap
+    daemon: rm
+    route: /yarn-nodes-heatmap
+    title: "Heatmap"
+    classes: [YarnNodesHeatmapController]
+    when: []
+    note: "router duplicate of yarn-nodes.heatmap (both registered in router.js). Controller only supplies breadcrumbs (Home / Nodes / Heatmap); no dedicated route/template exists in the 3.4.3 UI2 bundle for this path, so it renders no data. In-scope core topic (nodes), catalogued here only to account for the router entry."
+    sections:
+      - id: ui2.yarn-nodes-heatmap.chrome
+        title: null
+        source: "ui2/yarn-ui/controllers/yarn-nodes-heatmap.js:5"
+        items:
+          - {id: ui2.yarn-nodes-heatmap.chrome.home, label: "Home", kind: nav, field: static.breadcrumb.home, format: none, source: "ui2/yarn-ui/controllers/yarn-nodes-heatmap.js:6"}
+          - {id: ui2.yarn-nodes-heatmap.chrome.nodes, label: "Nodes", kind: nav, field: static.breadcrumb.nodes, format: none, source: "ui2/yarn-ui/controllers/yarn-nodes-heatmap.js:9"}
+          - {id: ui2.yarn-nodes-heatmap.chrome.heatmap, label: "Heatmap", kind: nav, field: static.breadcrumb.heatmap, format: none, source: "ui2/yarn-ui/controllers/yarn-nodes-heatmap.js:12"}
+  # ================= yarn-app service-backed children =================
+  - id: ui2.yarn-app.components
+    daemon: rm
+    route: /yarn-app/:app_id/components
+    title: "Components"
+    classes: [YarnAppComponentsRoute, YarnAppComponentsController]
+    when: ["other:app is a YARN service and ATS v2 holds COMPONENT / COMPONENT_INSTANCE entities for it"]
+    note: "yarn-app child backed by ATS v2 timeline (COMPONENT + COMPONENT_INSTANCE), outside the RM/NM/JHS contract => restGap. Per integration-owner direction this service-backed app child is catalogued here; the core app pages (info/attempts/charts) belong to the sibling ui2 inventory. query param service."
+    sections:
+      - id: ui2.yarn-app.components.table
+        title: null
+        source: "ui2/templates/yarn-app/components.hbs.txt:3"
+        items:
+          - {id: ui2.yarn-app.components.table.name, label: "Component", kind: column, field: atscomponent.derived.name, rest: {resource: ats.entities, path: "id"}, format: none, source: "ui2/yarn-ui/controllers/yarn-app/components.js:14", restGap: true, note: "linked cell -> yarn-component-instances.info"}
+          - {id: ui2.yarn-app.components.table.vcores, label: "VCores", kind: column, field: atscomponent.derived.vcores, rest: {resource: ats.entities, path: "info.RESOURCE_CPU"}, format: none, source: "ui2/yarn-ui/controllers/yarn-app/components.js:25", restGap: true}
+          - {id: ui2.yarn-app.components.table.memory, label: "Memory (MB)", kind: column, field: atscomponent.derived.memory, rest: {resource: ats.entities, path: "info.RESOURCE_MEMORY"}, format: mb, source: "ui2/yarn-ui/controllers/yarn-app/components.js:29", restGap: true}
+          - {id: ui2.yarn-app.components.table.instances, label: "Number of Instances", kind: column, field: atscomponent.derived.instances, rest: {resource: ats.entities, path: "info"}, format: int, source: "ui2/yarn-ui/controllers/yarn-app/components.js:33", restGap: true}
+  - id: ui2.yarn-app.configs
+    daemon: rm
+    route: /yarn-app/:app_id/configs
+    title: "Service Configurations"
+    classes: [YarnAppConfigsRoute, YarnAppConfigsController]
+    when: ["other:app is a YARN service and ATS v2 holds a SERVICE_ATTEMPT entity for it"]
+    note: "yarn-app child backed by ATS v2 SERVICE_ATTEMPT entity (aconfigs + metrics), outside the RM/NM/JHS contract => restGap. query param service."
+    sections:
+      - id: ui2.yarn-app.configs.metrics
+        title: "Service Metrics:"
+        source: "ui2/templates/yarn-app/configs.hbs.txt:3"
+        items:
+          - {id: ui2.yarn-app.configs.metrics.title, label: "Service Metrics:", dynamic: true, kind: title, field: static.title.serviceMetrics, format: none, source: "ui2/templates/components/metrics-table.hbs.txt:22", note: "type='Service'"}
+          - {id: ui2.yarn-app.configs.metrics.desired, label: "Desired Containers", kind: column, field: atsmetrics.derived.containersDesired, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:29", restGap: true}
+          - {id: ui2.yarn-app.configs.metrics.running, label: "Running Containers", kind: column, field: atsmetrics.derived.containersRunning, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:30", restGap: true}
+          - {id: ui2.yarn-app.configs.metrics.ready, label: "Ready Containers", kind: column, field: atsmetrics.derived.containersReady, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:31", restGap: true}
+          - {id: ui2.yarn-app.configs.metrics.failed, label: "Failed Containers", kind: column, field: atsmetrics.derived.containersFailed, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:32", restGap: true}
+          - {id: ui2.yarn-app.configs.metrics.preempted, label: "Preempted Containers", kind: column, field: atsmetrics.derived.containersPreempted, rest: {resource: ats.entities, path: "metrics[].values"}, format: int, source: "ui2/templates/components/metrics-table.hbs.txt:33", restGap: true}
+      - id: ui2.yarn-app.configs.table
+        title: "Service Configurations"
+        source: "ui2/templates/yarn-app/configs.hbs.txt:25"
+        items:
+          - {id: ui2.yarn-app.configs.table.title, label: "Service Configurations", kind: title, field: static.title.serviceConfigurations, format: none, source: "ui2/templates/yarn-app/configs.hbs.txt:25"}
+          - {id: ui2.yarn-app.configs.table.name, label: "Name", kind: column, field: atsserviceinfo.derived.configKey, rest: {resource: ats.entities, path: "configs"}, format: none, source: "ui2/templates/yarn-app/configs.hbs.txt:31", restGap: true, note: "config map key"}
+          - {id: ui2.yarn-app.configs.table.value, label: "Value", kind: column, field: atsserviceinfo.derived.configValue, rest: {resource: ats.entities, path: "configs.*"}, format: none, source: "ui2/templates/yarn-app/configs.hbs.txt:32", restGap: true, note: "config map value"}
+          - {id: ui2.yarn-app.configs.table.empty, label: "No service configurations available!", kind: text, field: static.text.noServiceConfigs, format: none, when: ["other:service has no configs"], source: "ui2/templates/yarn-app/configs.hbs.txt:48"}
+  - id: ui2.yarn-app.logs
+    daemon: rm
+    route: /yarn-app/:app_id/logs
+    title: "Logs"
+    classes: [YarnAppLogsRoute, yarn-app/logs controller, app-attempt mixin]
+    when: ["other:app has attempts (RM) or ATS/JHS logs available"]
+    note: "core yarn-app child (log viewing is in product scope) catalogued here per integration-owner direction so UI2's exact surface is known; RM/JHS/NM-backed where available, with an ATS v2 fallback (fetchAttemptListFromRMorATS, timeline-health, ws/v2/applicationlog) that is a PLAN.md §1 non-goal. query params attempt, containerid."
+    sections:
+      - id: ui2.yarn-app.logs.header
+        title: "Logs"
+        source: "ui2/templates/yarn-app/logs.hbs.txt:6"
+        items:
+          - {id: ui2.yarn-app.logs.header.title, label: "Logs", kind: title, field: static.title.logs, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:6"}
+          - {id: ui2.yarn-app.logs.header.agg-status, label: "Log aggregation status:", kind: kv, field: app.logAggregationStatus, rest: {resource: rm.apps, path: "app.logAggregationStatus"}, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:26", note: "RM AppInfo logAggregationStatus (when RM has log aggregation enabled)"}
+          - {id: ui2.yarn-app.logs.header.unavailable, label: "Logs are unavailable because Application Timeline Service seems unhealthy and could not connect to the JobHistory server.", kind: text, field: static.text.logsUnavailable, format: none, when: ["other:ATS unhealthy and JHS unreachable"], source: "ui2/templates/yarn-app/logs.hbs.txt:38"}
+          - {id: ui2.yarn-app.logs.header.choose-attempt, label: "Choose attempt to fetch containers", kind: text, field: static.text.chooseAttempt, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:45"}
+          - {id: ui2.yarn-app.logs.header.choose-container, label: "Choose container to fetch logs", kind: text, field: static.text.chooseContainer, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:57"}
+          - {id: ui2.yarn-app.logs.header.choose-log, label: "Choose log for {selectedContainerId}", dynamic: true, kind: text, field: static.text.chooseLog, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:102"}
+          - {id: ui2.yarn-app.logs.header.find, label: "Find in log", kind: text, field: static.text.findInLog, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:114"}
+          - {id: ui2.yarn-app.logs.header.find-button, label: "Find", kind: button, field: static.button.find, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:119"}
+          - {id: ui2.yarn-app.logs.header.last10, label: "Showing last 10 lines of log. Click here for full log.", kind: text, field: static.text.last10, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:133"}
+          - {id: ui2.yarn-app.logs.header.log-title, label: "Log: {selectedLogFileName} [ {selectedContainerId} & {selectedAttemptId} ]", dynamic: true, kind: title, field: static.title.logContent, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:90"}
+          - {id: ui2.yarn-app.logs.header.no-container, label: "No container data available!", kind: text, field: static.text.noContainerData, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:70"}
+          - {id: ui2.yarn-app.logs.header.no-logs, label: "Logs are not available!", kind: text, field: static.text.noLogsAvailable, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:142"}
+          - {id: ui2.yarn-app.logs.header.agg-incomplete, label: "Log aggregation may not be complete, check back later!", kind: text, field: static.text.aggIncomplete, format: none, source: "ui2/templates/yarn-app/logs.hbs.txt:144"}
+  - id: ui2.yarn-app.threaddump
+    daemon: rm
+    route: /yarn-app/:app_id/threaddump
+    title: "Threaddump"
+    classes: [YarnAppThreaddumpRoute, yarn-app/threaddump controller, app-attempt mixin]
+    when: ["other:app is RUNNING with a live attempt/container"]
+    note: "core yarn-app child, RM/NM/JHS-backed (fetchAttemptListFromRM, cluster-user-info, container threaddump via NM) — not a PLAN.md §1 non-goal; catalogued here per integration-owner direction. query params attempt, containerid."
+    sections:
+      - id: ui2.yarn-app.threaddump.header
+        title: "Threaddump"
+        source: "ui2/templates/yarn-app/threaddump.hbs.txt:6"
+        items:
+          - {id: ui2.yarn-app.threaddump.header.title, label: "Threaddump", kind: title, field: static.title.threaddump, format: none, source: "ui2/templates/yarn-app/threaddump.hbs.txt:6"}
+          - {id: ui2.yarn-app.threaddump.header.not-running, label: "Threaddump cannot be collected for an application that is not running.", kind: text, field: static.text.notRunning, format: none, when: ["other:app not RUNNING"], source: "ui2/templates/yarn-app/threaddump.hbs.txt:34"}
+          - {id: ui2.yarn-app.threaddump.header.choose-attempt, label: "Choose the running attempt to fetch containers", kind: text, field: static.text.chooseRunningAttempt, format: none, source: "ui2/templates/yarn-app/threaddump.hbs.txt:41"}
+          - {id: ui2.yarn-app.threaddump.header.choose-container, label: "Choose container to fetch threaddump", kind: text, field: static.text.chooseThreaddumpContainer, format: none, source: "ui2/templates/yarn-app/threaddump.hbs.txt:51"}
+          - {id: ui2.yarn-app.threaddump.header.no-container, label: "No container data available!", kind: text, field: static.text.noContainerData, format: none, source: "ui2/templates/yarn-app/threaddump.hbs.txt:64"}
+          - {id: ui2.yarn-app.threaddump.header.content-title, label: "Threaddump: [ {selectedContainerId} & {selectedAttemptId} ]", dynamic: true, kind: title, field: static.title.threaddumpContent, format: none, source: "ui2/templates/yarn-app/threaddump.hbs.txt:84"}
+          - {id: ui2.yarn-app.threaddump.header.fetch-failed, label: "Threaddump fetch failed for container: {selectedContainerId} due to: “{threaddumpErrorMessage}”", dynamic: true, kind: text, field: static.text.threaddumpFailed, format: none, source: "ui2/templates/yarn-app/threaddump.hbs.txt:97"}
+          - {id: ui2.yarn-app.threaddump.header.logs-failed, label: "Logs fetch failed for container: {selectedContainerId} due to: “{stdoutLogsFetchFailedError}”", dynamic: true, kind: text, field: static.text.logsFailed, format: none, source: "ui2/templates/yarn-app/threaddump.hbs.txt:102"}
+  # ================= error / auth pages =================
+  - id: ui2.timeline-error
+    daemon: rm
+    route: /timeline-error/:error_id
+    title: "Timeline server failed with an error"
+    classes: [TimelineErrorRoute]
+    when: ["other:any ATS v2 timeline request fails"]
+    note: "out of product scope (PLAN.md §1 non-goal): ATS v2 timeline error page."
+    sections:
+      - id: ui2.timeline-error.body
+        title: null
+        source: "ui2/templates/timeline-error.hbs.txt:19"
+        items:
+          - {id: ui2.timeline-error.body.code, label: "{errorCode}: {errorType}", dynamic: true, kind: title, field: static.title.errorCode, format: none, when: ["other:errorCode present and != 0"], source: "ui2/templates/timeline-error.hbs.txt:19"}
+          - {id: ui2.timeline-error.body.message, label: "Timeline server failed with an error", kind: text, field: static.text.timelineFailed, format: none, source: "ui2/templates/timeline-error.hbs.txt:21"}
+  - id: ui2.notauth
+    daemon: rm
+    route: /notauth
+    title: "401, Authorization required."
+    classes: [notauth template]
+    when: []
+    note: "out of product scope (PLAN.md §1 non-goal): static UI2 auth-error page (no datum)."
+    sections:
+      - id: ui2.notauth.body
+        title: null
+        source: "ui2/templates/notauth.hbs.txt:2"
+        items:
+          - {id: ui2.notauth.body.title, label: "401, Authorization required.", kind: text, field: static.text.unauthorized, format: none, source: "ui2/templates/notauth.hbs.txt:2"}
+          - {id: ui2.notauth.body.hint, label: "Please check your security settings.", kind: text, field: static.text.checkSecurity, format: none, source: "ui2/templates/notauth.hbs.txt:3"}
+  - id: ui2.notfound
+    daemon: rm
+    route: /notfound
+    title: "404, Not Found"
+    classes: [notfound template]
+    when: []
+    note: "out of product scope (PLAN.md §1 non-goal): static UI2 404 page (no datum)."
+    sections:
+      - id: ui2.notfound.body
+        title: null
+        source: "ui2/templates/notfound.hbs.txt:2"
+        items:
+          - {id: ui2.notfound.body.title, label: "404, Not Found", kind: text, field: static.text.notFound, format: none, source: "ui2/templates/notfound.hbs.txt:2"}
+          - {id: ui2.notfound.body.hint, label: "Please check your URL", kind: text, field: static.text.checkUrl, format: none, source: "ui2/templates/notfound.hbs.txt:3"}
+  - id: ui2.error
+    daemon: rm
+    route: /error
+    title: "Sorry, error occurred."
+    classes: [error template]
+    when: []
+    note: "out of product scope (PLAN.md §1 non-goal): static UI2 error page (no datum)."
+    sections:
+      - id: ui2.error.body
+        title: null
+        source: "ui2/templates/error.hbs.txt:2"
+        items:
+          - {id: ui2.error.body.title, label: "Sorry, error occurred.", kind: text, field: static.text.error, format: none, source: "ui2/templates/error.hbs.txt:2"}

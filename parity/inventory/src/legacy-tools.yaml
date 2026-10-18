@@ -1,0 +1,152 @@
+# Legacy RM "Tools" pages — raw servlets registered on the RM's HttpServer2 webapp (NOT Hamlet blocks, no NavBlock/HeaderBlock chrome).
+# Sources relative to .cluster/src-extract/:
+#   hadoop-common/org/apache/hadoop/conf/ConfServlet.java, jmx/JMXJsonServlet.java, log/LogLevel.java,
+#   http/HttpServer2.java (servlet registration + StackServlet + AdminAuthorizedServlet), http/AdminAuthorizedServlet.java,
+#   org/apache/hadoop/conf/Configuration.java (dumpConfiguration).
+# The Tools nav entries (static.nav.tools.*) are declared in legacy-shared.yaml and are NOT redeclared here.
+version: 1
+pages:
+  - id: legacy.rm.tools.conf
+    daemon: rm
+    route: /conf
+    title: null
+    classes: [ConfServlet]
+    when: []
+    sections:
+      - id: legacy.rm.tools.conf.body
+        title: null
+        source: hadoop-common/org/apache/hadoop/conf/ConfServlet.java:59
+        items:
+          - {id: legacy.rm.tools.conf.raw, label: "(raw servlet response, no HTML chrome)", kind: text, field: static.conf.raw, format: none, source: "hadoop-common/org/apache/hadoop/conf/ConfServlet.java:59", note: "The page IS the serialized Configuration: XML by default, JSON when the request Accept header contains 'json'. No Hamlet layout, no nav."}
+          - {id: legacy.rm.tools.conf.accept, label: "Accept: application/json", kind: text, field: static.conf.acceptHeader, format: none, source: "hadoop-common/org/apache/hadoop/conf/ConfServlet.java:86-89", note: "format switch is the Accept HEADER (parseAcceptHeader: format.contains(\"json\") ? json : xml). There is NO `format` query parameter in the source; /conf?format=json is ignored (live-verified)."}
+          - {id: legacy.rm.tools.conf.content-type-xml, label: "text/xml; charset=utf-8", kind: text, field: static.conf.contentTypeXml, format: none, source: "hadoop-common/org/apache/hadoop/conf/ConfServlet.java:68"}
+          - {id: legacy.rm.tools.conf.content-type-json, label: "application/json; charset=utf-8", kind: text, field: static.conf.contentTypeJson, format: none, source: "hadoop-common/org/apache/hadoop/conf/ConfServlet.java:70"}
+          - {id: legacy.rm.tools.conf.param-name, label: "name", kind: text, field: static.conf.nameParam, format: none, source: "hadoop-common/org/apache/hadoop/conf/ConfServlet.java:73", note: "single-property query param; when set the body has exactly one entry."}
+          - {id: legacy.rm.tools.conf.xml.property, label: "property", kind: text, field: static.conf.xmlProperty, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3622", note: "XML element per configuration entry; a single `name` request collapses to one <property>."}
+          - {id: legacy.rm.tools.conf.xml.name, label: "name", kind: text, field: static.conf.xmlName, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3622"}
+          - {id: legacy.rm.tools.conf.xml.value, label: "value", kind: text, field: static.conf.xmlValue, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3622"}
+          - {id: legacy.rm.tools.conf.xml.final, label: "final", kind: text, field: static.conf.xmlFinal, format: boolean, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3622", note: "string 'true'/'false'."}
+          - {id: legacy.rm.tools.conf.xml.source, label: "source", kind: text, field: static.conf.xmlSource, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3622", note: "UNKNOWN_RESOURCE when no updating resource is recorded."}
+          - {id: legacy.rm.tools.conf.json.properties, label: "properties", kind: text, field: static.conf.jsonProperties, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3837", note: "top-level array (all-properties form)."}
+          - {id: legacy.rm.tools.conf.json.property, label: "property", kind: text, field: static.conf.jsonProperty, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3798", note: "top-level object (single-`name` form)."}
+          - {id: legacy.rm.tools.conf.json.key, label: "key", kind: text, field: static.conf.jsonKey, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3867"}
+          - {id: legacy.rm.tools.conf.json.value, label: "value", kind: text, field: static.conf.jsonValue, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3869", note: "redacted by ConfigRedactor for secret keys."}
+          - {id: legacy.rm.tools.conf.json.isfinal, label: "isFinal", kind: text, field: static.conf.jsonIsFinal, format: boolean, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3870"}
+          - {id: legacy.rm.tools.conf.json.resource, label: "resource", kind: text, field: static.conf.jsonResource, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3878"}
+          - {id: legacy.rm.tools.conf.err-badformat, label: "Bad format: ", kind: text, field: static.conf.errBadFormat, format: none, source: "hadoop-common/org/apache/hadoop/conf/ConfServlet.java:104", note: "BadFormatException -> 400; unreachable via HTTP because format derives from Accept."}
+          - {id: legacy.rm.tools.conf.err-notfound, label: "Property ", kind: text, dynamic: true, field: static.conf.errNotFound, format: none, source: "hadoop-common/org/apache/hadoop/conf/Configuration.java:3801", note: '"Property " + propertyName + " not found" -> IllegalArgumentException -> 404 (ConfServlet.java:80).'}
+  - id: legacy.rm.tools.jmx
+    daemon: rm
+    route: /jmx
+    title: null
+    classes: [JMXJsonServlet, JMXJsonServletNaNFiltered]
+    when: []
+    sections:
+      - id: legacy.rm.tools.jmx.beans
+        title: null
+        source: hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:242
+        items:
+          - {id: legacy.rm.tools.jmx.raw, label: "(raw pretty-printed JSON, no HTML chrome)", kind: text, field: static.jmx.raw, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:180-190", note: "Content-Type application/json; charset=utf8; pretty printer on; CORS headers Access-Control-Allow-Methods: GET and Access-Control-Allow-Origin: *."}
+          - {id: legacy.rm.tools.jmx.beans, label: "beans", kind: text, field: static.jmx.beans, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:242", note: "top-level array of bean objects."}
+          - {id: legacy.rm.tools.jmx.bean-name, label: "name", kind: text, field: static.jmx.beanName, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:303", note: "ObjectName.toString()."}
+          - {id: legacy.rm.tools.jmx.bean-modeler, label: "modelerType", kind: text, field: static.jmx.modelerType, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:305"}
+          - {id: legacy.rm.tools.jmx.attr, label: "<attributeName>", kind: text, dynamic: true, field: static.jmx.attribute, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:320-345", note: "Every remaining key of a bean object is an MBean attribute name; attribute names containing '=', ':' or ' ' are skipped. Values: number/bool native, CompositeData => nested object, TabularData => array, else string."}
+          - {id: legacy.rm.tools.jmx.param-qry, label: "qry", kind: text, field: static.jmx.paramQry, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:212", note: 'ObjectName pattern, default "*:*"; the Tools nav link uses /jmx?qry=Hadoop:*.'}
+          - {id: legacy.rm.tools.jmx.param-get, label: "get", kind: text, field: static.jmx.paramGet, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:196", note: "MBeanName::AttributeName; must contain exactly one '::'."}
+          - {id: legacy.rm.tools.jmx.err-format, label: "query format is not as expected.", kind: text, field: static.jmx.errFormat, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:200-201", note: 'body {"result":"ERROR","message":"query format is not as expected."}, status 400.'}
+          - {id: legacy.rm.tools.jmx.err-nosuchattr, label: "No attribute with name ", kind: text, dynamic: true, field: static.jmx.errNoAttr, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:308-309", note: '"No attribute with name " + attribute + " was found." -> status 404.'}
+          - {id: legacy.rm.tools.jmx.nan-filter, label: "NaN", kind: text, field: static.jmx.nanFilter, format: none, source: "hadoop-common/org/apache/hadoop/jmx/JMXJsonServletNaNFiltered.java:29-39", when: ["other:JMX_NAN_FILTER (CommonConfigurationKeysPublic.JMX_NAN_FILTER, default true) enabled"], note: "When the JMX_NAN_FILTER flag is on (default true) attribute values equal to NaN are emitted as 0.0."}
+  - id: legacy.rm.tools.stacks
+    daemon: rm
+    route: /stacks
+    title: null
+    classes: [HttpServer2$StackServlet]
+    when: []
+    sections:
+      - id: legacy.rm.tools.stacks.body
+        title: null
+        source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:1757
+        items:
+          - {id: legacy.rm.tools.stacks.raw, label: "(raw text/plain thread dump, no HTML chrome)", kind: text, field: static.stacks.raw, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1764-1770", note: "Content-Type text/plain; charset=UTF-8; produced by ReflectionUtils.printThreadInfo(out, \"\")."}
+          - {id: legacy.rm.tools.stacks.title, label: "Process Thread Dump: ", kind: text, field: static.stacks.title, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1766", note: "First line; from ReflectionUtils (not in src-extract), live-observed at /stacks."}
+          - {id: legacy.rm.tools.stacks.active, label: "<N> active threads", kind: text, dynamic: true, field: static.stacks.activeThreads, format: int, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1766", note: "Second line; '245 active threads' live-observed."}
+          - {id: legacy.rm.tools.stacks.thread, label: "Thread <id> (<name>):", kind: text, dynamic: true, field: static.stacks.thread, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1766", note: "ReflectionUtils label; live-observed."}
+          - {id: legacy.rm.tools.stacks.state, label: "State:", kind: text, field: static.stacks.state, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1766", note: "ReflectionUtils label; live-observed."}
+          - {id: legacy.rm.tools.stacks.blocked, label: "Blocked count:", kind: text, field: static.stacks.blockedCount, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1766", note: "ReflectionUtils label; live-observed."}
+          - {id: legacy.rm.tools.stacks.waited, label: "Waited count:", kind: text, field: static.stacks.waitedCount, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1766", note: "ReflectionUtils label; live-observed."}
+          - {id: legacy.rm.tools.stacks.stack, label: "Stack:", kind: text, field: static.stacks.stack, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1766", note: "ReflectionUtils label; live-observed."}
+          - {id: legacy.rm.tools.stacks.sideeffect, label: "(also written to the RM log)", kind: text, field: static.stacks.logged, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1771", note: "ReflectionUtils.logThreadInfo(LOG, \"jsp requested\", 1)."}
+  - id: legacy.rm.tools.logs
+    daemon: rm
+    route: /logs/
+    title: "Directory: /logs/"
+    classes: [AdminAuthorizedServlet, org.eclipse.jetty.servlet.DefaultServlet, HttpServer2]
+    when: ["other:hadoop.log.dir set", "conf:hadoop.http.logs.enabled=true"]
+    sections:
+      - id: legacy.rm.tools.logs.listing
+        title: "Directory: /logs/"
+        source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:949-961
+        items:
+          - {id: legacy.rm.tools.logs.listing.title, label: "Directory: /logs/", kind: title, field: static.logs.title, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:950", note: "Jetty DefaultServlet directory-listing <h1 class=title> and <title>; path is /logs/ (context mounted at /logs)."}
+          - {id: legacy.rm.tools.logs.listing.col-name, label: "Name", kind: column, field: static.logs.colName, format: none, restGap: true, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:953", note: "Jetty listing column; header is a sort link ?C=N&O=D. Values are file names under hadoop.log.dir; no REST endpoint supplies RM local logs."}
+          - {id: legacy.rm.tools.logs.listing.col-lastmodified, label: "Last Modified", kind: column, field: static.logs.colLastModified, format: epoch-datetime, restGap: true, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:953", note: "header sort link ?C=M&O=A; value formatted by Jetty e.g. 'Oct 3, 2026, 12:41:50 PM'."}
+          - {id: legacy.rm.tools.logs.listing.col-size, label: "Size", kind: column, field: static.logs.colSize, format: byteDesc, restGap: true, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:953", note: "header sort link ?C=S&O=A; value e.g. '359,485 bytes'."}
+          - {id: legacy.rm.tools.logs.listing.file, label: "<file>", kind: link, dynamic: true, field: static.logs.file, format: url, restGap: true, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:953", note: "row <a href=\"/logs/<file>\">; clicking opens the file view (legacy.rm.tools.logs.file)."}
+          - {id: legacy.rm.tools.logs.listing.sort, label: "?C=N&O=D", kind: link, field: static.logs.sortLinks, format: url, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:953", note: "per-column sort links; C in {N,M,S}, O in {A,D}. No ?start/?end/?download params on this servlet."}
+  - id: legacy.rm.tools.logs.file
+    daemon: rm
+    route: /logs/{filename}
+    title: null
+    classes: [AdminAuthorizedServlet, org.eclipse.jetty.servlet.DefaultServlet]
+    when: ["other:hadoop.log.dir set", "conf:hadoop.http.logs.enabled=true"]
+    sections:
+      - id: legacy.rm.tools.logs.file.body
+        title: null
+        source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:953
+        items:
+          - {id: legacy.rm.tools.logs.file.raw, label: "(raw file bytes, no HTML chrome)", kind: text, field: static.logs.fileRaw, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:953", note: "Jetty DefaultServlet serves the file; Content-Type by extension (text/plain for .log/.out). No offset/length/start/end params (the product API adds slicing)."}
+          - {id: legacy.rm.tools.logs.file.notfound, label: "HTTP ERROR 404 Not Found", kind: text, field: static.logs.fileNotFound, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:953", note: "unknown file => Jetty 404 page."}
+  - id: legacy.rm.tools.loglevel
+    daemon: rm
+    route: /logLevel
+    title: "Log Level"
+    classes: [LogLevel$Servlet]
+    when: []
+    sections:
+      - id: legacy.rm.tools.loglevel.form
+        title: "Get / Set"
+        source: hadoop-common/org/apache/hadoop/log/LogLevel.java:362
+        items:
+          - {id: legacy.rm.tools.loglevel.title, label: "Log Level", kind: title, field: static.loglevel.title, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:335", note: "<title>/<h1> from ServletUtil.initHTML(response, \"Log Level\")."}
+          - {id: legacy.rm.tools.loglevel.heading, label: "Get / Set", kind: title, field: static.loglevel.heading, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:362", note: "<h3>."}
+          - {id: legacy.rm.tools.loglevel.label-classname, label: "Class Name:", kind: text, field: static.loglevel.labelClassName, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:363", note: "form label; input name='log'."}
+          - {id: legacy.rm.tools.loglevel.param-log, label: "log", kind: text, field: static.loglevel.paramLog, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:363", note: "logger class name."}
+          - {id: legacy.rm.tools.loglevel.label-level, label: "Level:", kind: text, field: static.loglevel.labelLevel, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:366", note: "form label; input name='level'."}
+          - {id: legacy.rm.tools.loglevel.param-level, label: "level", kind: text, field: static.loglevel.paramLevel, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:366"}
+          - {id: legacy.rm.tools.loglevel.btn-get, label: "Get Log Level", kind: button, field: static.loglevel.btnGet, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:364"}
+          - {id: legacy.rm.tools.loglevel.btn-set, label: "Set Log Level", kind: button, field: static.loglevel.btnSet, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:367"}
+      - id: legacy.rm.tools.loglevel.results
+        title: "Results"
+        source: hadoop-common/org/apache/hadoop/log/LogLevel.java:340
+        when: ["other:?log= present"]
+        items:
+          - {id: legacy.rm.tools.loglevel.res-heading, label: "Results", kind: title, field: static.loglevel.resultsHeading, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:340", note: "<h3>, only when the `log` param is set."}
+          - {id: legacy.rm.tools.loglevel.submitted-class, label: "Submitted Class Name:", kind: kv, field: static.loglevel.submittedClass, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:341"}
+          - {id: legacy.rm.tools.loglevel.log-class, label: "Log Class:", kind: kv, field: static.loglevel.logClass, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:346"}
+          - {id: legacy.rm.tools.loglevel.submitted-level, label: "Submitted Level:", kind: kv, field: static.loglevel.submittedLevel, format: none, when: ["other:?level= present"], source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:348"}
+          - {id: legacy.rm.tools.loglevel.effective, label: "Effective Level:", kind: kv, field: static.loglevel.effectiveLevel, format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:382-383"}
+          - {id: legacy.rm.tools.loglevel.setting, label: "Setting Level to ", kind: kv, dynamic: true, field: static.loglevel.setting, format: none, when: ["other:?level= valid"], source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:379", note: 'msg + level + " ..."'}
+          - {id: legacy.rm.tools.loglevel.bad-level, label: "Bad Level : ", kind: kv, dynamic: true, field: static.loglevel.badLevel, when: ["other:?level= invalid"], format: none, source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:376"}
+          - {id: legacy.rm.tools.loglevel.not-log4j, label: "Sorry, setting log level is only supported for log4j loggers.", kind: text, field: static.loglevel.notLog4j, format: none, when: ["other:logger is not a log4j logger"], source: "hadoop-common/org/apache/hadoop/log/LogLevel.java:354"}
+  - id: legacy.rm.tools.metrics
+    daemon: rm
+    route: /metrics
+    title: null
+    classes: []
+    when: ["other:MetricsServlet registered for the RM daemon (NOT registered by Hadoop 3.4.3 HttpServer2)"]
+    sections:
+      - id: legacy.rm.tools.metrics.body
+        title: null
+        source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:1000-1009
+        items:
+          - {id: legacy.rm.tools.metrics.absent, label: "(no /metrics context in Hadoop 3.4.3)", kind: text, field: static.metrics.absent, format: none, source: "hadoop-common/org/apache/hadoop/http/HttpServer2.java:1002-1009", note: "HttpServer2.addDefaultServlets registers only /stacks, /logLevel, /jmx and /conf; no MetricsServlet class exists in the extracted sources and live RM GET /metrics => 404. The Tools nav has no /metrics link. This page only exists if a metrics module registers /metrics."}

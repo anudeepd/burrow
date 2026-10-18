@@ -1,0 +1,326 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="8550ab3b-3962-485b-8a35-6aa19e9730ab">setUIRoot('')</script>
+        <script nonce="8550ab3b-3962-485b-8a35-6aa19e9730ab">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="8550ab3b-3962-485b-8a35-6aa19e9730ab">setAppBasePath('')</script>
+        
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-dstream - Details of batch at 2026/10/03 12:38:30</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/streaming/">Streaming</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-dstream" class="text-nowrap">burrow-dstream</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Details of batch at 2026/10/03 12:38:30
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <ul class="list-unstyled">
+          <li>
+            <strong>Batch Duration: </strong>
+            1 s
+          </li>
+          <li>
+            <strong>Input data size: </strong>
+            0 records
+          </li>
+          <li>
+            <strong>Scheduling delay: </strong>
+            4 ms
+          </li>
+          <li>
+            <strong>Processing time: </strong>
+            2 s
+          </li>
+          <li>
+            <strong>Total delay: </strong>
+            2 s
+          </li>
+          
+        </ul>
+      </div><table id="batch-job-table" class="table table-bordered table-striped table-sm">
+      <thead>
+        <th>Output Op Id</th><th>Description</th><th>Output Op Duration <sup>
+      (<a data-bs-toggle="tooltip" title="Time taken for all the jobs of this batch to finish processing from the time they were submitted.">?</a>)
+    </sup></th><th>Status</th><th>Job Id</th><th>Job Duration <sup>
+      (<a data-bs-toggle="tooltip" title="Time taken from submission time to completion time of the job">?</a>)
+    </sup></th><th class="sorttable_nosort">Stages: Succeeded/Total</th><th class="sorttable_nosort">Tasks (for all stages): Succeeded/Total</th><th>Error</th>
+      </thead>
+      <tbody>
+        <tr>
+      <td class="output-op-id-cell" rowspan="2">0</td><td rowspan="2">
+          <div>
+      callForeachRDD at NativeMethodAccessorImpl.java:0
+      <span data-toggle-details=".stage-details" class="expand-details">
+          +details
+      </span>
+      <div class="stage-details collapsed">
+        <pre>org.apache.spark.streaming.api.python.PythonDStream.callForeachRDD(PythonDStream.scala)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div>
+    </div>
+        </td><td rowspan="2">2 s</td><td rowspan="2">Succeeded</td>
+      <td sorttable_customkey="0">
+        <a href="/jobs/job/?id=0">
+          0
+        </a>
+      </td>
+      <td sorttable_customkey="1428">
+        1 s
+      </td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+      <td valign="middle" style="max-width: 300px"></td>
+    </tr><tr>
+      
+      <td sorttable_customkey="1">
+        <a href="/jobs/job/?id=1">
+          1
+        </a>
+      </td>
+      <td sorttable_customkey="90">
+        90 ms
+      </td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (2 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (2 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+      <td valign="middle" style="max-width: 300px"></td>
+    </tr><tr>
+      <td class="output-op-id-cell" rowspan="1">1</td><td rowspan="1">
+          <div>
+      callForeachRDD at NativeMethodAccessorImpl.java:0
+      <span data-toggle-details=".stage-details" class="expand-details">
+          +details
+      </span>
+      <div class="stage-details collapsed">
+        <pre>org.apache.spark.streaming.api.python.PythonDStream.callForeachRDD(PythonDStream.scala)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div>
+    </div>
+        </td><td rowspan="1">0.2 s</td><td rowspan="1">Succeeded</td>
+      <td sorttable_customkey="2">
+        <a href="/jobs/job/?id=2">
+          2
+        </a>
+      </td>
+      <td sorttable_customkey="179">
+        0.2 s
+      </td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+      <td valign="middle" style="max-width: 300px"></td>
+    </tr><tr>
+      <td class="output-op-id-cell" rowspan="2">2</td><td rowspan="2">
+          <div>
+      callForeachRDD at NativeMethodAccessorImpl.java:0
+      <span data-toggle-details=".stage-details" class="expand-details">
+          +details
+      </span>
+      <div class="stage-details collapsed">
+        <pre>org.apache.spark.streaming.api.python.PythonDStream.callForeachRDD(PythonDStream.scala)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div>
+    </div>
+        </td><td rowspan="2">0.3 s</td><td rowspan="2">Succeeded</td>
+      <td sorttable_customkey="3">
+        <a href="/jobs/job/?id=3">
+          3
+        </a>
+      </td>
+      <td sorttable_customkey="166">
+        0.2 s
+      </td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="3/3">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        3/3
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+      <td valign="middle" style="max-width: 300px"></td>
+    </tr><tr>
+      
+      <td sorttable_customkey="4">
+        <a href="/jobs/job/?id=4">
+          4
+        </a>
+      </td>
+      <td sorttable_customkey="76">
+        76 ms
+      </td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (2 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (2 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+      <td valign="middle" style="max-width: 300px"></td>
+    </tr>
+      </tbody>
+    </table>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:38:24</span><span id="footer-uptime" data-start-time="1791011304234"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

@@ -1,0 +1,37 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 1,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 1",
+      "clusters": [
+        {
+          "id": "cluster_9000",
+          "name": "grandparent",
+          "parentId": null
+        },
+        {
+          "id": "cluster_9001",
+          "name": "outer \"q\" <b>bold</b> & amp; back\\slash \\n newline é–✓",
+          "parentId": "cluster_9000"
+        }
+      ],
+      "nodes": [
+        {
+          "id": 2,
+          "name": "name \"with\" <i>html</i> & [7] \\ back\nnl é–✓",
+          "callsite": "site <x> & \"y\" 'z' [5]\\n é",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_9001"
+        }
+      ],
+      "edges": []
+    }
+  ],
+  "edges": []
+}

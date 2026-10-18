@@ -1,0 +1,126 @@
+# parity/waivers.yaml — every field the parity gate is allowed NOT to see, with a reason.
+# Owned by the parity slice; changing it is a parity-gate decision (PLAN.md §8: "no silent skips").
+#
+# Each entry needs `category` (vocabulary from parity/inventory/FORMAT.md:
+#   internal | deprecated | secret | rendered-elsewhere | unused-by-any-ui | write-only | other)
+# plus `reason`, and is keyed by ONE of:
+#   fieldId: <field id>            a registry field id (P1 + P2)
+#   page: <page id> + label: <lbl> one legacy label on one inventory page (P2)
+#   key: <canonical json path>     one observed REST key path (P1), `*` for map keys/array elements
+version: 1
+
+waivers:
+  # ---- the legacy `User Metrics for <user>` heading is NOT the REST UGI
+  # The legacy heading carries the *queue-metrics user* (root-queue QueueMetrics tag for the user who
+  # submitted apps, MetricsOverviewTable.java:157-159), while `clusterUserInfo.requestedUser` is the
+  # authenticated UGI of the caller. Comparing one against the other is comparing two different data
+  # sources; the queue-metrics numbers themselves are already separate items (usermetrics.*).
+  - fieldId: clusteruser.requestedUser
+    category: other
+    reason: >-
+      legacy "User Metrics for <user>" renders the root-queue QueueMetrics user tag
+      (MetricsOverviewTable.java:157-159), not the REST UGI exposed as
+      clusterUserInfo.requestedUser (HeaderBlock.java:29 uses servlet getRemoteUser(), and the
+      inventory's clusteruser.derived.loggedInText item covers that separately). Same-looking label,
+      different datum: needs a queue-metrics-derived field id (or a `when`/source change) in the
+      inventory rather than a value comparison. Verified live: legacy heading said `bob`/`carol`
+      while REST requestedUser was `dr.who`.
+
+  # ---- legacy User Metrics block (usermetrics.derived.*) -------------------------------------------------------------
+  # MetricsOverviewTable.java:157-198 renders the block from `new UserMetricsInfo(rm, user)` = the *per-user QueueMetrics of
+  # the root queue* (QueueMetrics.getUserMetrics). No REST resource carries it (inventory: usermetrics.derived.* restGap:true;
+  # /ws/v1/cluster/metrics is cluster-wide) and the RM JMX has no per-user QueueMetrics bean unless per-user metrics are on.
+  # Per-user metrics exist only when enableUserMetrics: Fair hardcodes true (FSQueue.java:95); Capacity needs
+  # yarn.scheduler.capacity.user-metrics.enable=true (CapacitySchedulerConfiguration.ENABLE_USER_METRICS, default false,
+  # AbstractCSQueue.java:153, QueueMetrics.java:287-290). On the stock cluster the block is never rendered, so these items are
+  # `not-observable` via `when: fact:userMetricsEnabled` (parity/inventory/src/legacy-shared.yaml); this waiver covers the state
+  # where the block IS rendered: burrow cannot obtain exact values, and deriving numbers from the apps list would be a
+  # different datum (apps still alive in the RM, not QueueMetrics counters since RM start). The Apps page's per-user aggregates are
+  # the nearest equivalent exposed to users.
+  - {fieldId: usermetrics.derived.appsSubmitted, category: upstream-not-exposed, reason: &usermetrics "legacy User Metrics block = root-queue per-user QueueMetrics (MetricsOverviewTable.java:157-198); not exposed by REST or JMX; only rendered when per-user metrics are enabled (Fair: FSQueue.java:95; Capacity: yarn.scheduler.capacity.user-metrics.enable=true, AbstractCSQueue.java:153). Nearest equivalent: per-user aggregates computed from the Apps list."}
+  - {fieldId: usermetrics.derived.appsPending, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.appsRunning, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.appsCompletedAll, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.runningContainers, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.pendingContainers, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.reservedContainers, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.allocatedMBText, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.pendingMBText, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.reservedMBText, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.allocatedVirtualCores, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.pendingVirtualCores, category: upstream-not-exposed, reason: *usermetrics}
+  - {fieldId: usermetrics.derived.reservedVirtualCores, category: upstream-not-exposed, reason: *usermetrics}
+
+  # ---- per-attempt metrics that live only inside the RM process (RMAppAttemptMetrics) ---------------------------------
+  # Verified live: GET /ws/v1/cluster/apps/{id}/appattempts (the only attempt resource) returns id/startTime/finishedTime/
+  # containerId/nodeHttpAddress/nodeId/logsLink/blacklistedNodes/nodesBlacklistedBySystem/appAttemptId/exportPorts/appAttemptState,
+  # and GET /apps/{id} carries app-level (not attempt-level) preemption counters. No JMX bean exposes RMAppAttemptMetrics either.
+  - fieldId: attempt.derived.localityStatistics
+    category: upstream-not-exposed
+    reason: "RMAppAttemptBlock.java:417-421 renders attemptMetrics.getLocalityStatistics() (node/rack/off-switch container matrix); not exposed by any REST resource or JMX bean (verified against the live appattempts payload)."
+  - fieldId: attempt.derived.totalAllocatedContainersText
+    category: upstream-not-exposed
+    reason: "RMAppAttemptBlock.java:404-405 renders attemptMetrics.getTotalAllocatedContainers(); not exposed by REST/JMX (the appattempts payload has no such counter)."
+  - fieldId: attempt.derived.headroomText
+    category: upstream-not-exposed
+    reason: "RMAppAttemptBlock.java:446-447 renders RMAppAttemptMetrics.getApplicationAttemptHeadroom() (scheduler headroom handed to the AM); not exposed by REST/JMX."
+  - fieldId: attempt.derived.resourcePreemptedText
+    category: upstream-not-exposed
+    reason: "RMAppBlock.java:87-90 renders the *attempt-level* RMAppAttemptMetrics.getResourcePreempted(); REST exposes preemption only per application (app.preemptedResourceMB/VCores, already compared), not per attempt."
+  - fieldId: attempt.derived.numNonAMContainersPreempted
+    category: upstream-not-exposed
+    reason: "RMAppBlock.java:91-94 renders the attempt-level RMAppAttemptMetrics.getNumNonAMContainersPreempted(); REST exposes app.numNonAMContainerPreempted per application only."
+
+  # ---- per-NodeManager log-aggregation reports -------------------------------------------------------------------------
+  # RMAppLogAggregationStatusBlock.java:128-156 lists rmApp.getLogAggregationReportsForApp() (Map<NodeId, LogAggregationReport>)
+  # plus getLogAggregationFailureMessagesForNM; REST carries only the app-level `logAggregationStatus` (already compared as
+  # app.logAggregationStatus). The rows exist only once an NM has reported (`when: fact:logAggReportsPresent`).
+  - fieldId: app.derived.logAggReportNodeId
+    category: upstream-not-exposed
+    reason: "per-NM log-aggregation report key (RMAppLogAggregationStatusBlock.java:152); no REST/JMX resource lists the reports, only the app-level aggregate status."
+  - fieldId: app.derived.logAggReportStatusText
+    category: upstream-not-exposed
+    reason: "per-NM log-aggregation status (RMAppLogAggregationStatusBlock.java:153); not exposed by REST/JMX."
+  - fieldId: app.derived.logAggReportDiagnostics
+    category: upstream-not-exposed
+    reason: "per-NM last diagnostic messages (RMAppLogAggregationStatusBlock.java:154); not exposed by REST/JMX."
+  - fieldId: app.derived.logAggReportFailures
+    category: upstream-not-exposed
+    reason: "per-NM last failure messages (RMAppLogAggregationStatusBlock.java:155, RMAppImpl.getLogAggregationFailureMessagesForNM); not exposed by REST/JMX."
+  # ---- capacity-scheduler "Last scheduler run" health: two items with no source on a 3.4.3 RM --------------------------
+  # CapacitySchedulerPage.java:563-621 renders CapacitySchedulerHealthInfo (SchedulerHealth): aggregate counters plus, for each
+  # of the four Last <Allocation|Reservation|Release|Preemption> blocks, a DetailInformation timestamp. Probed live on this RM:
+  #   * GET /ws/v1/cluster/scheduler -> schedulerInfo.health = {lastrun, operationsInfo[], lastRunDetails[]} only;
+  #   * GET /jmx?qry=Hadoop:service=ResourceManager,name=* lists 22 beans and NO SchedulerHealth/health bean;
+  #   * the root QueueMetrics bean exposes AggregateContainersAllocated/Released/Preempted (rendered by burrow as
+  #     scheduler.derived.aggregateAllocatedContainers/ReleasedContainers/Preemptions) but has no reservation counter.
+  - fieldId: scheduler.derived.aggregateFulfilledReservations
+    category: upstream-not-exposed
+    reason: >-
+      CapacitySchedulerPage.java:569 renders healthInfo.getAggregateFulFilledReservationsCount(); not in REST
+      (schedulerInfo.health has no counters) and not in JMX (no SchedulerHealth bean; root QueueMetrics has no
+      AggregateContainersReserved). The 0 the stock UI prints on this cluster is a live zero with no obtainable source.
+  - fieldId: scheduler.derived.lastOperationTimestamp
+    category: upstream-not-exposed
+    reason: >-
+      CapacitySchedulerPage.java:610-621 renders Times.format(di.getTimestamp()) from SchedulerHealth.DetailedInformation.
+      The only REST carrier, health.operationsInfo[], has operation/nodeId/containerId/queue and no timestamp; no JMX bean
+      exposes it. Never faked from health.lastrun (a different datum: the scheduler's last-run instant).
+
+  # ---- SQL plan operator metrics: burrow-minted ids, no legacy page -------------------------------------------------
+  # The DAG drawer's SQL-plan node (features/dag/react/chrome.tsx) renders an operator's plan accumulables from the SQL
+  # execution payload (nodes[].metrics[].{name,value} — Spark REST /sql/{id}?details=true, carried onto GraphNode.metrics
+  # by features/dag/sql-plan.ts). The legacy Spark UI renders the plan as a table, not as a DAG drawer, and publishes no
+  # field id for a per-operator metric row: there is nothing on the legacy side to compare against. The ids are minted
+  # positionally ([<i>] = the index in SqlPlanNode.metrics) so the parity gate can see the rows at all; values are the
+  # verbatim upstream strings, never derived, and the drawer only falls back to them when no stage join exists.
+  - fieldId: "spark.sql.metrics[<i>].name"
+    category: rendered-elsewhere
+    reason: >-
+      Minted by the DAG drawer for an operator's plan accumulable name (SqlPlanNode.metrics[i].name). Rendered by
+      burrow only: no legacy page emits a comparable row, so no legacy value exists to diff.
+  - fieldId: "spark.sql.metrics[<i>].value"
+    category: rendered-elsewhere
+    reason: >-
+      Minted by the DAG drawer for the matching accumulable value (SqlPlanNode.metrics[i].value, kept as the upstream
+      string). Same as the name id: burrow-only rendering with no legacy counterpart.

@@ -1,0 +1,32 @@
+{
+  "id" : 57,
+  "name" : "PythonRDD",
+  "numPartitions" : 2,
+  "numCachedPartitions" : 2,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 516,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:40761",
+    "memoryUsed" : 516,
+    "memoryRemaining" : 453440275,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 516,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 453440275,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_57_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 258,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_57_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 258,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+}

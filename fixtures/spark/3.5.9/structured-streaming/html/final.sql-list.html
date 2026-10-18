@@ -1,0 +1,1155 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery-3.5.1.min.js"></script><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/timeline-view.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script>setUIRoot('')</script>
+        <script>setAppBasePath('')</script>
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-structured-streaming - SQL / DataFrame</title>
+      </head>
+      <body>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img src="/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">3.5.9</span>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/StreamingQuery/">Structured Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-structured-streaming" class="text-nowrap">burrow-structured-streaming</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+          </div>
+        </nav>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <h3 style="vertical-align: bottom; white-space: nowrap; overflow: hidden;
+                text-overflow: ellipsis;">
+                SQL / DataFrame
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <ul class="list-unstyled">
+          
+          <li>
+                <a href="#completed"><strong>Completed Queries:</strong></a>
+                10
+              </li>
+          
+        </ul>
+      </div><span id="completed" class="collapse-aggregated-completedExecutions collapse-table" onClick="collapseTable('collapse-aggregated-completedExecutions',
+                'aggregated-completedExecutions')">
+            <h4>
+              <span class="collapse-table-arrow arrow-open"></span>
+              <a>Completed Queries (10)</a>
+            </h4>
+          </span><div class="aggregated-completedExecutions collapsible-table">
+              <div>
+        <div>
+      <div>
+        <form id="form-completed-table-top-page" method="get" action="/SQL/?&completed.sort=ID&completed.desc=true#completed" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completed.sort" value="ID"/><input type="hidden" name="completed.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completed.page" id="form-completed-table-top-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completed-table-top-page-size" name="completed.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completed-table">
+          <thead>
+      <tr><th>
+            <a href="/SQL/?&completed.sort=ID&completed.desc=false&completed.pageSize=100#completed">
+              <span data-toggle="tooltip" data-placement="top" title="">
+                ID&nbsp;&#x25BE;
+              </span>
+            </a>
+          </th><th>
+              <a href="/SQL/?&completed.sort=Description&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Description
+                </span>
+              </a>
+            </th><th>
+              <a href="/SQL/?&completed.sort=Submitted&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Submitted
+                </span>
+              </a>
+            </th><th>
+              <a href="/SQL/?&completed.sort=Duration&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="Time from query submission to completion (or if still executing, time since submission)">
+                  Duration
+                </span>
+              </a>
+            </th><th>
+              <a href="/SQL/?&completed.sort=Job+IDs&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Job IDs
+                </span>
+              </a>
+            </th><th>
+              <a href="/SQL/?&completed.sort=Sub+Execution+IDs&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Sub Execution IDs
+                </span>
+              </a>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr>
+        <td>
+          17
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=17" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 8</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 8<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011674059">
+          2026/10/03 12:44:34
+        </td>
+        <td sorttable_customkey="239">
+          0.2 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=18">[18]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      18
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=18" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 8</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 8<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011674071">
+                      2026/10/03 12:44:34
+                    </td>
+                    <td sorttable_customkey="227">
+                      0.2 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=8">[8]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=15" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 7</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 7<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011672072">
+          2026/10/03 12:44:32
+        </td>
+        <td sorttable_customkey="264">
+          0.3 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=16">[16]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      16
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=16" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 7</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 7<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011672088">
+                      2026/10/03 12:44:32
+                    </td>
+                    <td sorttable_customkey="248">
+                      0.2 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=7">[7]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=13" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 6</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 6<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011670089">
+          2026/10/03 12:44:30
+        </td>
+        <td sorttable_customkey="286">
+          0.3 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=14">[14]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      14
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=14" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 6</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 6<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011670107">
+                      2026/10/03 12:44:30
+                    </td>
+                    <td sorttable_customkey="268">
+                      0.3 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=6">[6]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=11" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 5</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 5<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011668074">
+          2026/10/03 12:44:28
+        </td>
+        <td sorttable_customkey="281">
+          0.3 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=12">[12]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      12
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=12" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 5</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 5<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011668090">
+                      2026/10/03 12:44:28
+                    </td>
+                    <td sorttable_customkey="265">
+                      0.3 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=5">[5]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          9
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=9" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 4</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 4<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011666074">
+          2026/10/03 12:44:26
+        </td>
+        <td sorttable_customkey="283">
+          0.3 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=10">[10]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      10
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=10" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 4</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 4<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011666098">
+                      2026/10/03 12:44:26
+                    </td>
+                    <td sorttable_customkey="259">
+                      0.3 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=4">[4]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          7
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=7" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 3</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 3<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011664121">
+          2026/10/03 12:44:24
+        </td>
+        <td sorttable_customkey="315">
+          0.3 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=8">[8]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      8
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=8" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 3</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 3<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011664147">
+                      2026/10/03 12:44:24
+                    </td>
+                    <td sorttable_customkey="289">
+                      0.3 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=3">[3]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          5
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=5" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 2</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 2<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011662265">
+          2026/10/03 12:44:22
+        </td>
+        <td sorttable_customkey="428">
+          0.4 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=6">[6]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      6
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=6" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 2</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 2<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011662303">
+                      2026/10/03 12:44:22
+                    </td>
+                    <td sorttable_customkey="390">
+                      0.4 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=2">[2]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          3
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=3" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 1</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 1<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011660487">
+          2026/10/03 12:44:20
+        </td>
+        <td sorttable_customkey="1602">
+          2 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=4">[4]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      4
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=4" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 1</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 1<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011660531">
+                      2026/10/03 12:44:20
+                    </td>
+                    <td sorttable_customkey="1558">
+                      2 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=1">[1]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          1
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=1" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 0</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 0<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011658908">
+          2026/10/03 12:44:18
+        </td>
+        <td sorttable_customkey="1385">
+          1 s
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        <a href="/SQL/execution/?id=2">[2]</a>
+      </div><span onclick="this.parentNode.parentNode.nextElementSibling.nextElementSibling.classList.toggle('collapsed')" class="expand-details">
+          +details
+        </span>
+          </td>
+      </tr><tr></tr><tr class="sub-execution-list collapsed">
+        <td></td>
+        <td colspan="5">
+          <table class="table table-bordered table-sm table-cell-width-limited">
+            <thead>
+              <tr>
+                <th>ID</th><th>Description</th><th>Submitted</th><th>Duration</th><th>Job IDs</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                    <td>
+                      2
+                    </td>
+                    <td>
+                      <div><a href="/SQL/execution/?id=2" class="description-input">
+        rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 0</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>rate_counts
+id = 00a09ce7-1564-4c87-b68c-3ff1eb62d57a
+runId = 61db4652-e827-43ba-9389-5973a94b8fac
+batch = 0<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+                    </td>
+                    <td sorttable_customkey="1791011658955">
+                      2026/10/03 12:44:18
+                    </td>
+                    <td sorttable_customkey="1338">
+                      1 s
+                    </td>
+                    
+                    <td>
+                        <a href="/jobs/job/?id=0">[0]</a>
+                      </td>
+                    
+                  </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr><tr>
+        <td>
+          0
+        </td>
+        <td>
+          <div><a href="/SQL/execution/?id=0" class="description-input">
+        start at NativeMethodAccessorImpl.java:0</a><span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        <pre>start at NativeMethodAccessorImpl.java:0<br></br>org.apache.spark.sql.streaming.DataStreamWriter.start(DataStreamWriter.scala:251)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div>
+        </td>
+        <td sorttable_customkey="1791011658542">
+          2026/10/03 12:44:18
+        </td>
+        <td sorttable_customkey="12">
+          12 ms
+        </td>
+        
+        <td>
+            
+          </td>
+        
+        
+        <td>
+            <div>
+        
+      </div>
+          </td>
+      </tr>
+          </tbody>
+        </table>
+        <div>
+      <div>
+        <form id="form-completed-table-bottom-page" method="get" action="/SQL/?&completed.sort=ID&completed.desc=true#completed" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completed.sort" value="ID"/><input type="hidden" name="completed.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completed.page" id="form-completed-table-bottom-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completed-table-bottom-page-size" name="completed.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+      </div>
+            </div><script>
+        function clickDetail(details) {
+          details.parentNode.querySelector('.stage-details').classList.toggle('collapsed')
+        }
+      </script>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>

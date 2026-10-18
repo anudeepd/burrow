@@ -1,0 +1,438 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="c67eff0a-8cb3-4df2-8dfb-ca961450d55f">setUIRoot('')</script>
+        <script nonce="c67eff0a-8cb3-4df2-8dfb-ca961450d55f">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="c67eff0a-8cb3-4df2-8dfb-ca961450d55f">setAppBasePath('')</script>
+        <link rel="stylesheet" href="/static/spark-dag-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/spark-dag-viz.js"></script>
+        
+        <link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/timeline-view.js"></script>
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-dstream - Details for Job 0</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item active">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/streaming/">Streaming</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-dstream" class="text-nowrap">burrow-dstream</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Details for Job 0
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <ul class="list-unstyled">
+          <li>
+            <Strong>Status:</Strong>
+            SUCCEEDED
+          </li>
+          <li>
+            <Strong>Submitted:</Strong>
+            2026/10/03 12:38:30
+          </li>
+          <li>
+            <Strong>Duration:</Strong>
+            1 s
+          </li>
+          
+          
+          
+          
+          <li>
+                <a href="#completed"><strong>Completed Stages:</strong></a>
+                2
+              </li>
+          
+          
+        </ul>
+      </div><span class="expand-job-timeline">
+      <span class="expand-job-timeline-arrow arrow-closed"></span>
+      <a data-bs-toggle="tooltip" title="Shows when stages started and ended and when executors joined or left. Drag to scroll.
+       Click Enable Zooming and use mouse wheel to zoom in/out.">
+      Event Timeline
+    </a>
+    </span><div id="job-timeline" class="collapsed">
+      
+      
+      <div class="control-panel">
+        <div id="job-timeline-zoom-lock">
+          <input type="checkbox"></input>
+          <span>Enable zooming</span>
+        </div>
+      </div>
+    </div><script type="text/javascript" nonce="c67eff0a-8cb3-4df2-8dfb-ca961450d55f">
+      drawJobTimeline(
+[
+  {
+    'id': 'executors',
+    'content': '<div>Executors</div><div class="legend-area"><svg width="150px" height="55px">      <rect class="executor-added-legend" x="5px" y="5px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="17px">Added</text>      <rect class="executor-removed-legend" x="5px" y="30px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="42px">Removed</text>    </svg></div>',
+  },
+  {
+    'id': 'stages',
+    'content': '<div>Stages</div><div class="legend-area"><svg width="150px" height="85px">      <rect class="completed-stage-legend" x="5px" y="5px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="17px">Completed</text>      <rect class="failed-stage-legend" x="5px" y="30px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="42px">Failed</text>      <rect class="active-stage-legend" x="5px" y="55px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="67px">Active</text>    </svg></div>',
+  }
+]
+        , [
+{
+  'className': 'stage job-timeline-object complete',
+  'group': 'stages',
+  'start': new Date(1791011310290),
+  'end': new Date(1791011311536),
+  'content': '<div class="job-timeline-content" data-bs-toggle="tooltip"' +
+   'data-bs-html="true"' +
+   'data-bs-title="call at \/home\/puppyseal\/Documents\/code_repos\/burrow\/.venv\/lib\/python3.12\/site-packages\/py4j\/clientserver.py:644 (Stage 0.0)<br>' +
+   'Status: COMPLETE<br>' +
+   'Submitted: 2026/10/03 12:38:30' +
+   '<br>Completed: 2026/10/03 12:38:31">' +
+    'call at \/home\/puppyseal\/Documents\/code_repos\/burrow\/.venv\/lib\/python3.12\/site-packages\/py4j\/clientserver.py:644 (Stage 0.0)</div>',
+}
+       ,
+{
+  'className': 'stage job-timeline-object complete',
+  'group': 'stages',
+  'start': new Date(1791011311545),
+  'end': new Date(1791011311698),
+  'content': '<div class="job-timeline-content" data-bs-toggle="tooltip"' +
+   'data-bs-html="true"' +
+   'data-bs-title="runJob at PythonRDD.scala:218 (Stage 1.0)<br>' +
+   'Status: COMPLETE<br>' +
+   'Submitted: 2026/10/03 12:38:31' +
+   '<br>Completed: 2026/10/03 12:38:31">' +
+    'runJob at PythonRDD.scala:218 (Stage 1.0)</div>',
+}
+       ,
+{
+  'className': 'executor added',
+  'group': 'executors',
+  'start': new Date(1791011305247),
+  'content': '<div class="executor-event-content"' +
+    'data-bs-toggle="tooltip"' +
+    'data-bs-title="Executor driver<br>' +
+    'Added at 2026/10/03 12:38:25"' +
+    'data-bs-html="true">Executor driver added</div>'
+}
+         ], 1791011304234, 330);
+    </script><div>
+      <span id="job-dag-viz" class="expand-dag-viz" data-forjob="true">
+        <span class="expand-dag-viz-arrow arrow-closed"></span>
+        <a data-bs-toggle="tooltip" title="Shows a graph of stages executed for this job, each of which can contain
+       multiple RDD operations (e.g. map() and filter()), and of RDDs inside each operation
+       (shown as dots).">
+      DAG Visualization
+    </a>
+      </span>
+      <div id="dag-viz-graph"></div>
+      <div id="dag-viz-metadata" class="d-none">
+        <div class="stage-metadata" stage-id="0" skipped="false">
+              <div class="dot-file">digraph G {
+  id=&quot;graph_0&quot;;
+  subgraph graph_stage_0 {
+    id=&quot;graph_stage_0&quot;;
+    isCluster=&quot;true&quot;;
+    label=&quot;Stage 0&quot;;
+    40 [id=&quot;node_40&quot; labelType=&quot;html&quot; label=&quot;PythonRDD [40] [Cached]&lt;br&gt;RDD at PythonRDD.scala:59&quot;];
+    81 [id=&quot;node_81&quot; labelType=&quot;html&quot; label=&quot;PythonRDD [81]&lt;br&gt;call at /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/py4j/clientserver.py:644&quot;];
+    82 [id=&quot;node_82&quot; labelType=&quot;html&quot; label=&quot;PairwiseRDD [82]&lt;br&gt;call at /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/py4j/clientserver.py:644&quot;];
+    subgraph cluster_0 {
+      id=&quot;cluster_0&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;parallelize&quot;;
+      0 [id=&quot;node_0&quot; labelType=&quot;html&quot; label=&quot;ParallelCollectionRDD [0]&lt;br&gt;readRDDFromFile at PythonRDD.scala:326&quot;];
+    }
+  }
+  0-&gt;40;
+  40-&gt;81;
+  81-&gt;82;
+}</div>
+              
+              
+              <div class="cached-rdd">40</div>
+            </div><div class="stage-metadata" stage-id="1" skipped="false">
+              <div class="dot-file">digraph G {
+  id=&quot;graph_1&quot;;
+  subgraph graph_stage_1 {
+    id=&quot;graph_stage_1&quot;;
+    isCluster=&quot;true&quot;;
+    label=&quot;Stage 1&quot;;
+    85 [id=&quot;node_85&quot; labelType=&quot;html&quot; label=&quot;PythonRDD [85] [Unordered]&lt;br&gt;RDD at PythonRDD.scala:59&quot;];
+    subgraph cluster_47 {
+      id=&quot;cluster_47&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;partitionBy&quot;;
+      83 [id=&quot;node_83&quot; labelType=&quot;html&quot; label=&quot;ShuffledRDD [83] [Unordered]&lt;br&gt;partitionBy at NativeMethodAccessorImpl.java:0&quot;];
+    }
+    subgraph cluster_48 {
+      id=&quot;cluster_48&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;mapPartitions&quot;;
+      84 [id=&quot;node_84&quot; labelType=&quot;html&quot; label=&quot;MapPartitionsRDD [84] [Unordered]&lt;br&gt;mapPartitions at PythonRDD.scala:197&quot;];
+    }
+    subgraph cluster_43_1791011310000 {
+      id=&quot;cluster_43_1791011310000&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;foreachRDD @ 12:38:30&quot;;
+      97 [id=&quot;node_97&quot; labelType=&quot;html&quot; label=&quot;PythonRDD [97] [Unordered]&lt;br&gt;RDD at PythonRDD.scala:59&quot;];
+    }
+  }
+  83-&gt;84;
+  84-&gt;85;
+  85-&gt;97;
+}</div>
+              <div class="incoming-edge">82,83</div>
+              
+              
+            </div>
+      </div>
+    </div><span id="completed" class="collapse-table" data-bs-toggle="collapse" data-bs-target="#aggregated-completedStages" aria-expanded="true" aria-controls="aggregated-completedStages" data-collapse-name="collapse-aggregated-completedStages">
+          <h4>
+            <span class="collapse-table-arrow arrow-open"></span>
+            <a>Completed Stages (2)</a>
+          </h4>
+        </span><div class="collapsible-table collapse show" id="aggregated-completedStages">
+          <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedStage-table-top-page" method="get" action="/jobs/job/?id=0&completedStage.sort=Stage+Id&completedStage.desc=true#completed" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedStage.desc" value="true"/><input type="hidden" name="completedStage.sort" value="Stage Id"/><input type="hidden" name="id" value="0"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedStage.page" id="form-completedStage-table-top-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedStage-table-top-page-size" name="completedStage.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completedStage-table">
+          <thead>
+      <tr><th>
+            <a href="/jobs/job/?id=0&completedStage.sort=Stage+Id&completedStage.desc=false&completedStage.pageSize=100#completed">
+              <span data-bs-toggle="tooltip" title="">
+      Stage Id&nbsp;&#x25BE;
+    </span>
+            </a>
+          </th><th>
+              <a href="/jobs/job/?id=0&completedStage.sort=Description&completedStage.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="">
+      Description
+    </span>
+              </a>
+            </th><th>
+              <a href="/jobs/job/?id=0&completedStage.sort=Submitted&completedStage.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="">
+      Submitted
+    </span>
+              </a>
+            </th><th>
+              <a href="/jobs/job/?id=0&completedStage.sort=Duration&completedStage.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="Elapsed time since the first task of the stage was launched until execution completion of
+       all its tasks (Excluding the time of the stage waits to be launched after submitted).
+    ">
+      Duration
+    </span>
+              </a>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Tasks: Succeeded/Total
+    </span>
+            </th><th>
+              <a href="/jobs/job/?id=0&completedStage.sort=Input&completedStage.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="Bytes read from Hadoop or from Spark storage.">
+      Input
+    </span>
+              </a>
+            </th><th>
+              <a href="/jobs/job/?id=0&completedStage.sort=Output&completedStage.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="Bytes written to Hadoop.">
+      Output
+    </span>
+              </a>
+            </th><th>
+              <a href="/jobs/job/?id=0&completedStage.sort=Shuffle+Read&completedStage.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="Total shuffle bytes and records read (includes both data read locally and data read from
+       remote executors). ">
+      Shuffle Read
+    </span>
+              </a>
+            </th><th>
+              <a href="/jobs/job/?id=0&completedStage.sort=Shuffle+Write&completedStage.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="Bytes and records written to disk in order to be read by a shuffle in a future stage.">
+      Shuffle Write
+    </span>
+              </a>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr id="stage-1-0">
+      <td>1</td><td><div><span class="description-input">Streaming job from <a href="/streaming/batch/?id=1791011310000">[output operation 0, batch time 12:38:30]</a></span>  <a href="/stages/stage/?id=1&amp;attempt=0" class="name-link">runJob at PythonRDD.scala:218</a> <span data-toggle-details=".stage-details" class="expand-details float-end">
+        +details
+      </span><div class="stage-details collapsed">
+        
+        <pre>org.apache.spark.SparkContext.runJob(SparkContext.scala:2536)
+org.apache.spark.api.python.PythonRDD$.runJob(PythonRDD.scala:218)
+org.apache.spark.api.python.PythonRDD.runJob(PythonRDD.scala)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.sendCommand(ClientServerConnection.java:246)
+py4j.CallbackClient.sendCommand(CallbackClient.java:384)
+py4j.CallbackClient.sendCommand(CallbackClient.java:356)
+py4j.reflection.PythonProxyHandler.invoke(PythonProxyHandler.java:106)
+jdk.proxy4/jdk.proxy4.$Proxy90.call(Unknown Source)
+org.apache.spark.streaming.api.python.TransformFunction.callPythonTransformFunction(PythonDStream.scala:92)
+org.apache.spark.streaming.api.python.TransformFunction.apply(PythonDStream.scala:78)
+org.apache.spark.streaming.api.python.PythonDStream$.$anonfun$callForeachRDD$1(PythonDStream.scala:179)</pre>
+      </div></div></td><td valign="middle">
+          2026/10/03 12:38:31
+        </td><td>0.1 s</td><td class="progress-cell">
+          <div class="progress-stacked" title="1/1">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+        </td><td></td><td></td><td>186.0 B</td><td></td>
+    </tr><tr id="stage-0-0">
+      <td>0</td><td><div><span class="description-input">Streaming job from <a href="/streaming/batch/?id=1791011310000">[output operation 0, batch time 12:38:30]</a></span>  <a href="/stages/stage/?id=0&amp;attempt=0" class="name-link">call at /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/py4j/clientserver.py:644</a> <span data-toggle-details=".stage-details" class="expand-details float-end">
+        +details
+      </span><div class="stage-details collapsed">
+        
+        <pre>org.apache.spark.streaming.api.python.PythonTransformedDStream.&lt;init&gt;(PythonDStream.scala:241)
+java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:238)
+py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)
+py4j.ClientServerConnection.run(ClientServerConnection.java:108)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div></td><td valign="middle">
+          2026/10/03 12:38:30
+        </td><td>1 s</td><td class="progress-cell">
+          <div class="progress-stacked" title="2/2">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        2/2
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+        </td><td></td><td></td><td></td><td>186.0 B</td>
+    </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedStage-table-bottom-page" method="get" action="/jobs/job/?id=0&completedStage.sort=Stage+Id&completedStage.desc=true#completed" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedStage.desc" value="true"/><input type="hidden" name="completedStage.sort" value="Stage Id"/><input type="hidden" name="id" value="0"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedStage.page" id="form-completedStage-table-bottom-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedStage-table-bottom-page-size" name="completedStage.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+      </div>
+        </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:38:24</span><span id="footer-uptime" data-start-time="1791011304234"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

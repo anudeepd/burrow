@@ -1,0 +1,78 @@
+{
+  "kind": "job",
+  "granularity": "stage",
+  "jobId": 6,
+  "edgesInferred": true,
+  "stages": [
+    {
+      "stageId": 9,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 9 (skipped)",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        14,
+        15
+      ],
+      "status": "SKIPPED"
+    },
+    {
+      "stageId": 10,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 10 (skipped)",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        21,
+        22,
+        23
+      ],
+      "status": "SKIPPED"
+    },
+    {
+      "stageId": 11,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 11",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        24,
+        25,
+        26,
+        27
+      ],
+      "status": "COMPLETE"
+    }
+  ],
+  "edges": [
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 9,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 9,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 10,
+      "toStage": 11
+    }
+  ]
+}

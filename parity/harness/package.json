@@ -1,0 +1,19 @@
+{
+  "name": "burrow-parity-harness",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Executable parity proof for burrow: P1 REST-key coverage, P2 differential value parity legacy-vs-ours, P3 wire fidelity, fixture replay.",
+  "scripts": {
+    "parity": "bun run run.mjs",
+    "coverage": "bun run coverage.mjs",
+    "wire": "bun run wire.mjs",
+    "selftest": "bun run selftest.mjs",
+    "test": "bun test",
+    "record": "bun run run.mjs --record fixtures/../../fixtures/parity/live"
+  },
+  "dependencies": {
+    "playwright": "1.63.0",
+    "yaml": "^2.8.1"
+  }
+}

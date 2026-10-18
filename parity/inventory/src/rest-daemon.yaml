@@ -1,0 +1,1245 @@
+# Daemon ("Tools") HTTP resources + container/AHS/JHS log-serving web services (Hadoop 3.4.3).
+# Paths relative to .cluster/src-extract/. RM/NM/AHS/JHS all build on hadoop-common HttpServer2 default servlets.
+# NOTE: entity `conf` and objects ConfInfo/ConfInfoItem are declared in rest-rm.yaml (peer-owned) and are referenced,
+# not redeclared here. NM's /ws/v1/node/containers/{containerid}/logs* resources + NmContainerLogsInfo live in
+# rest-nm.yaml; this file supplies the base object LogContainerLogsInfo they `extends`.
+version: 1
+entities:
+- id: log
+  description: a container's log-file metadata set, one log-file entry, or an aggregated-log remote directory path
+  roots:
+  - object: LogContainerLogsInfo
+    jsonPath: containerLogsInfo[]
+    when: []
+  - object: NmContainerLogsInfo
+    jsonPath: containerLogsInfo[]
+    when: []
+  - object: NmContainerLogsInfo
+    jsonPath: ''
+    when: ['other:NM GET /ws/v1/node/containers/{id}/logs returns a bare JSON ARRAY of NmContainerLogsInfo']
+  - object: LogContainerLogFileInfo
+    jsonPath: containerLogsInfo[].containerLogInfo[]
+    when: []
+  - object: LogContainerLogFileInfo
+    jsonPath: containerLogInfo[]
+    when: ['other:NM container-log meta lists its files at the top-level key containerLogInfo']
+  - object: LogRemoteLogPaths
+    jsonPath: remoteLogDirPathResult
+    when: []
+  - object: LogRemoteLogPathEntry
+    jsonPath: paths[]
+    when: []
+- id: jmx
+  description: one JMX MBean as rendered by the daemon /jmx servlet ({"beans":[…]})
+  roots:
+  - object: JmxBean
+    jsonPath: beans[]
+    when: []
+objects:
+  LogContainerLogsInfo:
+    java: org.apache.hadoop.yarn.server.webapp.dao.ContainerLogsInfo
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/ContainerLogsInfo.java:43
+    extends: null
+    xmlRoot: containerLogsInfo
+    fields:
+    - name: containerLogInfo
+      type: object
+      array: true
+      ref: LogContainerLogFileInfo
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/ContainerLogsInfo.java:47
+      note: '@XmlElement(name="containerLogInfo") on field containerLogsInfo.'
+    - name: logAggregationType
+      type: enum
+      array: false
+      ref: null
+      values:
+      - LOCAL
+      - AGGREGATED
+      nullable: false
+      when: []
+      source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/ContainerLogsInfo.java:50
+      note: '@XmlElement(name="logAggregationType") on field logType; value = ContainerLogAggregationType.LOCAL|AGGREGATED (ContainerLogAggregationType.java:26-33).'
+    - name: containerId
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/ContainerLogsInfo.java:53
+      note: ''
+    - name: nodeId
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: true
+      when: []
+      source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/ContainerLogsInfo.java:56
+      note: '"N/A" for the synthesized EMPTY local meta when nodeId is null (LogServlet.java:105-110); null otherwise possible.'
+    note: 'AHS LogServlet builds these via convertToContainerLogsInfo (LogServlet.java:97-112). Class is NOT in any JAXBContextResolver cTypes, so its JSON is produced by the fallback provider; live JHS GET /ws/v1/history/aggregatedlogs returns {"containerLogsInfo":[{"containerLogInfo":[{...}],"logAggregationType":"AGGREGATED","containerId":"...","nodeId":"..."}]} with @XmlElement names honoured and list fields as arrays (single-element list collapses in `mapped` notation).'
+  LogContainerLogFileInfo:
+    java: org.apache.hadoop.yarn.logaggregation.ContainerLogFileInfo
+    source: hadoop-yarn-common/org/apache/hadoop/yarn/logaggregation/ContainerLogFileInfo.java:34
+    extends: null
+    xmlRoot: null
+    fields:
+    - name: fileName
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-yarn-common/org/apache/hadoop/yarn/logaggregation/ContainerLogFileInfo.java:35
+      note: 'field access via getters (bean access); string.'
+    - name: fileSize
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      unit: bytes
+      source: hadoop-yarn-common/org/apache/hadoop/yarn/logaggregation/ContainerLogFileInfo.java:36
+      note: 'a STRING (Long.toString) not a number - live JHS shows "fileSize":"2152".'
+    - name: lastModifiedTime
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-yarn-common/org/apache/hadoop/yarn/logaggregation/ContainerLogFileInfo.java:37
+      note: 'Times.format(epoch) string, e.g. "Sat Oct 03 12:38:56 +0530 2026" (not epoch).'
+  LogRemoteLogPaths:
+    java: org.apache.hadoop.yarn.server.webapp.dao.RemoteLogPaths
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/RemoteLogPaths.java:32
+    extends: null
+    xmlRoot: remoteLogDirPathResult
+    fields:
+    - name: paths
+      type: object
+      array: true
+      ref: LogRemoteLogPathEntry
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/RemoteLogPaths.java:36
+      note: '@XmlElement(name="paths"). Class not in JAXBContextResolver cTypes => root-unwrapped: live JHS GET /ws/v1/history/remote-log-dir returns {"paths":{"fileController":"TFile","path":"..."}} (single-element list collapsed).'
+  LogRemoteLogPathEntry:
+    java: org.apache.hadoop.yarn.server.webapp.dao.RemoteLogPathEntry
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/RemoteLogPathEntry.java:23
+    extends: null
+    xmlRoot: null
+    fields:
+    - name: fileController
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/RemoteLogPathEntry.java:24
+      note: 'LogAggregationFileController.getFileControllerName(), e.g. TFile.'
+    - name: path
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/dao/RemoteLogPathEntry.java:25
+      note: 'no JAXB annotations; plain getter property => JSON key `path`. /ws/v1/history/remote-log-dir only.'
+  JmxBean:
+    java: javax.management.MBeanServer (servlet-generated; no DTO class)
+    source: hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:300
+    extends: null
+    xmlRoot: null
+    fields:
+    - name: name
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:303
+      note: 'ObjectName.toString() of the MBean.'
+    - name: modelerType
+      type: string
+      array: false
+      ref: null
+      values: []
+      nullable: false
+      when: []
+      source: hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:305
+      note: 'For modeler BaseModelMBean = modelerType attribute value, else the MBean class name.'
+    note: 'All REMAINING keys in a bean object are MBean attribute names, written inline (no fixed list; names containing =, : or space are skipped, JMXJsonServlet.java:345-357). Attribute values: numbers/booleans native, CompositeData => nested object, TabularData => array, everything else => string (JMXJsonServlet.java:379-424). Top-level body is {"beans":[ … ]} (JMXJsonServlet.java:242). JMXJsonServletNaNFiltered replaces NaN attribute values with 0.0 (JMXJsonServletNaNFiltered.java:29-39).'
+resources:
+- id: daemon.conf
+  daemon: common
+  method: GET
+  path: /conf
+  contractPath: conf
+  allowlist: true
+  readOnly: true
+  params:
+  - name: name
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: single property name; when present the body is ONE property object/entry; absent => all properties. Unknown name => 404 (IllegalArgumentException, "Property <name> not found").
+    source: hadoop-common/org/apache/hadoop/conf/ConfServlet.java:73
+  - name: Accept
+    in: header
+    type: string
+    required: false
+    values:
+    - application/json
+    - text/xml
+    doc: 'header, not a query param: parseAcceptHeader reads request.getHeader("Accept") and returns json iff it CONTAINS "json", else xml. There is NO `format` query parameter in ConfServlet (verified live: /conf?format=json still returns text/xml).'
+    source: hadoop-common/org/apache/hadoop/conf/ConfServlet.java:86-89
+  produces:
+  - text/xml; charset=utf-8
+  - application/json; charset=utf-8
+  response:
+    object: null
+    jsonRoot: properties
+    shape: 'JSON (Accept contains json): {"properties":[{"key":"…","value":"…","isFinal":false,"resource":"…"}]}; with ?name=X: {"property":{"key":"X","value":"…","isFinal":false,"resource":"…"}}. XML: <configuration><property><name>…</name><value>…</value><final>false</final><source>…</source></property>…</configuration>. Values are redacted by ConfigRedactor.'
+    contentType: text/xml; charset=utf-8
+    rootUnwrapping: true
+  errors:
+  - status: 400
+    when: bad format (internal BadFormatException; unreachable via HTTP since format is derived from Accept)
+    body: text
+  - status: 404
+    when: '?name=unknown.property'
+    body: text
+  - status: 403
+    when: hadoop.security.instrumentation.requires.admin=true and caller is not in the admins ACL
+    body: text
+  when: []
+  acl: 'HttpServer2.isInstrumentationAccessAllowed -> admin required only when hadoop.security.instrumentation.requires.admin=true (HttpServer2.java:1675-1690, 1701-1727).'
+  source: hadoop-common/org/apache/hadoop/conf/ConfServlet.java:59
+  note: 'NOT JAXB: uses Jackson JsonFactory directly (Configuration.dumpConfiguration / appendJSONProperty, Configuration.java:3832-3884). The shape differs from RM /ws/v1/cluster/scheduler-conf (entity `conf`, object ConfInfo in rest-rm.yaml): keys are key/value/isFinal/resource under `properties`, not name/value under `property`. The product API /api/rm/conf?format=json (docs/contracts/api.md:63) synthesizes the format switch that upstream does via Accept.'
+- id: daemon.jmx
+  daemon: common
+  method: GET
+  path: /jmx
+  contractPath: jmx
+  allowlist: true
+  readOnly: true
+  params:
+  - name: qry
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'JMX ObjectName pattern passed to MBeanServer.queryNames; default "*:*". Malformed => 400 (MalformedObjectNameException).'
+    source: hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:212
+  - name: get
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'MBeanName::AttributeName. Must contain exactly one "::" else 400 {"result":"ERROR","message":"query format is not as expected."}; unknown attribute => 404 {"result":"ERROR","message":"No attribute with name <a> was found."}.'
+    source: hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:196-204
+  produces:
+  - application/json; charset=utf8
+  response:
+    object: JmxBean
+    jsonRoot: beans
+    shape: '{"beans":[{"name":"Hadoop:service=ResourceManager,name=JvmMetrics","modelerType":"JvmMetrics","<attrName>":<number|bool|string|object|array>, …}, …]}'
+    contentType: application/json; charset=utf8
+    rootUnwrapping: false
+  errors:
+  - status: 400
+    when: malformed ObjectName (qry) or malformed get
+    body: 'JSON {"result":"ERROR","message":"query format is not as expected."}'
+  - status: 404
+    when: 'get=…::MissingAttribute'
+    body: 'JSON {"result":"ERROR","message":"No attribute with name … was found."}'
+  - status: 405
+    when: HTTP TRACE (disabled)
+    body: text
+  - status: 500
+    when: IOException while writing
+    body: text
+  when: []
+  acl: 'isInstrumentationAccessAllowed (admin only when hadoop.security.instrumentation.requires.admin=true). Sets Access-Control-Allow-Methods: GET and Access-Control-Allow-Origin: * (JMXJsonServlet.java:187-188).'
+  source: hadoop-common/org/apache/hadoop/jmx/JMXJsonServlet.java:180
+  note: 'Registered at /jmx by HttpServer2.addDefaultServlets (HttpServer2.java:1004); the class is JMXJsonServletNaNFiltered when yarn/hadoop JMX_NAN_FILTER is on (default true), else JMXJsonServlet. There is NO `callback` parameter in the source.'
+- id: daemon.stacks
+  daemon: common
+  method: GET
+  path: /stacks
+  contractPath: stacks
+  allowlist: true
+  readOnly: true
+  params: []
+  produces:
+  - text/plain; charset=UTF-8
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'text/plain thread dump from ReflectionUtils.printThreadInfo(out, ""): "Process Thread Dump: " then "<N> active threads", then per thread "Thread <id> (<name>):" / "  State: <STATE>" / "  Blocked count: <n>" / "  Waited count: <n>" / "  Stack:" etc.'
+    contentType: text/plain; charset=UTF-8
+  errors:
+  - status: 403
+    when: instrumentation admin required and caller not admin
+    body: text
+  when: []
+  acl: 'isInstrumentationAccessAllowed (StackServlet.java is HttpServer2.java:1757-1772).'
+  source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:1757
+  note: 'Labels come from org.apache.hadoop.util.ReflectionUtils.printThreadInfo, which is NOT in the extracted sources; the strings above are live-observed at http://127.0.0.1:8088/stacks. Side effect: also logs the dump (ReflectionUtils.logThreadInfo, HttpServer2.java:1771).'
+- id: daemon.logs
+  daemon: common
+  method: GET
+  path: /logs/
+  contractPath: logs
+  allowlist: true
+  readOnly: true
+  params:
+  - name: C
+    in: query
+    type: string
+    required: false
+    values:
+    - N
+    - M
+    - S
+    doc: 'Jetty DefaultServlet dir-listing sort column: N=Name, M=Last Modified, S=Size (hrefs built as ?C=N&O=D). Not a Hadoop parameter.'
+    source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:953
+  - name: O
+    in: query
+    type: string
+    required: false
+    values:
+    - A
+    - D
+    doc: 'Jetty dir-listing sort order A=ascending, D=descending.'
+    source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:953
+  produces:
+  - text/html;charset=utf-8
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'Jetty DefaultServlet HTML directory listing: <title>Directory: /logs/</title>, <h1 class="title">Directory: /logs/</h1>, <table class="listing"> with <thead> columns Name / Last Modified / Size (each a sort <a href="?C=…&O=…">), and one <tr> per file: <td class="name"><a href="/logs/<file>"><file>&nbsp;</a></td><td class="lastmodified">Oct 3, 2026, 12:41:50 PM&nbsp;</td><td class="size">359,485 bytes&nbsp;</td>.'
+    contentType: text/html;charset=utf-8
+  errors:
+  - status: 403
+    when: hadoop.security.authorization=true and caller is not in the admins ACL (sendError "Unauthenticated users are not authorized to access this page.")
+    body: html
+  - status: 404
+    when: hadoop.http.logs.enabled=false or hadoop.log.dir unset => the /logs context does not exist
+    body: html
+  when:
+  - other:hadoop.log.dir set AND conf:hadoop.http.logs.enabled=true (default true)
+  acl: 'Context /logs is wrapped by AdminAuthorizedServlet (DefaultServlet.doGet -> hasAdministratorAccess; admin only when hadoop.security.authorization=true) (HttpServer2.java:953, AdminAuthorizedServlet.java:30-41).'
+  source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:949
+  note: 'Path must be requested as /logs/ (the context is mounted at "/logs"); the product API /api/rm/logs (docs/contracts/api.md:63) parses this HTML. No ?start/?end/?download params: those belong to Hadoop containerlog servlets, not this Jetty DefaultServlet.'
+- id: daemon.logs.file
+  daemon: common
+  method: GET
+  path: /logs/{filename}
+  contractPath: logs/{file}
+  allowlist: true
+  readOnly: true
+  params:
+  - name: filename
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: file name relative to hadoop.log.dir; served by Jetty DefaultServlet (no start/end/offset params).
+    source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:953
+  produces:
+  - text/plain;charset=utf-8
+  - text/html;charset=utf-8
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'raw file bytes; Content-Type by file extension (plain text for .log/.out, HTML for .html). Product API /api/rm/logs/{file}?offset&length adds byte-range slicing (docs/contracts/api.md:64), which the raw servlet does NOT.'
+    contentType: text/plain;charset=utf-8
+  errors:
+  - status: 403
+    when: authorization on and caller not admin
+    body: html
+  - status: 404
+    when: unknown file
+    body: html
+  when:
+  - other:hadoop.log.dir set AND conf:hadoop.http.logs.enabled=true
+  acl: 'AdminAuthorizedServlet (admin only when hadoop.security.authorization=true).'
+  source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:953
+  note: 'Jetty DefaultServlet also honours If-Modified-Since/ETag and symlink rules; hadoop.http.jetty.logs.serve.aliases enables aliases (HttpServer2.java:954-960).'
+- id: daemon.loglevel
+  daemon: common
+  method: GET
+  path: /logLevel
+  contractPath: null
+  allowlist: false
+  readOnly: false
+  params:
+  - name: log
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: logger class name; absent => only the HTML form is returned.
+    source: hadoop-common/org/apache/hadoop/log/LogLevel.java:336
+  - name: level
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'log4j level; when log+level are present the level is SET (mutating). Invalid level => "Bad Level : <level>" but no error status.'
+    source: hadoop-common/org/apache/hadoop/log/LogLevel.java:337
+  produces:
+  - text/html;charset=utf-8
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'HTML: <title>Log Level</title>, <h1>Log Level</h1>; when ?log= set: "<h3>Results</h3>", "Submitted Class Name: <b>…</b>", "Log Class: <b>…</b>", "Submitted Level: <b>…</b>", then "Setting Level to <level> ..." or "Bad Level : <level>", "Effective Level: <b>…</b>" (or "Sorry, setting log level is only supported for log4j loggers."); always the "Get / Set" form with "Class Name:", "Get Log Level", "Level:", "Set Log Level".'
+    contentType: text/html;charset=utf-8
+  errors:
+  - status: 403
+    when: hadoop.security.authorization=true and caller not admin ("Unauthenticated users are not authorized to access this page.")
+    body: html
+  when: []
+  acl: 'hasAdministratorAccess (LogLevel.java:331) => enforced only when hadoop.security.authorization=true.'
+  source: hadoop-common/org/apache/hadoop/log/LogLevel.java:322
+  note: 'There is only doGet (no doPost): both Get and Set are query params. Registered at /logLevel by HttpServer2.addDefaultServlets (HttpServer2.java:1003). Page title/head/tail come from ServletUtil.initHTML/HTML_TAIL (org.apache.hadoop.util.ServletUtil, not stripped in src-extract). Mutating (`?level=`) => readOnly:false.'
+- id: daemon.metrics
+  daemon: common
+  method: GET
+  path: /metrics
+  contractPath: metrics
+  allowlist: true
+  readOnly: true
+  params: []
+  produces:
+  - text/plain
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'Hadoop MetricsServlet JSON (not a Hadoop-common servlet) if a metrics module registers /metrics for this daemon; otherwise no such context.'
+    contentType: text/plain
+  errors:
+  - status: 404
+    when: no MetricsServlet registered
+    body: html
+  when:
+  - other:MetricsServlet registered for this daemon (metrics2; NOT registered by HttpServer2.addDefaultServlets)
+  acl: ''
+  source: hadoop-common/org/apache/hadoop/http/HttpServer2.java:1000
+  note: 'VERIFIED ABSENT in the extracted 3.4.3 sources: no MetricsServlet class exists and HttpServer2.addDefaultServlets registers only stacks/logLevel/jmx/conf (HttpServer2.java:1002-1009). Live RM GET /metrics => 404. The product API /api/rm/metrics (docs/contracts/api.md:63) is therefore "if exposed" only.'
+- id: ahs.containerlogs
+  daemon: ahs
+  method: GET
+  path: /ws/v1/applicationhistory/containers/{containerid}/logs
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:224
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: NodeManager NodeId used to resolve the NM HTTP address (LogServlet.getNMWebAddressFromRM).
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:225
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: 'default false; when true the AHS does not redirect back to the NM but returns aggregated meta.'
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:226
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: 'default false; when true returns 200 with a Location header instead of 307.'
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:227
+  produces:
+  - application/json
+  - application/xml
+  response:
+    object: LogContainerLogsInfo
+    jsonRoot: containerLogsInfo
+    shape: '{"containerLogsInfo":[{"containerLogInfo":[{"fileName","fileSize","lastModifiedTime"}],"logAggregationType":"AGGREGATED","containerId","nodeId"}, …]}'
+    contentType: application/json
+    rootUnwrapping: false
+  errors:
+  - status: 307
+    when: app RUNNING, NM address resolvable and redirected_from_node=false => Location http://<nm>/ws/v1/node/containers/{containerid}/logs?<query>
+    body: null
+  - status: 404
+    when: 'no log meta ("Can not get log meta for request.") or app not Running/Finished'
+    body: RemoteException
+  - status: 400
+    when: invalid container id
+    body: RemoteException
+  when: []
+  acl: ''
+  source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:219
+  note: 'LogServlet.getContainerLogsInfo: final-state app => aggregated meta from HDFS; running app => redirect to NM unless redirected_from_node/manual_redirection (LogServlet.java:316-400).'
+- id: ahs.containerlogs.file
+  daemon: ahs
+  method: GET
+  path: /ws/v1/applicationhistory/containers/{containerid}/logs/{filename}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:268
+  - name: filename
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:269
+  - name: format
+    in: query
+    type: string
+    required: false
+    values:
+    - text
+    - octet-stream
+    doc: 'default text/plain; unknown => 400 "The valid values for the parameter : format are [text, octet-stream]".'
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:270
+  - name: size
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'long bytes; >=0 first n bytes, <0 last |n| bytes; absent/empty = Long.MAX_VALUE.'
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:271
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:272
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:273
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:274
+  produces:
+  - text/plain
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'LogToolUtils header ("Container: <cid> on <node>", "LogAggregationType: AGGREGATED", "="*n, "LogType:<file>", "LogLastModifiedTime:<ts>", "LogLength:<n>", "LogContents:") + log bytes; if no logs found: "Can not find logs for container:<cid>".'
+    contentType: text/plain
+  errors:
+  - status: 307
+    when: running app and NM resolvable => Location <nm>/ws/v1/node/containers/{cid}/logs/{filename}?<query>
+    body: null
+  - status: 400
+    when: bad format value
+    body: text
+  - status: 404
+    when: 'invalid ContainerId ("Invalid ContainerId: <id>") or app not Running/Finished'
+    body: text
+  - status: 500
+    when: streaming read error
+    body: text
+  when: []
+  acl: ''
+  source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:262
+  note: 'Delegates to getLogs()/LogServlet.getLogFile.'
+- id: ahs.containerlogs.download
+  daemon: ahs
+  method: GET
+  path: /ws/v1/applicationhistory/containerlogs/{containerid}/{filename}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:291
+  - name: filename
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:292
+  - name: format
+    in: query
+    type: string
+    required: false
+    values:
+    - text
+    - octet-stream
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:293
+  - name: size
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:294
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:295
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:296
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:297
+  produces:
+  - text/plain; charset=utf-8
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'same as ahs.containerlogs.file (LogServlet.getLogFile).'
+    contentType: text/plain; charset=utf-8
+  errors:
+  - status: 307
+    when: running app, NM resolvable
+    body: null
+  - status: 400
+    when: bad format
+    body: text
+  - status: 404
+    when: invalid container id / app not Running or Finished
+    body: text
+  when: []
+  acl: ''
+  source: hadoop-yarn-server-applicationhistoryservice/org/apache/hadoop/yarn/server/applicationhistoryservice/webapp/AHSWebServices.java:285
+  note: 'URL spelling differs from ahs.containerlogs.file but delegates to the identical getLogs() implementation.'
+- id: jhs.containerlogs
+  daemon: jhs
+  method: GET
+  path: /ws/v1/history/containers/{containerid}/logs
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:496
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:497
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:498
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:499
+  produces:
+  - application/json
+  - application/xml
+  response:
+    object: LogContainerLogsInfo
+    jsonRoot: containerLogsInfo
+    shape: '{"containerLogsInfo":[{"containerLogInfo":[…],"logAggregationType":"AGGREGATED","containerId","nodeId"}]}'
+    contentType: application/json
+    rootUnwrapping: false
+  errors:
+  - status: 307
+    when: running app and NM resolvable
+    body: null
+  - status: 404
+    when: no log meta / app not Running or Finished
+    body: RemoteException
+  - status: 400
+    when: invalid container id
+    body: RemoteException
+  when: []
+  acl: ''
+  source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:491
+  note: 'JHS uses the same LogServlet (HsWebServices.java:102). Live-verified: /ws/v1/history/aggregatedlogs returns this JSON shape.'
+- id: jhs.containerlogs.download
+  daemon: jhs
+  method: GET
+  path: /ws/v1/history/containerlogs/{containerid}/{filename}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:517
+  - name: filename
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:518
+  - name: format
+    in: query
+    type: string
+    required: false
+    values:
+    - text
+    - octet-stream
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:519
+  - name: size
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:520
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:521
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:522
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:523
+  produces:
+  - text/plain; charset=utf-8
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'LogToolUtils header + aggregated log bytes; "Can not find logs for container:<cid>" when none.'
+    contentType: text/plain; charset=utf-8
+  errors:
+  - status: 307
+    when: running app, NM resolvable
+    body: null
+  - status: 400
+    when: bad format
+    body: text
+  - status: 404
+    when: invalid container / app not Running or Finished
+    body: text
+  when: []
+  acl: ''
+  source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:512
+  note: ''
+- id: jhs.aggregatedlogs
+  daemon: jhs
+  method: GET
+  path: /ws/v1/history/aggregatedlogs
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: appid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: application id
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:483
+  - name: appattemptid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: application attempt id
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:484
+  - name: containerid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: container id
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:485
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:486
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:487
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:488
+  produces:
+  - application/json
+  - application/xml
+  response:
+    object: LogContainerLogsInfo
+    jsonRoot: containerLogsInfo
+    shape: '{"containerLogsInfo":[{"containerLogInfo":[…],"logAggregationType","containerId","nodeId"}]}'
+    contentType: application/json
+    rootUnwrapping: false
+  errors:
+  - status: 400
+    when: none of appid/appattemptid/containerid set ("Should set application id, application attempt id or container id.") or id/app mismatch
+    body: RemoteException
+  - status: 404
+    when: no log meta found
+    body: RemoteException
+  when: []
+  acl: ''
+  source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:472
+  note: 'LogServlet.getLogsInfo -> validateUserInput then getContainerLogsInfo (LogServlet.java:148-260).'
+- id: jhs.extended-log-query
+  daemon: jhs
+  method: GET
+  path: /ws/v1/history/extended-log-query
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: filename
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: container log file name
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:451
+  - name: file_size
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'repeatable (Set<String>) file sizes filter'
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:452
+  - name: modification_time
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'repeatable (Set<String>) modification times filter'
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:453
+  - name: appid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:455
+  - name: containerid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:456
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:457
+  produces:
+  - application/json
+  - application/xml
+  response:
+    object: LogContainerLogsInfo
+    jsonRoot: containerLogsInfo
+    shape: '{"containerLogsInfo":[…]}'
+    contentType: application/json
+    rootUnwrapping: false
+  errors:
+  - status: 500
+    when: 'HDFS/aggregation read failure (live: FileNotFoundException when the aggregated log dir does not exist yet)'
+    body: RemoteException
+  when: []
+  acl: ''
+  source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:447
+  note: 'LogServlet.getContainerLogsInfo(ExtendedLogMetaRequest) (LogServlet.java:264-288); no redirect (always reads aggregated meta).'
+- id: jhs.remote.log.dir
+  daemon: jhs
+  method: GET
+  path: /ws/v1/history/remote-log-dir
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: user
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'remote user; default = current UGI user (LogServlet.getRemoteLogDirPath)'
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:441
+  - name: appid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'when set, the app-specific remote log dir; else the remote log SUFFIXED dir'
+    source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:442
+  produces:
+  - application/json
+  - application/xml
+  response:
+    object: LogRemoteLogPaths
+    jsonRoot: null
+    shape: '{"paths":{"fileController":"TFile","path":"file:/…/<user>/<suffix>"}} (single-element list collapses; root-unwrapped because the class is not in JAXBContextResolver cTypes).'
+    contentType: application/json
+    rootUnwrapping: true
+  errors:
+  - status: 500
+    when: factory/IO error
+    body: RemoteException
+  when: []
+  acl: ''
+  source: hadoop-mapreduce-client-hs/org/apache/hadoop/mapreduce/v2/hs/webapp/HsWebServices.java:436
+  note: 'Live-verified key `paths` (not `remoteLogDirPathResult`). Only JHS exposes it in the extracted sources.'
+- id: common.applicationlog.containerlogs
+  daemon: common
+  method: GET
+  path: /ws/v2/applicationlog/containers/{containerid}/logs
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:151
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:152
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: 'default false'
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:153
+  - name: clusterid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: 'default yarn.resourcemanager.cluster-id'
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:155
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: 'default false'
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:156
+  produces:
+  - application/json
+  - application/xml
+  response:
+    object: LogContainerLogsInfo
+    jsonRoot: containerLogsInfo
+    shape: '{"containerLogsInfo":[…]}; app state/owner resolved from the timeline reader (/ws/v2/timeline/clusters/{cid}/apps/{app}) instead of the local store.'
+    contentType: application/json
+    rootUnwrapping: false
+  errors:
+  - status: 307
+    when: running app and NM resolvable
+    body: null
+  - status: 404
+    when: no log meta / app not Running or Finished
+    body: RemoteException
+  when: []
+  acl: 'Timeline-reader identity: uses the caller UGI or user.name in non-secure mode (LogWebService.java:305-335).'
+  source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:147
+  note: 'LogWebService (@Path /ws/v2/applicationlog, LogWebService.java:71) is the ATSv2 log reader resource; it is NOT registered by the extracted AHS/JHS webapps. Its hosting module (hadoop-yarn-server-timelineservice) is not in src-extract, so daemon is recorded as `common` with the real path/params; treat the daemon as the ATSv2 reader.'
+- id: common.applicationlog.containerlogs.file
+  daemon: common
+  method: GET
+  path: /ws/v2/applicationlog/containers/{containerid}/logs/{filename}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:260
+  - name: filename
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:261
+  - name: format
+    in: query
+    type: string
+    required: false
+    values:
+    - text
+    - octet-stream
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:262
+  - name: size
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:263
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:264
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:265
+  - name: clusterid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:267
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:268
+  produces:
+  - text/plain
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'LogToolUtils header + aggregated log bytes.'
+    contentType: text/plain
+  errors:
+  - status: 307
+    when: running app, NM resolvable
+    body: null
+  - status: 404
+    when: invalid container id / app not Running or Finished
+    body: text
+  when: []
+  acl: ''
+  source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:254
+  note: ''
+- id: common.applicationlog.containerlogs.download
+  daemon: common
+  method: GET
+  path: /ws/v2/applicationlog/containerlogs/{containerid}/{filename}
+  contractPath: null
+  allowlist: false
+  readOnly: true
+  params:
+  - name: containerid
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:284
+  - name: filename
+    in: path
+    type: string
+    required: true
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:285
+  - name: format
+    in: query
+    type: string
+    required: false
+    values:
+    - text
+    - octet-stream
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:286
+  - name: size
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:287
+  - name: nm.id
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:288
+  - name: redirected_from_node
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:289
+  - name: clusterid
+    in: query
+    type: string
+    required: false
+    values: []
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:291
+  - name: manual_redirection
+    in: query
+    type: boolean
+    required: false
+    values:
+    - 'true'
+    - 'false'
+    doc: ''
+    source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:292
+  produces:
+  - text/plain; charset=utf-8
+  response:
+    object: null
+    jsonRoot: null
+    shape: 'LogToolUtils header + aggregated log bytes.'
+    contentType: text/plain; charset=utf-8
+  errors:
+  - status: 307
+    when: running app, NM resolvable
+    body: null
+  - status: 404
+    when: invalid container id / app not Running or Finished
+    body: text
+  when: []
+  acl: ''
+  source: hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/LogWebService.java:278
+  note: ''

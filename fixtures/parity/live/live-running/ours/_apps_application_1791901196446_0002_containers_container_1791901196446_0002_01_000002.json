@@ -1,0 +1,304 @@
+{
+ "routeKey": "/apps/application_1791901196446_0002/containers/container_1791901196446_0002_01_000002",
+ "url": "http://127.0.0.1:8787/apps/application_1791901196446_0002/containers/container_1791901196446_0002_01_000002?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.name",
+   "raw": "ys-running-ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-running-ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": null,
+   "text": "UNDEFINED",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.id",
+   "raw": "application_1791901196446_0002",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0002",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.user",
+   "raw": "alice",
+   "yn": false,
+   "fmt": null,
+   "text": "alice",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.queue",
+   "raw": "root.etl.ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "root.etl.ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.priority",
+   "raw": "5",
+   "yn": false,
+   "fmt": "int",
+   "text": "5",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.elapsedTime",
+   "raw": "295713",
+   "yn": false,
+   "fmt": "ms",
+   "text": "4m 55s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationTags",
+   "raw": "running,burrow",
+   "yn": false,
+   "fmt": null,
+   "text": "running,burrow",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0002/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.containerState",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.containerExitStatus",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.nodeHttpAddress",
+   "raw": "http://127.0.0.3:8042",
+   "yn": false,
+   "fmt": "text",
+   "text": "http://127.0.0.3:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.nodeId",
+   "raw": "127.0.0.3:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.3:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.assignedNodeId",
+   "raw": "127.0.0.3:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.3:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.priority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.startedTime",
+   "raw": "1791901319083",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:59",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.finishedTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.elapsedTime",
+   "raw": "290613",
+   "yn": false,
+   "fmt": "ms",
+   "text": "4m 50s",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.derived.resourceText",
+   "raw": "512 Memory, 1 VCores",
+   "yn": false,
+   "fmt": null,
+   "text": "512 Memory, 1 VCores",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.allocatedMB",
+   "raw": "512",
+   "yn": false,
+   "fmt": "mb",
+   "text": "512 MiB",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.allocatedVCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.logUrl",
+   "raw": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000002/alice",
+   "yn": false,
+   "fmt": "text",
+   "text": "LogsNodeManager log URL (raw)",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.exposedPorts",
+   "raw": "",
+   "yn": false,
+   "fmt": "text",
+   "text": "{}",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.containerId",
+   "raw": "container_1791901196446_0002_01_000002",
+   "yn": false,
+   "fmt": "text",
+   "text": "appattempt_1791901196446_0002_000001",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.allocatedResources",
+   "raw": "{\"memory-mb\":512,\"vcores\":1}",
+   "yn": false,
+   "fmt": null,
+   "text": "memory-mb=512, vcores=1",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.diagnosticsInfo",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "None",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "application_1791901196446_0002",
+  "container_1791901196446_0002_01_000002"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nys-running-ingest\nRunning\nUNDEFINED\napplication_1791901196446_0002\n·\nUser alice\n·\nType SPARK\n·\nQueue root.etl.ingest\n·\nPriority 5\n·\nelapsed\n4m 55s\nrunning\nburrow\nrunning,burrow\nApplicationMaster\nYARN application page\nOpen in burrow\nSpark UI\nOverview\nAttempts\nLogs\nSpark\n\nApplication\napplication_1791901196446_0002\n· attempt\nappattempt_1791901196446_0002_000001\n\nCONTAINER CONTAINER_1791901196446_0002_01_000002\nCopy container id\nContainer State:\nRunning\nExit Status:\n0\nNode:\nhttp://127.0.0.3:8042\nNode ID:\n127.0.0.3:8041\nAssigned Node ID:\n127.0.0.3:8041\nPriority:\n0\nStarted:\n2026-10-13 19:51:59\nFinished:\n—\nElapsed:\n4m 50s\nResource:\n512 Memory, 1 VCores\n512 MiB\n1\nLogs:\nLogs\nNodeManager log URL (raw)\nExposed Ports:\n{}\nAttempt:\nappattempt_1791901196446_0002_000001\n\nAllocated resources (RM mapped notation): memory-mb=512, vcores=1\n\nDIAGNOSTICS\nCopy diagnostics\nNone\n\nThe RM reported no diagnostics for this container. Launch and kill diagnostics are written by the NodeManager into the container'sprelaunch.err/stderr logs, which need the log routes."
+}

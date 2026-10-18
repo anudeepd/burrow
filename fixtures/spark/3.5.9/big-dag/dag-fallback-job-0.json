@@ -1,0 +1,789 @@
+{
+  "kind": "job",
+  "granularity": "stage",
+  "jobId": 0,
+  "edgesInferred": true,
+  "stages": [
+    {
+      "stageId": 0,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 0",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        0,
+        1,
+        2
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 1,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 1",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 2,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 2",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 3,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 3",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 4,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 4",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 5,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 5",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        19,
+        20,
+        21,
+        22
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 6,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 6",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        23,
+        24,
+        25,
+        26
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 7,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 7",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        27,
+        28,
+        29,
+        30
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 8,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 8",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        31,
+        32,
+        33,
+        34
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 9,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 9",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        35,
+        36,
+        37,
+        38
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 10,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 10",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        39,
+        40,
+        41,
+        42
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 11,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 11",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        43,
+        44,
+        45,
+        46
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 12,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 12",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        15,
+        16,
+        31,
+        32,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57
+      ],
+      "status": "COMPLETE"
+    },
+    {
+      "stageId": 13,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 13",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        58,
+        59,
+        60
+      ],
+      "status": "COMPLETE"
+    }
+  ],
+  "edges": [
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 1
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 2
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 2
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 3
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 3
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 3
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 4
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 4
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 4
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 4
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 5
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 5
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 5
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 5
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 5
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 6
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 6
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 6
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 6
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 6
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 6
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 7
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 7
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 7
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 7
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 7
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 7
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 6,
+      "toStage": 7
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 6,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 7,
+      "toStage": 8
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 6,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 7,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 8,
+      "toStage": 9
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 6,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 7,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 8,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 9,
+      "toStage": 10
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 6,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 7,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 8,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 9,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 10,
+      "toStage": 11
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 6,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 7,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 8,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 9,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 10,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 11,
+      "toStage": 12
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 0,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 1,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 2,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 3,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 4,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 5,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 6,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 7,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 8,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 9,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 10,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 11,
+      "toStage": 13
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 12,
+      "toStage": 13
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+/*
+ * Burrow design tokens. See DESIGN.md for the rationale; this file is the single source of truth for values.
+ * Dark is the default (":root"); light is html[data-theme="light"]. Both are first-class.
+ * Names come from the product's world: the cluster is a loom (ground / fabric / seam / ink) and liveness is a thread (live).
+ */
+:root {
+  color-scheme: dark;
+
+  /* Flat, cool-neutral surfaces keep the data and state colors in focus. */
+  --ground: #090d12;
+  --ground-raised: #0d1218;
+  --fabric: #111820;
+  --fabric-2: #161f29;
+  --fabric-3: #1d2934;
+  --well: #070a0e;
+
+  /* ink (text) tiers. ink through ink-3 carry normal text; ink-4 is a subdued tier reserved for large or duplicated text.
+     Contrast ratios by theme and surface are documented in DESIGN.md. */
+  --ink: #f4f8fb;
+  --ink-2: #c0ccd6;
+  --ink-3: #8fa0ae;
+  --ink-4: #71818e;
+
+  /* seams (borders) */
+  --seam: #28333d;
+  --seam-soft: #1b252e;
+  --seam-strong: #3e4e5c;
+
+  /* dyes — status hues. Each has a foreground; tints are derived below. */
+  --live: #4cd7d7;
+  --ok: #5ed991;
+  --fail: #ff747b;
+  --wait: #f4c95d;
+  --fresh: #82a7ff;
+  --warn: #ffad66;
+  --idle: #9aabb8;
+  --on-live: #041c1e;
+
+  --focus: var(--live);
+  --selection: color-mix(in oklch, var(--live) 28%, transparent);
+
+  /* series dyes for charts / task-time phases */
+  --dye-1: #4cd7d7;
+  --dye-2: #82a7ff;
+  --dye-3: #f4c95d;
+  --dye-4: #ffad66;
+  --dye-5: #ff747b;
+  --dye-6: #5ed991;
+
+  /* overlays */
+  --scrim: rgb(7 10 14 / 72%);
+  --ring-overlay: 0 0 0 1px var(--seam-strong);
+  --shadow-overlay: 0 0 0 1px var(--seam-strong), 0 18px 48px rgb(0 0 0 / 32%);
+
+  /* motion — see DESIGN.md §5. Entrances `--ease-out`, on-screen movement `--ease-in-out`, constant motion linear. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-instant: 0ms;
+  /* opacity/colour only; the one duration that survives reduced motion so state changes read as a transition, not a
+     teleport (parity mode still zeroes it). Sheeted surfaces fade in, movement is what reduced motion removes. */
+  --dur-fade: 120ms;
+  /* Tab panels and in-place filtered data use the longer opacity bridge. */
+  --dur-content: 220ms;
+  --delay-cascade-1: 24ms;
+  --delay-cascade-2: 48ms;
+  --delay-cascade-3: 72ms;
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 320ms;
+  --dur-sheet: 360ms;
+  --dur-tween: 480ms;
+  --dur-flash: 900ms;
+
+  /* radius — concentric: inner = outer - padding */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+
+  /* layout */
+  --rail-w: 224px;
+  --rail-w-collapsed: 56px;
+  --topbar-h: 56px;
+
+  /* The reference layout gives page content room to breathe without making dense tables feel oversized. */
+  --page-gutter-x: clamp(16px, 3vw, 40px);
+  --page-gutter-y: clamp(20px, 2.5vw, 40px);
+
+  /* fixed medium sizing */
+  --row-h: 34px;
+  --cell-px: 10px;
+  --ctl-h: 34px;
+  --d-body: 14px;
+  --d-cell: 13px;
+  --gap-card: 16px;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --ground: #edf2f5;
+  --ground-raised: #f4f7f9;
+  --fabric: #ffffff;
+  --fabric-2: #f6f9fb;
+  --fabric-3: #e7eef2;
+  --well: #e8eef2;
+
+  --ink: #111820;
+  --ink-2: #33424e;
+  --ink-3: #536571;
+  --ink-4: #667783;
+
+  --seam: #cbd6dc;
+  --seam-soft: #dee6ea;
+  --seam-strong: #9eb0ba;
+
+  --live: #007d80;
+  --ok: #167a44;
+  --fail: #b42331;
+  --wait: #8a5b00;
+  --fresh: #365fb5;
+  --warn: #a94c19;
+  --idle: #596a76;
+  --on-live: #ffffff;
+
+  --dye-1: #007d80;
+  --dye-2: #365fb5;
+  --dye-3: #8a5b00;
+  --dye-4: #a94c19;
+  --dye-5: #b42331;
+  --dye-6: #167a44;
+
+  --scrim: rgb(33 49 60 / 34%);
+  --ring-overlay: 0 0 0 1px var(--seam-strong);
+  --shadow-overlay: 0 0 0 1px var(--seam), 0 1px 2px -1px rgb(33 49 60 / 10%), 0 18px 48px rgb(33 49 60 / 16%);
+}
+
+
+/* prefers-contrast: more — stronger seams + ink tiers, status shapes get outlines (see .burrow-status-*) */
+@media (prefers-contrast: more) {
+  :root {
+    --seam: oklch(1 0 0 / 0.34);
+    --seam-soft: oklch(1 0 0 / 0.22);
+    --seam-strong: oklch(1 0 0 / 0.6);
+    --ink-2: oklch(0.9 0.008 255);
+    --ink-3: oklch(0.8 0.01 255);
+    --ink-4: oklch(0.68 0.01 255);
+  }
+  html[data-theme="light"] {
+    --seam: oklch(0.2 0.02 255 / 0.45);
+    --seam-soft: oklch(0.2 0.02 255 / 0.3);
+    --seam-strong: oklch(0.2 0.02 255 / 0.8);
+    --ink-2: oklch(0.25 0.016 255);
+    --ink-3: oklch(0.33 0.014 255);
+    --ink-4: oklch(0.42 0.012 255);
+  }
+}
+
+/* Tailwind theme bridge: utilities like bg-fabric, text-ink-3, border-seam, text-live */
+@theme inline {
+  --color-ground: var(--ground);
+  --color-ground-raised: var(--ground-raised);
+  --color-fabric: var(--fabric);
+  --color-fabric-2: var(--fabric-2);
+  --color-fabric-3: var(--fabric-3);
+  --color-well: var(--well);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-seam: var(--seam);
+  --color-seam-soft: var(--seam-soft);
+  --color-seam-strong: var(--seam-strong);
+  --color-live: var(--live);
+  --color-ok: var(--ok);
+  --color-fail: var(--fail);
+  --color-wait: var(--wait);
+  --color-fresh: var(--fresh);
+  --color-warn: var(--warn);
+  --color-idle: var(--idle);
+  --color-on-live: var(--on-live);
+  --color-dye-1: var(--dye-1);
+  --color-dye-2: var(--dye-2);
+  --color-dye-3: var(--dye-3);
+  --color-dye-4: var(--dye-4);
+  --color-dye-5: var(--dye-5);
+  --color-dye-6: var(--dye-6);
+
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* type scale — ratio 1.2 on a 13px body */
+  --text-micro: 10.5px;
+  --text-caption: 11.5px;
+  --text-small: 12px;
+  --text-body: var(--d-body);
+  --text-cell: var(--d-cell);
+  --text-lead: 15px;
+  --text-h3: 18px;
+  --text-h2: 22px;
+  --text-h1: 28px;
+  --text-metric: 34px;
+  --text-display: 44px;
+
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}

@@ -1,0 +1,21 @@
+{
+  "jobId" : 3,
+  "name" : "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+  "submissionTime" : "2026-10-03T07:06:37.921GMT",
+  "completionTime" : "2026-10-03T07:06:37.976GMT",
+  "stageIds" : [ 5, 6, 7 ],
+  "jobTags" : [ "spark-session-9bc0f58c-dbbf-4d5d-804d-253df50b6d10", "spark-session-9bc0f58c-dbbf-4d5d-804d-253df50b6d10-execution-root-id-1" ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 9,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 1,
+  "numSkippedTasks" : 8,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 1,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 1,
+  "numSkippedStages" : 2,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

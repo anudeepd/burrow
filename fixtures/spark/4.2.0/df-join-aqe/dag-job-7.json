@@ -1,0 +1,220 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 7,
+  "stages": [
+    {
+      "stageId": 19,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 19 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_357",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_358",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 24,
+          "name": "ParallelCollectionRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_357"
+        },
+        {
+          "id": 25,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_357"
+        },
+        {
+          "id": 26,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_357"
+        },
+        {
+          "id": 27,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_358"
+        }
+      ],
+      "edges": [
+        {
+          "from": 24,
+          "to": 25
+        },
+        {
+          "from": 25,
+          "to": 26
+        },
+        {
+          "from": 26,
+          "to": 27
+        }
+      ]
+    },
+    {
+      "stageId": 20,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 20",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_417",
+          "name": "AQEShuffleRead",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_430",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_420",
+          "name": "AQEShuffleRead",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_435",
+          "name": "WholeStageCodegen (4)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_440",
+          "name": "WholeStageCodegen (5)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_441",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 28,
+          "name": "ShuffledRowRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_417"
+        },
+        {
+          "id": 29,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_430"
+        },
+        {
+          "id": 30,
+          "name": "ShuffledRowRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_420"
+        },
+        {
+          "id": 31,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_435"
+        },
+        {
+          "id": 32,
+          "name": "ZippedPartitionsRDD2",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_440"
+        },
+        {
+          "id": 33,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_440"
+        },
+        {
+          "id": 34,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_441"
+        }
+      ],
+      "edges": [
+        {
+          "from": 28,
+          "to": 29
+        },
+        {
+          "from": 30,
+          "to": 31
+        },
+        {
+          "from": 29,
+          "to": 32
+        },
+        {
+          "from": 31,
+          "to": 32
+        },
+        {
+          "from": 32,
+          "to": 33
+        },
+        {
+          "from": 33,
+          "to": 34
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 27,
+      "to": 28,
+      "fromStage": 19,
+      "toStage": 20
+    },
+    {
+      "from": 27,
+      "to": 30,
+      "fromStage": 19,
+      "toStage": 20
+    }
+  ]
+}

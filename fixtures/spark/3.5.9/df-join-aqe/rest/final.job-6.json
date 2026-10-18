@@ -1,0 +1,22 @@
+{
+  "jobId" : 6,
+  "name" : "count at NativeMethodAccessorImpl.java:0",
+  "description" : "self-join of a shared aggregate (ReusedExchange)",
+  "submissionTime" : "2026-10-03T07:12:31.898GMT",
+  "completionTime" : "2026-10-03T07:12:32.030GMT",
+  "stageIds" : [ 18 ],
+  "jobTags" : [ ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 4,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 4,
+  "numSkippedTasks" : 0,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 4,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 1,
+  "numSkippedStages" : 0,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

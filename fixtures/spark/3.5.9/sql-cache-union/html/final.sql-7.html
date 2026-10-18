@@ -1,0 +1,225 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery-3.5.1.min.js"></script><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/timeline-view.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script>setUIRoot('')</script>
+        <script>setAppBasePath('')</script>
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-sql-cache-union - Details for Query 7</title>
+      </head>
+      <body>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img src="/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">3.5.9</span>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-sql-cache-union" class="text-nowrap">burrow-sql-cache-union</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+          </div>
+        </nav>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <h3 style="vertical-align: bottom; white-space: nowrap; overflow: hidden;
+                text-overflow: ellipsis;">
+                Details for Query 7
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+          <ul class="list-unstyled">
+            <li>
+              <strong>Submitted Time: </strong>2026/10/03 12:40:16
+            </li>
+            <li>
+              <strong>Duration: </strong>0.3 s
+            </li>
+            
+            <li class="job-url">
+            <strong>Succeeded Jobs: </strong>
+            <a href="/jobs/job/?id=11">11</a><span>&nbsp;</span><a href="/jobs/job/?id=12">12</a><span>&nbsp;</span><a href="/jobs/job/?id=13">13</a><span>&nbsp;</span>
+          </li>
+            
+          </ul>
+        </div><div>
+          <input type="checkbox" id="stageId-and-taskId-checkbox"></input>
+          <span>Show the Stage ID and Task ID that corresponds to the max metric</span>
+        </div><div>
+      <div id="plan-viz-graph"></div>
+      <div id="plan-viz-metadata" style="display:none">
+        <div class="dot-file">
+          digraph G {
+  0 [labelType=&quot;html&quot; label=&quot;&lt;br&gt;&lt;b&gt;AdaptiveSparkPlan&lt;/b&gt;&lt;br&gt;&lt;br&gt;&quot;];
+
+  subgraph cluster1 {
+    isCluster=&quot;true&quot;;
+    label=&quot;WholeStageCodegen (2)\n \nduration: 0 ms&quot;;
+      2 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;HashAggregate&lt;/b&gt;&lt;br&gt;&lt;br&gt;time in aggregation build: 0 ms&lt;br&gt;number of output rows: 1&quot;];
+  }
+     
+  3 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;Exchange&lt;/b&gt;&lt;br&gt;&lt;br&gt;shuffle records written: 4&lt;br&gt;local merged chunks fetched: 0&lt;br&gt;shuffle write time total (min, med, max (stageId: taskId))&lt;br&gt;1 ms (0 ms, 0 ms, 0 ms (stage 25.0: task 44))&lt;br&gt;remote merged bytes read: 0.0 B&lt;br&gt;local merged blocks fetched: 0&lt;br&gt;corrupt merged block chunks: 0&lt;br&gt;remote merged reqs duration: 0 ms&lt;br&gt;remote merged blocks fetched: 0&lt;br&gt;records read: 4&lt;br&gt;local bytes read: 236.0 B&lt;br&gt;fetch wait time: 0 ms&lt;br&gt;remote bytes read: 0.0 B&lt;br&gt;merged fetch fallback count: 0&lt;br&gt;local blocks read: 4&lt;br&gt;remote merged chunks fetched: 0&lt;br&gt;remote blocks read: 0&lt;br&gt;data size total (min, med, max (stageId: taskId))&lt;br&gt;64.0 B (16.0 B, 16.0 B, 16.0 B (stage 25.0: task 43))&lt;br&gt;local merged bytes read: 0.0 B&lt;br&gt;number of partitions: 1&lt;br&gt;remote reqs duration: 0 ms&lt;br&gt;remote bytes read to disk: 0.0 B&lt;br&gt;shuffle bytes written total (min, med, max (stageId: taskId))&lt;br&gt;236.0 B (59.0 B, 59.0 B, 59.0 B (stage 25.0: task 43))&quot;];
+
+  subgraph cluster4 {
+    isCluster=&quot;true&quot;;
+    label=&quot;WholeStageCodegen (1)\n \nduration: total (min, med, max (stageId: taskId))\n9 ms (1 ms, 3 ms, 3 ms (stage 25.0: task 43))&quot;;
+      5 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;HashAggregate&lt;/b&gt;&lt;br&gt;&lt;br&gt;time in aggregation build total (min, med, max (stageId: taskId))&lt;br&gt;6 ms (1 ms, 2 ms, 2 ms (stage 25.0: task 43))&lt;br&gt;number of output rows: 4&quot;];
+  }
+     
+  6 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;InMemoryTableScan&lt;/b&gt;&lt;br&gt;&lt;br&gt;number of output rows: 50,000&quot;];
+
+  subgraph cluster7 {
+    isCluster=&quot;true&quot;;
+    label=&quot;WholeStageCodegen (1)\n \nduration: total (min, med, max (stageId: taskId))\n305 ms (43 ms, 106 ms, 107 ms (stage 24.0: task 39))&quot;;
+      8 [labelType=&quot;html&quot; label=&quot;&lt;br&gt;&lt;b&gt;Project&lt;/b&gt;&lt;br&gt;&lt;br&gt;&quot;];    
+  9 [labelType=&quot;html&quot; label=&quot;&lt;b&gt;Range&lt;/b&gt;&lt;br&gt;&lt;br&gt;number of output rows: 50,000&quot;];
+  }
+     
+  2-&gt;0;
+
+  3-&gt;2;
+
+  5-&gt;3;
+
+  6-&gt;5;
+
+  8-&gt;6;
+
+  9-&gt;8;
+
+}
+        </div>
+        <div id="plan-viz-metadata-size">10</div>
+        <div id="plan-meta-data-0">AdaptiveSparkPlan isFinalPlan=true</div><div id="plan-meta-data-2">HashAggregate(keys=[], functions=[count(1)])</div><div id="plan-meta-data-1">WholeStageCodegen (2)</div><div id="plan-meta-data-3">Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=365]</div><div id="plan-meta-data-5">HashAggregate(keys=[], functions=[partial_count(1)])</div><div id="plan-meta-data-4">WholeStageCodegen (1)</div><div id="plan-meta-data-6">InMemoryTableScan</div><div id="plan-meta-data-8">Project [(id#0L % 100) AS k#2L, (id#0L * 3) AS v#3L]</div><div id="plan-meta-data-9">Range (0, 50000, step=1, splits=4)</div><div id="plan-meta-data-7">WholeStageCodegen (1)</div>
+      </div>
+      <link rel="stylesheet" href="/static/sql/spark-sql-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/sql/spark-sql-viz.js"></script>
+      <script>$(function() { if (shouldRenderPlanViz()) { renderPlanViz(); } })</script>
+    </div><div>
+      <span style="cursor: pointer;" onclick="clickPhysicalPlanDetails();">
+        <span id="physical-plan-details-arrow" class="arrow-closed"></span>
+        <a>Details</a>
+      </span>
+    </div><div id="physical-plan-details" style="display: none;">
+      <pre>== Physical Plan ==
+AdaptiveSparkPlan (13)
++- == Final Plan ==
+   * HashAggregate (9)
+   +- ShuffleQueryStage (8), Statistics(sizeInBytes=64.0 B, rowCount=4)
+      +- Exchange (7)
+         +- * HashAggregate (6)
+            +- TableCacheQueryStage (5), Statistics(sizeInBytes=781.3 KiB, rowCount=5.00E+4)
+               +- InMemoryTableScan (1)
+                     +- InMemoryRelation (2)
+                           +- * Project (4)
+                              +- * Range (3)
++- == Initial Plan ==
+   HashAggregate (12)
+   +- Exchange (11)
+      +- HashAggregate (10)
+         +- InMemoryTableScan (1)
+               +- InMemoryRelation (2)
+                     +- * Project (4)
+                        +- * Range (3)
+
+
+(1) InMemoryTableScan
+Output: []
+
+(2) InMemoryRelation
+Arguments: [k#2L, v#3L], CachedRDDBuilder(org.apache.spark.sql.execution.columnar.DefaultCachedBatchSerializer@12693925,StorageLevel(disk, memory, deserialized, 1 replicas),*(1) Project [(id#0L % 100) AS k#2L, (id#0L * 3) AS v#3L]
++- *(1) Range (0, 50000, step=1, splits=4)
+,None)
+
+(3) Range [codegen id : 1]
+Output [1]: [id#0L]
+Arguments: Range (0, 50000, step=1, splits=Some(4))
+
+(4) Project [codegen id : 1]
+Output [2]: [(id#0L % 100) AS k#2L, (id#0L * 3) AS v#3L]
+Input [1]: [id#0L]
+
+(5) TableCacheQueryStage
+Output: []
+Arguments: 0
+
+(6) HashAggregate [codegen id : 1]
+Input: []
+Keys: []
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count#383L]
+Results [1]: [count#384L]
+
+(7) Exchange
+Input [1]: [count#384L]
+Arguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=365]
+
+(8) ShuffleQueryStage
+Output [1]: [count#384L]
+Arguments: 1
+
+(9) HashAggregate [codegen id : 2]
+Input [1]: [count#384L]
+Keys: []
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#350L]
+Results [1]: [count(1)#350L AS count#351L]
+
+(10) HashAggregate
+Input: []
+Keys: []
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count#383L]
+Results [1]: [count#384L]
+
+(11) Exchange
+Input [1]: [count#384L]
+Arguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=341]
+
+(12) HashAggregate
+Input [1]: [count#384L]
+Keys: []
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#350L]
+Results [1]: [count(1)#350L AS count#351L]
+
+(13) AdaptiveSparkPlan
+Output [1]: [count#351L]
+Arguments: isFinalPlan=true
+
+</pre>
+    </div><script>
+      function clickPhysicalPlanDetails() {
+        $('#physical-plan-details').toggle();
+        $('#physical-plan-details-arrow').toggleClass('arrow-open').toggleClass('arrow-closed');
+      }
+    </script><br/>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>

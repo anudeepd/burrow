@@ -1,0 +1,326 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery-3.5.1.min.js"></script><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/timeline-view.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script>setUIRoot('')</script>
+        <script>setAppBasePath('')</script>
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-barrier-scopes - Stages for All Jobs</title>
+      </head>
+      <body>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img src="/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">3.5.9</span>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-barrier-scopes" class="text-nowrap">burrow-barrier-scopes</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+          </div>
+        </nav>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <h3 style="vertical-align: bottom; white-space: nowrap; overflow: hidden;
+                text-overflow: ellipsis;">
+                Stages for All Jobs
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <ul class="list-unstyled">
+          <li id="completed-summary">
+        <a href="#completed">
+          <strong>Completed Stages:</strong>
+        </a>
+        4
+      </li>
+        </ul>
+      </div><span id="completed" class="collapse-aggregated-allCompletedStages collapse-table" onClick="collapseTable('collapse-aggregated-allCompletedStages', 'aggregated-allCompletedStages')">
+      <h4>
+        <span class="collapse-table-arrow arrow-open"></span>
+        <a>Completed Stages (4)</a>
+      </h4>
+    </span><div class="aggregated-allCompletedStages collapsible-table">
+        <div>
+        <div>
+      <div>
+        <form id="form-completedStage-table-top-page" method="get" action="/stages/?&completedStage.sort=Stage+Id&completedStage.desc=true#completed" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completedStage.sort" value="Stage Id"/><input type="hidden" name="completedStage.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completedStage.page" id="form-completedStage-table-top-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completedStage-table-top-page-size" name="completedStage.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completedStage-table">
+          <thead>
+      <tr><th>
+            <a href="/stages/?&completedStage.sort=Stage+Id&completedStage.desc=false&completedStage.pageSize=100#completed">
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Stage Id&nbsp;&#x25BE;
+              </span>
+            </a>
+          </th><th>
+              <a href="/stages/?&completedStage.sort=Description&completedStage.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Description
+                </span>
+              </a>
+            </th><th>
+              <a href="/stages/?&completedStage.sort=Submitted&completedStage.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Submitted
+                </span>
+              </a>
+            </th><th>
+              <a href="/stages/?&completedStage.sort=Duration&completedStage.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="Elapsed time since the first task of the stage was launched until execution completion of
+       all its tasks (Excluding the time of the stage waits to be launched after submitted).
+    ">
+                  Duration
+                </span>
+              </a>
+            </th><th>
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Tasks: Succeeded/Total
+              </span>
+            </th><th>
+              <a href="/stages/?&completedStage.sort=Input&completedStage.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="Bytes read from Hadoop or from Spark storage.">
+                  Input
+                </span>
+              </a>
+            </th><th>
+              <a href="/stages/?&completedStage.sort=Output&completedStage.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="Bytes written to Hadoop.">
+                  Output
+                </span>
+              </a>
+            </th><th>
+              <a href="/stages/?&completedStage.sort=Shuffle+Read&completedStage.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="Total shuffle bytes and records read (includes both data read locally and data read from
+       remote executors). ">
+                  Shuffle Read
+                </span>
+              </a>
+            </th><th>
+              <a href="/stages/?&completedStage.sort=Shuffle+Write&completedStage.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="Bytes and records written to disk in order to be read by a shuffle in a future stage.">
+                  Shuffle Write
+                </span>
+              </a>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr id="stage-3-0">
+      <td>3</td><td><div>  <a href="/stages/stage/?id=3&amp;attempt=0" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/barrier_scopes.py:36</a> <span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        
+        <pre>org.apache.spark.rdd.RDD.collect(RDD.scala:1048)
+org.apache.spark.api.python.PythonRDD$.collectAndServe(PythonRDD.scala:195)
+org.apache.spark.api.python.PythonRDD.collectAndServe(PythonRDD.scala)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div></td><td valign="middle">
+          2026/10/03 12:43:23
+        </td><td>0.2 s</td><td class="progress-cell">
+          <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        2/2
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+        </td><td></td><td></td><td>295.0 B</td><td></td>
+    </tr><tr id="stage-2-0">
+      <td>2</td><td><div>  <a href="/stages/stage/?id=2&amp;attempt=0" class="name-link">reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/barrier_scopes.py:36</a> <span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        
+        <pre>org.apache.spark.rdd.RDD.&lt;init&gt;(RDD.scala:102)
+org.apache.spark.api.python.PairwiseRDD.&lt;init&gt;(PythonRDD.scala:126)
+java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
+java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:247)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:238)
+py4j.commands.ConstructorCommand.invokeConstructor(ConstructorCommand.java:80)
+py4j.commands.ConstructorCommand.execute(ConstructorCommand.java:69)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div></td><td valign="middle">
+          2026/10/03 12:43:22
+        </td><td>0.6 s</td><td class="progress-cell">
+          <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        2/2
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+        </td><td></td><td></td><td></td><td>295.0 B</td>
+    </tr><tr id="stage-1-0">
+      <td>1</td><td><div>  <a href="/stages/stage/?id=1&amp;attempt=0" class="name-link">site &lt;x&gt; &amp; &quot;y&quot; 'z' [5]\n é</a> <span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        
+        <pre>org.apache.spark.api.java.AbstractJavaRDDLike.count(JavaRDDLike.scala:45)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div></td><td valign="middle">
+          2026/10/03 12:43:22
+        </td><td>25 ms</td><td class="progress-cell">
+          <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        2/2
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+        </td><td></td><td></td><td></td><td></td>
+    </tr><tr id="stage-0-0">
+      <td>0</td><td><div>  <a href="/stages/stage/?id=0&amp;attempt=0" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/barrier_scopes.py:13</a> <span onclick="this.parentNode.querySelector('.stage-details').classList.toggle('collapsed')" class="expand-details">
+        +details
+      </span><div class="stage-details collapsed">
+        
+        <pre>org.apache.spark.rdd.RDD.collect(RDD.scala:1048)
+org.apache.spark.api.python.PythonRDD$.collectAndServe(PythonRDD.scala:195)
+org.apache.spark.api.python.PythonRDD.collectAndServe(PythonRDD.scala)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.base/java.lang.reflect.Method.invoke(Method.java:569)
+py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)
+py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)
+py4j.Gateway.invoke(Gateway.java:282)
+py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)
+py4j.commands.CallCommand.execute(CallCommand.java:79)
+py4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:182)
+py4j.ClientServerConnection.run(ClientServerConnection.java:106)
+java.base/java.lang.Thread.run(Thread.java:840)</pre>
+      </div></div></td><td valign="middle">
+          2026/10/03 12:43:21
+        </td><td>1 s</td><td class="progress-cell">
+          <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        2/2
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+        </td><td></td><td></td><td></td><td></td>
+    </tr>
+          </tbody>
+        </table>
+        <div>
+      <div>
+        <form id="form-completedStage-table-bottom-page" method="get" action="/stages/?&completedStage.sort=Stage+Id&completedStage.desc=true#completed" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completedStage.sort" value="Stage Id"/><input type="hidden" name="completedStage.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completedStage.page" id="form-completedStage-table-bottom-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completedStage-table-bottom-page-size" name="completedStage.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+      </div>
+      </div>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>

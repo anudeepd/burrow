@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    #containers_paginate span {font-weight:normal}
+    #containers .progress {width:8em}
+    #containers_processing {top:-1.5em; font-size:1em;
+      color:#000; background:#fefefe}
+    #containers .queue {width:6em}
+    #containers .ui {width:8em}
+  </style>
+  <title>
+    Application Attempt appattempt_1791901196446_0003_000001
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    containersDataTable =  $('#containers').dataTable({bStateSave : true, "fnStateSave": function (oSettings, oData) {  data = oData.aoSearchCols;for(i =0 ; i < data.length; i ++) {data[i].sSearch = ""} sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, "fnStateLoad": function (oSettings) { return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, bJQueryUI:true, sPaginationType: 'full_numbers', iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100], 'aaData': containersTableData, bDeferRender: true, bProcessing: true
+, aoColumnDefs: [
+{'sType':'natural', 'aTargets': [0], 'mRender': parseHadoopID }], aaSorting: [[0, 'desc']]}).fnSetFilteringDelay(188);
+    resourceRequestsDataTable =  $('#resourceRequests').dataTable({bStateSave : true, "fnStateSave": function (oSettings, oData) {  data = oData.aoSearchCols;for(i =0 ; i < data.length; i ++) {data[i].sSearch = ""} sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, "fnStateLoad": function (oSettings) { return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, bJQueryUI:true, sPaginationType: 'full_numbers', iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100], 'aaData': resourceRequestsTableData, bDeferRender: true, bProcessing: true}).fnSetFilteringDelay(188);
+    });
+  </script>
+  </head><body><div id="jsnotice" class="ui-state-error" style="display: none;">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/static/hadoop-st.png">
+            </div>
+            <h1>
+              Application Attempt appattempt_1791901196446_0003_000001
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav" class="ui-accordion ui-widget ui-helper-reset" role="tablist">
+            <h3 class="ui-accordion-header ui-corner-top ui-state-default ui-accordion-header-active ui-state-active ui-accordion-icons" role="tab" id="ui-id-1" aria-controls="ui-id-2" aria-selected="true" aria-expanded="true" tabindex="0"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span>
+              Cluster
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active" id="ui-id-2" aria-labelledby="ui-id-1" role="tabpanel" aria-hidden="false" style="height: 222.766px;">
+              <li>
+                <a href="/cluster/cluster">About</a>
+              </li><li>
+                <a href="/cluster/nodes">Nodes</a>
+              </li><li>
+                <a href="/cluster/nodelabels">Node Labels</a>
+              </li><li>
+                <a href="/cluster/apps">Applications</a>
+                <ul>
+                  <li>
+                  </li><li>
+                    <a href="/cluster/apps/NEW">NEW</a>
+                  </li><li>
+                    <a href="/cluster/apps/NEW_SAVING">NEW_SAVING</a>
+                  </li><li>
+                    <a href="/cluster/apps/SUBMITTED">SUBMITTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/ACCEPTED">ACCEPTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/RUNNING">RUNNING</a>
+                  </li><li>
+                    <a href="/cluster/apps/FINISHED">FINISHED</a>
+                  </li><li>
+                    <a href="/cluster/apps/FAILED">FAILED</a>
+                  </li><li>
+                    <a href="/cluster/apps/KILLED">KILLED</a>
+                </li></ul>
+              </li><li>
+                <a href="/cluster/scheduler">Scheduler</a>
+            </li></ul>
+            <h3 class="ui-accordion-header ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons" role="tab" id="ui-id-3" aria-controls="ui-id-4" aria-selected="false" aria-expanded="false" tabindex="-1"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>
+              Tools
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content" id="ui-id-4" aria-labelledby="ui-id-3" role="tabpanel" aria-hidden="true" style="display: none; height: 222.766px;">
+              <li>
+                <a href="/conf">Configuration</a>
+              </li><li>
+                <a href="/logs">Local logs</a>
+              </li><li>
+                <a href="/stacks">Server stacks</a>
+              </li><li>
+                <a href="/jmx?qry=Hadoop:*">Server metrics</a>
+            </li></ul>
+          </div>
+        </td>
+        <td class="content">
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+            <table class="info">
+              <tbody><tr>
+                <th class="ui-state-default" colspan="2">
+                  Application Attempt Overview
+                </th>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Application Attempt State:
+                </th>
+                <td>
+                  SCHEDULED
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  Started:
+                </th>
+                <td>
+                  Tue Oct 13 19:52:06 +0530 2026
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Elapsed:
+                </th>
+                <td>
+                  9mins, 17sec
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  AM Container:
+                </th>
+                <td>
+                  N/A
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Node:
+                </th>
+                <td>
+                  N/A
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  Tracking URL:
+                </th>
+                <td>
+                  <a href="http://smadayma:8088/proxy/application_1791901196446_0003/">ApplicationMaster</a>
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Diagnostics Info:
+                </th>
+                <td>
+                  [Tue Oct 13 20:01:23 +0530 2026] Application is Activated, waiting for resources to be assigned for AM. Skipping assigning to Node in Ignore Exclusivity mode.  Last Node which was processed for the application : 127.0.0.3:8041 ( Partition : [ssd], Total resource : &lt;memory:3072, vCores:4&gt;, Available resource : &lt;memory:2048, vCores:2&gt; ). Details : AM Partition = &lt;DEFAULT_PARTITION&gt; ; Partition Resource = &lt;memory:3072, vCores:4&gt; ; Queue's Absolute capacity = 5.0 % ; Queue's Absolute used capacity = 0.0 % ; Queue's Absolute max capacity = 5.0 % ; Queue's capacity (absolute resource) = &lt;memory:153, vCores:0&gt; ; Queue's used capacity (absolute resource) = &lt;memory:0, vCores:0&gt; ; Queue's max capacity (absolute resource) = &lt;memory:153, vCores:0&gt; ; 
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  Nodes blacklisted by the application:
+                </th>
+                <td>
+                  -
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Nodes blacklisted by the system:
+                </th>
+                <td>
+                  -
+                </td>
+              </tr>
+            </tbody></table>
+          </div>
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+          </div>
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+            <table class="info">
+              <tbody><tr>
+                <th class="ui-state-default" colspan="2">
+                  Application Attempt Metrics
+                </th>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Application Attempt Headroom : 
+                </th>
+                <td>
+                  &lt;memory:0, vCores:0&gt;
+                </td>
+              </tr>
+            </tbody></table>
+          </div>
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+            <h3>
+              Total Allocated Containers: 0
+            </h3>
+            <h3>
+              Each table cell represents the number of NodeLocal/RackLocal/OffSwitch containers satisfied by NodeLocal/RackLocal/OffSwitch resource requests.
+            </h3>
+            <table id="containerLocality">
+              <tbody><tr>
+                <th class="ui-state-default">
+                  
+                </th>
+                <th class="ui-state-default">
+                  Node Local Request
+                </th>
+                <th class="ui-state-default">
+                  Rack Local Request
+                </th>
+                <th class="ui-state-default">
+                  Off Switch Request
+                </th>
+              </tr>
+              <tr class="odd">
+                <td>
+                  Num Node Local Containers (satisfied by)
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  
+                </td>
+                <td>
+                  
+                </td>
+              </tr>
+              <tr class="even">
+                <td>
+                  Num Rack Local Containers (satisfied by)
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  
+                </td>
+              </tr>
+              <tr class="odd">
+                <td>
+                  Num Off Switch Containers (satisfied by)
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+            </tbody></table>
+          </div>
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+            <h3>
+              Total Outstanding Resource Requests: &lt;memory:768, vCores:1&gt;
+            </h3>
+            <div id="resourceRequests_wrapper" class="dataTables_wrapper no-footer"><div class="dataTables_length" id="resourceRequests_length"><label>Show <select name="resourceRequests_length" aria-controls="resourceRequests" class=""><option value="20">20</option><option value="40">40</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select> entries</label></div><div id="resourceRequests_filter" class="dataTables_filter"><label>Search:<input type="search" class="" placeholder="" aria-controls="resourceRequests"></label></div><div id="resourceRequests_processing" class="dataTables_processing" style="display: none;">Processing...</div><table id="resourceRequests" class="dataTable no-footer" aria-describedby="resourceRequests_info" style="width: 1443px;">
+              <thead>
+                <tr><th class="priority sorting sorting_asc" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-sort="ascending" aria-label="
+                    Priority
+                  : activate to sort column descending" style="width: 51px;">
+                    Priority
+                  </th><th class="allocationRequestId sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    AllocationRequestId
+                  : activate to sort column ascending" style="width: 140px;">
+                    AllocationRequestId
+                  </th><th class="resource sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    ResourceName
+                  : activate to sort column ascending" style="width: 105px;">
+                    ResourceName
+                  </th><th class="capacity sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    Capability
+                  : activate to sort column ascending" style="width: 76px;">
+                    Capability
+                  </th><th class="containers sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    NumContainers
+                  : activate to sort column ascending" style="width: 108px;">
+                    NumContainers
+                  </th><th class="relaxlocality sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    RelaxLocality
+                  : activate to sort column ascending" style="width: 93px;">
+                    RelaxLocality
+                  </th><th class="labelexpression sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    NodeLabelExpression
+                  : activate to sort column ascending" style="width: 152px;">
+                    NodeLabelExpression
+                  </th><th class="executiontype sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    ExecutionType
+                  : activate to sort column ascending" style="width: 102px;">
+                    ExecutionType
+                  </th><th class="allocationTags sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    AllocationTags
+                  : activate to sort column ascending" style="width: 103px;">
+                    AllocationTags
+                  </th><th class="placementConstraint sorting" tabindex="0" aria-controls="resourceRequests" rowspan="1" colspan="1" aria-label="
+                    PlacementConstraint
+                  : activate to sort column ascending" style="width: 144px;">
+                    PlacementConstraint
+                  </th></tr>
+              </thead>
+              <script type="text/javascript">
+                var resourceRequestsTableData=[
+["0","-1","*","&lt;memory:768, vCores:1&gt;","1","true","","GUARANTEED","N/A","N/A"]
+]
+              </script>
+              <tbody>
+              <tr class="odd"><td class="sorting_1">0</td><td>-1</td><td>*</td><td>&lt;memory:768, vCores:1&gt;</td><td>1</td><td>true</td><td></td><td>GUARANTEED</td><td>N/A</td><td>N/A</td></tr></tbody>
+            </table><div class="dataTables_info" id="resourceRequests_info" role="status" aria-live="polite">Showing 1 to 1 of 1 entries</div><div class="dataTables_paginate paging_full_numbers" id="resourceRequests_paginate"><a class="paginate_button first disabled" aria-controls="resourceRequests" data-dt-idx="0" tabindex="-1" id="resourceRequests_first">First</a><a class="paginate_button previous disabled" aria-controls="resourceRequests" data-dt-idx="1" tabindex="-1" id="resourceRequests_previous">Previous</a><span><a class="paginate_button current" aria-controls="resourceRequests" data-dt-idx="2" tabindex="0">1</a></span><a class="paginate_button next disabled" aria-controls="resourceRequests" data-dt-idx="3" tabindex="-1" id="resourceRequests_next">Next</a><a class="paginate_button last disabled" aria-controls="resourceRequests" data-dt-idx="4" tabindex="-1" id="resourceRequests_last">Last</a></div></div>
+            <div>
+              <p>
+                Diagnostics in cache 
+                (For more details refer to 
+                <a href="/ws/v1/cluster/scheduler/app-activities/application_1791901196446_0003?actions=refresh&amp;actions=get&amp;groupBy=diagnostic&amp;summarize=true">App Activities</a>
+                 or 
+                <a href="/ws/v1/cluster/scheduler/activities?groupBy=diagnostic">Scheduler Activities</a>
+                )
+              <button id="refreshDiagnosticsBtn" style="border-style: solid; border-color: #000000; border-width: 1px; cursor: hand; cursor: pointer; border-radius: 4px" onclick="refreshAppDiagnostics()"><b>Refresh</b></button>
+              </p><p id="diagnosticsUpdateTime"></p><p id="appDiagnostic">
+              </p><div id="diagnosticsTableDiv"></div>
+            </div>
+            <script type="text/javascript">
+              var refreshAppActivitiesURL = '/ws/v1/cluster/scheduler/app-activities/application_1791901196446_0003?actions=refresh';var getAppActivitiesURL = '/ws/v1/cluster/scheduler/app-activities/application_1791901196446_0003?actions=get&groupBy=diagnostic&summarize=true';var schedulerActivitiesURL = '/ws/v1/cluster/scheduler/activities?groupBy=diagnostic';var ignoreActivityContent = 'does not need more resource';var refresh = false;var haveGotAppDiagnostic = false;function getArray(objOrArray) {  if(Array.isArray(objOrArray)){    return objOrArray;  } else {    return [objOrArray];  }}function getTableDataFromObjectArray(objectArray, fields) {  if (objectArray == undefined) {    return [];  }  var data = [];  $.each(objectArray, function(i, object) {    var dataItem = [];    for (var i=0; i<fields.length; i++) {      dataItem.push(object[fields[i]] != undefined ? object[fields[i]] : '');    }    data.push(dataItem);  });  return data;}function sendRequest(requestURL, doneCallBackFunc,                      failCallBackFunc) { $.ajax({  type: 'GET',  url: requestURL,  contentType: 'text/plain' }).done(doneCallBackFunc).fail(failCallBackFunc);}function parseQueryAppActResponse(responseObj) { var requestDiagnostics = [], dateTime, appDiagnostic; responseObj = responseObj['appActivities']; if(responseObj.hasOwnProperty('allocations')){  var allocations = getArray(responseObj['allocations']);  var allocation = allocations[0];  dateTime = allocation['dateTime'];  if(allocation.hasOwnProperty('diagnostic')){   appDiagnostic = allocation['diagnostic'];  }  if(allocation.hasOwnProperty('children')){   var requestAllocations =      getArray(allocation['children']);   $.each(requestAllocations, function (i, requestAllocation) {    if(requestAllocation.hasOwnProperty('children')){     var allocationAttempts =        getArray(requestAllocation['children']);     var diagnosticSummary = requestAllocation.hasOwnProperty(       'diagnostic')? requestAllocation['diagnostic']+'. ':'';     $.each(allocationAttempts, function(i,allocationAttempt) {      if (i > 0) {       diagnosticSummary += ', ';      }      diagnosticSummary += allocationAttempt['count'] + ' ' +        (allocationAttempt['count']=='1' ? 'node ' : 'nodes ')        + allocationAttempt['allocationState'];      if (allocationAttempt.hasOwnProperty('diagnostic')) {       diagnosticSummary += ' with diagnostic:' +                    allocationAttempt['diagnostic'];      }     });     delete requestAllocation['children'];     requestAllocation['diagnostic']=diagnosticSummary;    }    requestDiagnostics.push(requestAllocation);   });  } } return [requestDiagnostics, dateTime, appDiagnostic];}function handleQueryAppActDone(data){  console.log('App activities:', data);  var results = parseQueryAppActResponse(data);  console.log('parsed results:', results);  var requestDiagnostics = results[0];  var dateTime = results[1];  var appDiagnostic = results[2];  haveGotAppDiagnostic = false;  if (appDiagnostic != undefined) {    haveGotAppDiagnostic = true;    $('#appDiagnostic').html('App diagnostic: '        + appDiagnostic);  }  $('#diagnosticsTableDiv').empty();  if (requestDiagnostics.length > 0) {    haveGotAppDiagnostic = true;    tableData = getTableDataFromObjectArray(requestDiagnostics, ['requestPriority', 'allocationRequestId', 'allocationState', 'diagnostic']);    $('#diagnosticsTableDiv').append('<table       id="diagnosticsTable"></table>');    $('#diagnosticsTable').dataTable( {      'aaData': tableData,      'aoColumns': [        { 'sTitle': 'Priority' },        { 'sTitle': 'AllocationRequestId' },        { 'sTitle': 'AllocationState' },        { 'sTitle': 'DiagnosticSummary' }      ],      bJQueryUI:true, sPaginationType: 'full_numbers',      iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100]    });  }  if (haveGotAppDiagnostic) {    $('#refreshDiagnosticsBtn').attr('disabled',false);    $('#diagnosticsUpdateTime').html('Updated at ' + dateTime);  } else {    $('#diagnosticsUpdateTime').html('');    if (refresh) {      refreshSchedulerDiagnostics();    }  }}function handleRequestFailure(data){ alert('Request app activities REST API failed.'); console.log(data);}function handleRefreshAppActDone(data){ refresh = true; setTimeout(function(){  queryAppDiagnostics(); }, 2000);}function refreshAppDiagnostics() { $('#refreshDiagnosticsBtn').attr('disabled',true); sendRequest(refreshAppActivitiesURL,handleRefreshAppActDone,             handleRequestFailure);}function queryAppDiagnostics() { sendRequest(getAppActivitiesURL,handleQueryAppActDone,             handleRequestFailure);}function parseHierarchicalQueue(node, nodeInfos,    parentNodePath, partition) {  var nodePath = parentNodePath + '/' + node['name'];  if (node.hasOwnProperty('name')){    if (node['diagnostic'] == undefined || node['diagnostic']      .indexOf(ignoreActivityContent) == -1){     var nodeInfo = {};     nodeInfo['partition'] = partition;     nodeInfo['path'] = nodePath;     nodeInfo['allocationState'] = node['allocationState'];     nodeInfo['diagnostic'] =       node['diagnostic'] == undefined ? '':node['diagnostic'];     nodeInfos.push(nodeInfo);    }  }  if (node.hasOwnProperty('children')){    var children = getArray(node['children']);    $.each(children, function (i, child) {      parseHierarchicalQueue(child, nodeInfos, nodePath,        partition);    });  }}function parseQueueDiagnostics(data) {  var nodeInfos = [], dateTime;  if(data.hasOwnProperty('dateTime')){      dateTime = data['dateTime'];  }  if(data.hasOwnProperty('allocations')){    var allocations = getArray(data['allocations']);    $.each(allocations, function (i, allocation) {      if (allocation.hasOwnProperty('root')) {        var root = allocation['root'];        var partition = allocation['partition'];        parseHierarchicalQueue(root, nodeInfos, '', partition);      }    });  }  return [nodeInfos, dateTime];}function handleRefreshSchedulerActDone(data){ console.log('handleRefreshSchedulerActDone', data); setTimeout(function(){  querySchedulerDiagnostics();  $('#refreshDiagnosticsBtn').attr('disabled',false); }, 100);}function handleQuerySchedulerActDone(data){  console.log('Scheduler activities:', data);  data = data['activities'];  var results = parseQueueDiagnostics(data);  var nodeInfos = results[0];  var dateTime = results[1];  $('#diagnosticsTableDiv').empty();  if(dateTime != undefined){   $('#diagnosticsUpdateTime').html('App diagnostics not found! Got useful scheduler activities updated at '+dateTime);    tableData = getTableDataFromObjectArray(nodeInfos,  ['partition', 'path', 'allocationState', 'diagnostic']);    $('#diagnosticsTableDiv').append('<table       id="diagnosticsTable"></table>');    $('#diagnosticsTable').dataTable({      'aaData': tableData,      'aoColumns': [        { 'sTitle': 'Partition' },        { 'sTitle': 'SchedulingNode' },        { 'sTitle': 'AllocationState' },        { 'sTitle': 'Diagnostic' }      ],      bJQueryUI:true, sPaginationType: 'full_numbers',      iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100]    });  } else if(data.hasOwnProperty('diagnostic')){    $('#diagnosticsUpdateTime').html(data['diagnostic']);  }  $('#refreshDiagnosticsBtn').attr('disabled',false);}function refreshSchedulerDiagnostics() { $('#refreshDiagnosticsBtn').attr('disabled',true); sendRequest(schedulerActivitiesURL,   handleRefreshSchedulerActDone,handleRequestFailure);}function querySchedulerDiagnostics() { sendRequest(schedulerActivitiesURL,   handleQuerySchedulerActDone,handleRequestFailure);}queryAppDiagnostics();
+            </script>
+          </div>
+          <div id="containers_wrapper" class="dataTables_wrapper no-footer"><div class="dataTables_length" id="containers_length"><label>Show <select name="containers_length" aria-controls="containers" class=""><option value="20">20</option><option value="40">40</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select> entries</label></div><div id="containers_filter" class="dataTables_filter"><label>Search:<input type="search" class="" placeholder="" aria-controls="containers"></label></div><div id="containers_processing" class="dataTables_processing" style="display: none;">Processing...</div><table id="containers" style="width: 100%;" class="dataTable no-footer" aria-describedby="containers_info">
+            <thead>
+              <tr><th class="id sorting sorting_desc" tabindex="0" aria-controls="containers" rowspan="1" colspan="1" aria-sort="descending" aria-label="
+                  Container ID
+                : activate to sort column ascending" style="width: 339px;">
+                  Container ID
+                </th><th class="node sorting" tabindex="0" aria-controls="containers" rowspan="1" colspan="1" aria-label="
+                  Node
+                : activate to sort column ascending" style="width: 187px;">
+                  Node
+                </th><th class="exitstatus sorting" tabindex="0" aria-controls="containers" rowspan="1" colspan="1" aria-label="
+                  Container Exit Status
+                : activate to sort column ascending" style="width: 522px;">
+                  Container Exit Status
+                </th><th class="logs sorting" tabindex="0" aria-controls="containers" rowspan="1" colspan="1" aria-label="
+                  Logs
+                : activate to sort column ascending" style="width: 180px;">
+                  Logs
+                </th></tr>
+            </thead>
+            <script type="text/javascript">
+              var containersTableData=[
+]
+            </script>
+            <tbody>
+            <tr class="odd"><td valign="top" colspan="4" class="dataTables_empty">No data available in table</td></tr></tbody>
+          </table><div class="dataTables_info" id="containers_info" role="status" aria-live="polite">Showing 0 to 0 of 0 entries</div><div class="dataTables_paginate paging_full_numbers" id="containers_paginate"><a class="paginate_button first disabled" aria-controls="containers" data-dt-idx="0" tabindex="-1" id="containers_first">First</a><a class="paginate_button previous disabled" aria-controls="containers" data-dt-idx="1" tabindex="-1" id="containers_previous">Previous</a><span></span><a class="paginate_button next disabled" aria-controls="containers" data-dt-idx="2" tabindex="-1" id="containers_next">Next</a><a class="paginate_button last disabled" aria-controls="containers" data-dt-idx="3" tabindex="-1" id="containers_last">Last</a></div></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body></html>

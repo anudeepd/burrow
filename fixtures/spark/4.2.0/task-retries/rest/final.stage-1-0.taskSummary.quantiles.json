@@ -1,0 +1,51 @@
+{
+  "quantiles" : [ 0.05, 0.95 ],
+  "duration" : [ 82.0, 82.0 ],
+  "executorDeserializeTime" : [ 22.0, 22.0 ],
+  "executorDeserializeCpuTime" : [ 1.8757295E7, 1.909066E7 ],
+  "executorRunTime" : [ 50.0, 50.0 ],
+  "executorCpuTime" : [ 3.5641213E7, 4.2141468E7 ],
+  "resultSize" : [ 2438.0, 2470.0 ],
+  "jvmGcTime" : [ 3.0, 3.0 ],
+  "resultSerializationTime" : [ 3.0, 3.0 ],
+  "gettingResultTime" : [ 0.0, 0.0 ],
+  "schedulerDelay" : [ 7.0, 7.0 ],
+  "peakExecutionMemory" : [ 0.0, 0.0 ],
+  "memoryBytesSpilled" : [ 0.0, 0.0 ],
+  "diskBytesSpilled" : [ 0.0, 0.0 ],
+  "inputMetrics" : {
+    "bytesRead" : [ 0.0, 0.0 ],
+    "recordsRead" : [ 0.0, 0.0 ]
+  },
+  "outputMetrics" : {
+    "bytesWritten" : [ 0.0, 0.0 ],
+    "recordsWritten" : [ 0.0, 0.0 ]
+  },
+  "shuffleReadMetrics" : {
+    "readBytes" : [ 345.0, 360.0 ],
+    "readRecords" : [ 4.0, 4.0 ],
+    "remoteBlocksFetched" : [ 0.0, 0.0 ],
+    "localBlocksFetched" : [ 4.0, 4.0 ],
+    "fetchWaitTime" : [ 0.0, 0.0 ],
+    "remoteBytesRead" : [ 0.0, 0.0 ],
+    "remoteBytesReadToDisk" : [ 0.0, 0.0 ],
+    "totalBlocksFetched" : [ 4.0, 4.0 ],
+    "remoteReqsDuration" : [ 0.0, 0.0 ],
+    "shufflePushReadMetricsDist" : {
+      "corruptMergedBlockChunks" : [ 0.0, 0.0 ],
+      "mergedFetchFallbackCount" : [ 0.0, 0.0 ],
+      "remoteMergedBlocksFetched" : [ 0.0, 0.0 ],
+      "localMergedBlocksFetched" : [ 0.0, 0.0 ],
+      "remoteMergedChunksFetched" : [ 0.0, 0.0 ],
+      "localMergedChunksFetched" : [ 0.0, 0.0 ],
+      "remoteMergedBytesRead" : [ 0.0, 0.0 ],
+      "localMergedBytesRead" : [ 0.0, 0.0 ],
+      "remoteMergedReqsDuration" : [ 0.0, 0.0 ]
+    }
+  },
+  "shuffleWriteMetrics" : {
+    "writeBytes" : [ 0.0, 0.0 ],
+    "writeRecords" : [ 0.0, 0.0 ],
+    "writeTime" : [ 0.0, 0.0 ]
+  }
+}

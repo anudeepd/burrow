@@ -1,0 +1,71 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 17,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 17",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_291",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_305",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 33,
+          "name": "ShuffledRowRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:20",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_291"
+        },
+        {
+          "id": 34,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:20",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_305"
+        },
+        {
+          "id": 35,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:20",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_305"
+        }
+      ],
+      "edges": [
+        {
+          "from": 33,
+          "to": 34
+        },
+        {
+          "from": 34,
+          "to": 35
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 32,
+      "to": 33,
+      "fromStage": null,
+      "toStage": 17
+    }
+  ]
+}

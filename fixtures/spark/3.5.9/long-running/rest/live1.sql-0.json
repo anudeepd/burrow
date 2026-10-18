@@ -1,0 +1,70 @@
+{
+  "id" : 0,
+  "status" : "RUNNING",
+  "description" : "long sql query",
+  "planDescription" : "== Physical Plan ==\nAdaptiveSparkPlan (13)\n+- == Current Plan ==\n   HashAggregate (7)\n   +- ShuffleQueryStage (6)\n      +- Exchange (5)\n         +- * HashAggregate (4)\n            +- * Project (3)\n               +- BatchEvalPython (2)\n                  +- * Range (1)\n+- == Initial Plan ==\n   HashAggregate (12)\n   +- Exchange (11)\n      +- HashAggregate (10)\n         +- Project (9)\n            +- BatchEvalPython (8)\n               +- Range (1)\n\n\n(1) Range [codegen id : 1]\nOutput [1]: [id#0L]\nArguments: Range (0, 1200, step=1, splits=Some(4))\n\n(2) BatchEvalPython\nInput [1]: [id#0L]\nArguments: [nap(id#0L)#2], [pythonUDF0#12]\n\n(3) Project [codegen id : 2]\nOutput [1]: [(pythonUDF0#12 % 3) AS _groupingexpression#11]\nInput [2]: [id#0L, pythonUDF0#12]\n\n(4) HashAggregate [codegen id : 2]\nInput [1]: [_groupingexpression#11]\nKeys [1]: [_groupingexpression#11]\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#13L]\nResults [2]: [_groupingexpression#11, count#14L]\n\n(5) Exchange\nInput [2]: [_groupingexpression#11, count#14L]\nArguments: hashpartitioning(_groupingexpression#11, 4), ENSURE_REQUIREMENTS, [plan_id=36]\n\n(6) ShuffleQueryStage\nOutput [2]: [_groupingexpression#11, count#14L]\nArguments: 0\n\n(7) HashAggregate\nInput [2]: [_groupingexpression#11, count#14L]\nKeys [1]: [_groupingexpression#11]\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#7L]\nResults [2]: [_groupingexpression#11 AS m#5, count(1)#7L AS count#8L]\n\n(8) BatchEvalPython\nInput [1]: [id#0L]\nArguments: [nap(id#0L)#2], [pythonUDF0#12]\n\n(9) Project\nOutput [1]: [(pythonUDF0#12 % 3) AS _groupingexpression#11]\nInput [2]: [id#0L, pythonUDF0#12]\n\n(10) HashAggregate\nInput [1]: [_groupingexpression#11]\nKeys [1]: [_groupingexpression#11]\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#13L]\nResults [2]: [_groupingexpression#11, count#14L]\n\n(11) Exchange\nInput [2]: [_groupingexpression#11, count#14L]\nArguments: hashpartitioning(_groupingexpression#11, 4), ENSURE_REQUIREMENTS, [plan_id=19]\n\n(12) HashAggregate\nInput [2]: [_groupingexpression#11, count#14L]\nKeys [1]: [_groupingexpression#11]\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#7L]\nResults [2]: [_groupingexpression#11 AS m#5, count(1)#7L AS count#8L]\n\n(13) AdaptiveSparkPlan\nOutput [2]: [m#5, count#8L]\nArguments: isFinalPlan=false\n\n",
+  "submissionTime" : "2026-10-03T07:14:46.078GMT",
+  "duration" : 2926,
+  "runningJobIds" : [ 1 ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 8,
+    "nodeName" : "Range",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 7,
+    "nodeName" : "WholeStageCodegen (1)",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 6,
+    "nodeName" : "BatchEvalPython",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 5,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 4,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 3,
+    "nodeName" : "WholeStageCodegen (2)",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 2,
+    "nodeName" : "Exchange",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 1,
+    "nodeName" : "HashAggregate",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 0,
+    "nodeName" : "AdaptiveSparkPlan",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ {
+    "fromId" : 1,
+    "toId" : 0
+  }, {
+    "fromId" : 2,
+    "toId" : 1
+  }, {
+    "fromId" : 4,
+    "toId" : 2
+  }, {
+    "fromId" : 5,
+    "toId" : 4
+  }, {
+    "fromId" : 6,
+    "toId" : 5
+  }, {
+    "fromId" : 8,
+    "toId" : 6
+  } ]
+}
