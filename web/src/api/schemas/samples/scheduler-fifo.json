@@ -1,0 +1,17 @@
+{
+  "scheduler": {
+    "schedulerInfo": {
+      "type": "fifoScheduler",
+      "capacity": 1,
+      "usedCapacity": "NaN",
+      "qstate": "RUNNING",
+      "minQueueMemoryCapacity": 1024,
+      "maxQueueMemoryCapacity": 8192,
+      "numNodes": 2,
+      "usedNodeCapacity": 0,
+      "availNodeCapacity": 8192,
+      "totalNodeCapacity": 8192,
+      "numContainers": 0
+    }
+  }
+}

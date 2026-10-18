@@ -1,0 +1,155 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 1,
+  "stages": [
+    {
+      "stageId": 2,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 2 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_0",
+          "name": "parallelize",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 40,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": true,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 81,
+          "name": "PythonRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 82,
+          "name": "PairwiseRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:326",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_0"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 40
+        },
+        {
+          "from": 40,
+          "to": 81
+        },
+        {
+          "from": 81,
+          "to": 82
+        }
+      ]
+    },
+    {
+      "stageId": 3,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 3",
+      "clusters": [
+        {
+          "id": "cluster_47",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_48",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster_43_1791011310000",
+          "name": "foreachRDD @ 12:38:30",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 85,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 83,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_47"
+        },
+        {
+          "id": 84,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_48"
+        },
+        {
+          "id": 114,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_43_1791011310000"
+        }
+      ],
+      "edges": [
+        {
+          "from": 83,
+          "to": 84
+        },
+        {
+          "from": 84,
+          "to": 85
+        },
+        {
+          "from": 85,
+          "to": 114
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 82,
+      "to": 83,
+      "fromStage": 2,
+      "toStage": 3
+    }
+  ]
+}

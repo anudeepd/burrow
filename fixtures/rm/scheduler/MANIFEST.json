@@ -1,0 +1,22 @@
+{
+  "domain": "scheduler",
+  "rm": "http://127.0.0.1:8088",
+  "captured": "2026-10-03",
+  "files": {
+    "capacity/scheduler.json": "GET /ws/v1/cluster/scheduler (Accept: application/json) — live capacity cluster: root → {default, adhoc, etl → {ingest, transform}}, 3 partitions (default, gpu, ssd), users, health, ACLs",
+    "capacity/scheduler-activities.json": "GET /ws/v1/cluster/scheduler/activities?nodeId=127.0.0.2:8041&groupBy=DIAGNOSTIC — live",
+    "capacity/scheduler-conf.json": "GET /ws/v1/cluster/scheduler-conf (Accept: application/json) — live, unwrapped {property:[{name,value}]}",
+    "capacity/nodes.json": "GET /ws/v1/cluster/nodes — live (3 NodeManagers, labels gpu/ssd)",
+    "capacity/cluster-info.json": "GET /ws/v1/cluster/info — live",
+    "capacity/apps-queue-root.etl.json": "GET /ws/v1/cluster/apps?queue=root.etl&states=RUNNING,ACCEPTED — live (empty)",
+    "capacity/jmx-queuemetrics-root.json": "GET /jmx?qry=Hadoop:service=ResourceManager,name=QueueMetrics,q0=root — live (aggregate container counters for the legacy health block)",
+    "fair/scheduler.json": "GET /ws/v1/cluster/scheduler from a real FairScheduler ResourceManager started for capture (rootQueue → {adhoc, etl → {transform}, default})",
+    "fair/cluster-info.json": "GET /ws/v1/cluster/info from the same throwaway FairScheduler RM",
+    "fifo/scheduler.json": "GET /ws/v1/cluster/scheduler from a real FifoScheduler ResourceManager started for capture (0 NodeManagers — the 'empty cluster' shape)",
+    "fifo/cluster-info.json": "GET /ws/v1/cluster/info from the same throwaway FifoScheduler RM"
+  },
+  "notes": [
+    "The shared test cluster is Capacity-scheduled and must not be cycled, so the Fair/FIFO payloads come from throwaway ResourceManagers on loopback with disjoint ports (capture script: /tmp/ys-sched-rm/capture_alt_rm.py, run with the cluster's own conf templates). They are genuine Hadoop 3.4.3 Jersey output, just with 0 NodeManagers.",
+    "cluster-info.json in this directory is informational; the app reads /api/yarn/info."
+  ]
+}

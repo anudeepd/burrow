@@ -1,0 +1,33 @@
+[ {
+  "taskId" : 4,
+  "index" : 4,
+  "attempt" : 0,
+  "partitionId" : 4,
+  "launchTime" : "2026-10-03T07:09:29.942GMT",
+  "duration" : 2399,
+  "executorId" : "driver",
+  "host" : "localhost",
+  "status" : "RUNNING",
+  "taskLocality" : "PROCESS_LOCAL",
+  "speculative" : false,
+  "accumulatorUpdates" : [ ],
+  "executorLogs" : { },
+  "schedulerDelay" : 0,
+  "gettingResultTime" : 0
+}, {
+  "taskId" : 5,
+  "index" : 5,
+  "attempt" : 0,
+  "partitionId" : 5,
+  "launchTime" : "2026-10-03T07:09:29.944GMT",
+  "duration" : 2397,
+  "executorId" : "driver",
+  "host" : "localhost",
+  "status" : "RUNNING",
+  "taskLocality" : "PROCESS_LOCAL",
+  "speculative" : false,
+  "accumulatorUpdates" : [ ],
+  "executorLogs" : { },
+  "schedulerDelay" : 0,
+  "gettingResultTime" : 0
+} ]

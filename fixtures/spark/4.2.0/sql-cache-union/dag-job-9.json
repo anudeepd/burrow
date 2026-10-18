@@ -1,0 +1,73 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 9,
+  "stages": [
+    {
+      "stageId": 21,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 21",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_305",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 42,
+          "name": "ParallelCollectionRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:14",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_305"
+        },
+        {
+          "id": 43,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:14",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_305"
+        },
+        {
+          "id": 44,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:14",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_305"
+        },
+        {
+          "id": 45,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/sql_cache_union.py:14",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_305"
+        }
+      ],
+      "edges": [
+        {
+          "from": 42,
+          "to": 43
+        },
+        {
+          "from": 43,
+          "to": 44
+        },
+        {
+          "from": 44,
+          "to": 45
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

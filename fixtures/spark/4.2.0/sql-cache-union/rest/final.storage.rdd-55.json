@@ -1,0 +1,44 @@
+{
+  "id" : 55,
+  "name" : "*(1) Project [(id#0L % 100) AS k#1L, (id#0L * 3) AS v#2L]\n+- *(1) Range (0, 50000, step=1, splits=4)\n",
+  "numPartitions" : 4,
+  "numCachedPartitions" : 4,
+  "storageLevel" : "Disk Memory Deserialized 1x Replicated",
+  "memoryUsed" : 102856,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:46271",
+    "memoryUsed" : 102856,
+    "memoryRemaining" : 455039234,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 102856,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 455039234,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_55_0",
+    "storageLevel" : "Memory Deserialized 1x Replicated",
+    "memoryUsed" : 25696,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_55_1",
+    "storageLevel" : "Memory Deserialized 1x Replicated",
+    "memoryUsed" : 25720,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_55_2",
+    "storageLevel" : "Memory Deserialized 1x Replicated",
+    "memoryUsed" : 25720,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_55_3",
+    "storageLevel" : "Memory Deserialized 1x Replicated",
+    "memoryUsed" : 25720,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+}

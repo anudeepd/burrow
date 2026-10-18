@@ -1,0 +1,242 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 3,
+  "stages": [
+    {
+      "stageId": 6,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 6",
+      "clusters": [
+        {
+          "id": "cluster123",
+          "name": "MicroBatchScan",
+          "parentId": null
+        },
+        {
+          "id": "cluster120",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster119",
+          "name": "EventTimeWatermark",
+          "parentId": null
+        },
+        {
+          "id": "cluster114",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster113",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 36,
+          "name": "DataSourceRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster123"
+        },
+        {
+          "id": 37,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster123"
+        },
+        {
+          "id": 38,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster120"
+        },
+        {
+          "id": 39,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster119"
+        },
+        {
+          "id": 40,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster114"
+        },
+        {
+          "id": 41,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster113"
+        }
+      ],
+      "edges": [
+        {
+          "from": 36,
+          "to": 37
+        },
+        {
+          "from": 37,
+          "to": 38
+        },
+        {
+          "from": 38,
+          "to": 39
+        },
+        {
+          "from": 39,
+          "to": 40
+        },
+        {
+          "from": 40,
+          "to": 41
+        }
+      ]
+    },
+    {
+      "stageId": 7,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 7",
+      "clusters": [
+        {
+          "id": "cluster113",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster110",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster109",
+          "name": "StateStoreRestore",
+          "parentId": null
+        },
+        {
+          "id": "cluster106",
+          "name": "WholeStageCodegen (4)",
+          "parentId": null
+        },
+        {
+          "id": "cluster105",
+          "name": "StateStoreSave",
+          "parentId": null
+        },
+        {
+          "id": "cluster102",
+          "name": "WholeStageCodegen (5)",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 42,
+          "name": "ShuffledRowRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster113"
+        },
+        {
+          "id": 43,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster110"
+        },
+        {
+          "id": 44,
+          "name": "ReadStateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster109"
+        },
+        {
+          "id": 45,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster106"
+        },
+        {
+          "id": 46,
+          "name": "StateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster105"
+        },
+        {
+          "id": 47,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster102"
+        }
+      ],
+      "edges": [
+        {
+          "from": 42,
+          "to": 43
+        },
+        {
+          "from": 43,
+          "to": 44
+        },
+        {
+          "from": 44,
+          "to": 45
+        },
+        {
+          "from": 45,
+          "to": 46
+        },
+        {
+          "from": 46,
+          "to": 47
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 41,
+      "to": 42,
+      "fromStage": 6,
+      "toStage": 7
+    }
+  ]
+}

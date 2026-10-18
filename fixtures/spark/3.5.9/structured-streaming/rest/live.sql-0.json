@@ -1,0 +1,17 @@
+{
+  "id" : 0,
+  "status" : "COMPLETED",
+  "description" : "start at NativeMethodAccessorImpl.java:0",
+  "planDescription" : "== Physical Plan ==\nExecute CreateViewCommand (1)\n   +- CreateViewCommand (2)\n         +- MemoryPlan (3)\n\n\n(1) Execute CreateViewCommand\nOutput: []\n\n(2) CreateViewCommand\nArguments: `rate_counts`, false, true, LocalTempView, true\n\n(3) MemoryPlan\nArguments: MemorySink, [window#17-T10000ms, k#18L, count#19L]\n\n",
+  "submissionTime" : "2026-10-03T07:14:18.542GMT",
+  "duration" : 12,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 0,
+    "nodeName" : "Execute CreateViewCommand",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ ]
+}

@@ -1,0 +1,12 @@
+/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/bob/appcache/application_1791010984040_0034/container_1791010984040_0034_01_000001/pyspark.zip/pyspark/core/context.py:376: RuntimeWarning: Failed to add file [file:///home/puppyseal/Documents/code_repos/burrow/cluster/workloads/_common.py] specified in 'spark.submit.pyFiles' to Python path:
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/bob/filecache/39
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/bob/appcache/application_1791010984040_0034/spark-3a12f3a1-08d3-4a63-806f-b7141ccb1b5f/userFiles-46953d39-67b7-44ce-8971-4233b419321a
+  /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/pyspark/jars/spark-core_2.13-4.2.0.jar
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/bob/appcache/application_1791010984040_0034/container_1791010984040_0034_01_000001/__pyfiles__
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/bob/appcache/application_1791010984040_0034/container_1791010984040_0034_01_000001/pyspark.zip
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/bob/appcache/application_1791010984040_0034/container_1791010984040_0034_01_000001/py4j-0.10.9.9-src.zip
+  /home/puppyseal/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python312.zip
+  /home/puppyseal/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12
+  /home/puppyseal/.local/share/uv/python/cpython-3.12-linux-x86_64-gnu/lib/python3.12/lib-dynload
+  /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages
+  warnings.warn(

@@ -1,0 +1,561 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="c3a2928d-250d-4df3-9082-f6acfb875320">setUIRoot('')</script>
+        <script nonce="c3a2928d-250d-4df3-9082-f6acfb875320">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="c3a2928d-250d-4df3-9082-f6acfb875320">setAppBasePath('')</script>
+        
+        
+        <link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/timeline-view.js"></script>
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-structured-streaming - Spark Jobs</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item active">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/StreamingQuery/">Structured Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-structured-streaming" class="text-nowrap">burrow-structured-streaming</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Spark Jobs
+                <sup>
+      (<a data-bs-toggle="tooltip" title="A job is triggered by an action, like count() or saveAsTextFile(). Click on a job to see information about the stages of tasks inside it.">?</a>)
+    </sup>
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <ul class="list-unstyled">
+          <li>
+            <strong>Scheduling Mode: </strong>
+            FIFO
+          </li>
+          
+          <li id="completed-summary">
+                <a href="#completed"><strong>Completed Jobs:</strong></a>
+                7
+              </li>
+          
+        </ul>
+      </div><span class="expand-application-timeline">
+      <span class="expand-application-timeline-arrow arrow-closed"></span>
+      <a data-bs-toggle="tooltip" title="Shows when jobs started and ended and when executors joined or left. Drag to scroll.
+       Click Enable Zooming and use mouse wheel to zoom in/out.">
+      Event Timeline
+    </a>
+    </span><div id="application-timeline" class="collapsed">
+      
+      
+      <div class="control-panel">
+        <div id="application-timeline-zoom-lock">
+          <input type="checkbox"></input>
+          <span>Enable zooming</span>
+        </div>
+      </div>
+    </div><script type="text/javascript" nonce="c3a2928d-250d-4df3-9082-f6acfb875320">
+      drawApplicationTimeline(
+[
+  {
+    'id': 'executors',
+    'content': '<div>Executors</div><div class="legend-area"><svg width="150px" height="55px">      <rect class="executor-added-legend" x="5px" y="5px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="17px">Added</text>      <rect class="executor-removed-legend" x="5px" y="30px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="42px">Removed</text>    </svg></div>',
+  },
+  {
+    'id': 'jobs',
+    'content': '<div>Jobs</div><div class="legend-area"><svg width="150px" height="85px">      <rect class="succeeded-job-legend" x="5px" y="5px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="17px">Succeeded</text>      <rect class="failed-job-legend" x="5px" y="30px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="42px">Failed</text>      <rect class="running-job-legend" x="5px" y="55px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="67px">Running</text>    </svg></div>',
+  }
+]
+        ,[
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011340911),
+  'end': new Date(1791011341633),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 0 (Job 0)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/03 12:39:00' +
+     '<br>Completed: 2026/10/03 12:39:01">' +
+    'rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 0 (Job 0)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011341988),
+  'end': new Date(1791011342626),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 1 (Job 1)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/03 12:39:01' +
+     '<br>Completed: 2026/10/03 12:39:02">' +
+    'rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 1 (Job 1)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011342906),
+  'end': new Date(1791011343194),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 2 (Job 2)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/03 12:39:02' +
+     '<br>Completed: 2026/10/03 12:39:03">' +
+    'rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 2 (Job 2)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011344152),
+  'end': new Date(1791011344374),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 3 (Job 3)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/03 12:39:04' +
+     '<br>Completed: 2026/10/03 12:39:04">' +
+    'rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 3 (Job 3)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011346146),
+  'end': new Date(1791011346377),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 4 (Job 4)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/03 12:39:06' +
+     '<br>Completed: 2026/10/03 12:39:06">' +
+    'rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 4 (Job 4)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011348152),
+  'end': new Date(1791011348395),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 5 (Job 5)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/03 12:39:08' +
+     '<br>Completed: 2026/10/03 12:39:08">' +
+    'rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 5 (Job 5)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011350195),
+  'end': new Date(1791011350450),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 6 (Job 6)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/03 12:39:10' +
+     '<br>Completed: 2026/10/03 12:39:10">' +
+    'rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 6 (Job 6)</div>'
+}
+         ,
+{
+  'className': 'executor added',
+  'group': 'executors',
+  'start': new Date(1791011333178),
+  'content': '<div class="executor-event-content"' +
+    'data-bs-toggle="tooltip"' +
+    'data-bs-title="Executor driver<br>' +
+    'Added at 2026/10/03 12:38:53"' +
+    'data-bs-html="true">Executor driver added</div>'
+}
+         ], 1791011332019, 330);
+    </script><span id="completed" class="collapse-table" data-bs-toggle="collapse" data-bs-target="#aggregated-completedJobs" aria-expanded="true" aria-controls="aggregated-completedJobs" data-collapse-name="collapse-aggregated-completedJobs">
+          <h4>
+            <span class="collapse-table-arrow arrow-open"></span>
+            <a>Completed Jobs (7)</a>
+          </h4>
+        </span><div class="collapsible-table collapse show" id="aggregated-completedJobs">
+          <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedJob-table-top-page" method="get" action="/jobs/?&completedJob.sort=Job+Id+%28Job+Group%29&completedJob.desc=true#completed" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedJob.sort" value="Job Id (Job Group)"/><input type="hidden" name="completedJob.desc" value="true"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedJob.page" id="form-completedJob-table-top-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedJob-table-top-page-size" name="completedJob.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completedJob-table">
+          <thead>
+      <tr><th>
+            <a href="/jobs/?&completedJob.sort=Job+Id+%28Job+Group%29&completedJob.desc=false&completedJob.pageSize=100#completed">
+              <span data-bs-toggle="tooltip" title="">
+      Job Id (Job Group)&nbsp;&#x25BE;
+    </span>
+            </a>
+          </th><th>
+              <a href="/jobs/?&completedJob.sort=Description&completedJob.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="">
+      Description
+    </span>
+              </a>
+            </th><th>
+              <a href="/jobs/?&completedJob.sort=Submitted&completedJob.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="">
+      Submitted
+    </span>
+              </a>
+            </th><th>
+              <a href="/jobs/?&completedJob.sort=Duration&completedJob.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="Elapsed time since the job was submitted until execution completion of all its stages.">
+      Duration
+    </span>
+              </a>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Stages: Succeeded/Total
+    </span>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Tasks (for all stages): Succeeded/Total
+    </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr id="job-6">
+      <td>
+        6 (3510a78c-3a84-4680-8197-1558cc9179c2)
+      </td>
+      <td>
+        <span class="description-input">rate_counts
+id = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3
+runId = 3510a78c-3a84-4680-8197-1558cc9179c2
+batch = 6</span> 
+        <a href="/jobs/job/?id=6" class="name-link">start at NativeMethodAccessorImpl.java:0</a>
+      </td>
+      <td>
+        2026/10/03 12:39:10
+      </td>
+      <td>0.3 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="6/6">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        6/6
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-5">
+      <td>
+        5 (3510a78c-3a84-4680-8197-1558cc9179c2)
+      </td>
+      <td>
+        <span class="description-input">rate_counts
+id = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3
+runId = 3510a78c-3a84-4680-8197-1558cc9179c2
+batch = 5</span> 
+        <a href="/jobs/job/?id=5" class="name-link">start at NativeMethodAccessorImpl.java:0</a>
+      </td>
+      <td>
+        2026/10/03 12:39:08
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="6/6">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        6/6
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-4">
+      <td>
+        4 (3510a78c-3a84-4680-8197-1558cc9179c2)
+      </td>
+      <td>
+        <span class="description-input">rate_counts
+id = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3
+runId = 3510a78c-3a84-4680-8197-1558cc9179c2
+batch = 4</span> 
+        <a href="/jobs/job/?id=4" class="name-link">start at NativeMethodAccessorImpl.java:0</a>
+      </td>
+      <td>
+        2026/10/03 12:39:06
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="6/6">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        6/6
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-3">
+      <td>
+        3 (3510a78c-3a84-4680-8197-1558cc9179c2)
+      </td>
+      <td>
+        <span class="description-input">rate_counts
+id = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3
+runId = 3510a78c-3a84-4680-8197-1558cc9179c2
+batch = 3</span> 
+        <a href="/jobs/job/?id=3" class="name-link">start at NativeMethodAccessorImpl.java:0</a>
+      </td>
+      <td>
+        2026/10/03 12:39:04
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="6/6">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        6/6
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-2">
+      <td>
+        2 (3510a78c-3a84-4680-8197-1558cc9179c2)
+      </td>
+      <td>
+        <span class="description-input">rate_counts
+id = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3
+runId = 3510a78c-3a84-4680-8197-1558cc9179c2
+batch = 2</span> 
+        <a href="/jobs/job/?id=2" class="name-link">start at NativeMethodAccessorImpl.java:0</a>
+      </td>
+      <td>
+        2026/10/03 12:39:02
+      </td>
+      <td>0.3 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="6/6">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        6/6
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-1">
+      <td>
+        1 (3510a78c-3a84-4680-8197-1558cc9179c2)
+      </td>
+      <td>
+        <span class="description-input">rate_counts
+id = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3
+runId = 3510a78c-3a84-4680-8197-1558cc9179c2
+batch = 1</span> 
+        <a href="/jobs/job/?id=1" class="name-link">start at NativeMethodAccessorImpl.java:0</a>
+      </td>
+      <td>
+        2026/10/03 12:39:01
+      </td>
+      <td>0.6 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="6/6">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        6/6
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-0">
+      <td>
+        0 (3510a78c-3a84-4680-8197-1558cc9179c2)
+      </td>
+      <td>
+        <span class="description-input">rate_counts
+id = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3
+runId = 3510a78c-3a84-4680-8197-1558cc9179c2
+batch = 0</span> 
+        <a href="/jobs/job/?id=0" class="name-link">start at NativeMethodAccessorImpl.java:0</a>
+      </td>
+      <td>
+        2026/10/03 12:39:00
+      </td>
+      <td>0.7 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedJob-table-bottom-page" method="get" action="/jobs/?&completedJob.sort=Job+Id+%28Job+Group%29&completedJob.desc=true#completed" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedJob.sort" value="Job Id (Job Group)"/><input type="hidden" name="completedJob.desc" value="true"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedJob.page" id="form-completedJob-table-bottom-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedJob-table-bottom-page-size" name="completedJob.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+      </div>
+        </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:38:52</span><span id="footer-uptime" data-start-time="1791011332019"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

@@ -1,0 +1,21 @@
+{
+  "jobId" : 1,
+  "name" : "sortByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:23",
+  "submissionTime" : "2026-10-03T07:13:40.541GMT",
+  "completionTime" : "2026-10-03T07:13:40.702GMT",
+  "stageIds" : [ 15, 16, 17, 24, 18, 25, 26, 27, 19, 20, 21, 22, 14, 23 ],
+  "jobTags" : [ ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 73,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 3,
+  "numSkippedTasks" : 70,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 3,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 1,
+  "numSkippedStages" : 13,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

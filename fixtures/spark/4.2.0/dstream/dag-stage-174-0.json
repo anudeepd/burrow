@@ -1,0 +1,152 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 174,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 174",
+      "clusters": [
+        {
+          "id": "cluster_15",
+          "name": "parallelize",
+          "parentId": null
+        },
+        {
+          "id": "cluster_16",
+          "name": "parallelize",
+          "parentId": null
+        },
+        {
+          "id": "cluster_17",
+          "name": "parallelize",
+          "parentId": null
+        },
+        {
+          "id": "cluster_44_1791011327000",
+          "name": "window @ 12:38:47",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 55,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": true,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 56,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": true,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 57,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": true,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 444,
+          "name": "PythonRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 445,
+          "name": "PairwiseRDD",
+          "callsite": "call at /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/py4j/clientserver.py:644",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 15,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:326",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_15"
+        },
+        {
+          "id": 16,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:326",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_16"
+        },
+        {
+          "id": 17,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:326",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_17"
+        },
+        {
+          "id": 443,
+          "name": "UnionRDD",
+          "callsite": "window at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_44_1791011327000"
+        }
+      ],
+      "edges": [
+        {
+          "from": 15,
+          "to": 55
+        },
+        {
+          "from": 16,
+          "to": 56
+        },
+        {
+          "from": 17,
+          "to": 57
+        },
+        {
+          "from": 55,
+          "to": 443
+        },
+        {
+          "from": 56,
+          "to": 443
+        },
+        {
+          "from": 57,
+          "to": 443
+        },
+        {
+          "from": 443,
+          "to": 444
+        },
+        {
+          "from": 444,
+          "to": 445
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

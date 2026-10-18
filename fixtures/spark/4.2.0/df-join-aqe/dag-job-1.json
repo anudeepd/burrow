@@ -1,0 +1,78 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 1,
+  "stages": [
+    {
+      "stageId": 1,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 1",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_81",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_82",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_81"
+        },
+        {
+          "id": 3,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_81"
+        },
+        {
+          "id": 5,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_81"
+        },
+        {
+          "id": 7,
+          "name": "MapPartitionsRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/df_join_aqe.py:22",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_82"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 3
+        },
+        {
+          "from": 3,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 7
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

@@ -1,0 +1,196 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 2,
+  "stages": [
+    {
+      "stageId": 4,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 4 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster12",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster11",
+          "name": "BatchEvalPython",
+          "parentId": null
+        },
+        {
+          "id": "cluster7",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster6",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 11,
+          "name": "ParallelCollectionRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster12"
+        },
+        {
+          "id": 12,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster12"
+        },
+        {
+          "id": 13,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster12"
+        },
+        {
+          "id": 14,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster11"
+        },
+        {
+          "id": 15,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster11"
+        },
+        {
+          "id": 16,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster7"
+        },
+        {
+          "id": 17,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster6"
+        }
+      ],
+      "edges": [
+        {
+          "from": 11,
+          "to": 12
+        },
+        {
+          "from": 12,
+          "to": 13
+        },
+        {
+          "from": 13,
+          "to": 14
+        },
+        {
+          "from": 14,
+          "to": 15
+        },
+        {
+          "from": 15,
+          "to": 16
+        },
+        {
+          "from": 16,
+          "to": 17
+        }
+      ]
+    },
+    {
+      "stageId": 5,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 5",
+      "clusters": [
+        {
+          "id": "cluster17",
+          "name": "AQEShuffleRead",
+          "parentId": null
+        },
+        {
+          "id": "cluster14",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster18",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 18,
+          "name": "ShuffledRowRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster17"
+        },
+        {
+          "id": 19,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster14"
+        },
+        {
+          "id": 20,
+          "name": "MapPartitionsRDD",
+          "callsite": "collectToPython at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster18"
+        }
+      ],
+      "edges": [
+        {
+          "from": 18,
+          "to": 19
+        },
+        {
+          "from": 19,
+          "to": 20
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 17,
+      "to": 18,
+      "fromStage": 4,
+      "toStage": 5
+    }
+  ]
+}

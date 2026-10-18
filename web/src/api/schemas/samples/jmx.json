@@ -1,0 +1,17 @@
+{
+  "beans": [
+    {
+      "name": "Hadoop:service=ResourceManager,name=JvmMetrics",
+      "modelerType": "JvmMetrics",
+      "tag$Context": "jvm",
+      "MemHeapUsedM": 120.5,
+      "ThreadsRunnable": 12
+    },
+    {
+      "name": "java.lang:type=Runtime",
+      "modelerType": "sun.management.RuntimeImpl",
+      "Uptime": 123456,
+      "InputArguments": ["-Xmx1g"]
+    }
+  ]
+}

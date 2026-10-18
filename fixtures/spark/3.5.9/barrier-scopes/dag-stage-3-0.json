@@ -1,0 +1,66 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 3,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 3",
+      "clusters": [
+        {
+          "id": "cluster9002",
+          "name": "shared <scope>",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 6,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster9002"
+        },
+        {
+          "id": 7,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:160",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster9002"
+        },
+        {
+          "id": 8,
+          "name": "PythonRDD",
+          "callsite": "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/barrier_scopes.py:36",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster9002"
+        }
+      ],
+      "edges": [
+        {
+          "from": 6,
+          "to": 7
+        },
+        {
+          "from": 7,
+          "to": 8
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 5,
+      "to": 6,
+      "fromStage": null,
+      "toStage": 3
+    }
+  ]
+}

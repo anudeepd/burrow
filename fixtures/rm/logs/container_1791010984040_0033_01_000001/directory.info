@@ -1,0 +1,43 @@
+ls -l:
+total 36
+-rw-r--r--. 1 puppyseal puppyseal   74 Oct  3 13:21 container_tokens
+-rwx------. 1 puppyseal puppyseal  857 Oct  3 13:21 default_container_executor_session.sh
+-rwx------. 1 puppyseal puppyseal  912 Oct  3 13:21 default_container_executor.sh
+-rwx------. 1 puppyseal puppyseal 8156 Oct  3 13:21 launch_container.sh
+lrwxrwxrwx. 1 puppyseal puppyseal  121 Oct  3 13:21 long_running.py -> /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/filecache/67/long_running.py
+lrwxrwxrwx. 1 puppyseal puppyseal  127 Oct  3 13:21 py4j-0.10.9.9-src.zip -> /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/filecache/65/py4j-0.10.9.9-src.zip
+drwxr-xr-x. 1 puppyseal puppyseal   20 Oct  3 13:21 __pyfiles__
+lrwxrwxrwx. 1 puppyseal puppyseal  117 Oct  3 13:21 pyspark.zip -> /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/filecache/63/pyspark.zip
+lrwxrwxrwx. 1 puppyseal puppyseal  124 Oct  3 13:21 __spark_conf__ -> /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/filecache/66/__spark_conf__.zip
+drwx--x---. 1 puppyseal puppyseal    0 Oct  3 13:21 tmp
+find -L . -maxdepth 5 -ls:
+  6551416      0 drwx--x---   1 puppyseal puppyseal      594 Oct  3 13:21 .
+  6551418      0 drwx--x---   1 puppyseal puppyseal        0 Oct  3 13:21 ./tmp
+  6551419      4 -rw-r--r--   1 puppyseal puppyseal       74 Oct  3 13:21 ./container_tokens
+  6551420      4 -rw-r--r--   1 puppyseal puppyseal       12 Oct  3 13:21 ./.container_tokens.crc
+  6551421      8 -rwx------   1 puppyseal puppyseal     8156 Oct  3 13:21 ./launch_container.sh
+  6551422      4 -rw-r--r--   1 puppyseal puppyseal       72 Oct  3 13:21 ./.launch_container.sh.crc
+  6551423      4 -rwx------   1 puppyseal puppyseal      857 Oct  3 13:21 ./default_container_executor_session.sh
+  6551424      4 -rw-r--r--   1 puppyseal puppyseal       16 Oct  3 13:21 ./.default_container_executor_session.sh.crc
+  6551425      4 -rwx------   1 puppyseal puppyseal      912 Oct  3 13:21 ./default_container_executor.sh
+  6551426      4 -rw-r--r--   1 puppyseal puppyseal       16 Oct  3 13:21 ./.default_container_executor.sh.crc
+  6551379   3628 -r-x------   1 puppyseal puppyseal  3713087 Oct  3 13:21 ./pyspark.zip
+  6551389      0 drwx------   1 puppyseal puppyseal      226 Oct  3 13:21 ./__spark_conf__
+  6551390      4 -r-x------   1 puppyseal puppyseal      448 Oct  3 13:21 ./__spark_conf__/log4j2.properties
+  6551391      0 drwx------   1 puppyseal puppyseal      242 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__
+  6551392      4 -r-x------   1 puppyseal puppyseal     1597 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/hadoop-env.sh
+  6551393      8 -r-x------   1 puppyseal puppyseal     4820 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/yarn-site.xml
+  6551394     12 -r-x------   1 puppyseal puppyseal     8922 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/capacity-scheduler.xml
+  6551395      4 -r-x------   1 puppyseal puppyseal      967 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/core-site.xml
+  6551396      4 -r-x------   1 puppyseal puppyseal     1024 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/fair-scheduler.xml
+  6551397      4 -r-x------   1 puppyseal puppyseal     2480 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/mapred-site.xml
+  6551398      4 -r-x------   1 puppyseal puppyseal      954 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/log4j.properties
+  6551399      4 -r-x------   1 puppyseal puppyseal      418 Oct  3 13:21 ./__spark_conf__/__hadoop_conf__/topology.sh
+  6551400    172 -r-x------   1 puppyseal puppyseal   175715 Oct  3 13:21 ./__spark_conf__/__spark_hadoop_conf__.xml
+  6551401      4 -r-x------   1 puppyseal puppyseal     2242 Oct  3 13:21 ./__spark_conf__/__spark_conf__.properties
+  6551402      4 -r-x------   1 puppyseal puppyseal      964 Oct  3 13:21 ./__spark_conf__/__spark_dist_cache__.properties
+  6551386     44 -r-x------   1 puppyseal puppyseal    43108 Oct  3 13:21 ./py4j-0.10.9.9-src.zip
+  6551436      0 drwxr-xr-x   1 puppyseal puppyseal       20 Oct  3 13:21 ./__pyfiles__
+  6551383      4 -r-x------   1 puppyseal puppyseal     1170 Oct  3 13:21 ./__pyfiles__/_common.py
+  6551405      4 -r-x------   1 puppyseal puppyseal     1978 Oct  3 13:21 ./long_running.py
+broken symlinks(find -L . -maxdepth 5 -type l -ls):

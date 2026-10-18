@@ -1,0 +1,36 @@
+[build-system]
+requires = ["maturin>=1.14,<2"]
+build-backend = "maturin"
+
+[project]
+name = "yarn-burrow"
+version = "0.1.0"
+description = "A modern UI for Apache Hadoop YARN and Spark-on-YARN — one read-only Rust binary"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["hadoop", "yarn", "spark", "webui", "observability"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: System Administrators",
+  "Programming Language :: Rust",
+  "Topic :: System :: Distributed Computing",
+  "License :: OSI Approved :: MIT License",
+]
+# No runtime Python dependencies: the wheel only carries the binary.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/anudeepd/burrow"
+Source = "https://github.com/anudeepd/burrow"
+
+[tool.maturin]
+# One self-contained binary per platform, dropped on PATH by pip.
+bindings = "bin"
+manifest-path = "crates/burrow/Cargo.toml"
+strip = true
+# `web/dist/client` is embedded into the binary by the crate's build script, so the wheel needs no
+# data files; `sdist`-from-source users need a Rust toolchain (and, for the web UI, `bun run build`).
+include = [{ path = "README.md", format = "sdist" }, { path = "LICENSE", format = "sdist" }]

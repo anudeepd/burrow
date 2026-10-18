@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    #nodelabels_paginate span {font-weight:normal}
+    #nodelabels .progress {width:8em}
+    #nodelabels_processing {top:-1.5em; font-size:1em;
+      color:#000; background:#fefefe}
+    #nodelabels .healthStatus {width:10em}
+    #nodelabels .healthReport {width:10em}
+  </style>
+  <title>
+    Node labels of the cluster
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    nodelabelsDataTable =  $('#nodelabels').dataTable({bStateSave : true, "fnStateSave": function (oSettings, oData) {  data = oData.aoSearchCols;for(i =0 ; i < data.length; i ++) {data[i].sSearch = ""} sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, "fnStateLoad": function (oSettings) { return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, bJQueryUI: true, sPaginationType: 'full_numbers'}).fnSetFilteringDelay(188);
+    });
+  </script>
+  </head><body><div id="jsnotice" class="ui-state-error" style="display: none;">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/static/hadoop-st.png">
+            </div>
+            <h1>
+              Node labels of the cluster
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav" class="ui-accordion ui-widget ui-helper-reset" role="tablist">
+            <h3 class="ui-accordion-header ui-corner-top ui-state-default ui-accordion-header-active ui-state-active ui-accordion-icons" role="tab" id="ui-id-1" aria-controls="ui-id-2" aria-selected="true" aria-expanded="true" tabindex="0"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span>
+              Cluster
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active" id="ui-id-2" aria-labelledby="ui-id-1" role="tabpanel" aria-hidden="false" style="height: 222.766px;">
+              <li>
+                <a href="/cluster/cluster">About</a>
+              </li><li>
+                <a href="/cluster/nodes">Nodes</a>
+              </li><li>
+                <a href="/cluster/nodelabels">Node Labels</a>
+              </li><li>
+                <a href="/cluster/apps">Applications</a>
+                <ul>
+                  <li>
+                  </li><li>
+                    <a href="/cluster/apps/NEW">NEW</a>
+                  </li><li>
+                    <a href="/cluster/apps/NEW_SAVING">NEW_SAVING</a>
+                  </li><li>
+                    <a href="/cluster/apps/SUBMITTED">SUBMITTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/ACCEPTED">ACCEPTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/RUNNING">RUNNING</a>
+                  </li><li>
+                    <a href="/cluster/apps/FINISHED">FINISHED</a>
+                  </li><li>
+                    <a href="/cluster/apps/FAILED">FAILED</a>
+                  </li><li>
+                    <a href="/cluster/apps/KILLED">KILLED</a>
+                </li></ul>
+              </li><li>
+                <a href="/cluster/scheduler">Scheduler</a>
+            </li></ul>
+            <h3 class="ui-accordion-header ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons" role="tab" id="ui-id-3" aria-controls="ui-id-4" aria-selected="false" aria-expanded="false" tabindex="-1"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>
+              Tools
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content" id="ui-id-4" aria-labelledby="ui-id-3" role="tabpanel" aria-hidden="true" style="display: none; height: 222.766px;">
+              <li>
+                <a href="/conf">Configuration</a>
+              </li><li>
+                <a href="/logs">Local logs</a>
+              </li><li>
+                <a href="/stacks">Server stacks</a>
+              </li><li>
+                <a href="/jmx?qry=Hadoop:*">Server metrics</a>
+            </li></ul>
+          </div>
+        </td>
+        <td class="content">
+          <div id="nodelabels_wrapper" class="dataTables_wrapper no-footer"><div class="dataTables_length" id="nodelabels_length"><label>Show <select name="nodelabels_length" aria-controls="nodelabels" class=""><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select> entries</label></div><div id="nodelabels_filter" class="dataTables_filter"><label>Search:<input type="search" class="" placeholder="" aria-controls="nodelabels"></label></div><table id="nodelabels" class="dataTable no-footer" aria-describedby="nodelabels_info">
+            <thead>
+              <tr><th class="name sorting sorting_asc" tabindex="0" aria-controls="nodelabels" rowspan="1" colspan="1" aria-sort="ascending" aria-label="
+                  Label Name
+                : activate to sort column descending" style="width: 317.188px;">
+                  Label Name
+                </th><th class="type sorting" tabindex="0" aria-controls="nodelabels" rowspan="1" colspan="1" aria-label="
+                  Label Type
+                : activate to sort column ascending" style="width: 286.438px;">
+                  Label Type
+                </th><th class="numOfActiveNMs sorting" tabindex="0" aria-controls="nodelabels" rowspan="1" colspan="1" aria-label="
+                  Num Of Active NMs
+                : activate to sort column ascending" style="width: 290.375px;">
+                  Num Of Active NMs
+                </th><th class="totalResource sorting" tabindex="0" aria-controls="nodelabels" rowspan="1" colspan="1" aria-label="
+                  Total Resource
+                : activate to sort column ascending" style="width: 332.109px;">
+                  Total Resource
+                </th></tr>
+            </thead>
+            <tbody>
+              
+              
+              
+            <tr class="odd">
+                <td class="sorting_1">
+                  &lt;DEFAULT_PARTITION&gt;
+                </td>
+                <td>
+                  Exclusive Partition
+                </td>
+                <td>
+                  <a href="/cluster/nodes/?node.label=">1</a>
+                </td>
+                <td>
+                  &lt;memory:3 GB, vCores:4&gt;
+                </td>
+              </tr><tr class="even">
+                <td class="sorting_1">
+                  gpu
+                </td>
+                <td>
+                  Exclusive Partition
+                </td>
+                <td>
+                  <a href="/cluster/nodes/?node.label=gpu">1</a>
+                </td>
+                <td>
+                  &lt;memory:3 GB, vCores:4&gt;
+                </td>
+              </tr><tr class="odd">
+                <td class="sorting_1">
+                  ssd
+                </td>
+                <td>
+                  Non Exclusive Partition
+                </td>
+                <td>
+                  <a href="/cluster/nodes/?node.label=ssd">1</a>
+                </td>
+                <td>
+                  &lt;memory:3 GB, vCores:4&gt;
+                </td>
+              </tr></tbody>
+          </table><div class="dataTables_info" id="nodelabels_info" role="status" aria-live="polite">Showing 1 to 3 of 3 entries</div><div class="dataTables_paginate paging_full_numbers" id="nodelabels_paginate"><a class="paginate_button first disabled" aria-controls="nodelabels" data-dt-idx="0" tabindex="-1" id="nodelabels_first">First</a><a class="paginate_button previous disabled" aria-controls="nodelabels" data-dt-idx="1" tabindex="-1" id="nodelabels_previous">Previous</a><span><a class="paginate_button current" aria-controls="nodelabels" data-dt-idx="2" tabindex="0">1</a></span><a class="paginate_button next disabled" aria-controls="nodelabels" data-dt-idx="3" tabindex="-1" id="nodelabels_next">Next</a><a class="paginate_button last disabled" aria-controls="nodelabels" data-dt-idx="4" tabindex="-1" id="nodelabels_last">Last</a></div></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body></html>

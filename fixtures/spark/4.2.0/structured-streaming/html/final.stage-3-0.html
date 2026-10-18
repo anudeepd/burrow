@@ -1,0 +1,227 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="422d25ed-0e37-419c-ab7e-90b806d5de98">setUIRoot('')</script>
+        <script nonce="422d25ed-0e37-419c-ab7e-90b806d5de98">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="422d25ed-0e37-419c-ab7e-90b806d5de98">setAppBasePath('')</script>
+        <link rel="stylesheet" href="/static/spark-dag-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/spark-dag-viz.js"></script>
+        <link rel="stylesheet" href="/static/dataTables.bootstrap5.min.css" type="text/css"/><link rel="stylesheet" href="/static/jquery.dataTables.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui-dataTables.css" type="text/css"/><script src="/static/jquery.dataTables.min.js"></script><script src="/static/dataTables.bootstrap5.min.js"></script>
+        <link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/timeline-view.js"></script>
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-structured-streaming - Details for Stage 3 (Attempt 0)</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/StreamingQuery/">Structured Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-structured-streaming" class="text-nowrap">burrow-structured-streaming</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Details for Stage 3 (Attempt 0)
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <ul class="list-unstyled">
+          <li>
+            <Strong>Submitted:</Strong>
+            2026/10/03 12:39:02
+          </li>
+          <li>
+            <strong>Duration</strong>
+            0.4 s
+          </li>
+          <li>
+            <strong>Resource Profile Id: </strong>
+            0
+          </li>
+          <li>
+            <strong>Total Time Across All Tasks: </strong>
+            0.9 s
+          </li>
+          <li>
+            <strong>Locality Level Summary: </strong>
+            Process local: 4
+          </li>
+          
+          
+          <li>
+              <strong>Shuffle Read Size / Records: </strong>
+              771.0 B / 12
+            </li>
+          
+          
+          <li>
+              <strong>Associated Job Ids: </strong>
+              <a href="/jobs/job/?id=1">1</a><span>&nbsp;</span>
+            </li>
+        </ul>
+      </div><div>
+      <span id="stage-dag-viz" class="expand-dag-viz" data-forjob="false">
+        <span class="expand-dag-viz-arrow arrow-closed"></span>
+        <a data-bs-toggle="tooltip" title="Shows a graph of RDD operations in this stage, and RDDs inside each one. A stage can run
+       multiple operations (e.g. two map() functions) if they can be pipelined. Some operations
+       also create multiple RDDs internally. Cached RDDs are shown in green.
+    ">
+      DAG Visualization
+    </a>
+      </span>
+      <div id="dag-viz-graph"></div>
+      <div id="dag-viz-metadata" class="d-none">
+        <div class="stage-metadata" stage-id="3" skipped="false">
+              <div class="dot-file">digraph G {
+  id=&quot;graph_3&quot;;
+  subgraph graph_stage_3 {
+    id=&quot;graph_stage_3&quot;;
+    isCluster=&quot;true&quot;;
+    label=&quot;Stage 3&quot;;
+    subgraph cluster_spark_plan_176 {
+      id=&quot;cluster_spark_plan_176&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;Exchange&quot;;
+      18 [id=&quot;node_18&quot; labelType=&quot;html&quot; label=&quot;ShuffledRowRDD [18] [Unordered]&lt;br&gt;start at NativeMethodAccessorImpl.java:0&quot;];
+    }
+    subgraph cluster_spark_plan_179 {
+      id=&quot;cluster_spark_plan_179&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;WholeStageCodegen (3)&quot;;
+      19 [id=&quot;node_19&quot; labelType=&quot;html&quot; label=&quot;MapPartitionsRDD [19] [Unordered]&lt;br&gt;start at NativeMethodAccessorImpl.java:0&quot;];
+    }
+    subgraph cluster_spark_plan_180 {
+      id=&quot;cluster_spark_plan_180&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;StateStoreRestore&quot;;
+      20 [id=&quot;node_20&quot; labelType=&quot;html&quot; label=&quot;ReadStateStoreRDD [20] [Unordered]&lt;br&gt;start at NativeMethodAccessorImpl.java:0&quot;];
+    }
+    subgraph cluster_spark_plan_183 {
+      id=&quot;cluster_spark_plan_183&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;WholeStageCodegen (4)&quot;;
+      21 [id=&quot;node_21&quot; labelType=&quot;html&quot; label=&quot;MapPartitionsRDD [21] [Unordered]&lt;br&gt;start at NativeMethodAccessorImpl.java:0&quot;];
+    }
+    subgraph cluster_spark_plan_184 {
+      id=&quot;cluster_spark_plan_184&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;StateStoreSave&quot;;
+      22 [id=&quot;node_22&quot; labelType=&quot;html&quot; label=&quot;StateStoreRDD [22] [Unordered]&lt;br&gt;start at NativeMethodAccessorImpl.java:0&quot;];
+    }
+    subgraph cluster_spark_plan_187 {
+      id=&quot;cluster_spark_plan_187&quot;;
+      isCluster=&quot;true&quot;;
+      label=&quot;WholeStageCodegen (5)&quot;;
+      23 [id=&quot;node_23&quot; labelType=&quot;html&quot; label=&quot;MapPartitionsRDD [23] [Unordered]&lt;br&gt;start at NativeMethodAccessorImpl.java:0&quot;];
+    }
+  }
+  18-&gt;19;
+  19-&gt;20;
+  20-&gt;21;
+  21-&gt;22;
+  22-&gt;23;
+}</div>
+              <div class="incoming-edge">17,18</div>
+              
+              
+            </div>
+      </div>
+    </div><div id="showAdditionalMetrics"></div><span class="expand-task-assignment-timeline">
+      <span class="expand-task-assignment-timeline-arrow arrow-closed"></span>
+      <a>Event Timeline</a>
+    </span><div id="task-assignment-timeline" class="collapsed">
+      
+      <div class="control-panel">
+        <div id="task-assignment-timeline-zoom-lock">
+          <input type="checkbox"></input>
+          <span>Enable zooming</span>
+        </div>
+        <div>
+          <form id="form-event-timeline-page" method="get" action="" class="d-flex float-end justify-content-end align-items-center gap-1 mb-0">
+            <label>Tasks: 4. 1 Pages. Jump to</label>
+            <input type="hidden" name="id" value="3"/>
+            <input type="hidden" name="attempt" value="0"/>
+            <input type="text" name="task.eventTimelinePageNumber" id="form-event-timeline-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+            <label>. Show </label>
+            <input type="text" id="form-event-timeline-page-size" name="task.eventTimelinePageSize" value="4" class="form-control form-control-sm" style="width: 60px;"/>
+            <label>items in a page.</label>
+
+            <button type="submit" class="btn btn-outline-secondary">Go</button>
+          </form>
+        </div>
+      </div>
+      <div class="legend-area">
+      <svg>
+        <rect x="5px" y="10px" width="10px" height="10px" class="scheduler-delay-proportion"></rect><text x="25px" y="20px">Scheduler Delay</text><rect x="5px" y="25px" width="10px" height="10px" class="deserialization-time-proportion"></rect><text x="25px" y="35px">Task Deserialization Time</text><rect x="5px" y="40px" width="10px" height="10px" class="shuffle-read-time-proportion"></rect><text x="25px" y="50px">Shuffle Read Time</text><rect x="215px" y="10px" width="10px" height="10px" class="executor-runtime-proportion"></rect><text x="235px" y="20px">Executor Computing Time</text><rect x="215px" y="25px" width="10px" height="10px" class="shuffle-write-time-proportion"></rect><text x="235px" y="35px">Shuffle Write Time</text><rect x="215px" y="40px" width="10px" height="10px" class="serialization-time-proportion"></rect><text x="235px" y="50px">Result Serialization Time</text><rect x="425px" y="10px" width="10px" height="10px" class="getting-result-time-proportion"></rect><text x="445px" y="20px">Getting Result Time</text>
+      </svg>
+    </div>
+    </div><script type="text/javascript" nonce="422d25ed-0e37-419c-ab7e-90b806d5de98">
+      drawTaskAssignmentTimeline([
+            {
+              'id': 'driver',
+              'content': 'driver / localhost',
+            }
+          ], [ { 'className': 'task task-assignment-timeline-object', 'group': 'driver', 'content': '<div class="task-assignment-timeline-content" data-bs-toggle="tooltip" data-bs-html="true" data-bs-container="body" data-bs-title="Task 3 (attempt 0)<br> Status: SUCCESS<br> Launch Time: 2026/10/03 12:39:02 <br>Scheduler Delay: 7 ms <br>Task Deserialization Time: 8 ms <br>Shuffle Read Time: 0 ms <br>Executor Computing Time: 99 ms <br>Shuffle Write Time: 0 ms <br>Result Serialization Time: 4 ms <br>Getting Result Time: 0 ms"> <svg class="task-assignment-timeline-duration-bar"> <rect class="scheduler-delay-proportion" x="0%" y="0px" height="26px" width="5.932203389830509%"></rect> <rect class="deserialization-time-proportion" x="5.932203389830509%" y="0px" height="26px" width="6.779661016949152%"></rect> <rect class="shuffle-read-time-proportion" x="12.711864406779661%" y="0px" height="26px" width="0.0%"></rect> <rect class="executor-runtime-proportion" x="12.711864406779661%" y="0px" height="26px" width="83.89830508474577%"></rect> <rect class="shuffle-write-time-proportion" x="96.61016949152543%" y="0px" height="26px" width="0.0%"></rect> <rect class="serialization-time-proportion" x="96.61016949152543%" y="0px" height="26px" width="3.389830508474576%"></rect> <rect class="getting-result-time-proportion" x="100.0%" y="0px" height="26px" width="0.0%"></rect></svg>', 'start': new Date(1791011342506), 'end': new Date(1791011342624) } , { 'className': 'task task-assignment-timeline-object', 'group': 'driver', 'content': '<div class="task-assignment-timeline-content" data-bs-toggle="tooltip" data-bs-html="true" data-bs-container="body" data-bs-title="Task 1 (attempt 0)<br> Status: SUCCESS<br> Launch Time: 2026/10/03 12:39:02 <br>Scheduler Delay: 7 ms <br>Task Deserialization Time: 9 ms <br>Shuffle Read Time: 0 ms <br>Executor Computing Time: 0.3 s <br>Shuffle Write Time: 0 ms <br>Result Serialization Time: 3 ms <br>Getting Result Time: 0 ms"> <svg class="task-assignment-timeline-duration-bar"> <rect class="scheduler-delay-proportion" x="0%" y="0px" height="26px" width="2.5089605734767026%"></rect> <rect class="deserialization-time-proportion" x="2.5089605734767026%" y="0px" height="26px" width="3.225806451612903%"></rect> <rect class="shuffle-read-time-proportion" x="5.734767025089606%" y="0px" height="26px" width="0.0%"></rect> <rect class="executor-runtime-proportion" x="5.734767025089606%" y="0px" height="26px" width="93.1899641577061%"></rect> <rect class="shuffle-write-time-proportion" x="98.92473118279571%" y="0px" height="26px" width="0.0%"></rect> <rect class="serialization-time-proportion" x="98.92473118279571%" y="0px" height="26px" width="1.0752688172043012%"></rect> <rect class="getting-result-time-proportion" x="100.00000000000001%" y="0px" height="26px" width="0.0%"></rect></svg>', 'start': new Date(1791011342230), 'end': new Date(1791011342509) } , { 'className': 'task task-assignment-timeline-object', 'group': 'driver', 'content': '<div class="task-assignment-timeline-content" data-bs-toggle="tooltip" data-bs-html="true" data-bs-container="body" data-bs-title="Task 2 (attempt 0)<br> Status: SUCCESS<br> Launch Time: 2026/10/03 12:39:02 <br>Scheduler Delay: 8 ms <br>Task Deserialization Time: 10 ms <br>Shuffle Read Time: 0 ms <br>Executor Computing Time: 0.3 s <br>Shuffle Write Time: 0 ms <br>Result Serialization Time: 8 ms <br>Getting Result Time: 0 ms"> <svg class="task-assignment-timeline-duration-bar"> <rect class="scheduler-delay-proportion" x="0%" y="0px" height="26px" width="2.857142857142857%"></rect> <rect class="deserialization-time-proportion" x="2.857142857142857%" y="0px" height="26px" width="3.571428571428571%"></rect> <rect class="shuffle-read-time-proportion" x="6.428571428571429%" y="0px" height="26px" width="0.0%"></rect> <rect class="executor-runtime-proportion" x="6.428571428571429%" y="0px" height="26px" width="90.71428571428571%"></rect> <rect class="shuffle-write-time-proportion" x="97.14285714285714%" y="0px" height="26px" width="0.0%"></rect> <rect class="serialization-time-proportion" x="97.14285714285714%" y="0px" height="26px" width="2.857142857142857%"></rect> <rect class="getting-result-time-proportion" x="100.0%" y="0px" height="26px" width="0.0%"></rect></svg>', 'start': new Date(1791011342230), 'end': new Date(1791011342510) } , { 'className': 'task task-assignment-timeline-object', 'group': 'driver', 'content': '<div class="task-assignment-timeline-content" data-bs-toggle="tooltip" data-bs-html="true" data-bs-container="body" data-bs-title="Task 0 (attempt 0)<br> Status: SUCCESS<br> Launch Time: 2026/10/03 12:39:02 <br>Scheduler Delay: 12 ms <br>Task Deserialization Time: 10 ms <br>Shuffle Read Time: 0 ms <br>Executor Computing Time: 0.3 s <br>Shuffle Write Time: 0 ms <br>Result Serialization Time: 3 ms <br>Getting Result Time: 0 ms"> <svg class="task-assignment-timeline-duration-bar"> <rect class="scheduler-delay-proportion" x="0%" y="0px" height="26px" width="4.225352112676056%"></rect> <rect class="deserialization-time-proportion" x="4.225352112676056%" y="0px" height="26px" width="3.5211267605633805%"></rect> <rect class="shuffle-read-time-proportion" x="7.746478873239436%" y="0px" height="26px" width="0.0%"></rect> <rect class="executor-runtime-proportion" x="7.746478873239436%" y="0px" height="26px" width="91.19718309859155%"></rect> <rect class="shuffle-write-time-proportion" x="98.94366197183099%" y="0px" height="26px" width="0.0%"></rect> <rect class="serialization-time-proportion" x="98.94366197183099%" y="0px" height="26px" width="1.056338028169014%"></rect> <rect class="getting-result-time-proportion" x="100.0%" y="0px" height="26px" width="0.0%"></rect></svg>', 'start': new Date(1791011342224), 'end': new Date(1791011342508) } ], 1791011342224, 1791011342624, 330)
+    </script><div id="parent-container">
+          <script type="module" src="/static/utils.js"></script>
+          <script type="module" src="/static/stagepage.js"></script>
+          <script type="module" nonce="422d25ed-0e37-419c-ab7e-90b806d5de98">
+import {setTaskThreadDumpEnabled} from "/static/stagepage.js";
+
+setTaskThreadDumpEnabled(true);
+</script>
+        </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:38:52</span><span id="footer-uptime" data-start-time="1791011332019"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

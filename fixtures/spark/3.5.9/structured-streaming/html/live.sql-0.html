@@ -1,0 +1,117 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery-3.5.1.min.js"></script><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/timeline-view.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script>setUIRoot('')</script>
+        <script>setAppBasePath('')</script>
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-structured-streaming - Details for Query 0</title>
+      </head>
+      <body>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img src="/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">3.5.9</span>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/StreamingQuery/">Structured Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-structured-streaming" class="text-nowrap">burrow-structured-streaming</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+          </div>
+        </nav>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <h3 style="vertical-align: bottom; white-space: nowrap; overflow: hidden;
+                text-overflow: ellipsis;">
+                Details for Query 0
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+          <ul class="list-unstyled">
+            <li>
+              <strong>Submitted Time: </strong>2026/10/03 12:44:18
+            </li>
+            <li>
+              <strong>Duration: </strong>12 ms
+            </li>
+            
+            
+            
+          </ul>
+        </div><div>
+          <input type="checkbox" id="stageId-and-taskId-checkbox"></input>
+          <span>Show the Stage ID and Task ID that corresponds to the max metric</span>
+        </div><div>
+      <div id="plan-viz-graph"></div>
+      <div id="plan-viz-metadata" style="display:none">
+        <div class="dot-file">
+          digraph G {
+  0 [labelType=&quot;html&quot; label=&quot;&lt;br&gt;&lt;b&gt;Execute CreateViewCommand&lt;/b&gt;&lt;br&gt;&lt;br&gt;&quot;];
+}
+        </div>
+        <div id="plan-viz-metadata-size">1</div>
+        <div id="plan-meta-data-0">Execute CreateViewCommand</div>
+      </div>
+      <link rel="stylesheet" href="/static/sql/spark-sql-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/sql/spark-sql-viz.js"></script>
+      <script>$(function() { if (shouldRenderPlanViz()) { renderPlanViz(); } })</script>
+    </div><div>
+      <span style="cursor: pointer;" onclick="clickPhysicalPlanDetails();">
+        <span id="physical-plan-details-arrow" class="arrow-closed"></span>
+        <a>Details</a>
+      </span>
+    </div><div id="physical-plan-details" style="display: none;">
+      <pre>== Physical Plan ==
+Execute CreateViewCommand (1)
+   +- CreateViewCommand (2)
+         +- MemoryPlan (3)
+
+
+(1) Execute CreateViewCommand
+Output: []
+
+(2) CreateViewCommand
+Arguments: `rate_counts`, false, true, LocalTempView, true
+
+(3) MemoryPlan
+Arguments: MemorySink, [window#17-T10000ms, k#18L, count#19L]
+
+</pre>
+    </div><script>
+      function clickPhysicalPlanDetails() {
+        $('#physical-plan-details').toggle();
+        $('#physical-plan-details-arrow').toggleClass('arrow-open').toggleClass('arrow-closed');
+      }
+    </script><br/>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>

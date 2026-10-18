@@ -1,0 +1,76 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 23,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 23",
+      "clusters": [
+        {
+          "id": "cluster88",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster84",
+          "name": "WholeStageCodegen (6)",
+          "parentId": null
+        },
+        {
+          "id": "cluster89",
+          "name": "mapPartitionsInternal",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 35,
+          "name": "ShuffledRowRDD",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster88"
+        },
+        {
+          "id": 36,
+          "name": "MapPartitionsRDD",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster84"
+        },
+        {
+          "id": 37,
+          "name": "MapPartitionsRDD",
+          "callsite": "count at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster89"
+        }
+      ],
+      "edges": [
+        {
+          "from": 35,
+          "to": 36
+        },
+        {
+          "from": 36,
+          "to": 37
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 34,
+      "to": 35,
+      "fromStage": null,
+      "toStage": 23
+    }
+  ]
+}

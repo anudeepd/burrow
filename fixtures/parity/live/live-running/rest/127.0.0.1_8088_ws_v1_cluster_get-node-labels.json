@@ -1,0 +1,72 @@
+{
+ "url": "http://127.0.0.1:8088/ws/v1/cluster/get-node-labels",
+ "status": 200,
+ "json": {
+  "nodeLabelInfo": [
+   {
+    "name": "ssd",
+    "exclusivity": "false",
+    "partitionInfo": {
+     "resourceAvailable": {
+      "memory": "3072",
+      "vCores": "4",
+      "resourceInformations": {
+       "resourceInformation": [
+        {
+         "attributes": null,
+         "maximumAllocation": "9223372036854775807",
+         "minimumAllocation": "0",
+         "name": "memory-mb",
+         "resourceType": "COUNTABLE",
+         "units": "Mi",
+         "value": "3072"
+        },
+        {
+         "attributes": null,
+         "maximumAllocation": "9223372036854775807",
+         "minimumAllocation": "0",
+         "name": "vcores",
+         "resourceType": "COUNTABLE",
+         "units": "",
+         "value": "4"
+        }
+       ]
+      }
+     }
+    }
+   },
+   {
+    "name": "gpu",
+    "exclusivity": "true",
+    "partitionInfo": {
+     "resourceAvailable": {
+      "memory": "3072",
+      "vCores": "4",
+      "resourceInformations": {
+       "resourceInformation": [
+        {
+         "attributes": null,
+         "maximumAllocation": "9223372036854775807",
+         "minimumAllocation": "0",
+         "name": "memory-mb",
+         "resourceType": "COUNTABLE",
+         "units": "Mi",
+         "value": "3072"
+        },
+        {
+         "attributes": null,
+         "maximumAllocation": "9223372036854775807",
+         "minimumAllocation": "0",
+         "name": "vcores",
+         "resourceType": "COUNTABLE",
+         "units": "",
+         "value": "4"
+        }
+       ]
+      }
+     }
+    }
+   }
+  ]
+ }
+}

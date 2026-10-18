@@ -1,0 +1,1230 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 1,
+  "stages": [
+    {
+      "stageId": 14,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 14 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_0",
+          "name": "parallelize",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 1,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 2,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 0,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:326",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_0"
+        }
+      ],
+      "edges": [
+        {
+          "from": 0,
+          "to": 1
+        },
+        {
+          "from": 1,
+          "to": 2
+        }
+      ]
+    },
+    {
+      "stageId": 15,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 15 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_1",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_2",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 5,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 6,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 3,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_1"
+        },
+        {
+          "id": 4,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_2"
+        }
+      ],
+      "edges": [
+        {
+          "from": 3,
+          "to": 4
+        },
+        {
+          "from": 4,
+          "to": 5
+        },
+        {
+          "from": 5,
+          "to": 6
+        }
+      ]
+    },
+    {
+      "stageId": 16,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 16 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_3",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_4",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 9,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 10,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 7,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_3"
+        },
+        {
+          "id": 8,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_4"
+        }
+      ],
+      "edges": [
+        {
+          "from": 7,
+          "to": 8
+        },
+        {
+          "from": 8,
+          "to": 9
+        },
+        {
+          "from": 9,
+          "to": 10
+        }
+      ]
+    },
+    {
+      "stageId": 17,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 17 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_5",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_6",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 13,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 14,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 11,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_5"
+        },
+        {
+          "id": 12,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_6"
+        }
+      ],
+      "edges": [
+        {
+          "from": 11,
+          "to": 12
+        },
+        {
+          "from": 12,
+          "to": 13
+        },
+        {
+          "from": 13,
+          "to": 14
+        }
+      ]
+    },
+    {
+      "stageId": 18,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 18 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_7",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_8",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 17,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 18,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 15,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_7"
+        },
+        {
+          "id": 16,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_8"
+        }
+      ],
+      "edges": [
+        {
+          "from": 15,
+          "to": 16
+        },
+        {
+          "from": 16,
+          "to": 17
+        },
+        {
+          "from": 17,
+          "to": 18
+        }
+      ]
+    },
+    {
+      "stageId": 19,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 19 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_9",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_10",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 21,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 22,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 19,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_9"
+        },
+        {
+          "id": 20,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_10"
+        }
+      ],
+      "edges": [
+        {
+          "from": 19,
+          "to": 20
+        },
+        {
+          "from": 20,
+          "to": 21
+        },
+        {
+          "from": 21,
+          "to": 22
+        }
+      ]
+    },
+    {
+      "stageId": 20,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 20 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_11",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_12",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 25,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 26,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 23,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_11"
+        },
+        {
+          "id": 24,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_12"
+        }
+      ],
+      "edges": [
+        {
+          "from": 23,
+          "to": 24
+        },
+        {
+          "from": 24,
+          "to": 25
+        },
+        {
+          "from": 25,
+          "to": 26
+        }
+      ]
+    },
+    {
+      "stageId": 21,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 21 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_13",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_14",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 29,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 30,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 27,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_13"
+        },
+        {
+          "id": 28,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_14"
+        }
+      ],
+      "edges": [
+        {
+          "from": 27,
+          "to": 28
+        },
+        {
+          "from": 28,
+          "to": 29
+        },
+        {
+          "from": 29,
+          "to": 30
+        }
+      ]
+    },
+    {
+      "stageId": 22,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 22 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_15",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_16",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 33,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 34,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 31,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_15"
+        },
+        {
+          "id": 32,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_16"
+        }
+      ],
+      "edges": [
+        {
+          "from": 31,
+          "to": 32
+        },
+        {
+          "from": 32,
+          "to": 33
+        },
+        {
+          "from": 33,
+          "to": 34
+        }
+      ]
+    },
+    {
+      "stageId": 23,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 23 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_17",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_18",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 37,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 38,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 35,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_17"
+        },
+        {
+          "id": 36,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_18"
+        }
+      ],
+      "edges": [
+        {
+          "from": 35,
+          "to": 36
+        },
+        {
+          "from": 36,
+          "to": 37
+        },
+        {
+          "from": 37,
+          "to": 38
+        }
+      ]
+    },
+    {
+      "stageId": 24,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 24 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_19",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_20",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 41,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 42,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 39,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_19"
+        },
+        {
+          "id": 40,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_20"
+        }
+      ],
+      "edges": [
+        {
+          "from": 39,
+          "to": 40
+        },
+        {
+          "from": 40,
+          "to": 41
+        },
+        {
+          "from": 41,
+          "to": 42
+        }
+      ]
+    },
+    {
+      "stageId": 25,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 25 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_21",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_22",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 45,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 46,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:17",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 43,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_21"
+        },
+        {
+          "id": 44,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_22"
+        }
+      ],
+      "edges": [
+        {
+          "from": 43,
+          "to": 44
+        },
+        {
+          "from": 44,
+          "to": 45
+        },
+        {
+          "from": 45,
+          "to": 46
+        }
+      ]
+    },
+    {
+      "stageId": 26,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 26 (skipped)",
+      "clusters": [
+        {
+          "id": "cluster_7",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_8",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster_15",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_16",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster_23",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_24",
+          "name": "mapPartitions",
+          "parentId": null
+        },
+        {
+          "id": "cluster_25",
+          "name": "union",
+          "parentId": null
+        },
+        {
+          "id": "cluster_28",
+          "name": "union",
+          "parentId": null
+        },
+        {
+          "id": "cluster_31",
+          "name": "union",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 49,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 50,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 52,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 54,
+          "name": "PythonRDD",
+          "callsite": "RDD at PythonRDD.scala:59",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 56,
+          "name": "PythonRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:23",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 57,
+          "name": "PairwiseRDD",
+          "callsite": "reduceByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:23",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 15,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_7"
+        },
+        {
+          "id": 16,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_8"
+        },
+        {
+          "id": 31,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_15"
+        },
+        {
+          "id": 32,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_16"
+        },
+        {
+          "id": 47,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_23"
+        },
+        {
+          "id": 48,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_24"
+        },
+        {
+          "id": 51,
+          "name": "UnionRDD",
+          "callsite": "union at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_25"
+        },
+        {
+          "id": 53,
+          "name": "UnionRDD",
+          "callsite": "union at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_28"
+        },
+        {
+          "id": 55,
+          "name": "UnionRDD",
+          "callsite": "union at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_31"
+        }
+      ],
+      "edges": [
+        {
+          "from": 15,
+          "to": 16
+        },
+        {
+          "from": 31,
+          "to": 32
+        },
+        {
+          "from": 47,
+          "to": 48
+        },
+        {
+          "from": 48,
+          "to": 49
+        },
+        {
+          "from": 16,
+          "to": 50
+        },
+        {
+          "from": 49,
+          "to": 51
+        },
+        {
+          "from": 50,
+          "to": 51
+        },
+        {
+          "from": 32,
+          "to": 52
+        },
+        {
+          "from": 51,
+          "to": 53
+        },
+        {
+          "from": 52,
+          "to": 53
+        },
+        {
+          "from": 48,
+          "to": 54
+        },
+        {
+          "from": 53,
+          "to": 55
+        },
+        {
+          "from": 54,
+          "to": 55
+        },
+        {
+          "from": 55,
+          "to": 56
+        },
+        {
+          "from": 56,
+          "to": 57
+        }
+      ]
+    },
+    {
+      "stageId": 27,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 27",
+      "clusters": [
+        {
+          "id": "cluster_34",
+          "name": "partitionBy",
+          "parentId": null
+        },
+        {
+          "id": "cluster_35",
+          "name": "mapPartitions",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 61,
+          "name": "PythonRDD",
+          "callsite": "sortByKey at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/big_dag.py:23",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": null
+        },
+        {
+          "id": 58,
+          "name": "ShuffledRDD",
+          "callsite": "partitionBy at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_34"
+        },
+        {
+          "id": 59,
+          "name": "MapPartitionsRDD",
+          "callsite": "mapPartitions at PythonRDD.scala:197",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_35"
+        }
+      ],
+      "edges": [
+        {
+          "from": 58,
+          "to": 59
+        },
+        {
+          "from": 59,
+          "to": 61
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 2,
+      "to": 3,
+      "fromStage": 14,
+      "toStage": 15
+    },
+    {
+      "from": 6,
+      "to": 7,
+      "fromStage": 15,
+      "toStage": 16
+    },
+    {
+      "from": 10,
+      "to": 11,
+      "fromStage": 16,
+      "toStage": 17
+    },
+    {
+      "from": 14,
+      "to": 15,
+      "fromStage": 17,
+      "toStage": 18
+    },
+    {
+      "from": 18,
+      "to": 19,
+      "fromStage": 18,
+      "toStage": 19
+    },
+    {
+      "from": 22,
+      "to": 23,
+      "fromStage": 19,
+      "toStage": 20
+    },
+    {
+      "from": 26,
+      "to": 27,
+      "fromStage": 20,
+      "toStage": 21
+    },
+    {
+      "from": 30,
+      "to": 31,
+      "fromStage": 21,
+      "toStage": 22
+    },
+    {
+      "from": 34,
+      "to": 35,
+      "fromStage": 22,
+      "toStage": 23
+    },
+    {
+      "from": 38,
+      "to": 39,
+      "fromStage": 23,
+      "toStage": 24
+    },
+    {
+      "from": 42,
+      "to": 43,
+      "fromStage": 24,
+      "toStage": 25
+    },
+    {
+      "from": 14,
+      "to": 15,
+      "fromStage": 17,
+      "toStage": 26
+    },
+    {
+      "from": 30,
+      "to": 31,
+      "fromStage": 21,
+      "toStage": 26
+    },
+    {
+      "from": 46,
+      "to": 47,
+      "fromStage": 25,
+      "toStage": 26
+    },
+    {
+      "from": 57,
+      "to": 58,
+      "fromStage": 26,
+      "toStage": 27
+    }
+  ]
+}
