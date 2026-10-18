@@ -1,0 +1,540 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <style type="text/css">
+    #containers_paginate span {font-weight:normal}
+    #containers .progress {width:8em}
+    #containers_processing {top:-1.5em; font-size:1em;
+      color:#000; background:#fefefe}
+    #containers .queue {width:6em}
+    #containers .ui {width:8em}
+  </style>
+  <title>
+    Application Attempt appattempt_1791010263442_0001_000002
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    containersDataTable =  $('#containers').dataTable({bStateSave : true, "fnStateSave": function (oSettings, oData) {  data = oData.aoSearchCols;for(i =0 ; i < data.length; i ++) {data[i].sSearch = ""} sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, "fnStateLoad": function (oSettings) { return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, bJQueryUI:true, sPaginationType: 'full_numbers', iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100], 'aaData': containersTableData, bDeferRender: true, bProcessing: true
+, aoColumnDefs: [
+{'sType':'natural', 'aTargets': [0], 'mRender': parseHadoopID }], aaSorting: [[0, 'desc']]}).fnSetFilteringDelay(188);
+    resourceRequestsDataTable =  $('#resourceRequests').dataTable({bStateSave : true, "fnStateSave": function (oSettings, oData) {  data = oData.aoSearchCols;for(i =0 ; i < data.length; i ++) {data[i].sSearch = ""} sessionStorage.setItem( oSettings.sTableId, JSON.stringify(oData) ); }, "fnStateLoad": function (oSettings) { return JSON.parse( sessionStorage.getItem(oSettings.sTableId) );}, bJQueryUI:true, sPaginationType: 'full_numbers', iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100], 'aaData': resourceRequestsTableData, bDeferRender: true, bProcessing: true}).fnSetFilteringDelay(188);
+    });
+  </script>
+  <div id="jsnotice" class="ui-state-error">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/static/hadoop-st.png">
+            </div>
+            <h1>
+              Application Attempt appattempt_1791010263442_0001_000002
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav">
+            <h3>
+              Cluster
+            </h3>
+            <ul>
+              <li>
+                <a href="/cluster/cluster">About</a>
+              <li>
+                <a href="/cluster/nodes">Nodes</a>
+              <li>
+                <a href="/cluster/nodelabels">Node Labels</a>
+              <li>
+                <a href="/cluster/apps">Applications</a>
+                <ul>
+                  <li>
+                  <li>
+                    <a href="/cluster/apps/NEW">NEW</a>
+                  <li>
+                    <a href="/cluster/apps/NEW_SAVING">NEW_SAVING</a>
+                  <li>
+                    <a href="/cluster/apps/SUBMITTED">SUBMITTED</a>
+                  <li>
+                    <a href="/cluster/apps/ACCEPTED">ACCEPTED</a>
+                  <li>
+                    <a href="/cluster/apps/RUNNING">RUNNING</a>
+                  <li>
+                    <a href="/cluster/apps/FINISHED">FINISHED</a>
+                  <li>
+                    <a href="/cluster/apps/FAILED">FAILED</a>
+                  <li>
+                    <a href="/cluster/apps/KILLED">KILLED</a>
+                </ul>
+              <li>
+                <a href="/cluster/scheduler">Scheduler</a>
+            </ul>
+            <h3>
+              Tools
+            </h3>
+            <ul>
+              <li>
+                <a href="/conf">Configuration</a>
+              <li>
+                <a href="/logs">Local logs</a>
+              <li>
+                <a href="/stacks">Server stacks</a>
+              <li>
+                <a href="/jmx?qry=Hadoop:*">Server metrics</a>
+            </ul>
+          </div>
+        </td>
+        <td class="content">
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+            <table class="info">
+              <tr>
+                <th class="ui-state-default" colspan="2">
+                  Application Attempt Overview
+                </th>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Application Attempt State:
+                </th>
+                <td>
+                  FAILED
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  Started:
+                </th>
+                <td>
+                  Sat Oct 03 12:21:35 +0530 2026
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Elapsed:
+                </th>
+                <td>
+                  3sec
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  AM Container:
+                </th>
+                <td>
+                  container_1791010263442_0001_02_000001
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Node:
+                </th>
+                <td>
+                  N/A
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  Tracking URL:
+                </th>
+                <td>
+                  <a href="http://smadayma:8088/cluster/app/application_1791010263442_0001">History</a>
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Diagnostics Info:
+                </th>
+                <td>
+                  <div>
+                    AM Container for appattempt_1791010263442_0001_000002 exited with  exitCode: 13
+                  </div>
+                  <div>
+                    Failing this attempt.Diagnostics: [2026-10-03 12:21:38.573]Exception from container-launch.
+                  </div>
+                  <div>
+                    Container id: container_1791010263442_0001_02_000001
+                  </div>
+                  <div>
+                    Exit code: 13
+                  </div>
+                  <div>
+                    
+                  </div>
+                  <div>
+                    [2026-10-03 12:21:38.576]Container exited with a non-zero exit code 13. Error file: prelaunch.err.
+                  </div>
+                  <div>
+                    Last 4096 bytes of prelaunch.err :
+                  </div>
+                  <div>
+                    Last 4096 bytes of stderr :
+                  </div>
+                  <div>
+                    WARNING: Using incubator modules: jdk.incubator.vector
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: ApplicationAttemptId: appattempt_1791010263442_0001_000002
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: Starting the user application in a separate Thread
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: Waiting for spark context initialization...
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 ERROR ApplicationMaster: User application exited with status 2
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: Final app status: FAILED, exitCode: 13, (reason: User application exited with status 2)
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 ERROR ApplicationMaster: Uncaught exception: 
+                  </div>
+                  <div>
+                    org.apache.spark.SparkException: Exception thrown in awaitResult: 
+                  </div>
+                  <div>
+                    	at org.apache.spark.util.SparkThreadUtils$.awaitResult(SparkThreadUtils.scala:70)
+                  </div>
+                  <div>
+                    	at org.apache.spark.util.SparkThreadUtils$.awaitResult(SparkThreadUtils.scala:44)
+                  </div>
+                  <div>
+                    	at org.apache.spark.util.ThreadUtils$.awaitResult(ThreadUtils.scala:359)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster.runDriver(ApplicationMaster.scala:506)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster.run(ApplicationMaster.scala:263)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$$anon$3.run(ApplicationMaster.scala:942)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$$anon$3.run(ApplicationMaster.scala:941)
+                  </div>
+                  <div>
+                    	at java.base/java.security.AccessController.doPrivileged(AccessController.java:712)
+                  </div>
+                  <div>
+                    	at java.base/javax.security.auth.Subject.doAs(Subject.java:439)
+                  </div>
+                  <div>
+                    	at org.apache.hadoop.security.authentication.util.SubjectUtil.doAs(SubjectUtil.java:328)
+                  </div>
+                  <div>
+                    	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1958)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$.main(ApplicationMaster.scala:941)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster.main(ApplicationMaster.scala)
+                  </div>
+                  <div>
+                    Caused by: org.apache.spark.SparkUserAppException: User application exited with 2
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.PythonRunner$.main(PythonRunner.scala:127)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.PythonRunner.main(PythonRunner.scala)
+                  </div>
+                  <div>
+                    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+                  </div>
+                  <div>
+                    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+                  </div>
+                  <div>
+                    	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+                  </div>
+                  <div>
+                    	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$$anon$2.run(ApplicationMaster.scala:741)
+                  </div>
+                  <div>
+                    
+                  </div>
+                  <div>
+                    
+                  </div>
+                  <div>
+                    [2026-10-03 12:21:38.576]Container exited with a non-zero exit code 13. Error file: prelaunch.err.
+                  </div>
+                  <div>
+                    Last 4096 bytes of prelaunch.err :
+                  </div>
+                  <div>
+                    Last 4096 bytes of stderr :
+                  </div>
+                  <div>
+                    WARNING: Using incubator modules: jdk.incubator.vector
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: ApplicationAttemptId: appattempt_1791010263442_0001_000002
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: Starting the user application in a separate Thread
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: Waiting for spark context initialization...
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 ERROR ApplicationMaster: User application exited with status 2
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 INFO ApplicationMaster: Final app status: FAILED, exitCode: 13, (reason: User application exited with status 2)
+                  </div>
+                  <div>
+                    26/10/03 12:21:38 ERROR ApplicationMaster: Uncaught exception: 
+                  </div>
+                  <div>
+                    org.apache.spark.SparkException: Exception thrown in awaitResult: 
+                  </div>
+                  <div>
+                    	at org.apache.spark.util.SparkThreadUtils$.awaitResult(SparkThreadUtils.scala:70)
+                  </div>
+                  <div>
+                    	at org.apache.spark.util.SparkThreadUtils$.awaitResult(SparkThreadUtils.scala:44)
+                  </div>
+                  <div>
+                    	at org.apache.spark.util.ThreadUtils$.awaitResult(ThreadUtils.scala:359)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster.runDriver(ApplicationMaster.scala:506)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster.run(ApplicationMaster.scala:263)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$$anon$3.run(ApplicationMaster.scala:942)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$$anon$3.run(ApplicationMaster.scala:941)
+                  </div>
+                  <div>
+                    	at java.base/java.security.AccessController.doPrivileged(AccessController.java:712)
+                  </div>
+                  <div>
+                    	at java.base/javax.security.auth.Subject.doAs(Subject.java:439)
+                  </div>
+                  <div>
+                    	at org.apache.hadoop.security.authentication.util.SubjectUtil.doAs(SubjectUtil.java:328)
+                  </div>
+                  <div>
+                    	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1958)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$.main(ApplicationMaster.scala:941)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster.main(ApplicationMaster.scala)
+                  </div>
+                  <div>
+                    Caused by: org.apache.spark.SparkUserAppException: User application exited with 2
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.PythonRunner$.main(PythonRunner.scala:127)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.PythonRunner.main(PythonRunner.scala)
+                  </div>
+                  <div>
+                    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+                  </div>
+                  <div>
+                    	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+                  </div>
+                  <div>
+                    	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+                  </div>
+                  <div>
+                    	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+                  </div>
+                  <div>
+                    	at org.apache.spark.deploy.yarn.ApplicationMaster$$anon$2.run(ApplicationMaster.scala:741)
+                  </div>
+                  <div>
+                    
+                  </div>
+                  <div>
+                    
+                  </div>
+                  <div>
+                    For more detailed output, check the application tracking page: http://smadayma:8088/cluster/app/application_1791010263442_0001 Then click on links to logs of each attempt.
+                  </div>
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  Nodes blacklisted by the application:
+                </th>
+                <td>
+                  -
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Nodes blacklisted by the system:
+                </th>
+                <td>
+                  -
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+            <h3>
+              Total Allocated Containers: 1
+            </h3>
+            <h3>
+              Each table cell represents the number of NodeLocal/RackLocal/OffSwitch containers satisfied by NodeLocal/RackLocal/OffSwitch resource requests.
+            </h3>
+            <table id="containerLocality">
+              <tr>
+                <th class="ui-state-default">
+                  
+                </th>
+                <th class="ui-state-default">
+                  Node Local Request
+                </th>
+                <th class="ui-state-default">
+                  Rack Local Request
+                </th>
+                <th class="ui-state-default">
+                  Off Switch Request
+                </th>
+              </tr>
+              <tr class="odd">
+                <td>
+                  Num Node Local Containers (satisfied by)
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  
+                </td>
+                <td>
+                  
+                </td>
+              </tr>
+              <tr class="even">
+                <td>
+                  Num Rack Local Containers (satisfied by)
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  
+                </td>
+              </tr>
+              <tr class="odd">
+                <td>
+                  Num Off Switch Containers (satisfied by)
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+              </tr>
+            </table>
+          </div>
+          <table id="containers" style="width:100%">
+            <thead>
+              <tr>
+                <th class="id">
+                  Container ID
+                </th>
+                <th class="node">
+                  Node
+                </th>
+                <th class="exitstatus">
+                  Container Exit Status
+                </th>
+                <th class="logs">
+                  Logs
+                </th>
+              </tr>
+            </thead>
+            <script type="text/javascript">
+              var containersTableData=[
+]
+            </script>
+            <tbody>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</html>

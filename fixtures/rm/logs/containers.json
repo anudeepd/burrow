@@ -1,0 +1,158 @@
+{
+ "container_1791010984040_0033_01_000001": {
+  "source": "nm",
+  "node": "127.0.0.4:8042",
+  "app": "application_1791010984040_0033",
+  "user": "alice",
+  "containerId": "container_1791010984040_0033_01_000001",
+  "files": [
+   {
+    "name": "directory.info",
+    "size": 4402,
+    "lastModified": 1791014886710
+   },
+   {
+    "name": "launch_container.sh",
+    "size": 8051,
+    "lastModified": 1791014886710
+   },
+   {
+    "name": "prelaunch.err",
+    "size": 0,
+    "lastModified": 1791014886710
+   },
+   {
+    "name": "prelaunch.out",
+    "size": 100,
+    "lastModified": 1791014886710
+   },
+   {
+    "name": "stderr",
+    "size": 5516,
+    "lastModified": 1791014886710
+   },
+   {
+    "name": "stdout",
+    "size": 1762,
+    "lastModified": 1791014886711
+   }
+  ]
+ },
+ "container_1791010984040_0034_01_000001": {
+  "source": "jhs",
+  "node": "127.0.0.4:8042",
+  "app": "application_1791010984040_0034",
+  "user": "bob",
+  "containerId": "container_1791010984040_0034_01_000001",
+  "files": [
+   {
+    "name": "directory.info",
+    "size": 4394,
+    "lastModified": 1791014893704
+   },
+   {
+    "name": "launch_container.sh",
+    "size": 8025,
+    "lastModified": 1791014893705
+   },
+   {
+    "name": "prelaunch.err",
+    "size": 0,
+    "lastModified": 1791014893705
+   },
+   {
+    "name": "prelaunch.out",
+    "size": 100,
+    "lastModified": 1791014893705
+   },
+   {
+    "name": "stderr",
+    "size": 5504,
+    "lastModified": 1791014893706
+   },
+   {
+    "name": "stdout",
+    "size": 1750,
+    "lastModified": 1791014893706
+   }
+  ]
+ },
+ "container_1791010984040_0037_01_000001": {
+  "source": "nm",
+  "node": "127.0.0.4:8042",
+  "app": "application_1791010984040_0037",
+  "user": "alice",
+  "containerId": "container_1791010984040_0037_01_000001",
+  "files": [
+   {
+    "name": "directory.info",
+    "size": 4390,
+    "lastModified": 1791015248449
+   },
+   {
+    "name": "launch_container.sh",
+    "size": 8038,
+    "lastModified": 1791015248450
+   },
+   {
+    "name": "prelaunch.err",
+    "size": 0,
+    "lastModified": 1791015248450
+   },
+   {
+    "name": "prelaunch.out",
+    "size": 100,
+    "lastModified": 1791015248450
+   },
+   {
+    "name": "stderr",
+    "size": 5885,
+    "lastModified": 1791015248450
+   },
+   {
+    "name": "stdout",
+    "size": 5244972,
+    "lastModified": 1791015248450
+   }
+  ]
+ },
+ "container_1791015583684_0002_01_000001": {
+  "source": "jhs",
+  "node": "127.0.0.4:8042",
+  "app": "application_1791015583684_0002",
+  "user": "carol",
+  "containerId": "container_1791015583684_0002_01_000001",
+  "files": [
+   {
+    "name": "directory.info",
+    "size": 4399,
+    "lastModified": 1791016206748
+   },
+   {
+    "name": "launch_container.sh",
+    "size": 8015,
+    "lastModified": 1791016206749
+   },
+   {
+    "name": "prelaunch.err",
+    "size": 0,
+    "lastModified": 1791016206749
+   },
+   {
+    "name": "prelaunch.out",
+    "size": 100,
+    "lastModified": 1791016206749
+   },
+   {
+    "name": "stderr",
+    "size": 42326,
+    "lastModified": 1791016206749
+   },
+   {
+    "name": "stdout",
+    "size": 8612,
+    "lastModified": 1791016206750
+   }
+  ]
+ }
+}

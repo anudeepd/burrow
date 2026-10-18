@@ -1,0 +1,49 @@
+[ {
+  "id" : 0,
+  "status" : "COMPLETED",
+  "description" : "createOrReplaceTempView at NativeMethodAccessorImpl.java:0",
+  "planDescription" : "",
+  "submissionTime" : "2026-10-03T07:09:58.711GMT",
+  "duration" : 135,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ ],
+  "nodes" : [ ],
+  "edges" : [ ]
+}, {
+  "id" : 1,
+  "status" : "COMPLETED",
+  "description" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:16",
+  "planDescription" : "",
+  "submissionTime" : "2026-10-03T07:09:59.186GMT",
+  "duration" : 1788,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 0, 1 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ ],
+  "edges" : [ ]
+}, {
+  "id" : 2,
+  "status" : "COMPLETED",
+  "description" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:19",
+  "planDescription" : "",
+  "submissionTime" : "2026-10-03T07:10:01.254GMT",
+  "duration" : 727,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 5, 6, 2, 3, 4 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ ],
+  "edges" : [ ]
+}, {
+  "id" : 3,
+  "status" : "COMPLETED",
+  "description" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:20",
+  "planDescription" : "",
+  "submissionTime" : "2026-10-03T07:10:02.025GMT",
+  "duration" : 319,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 7, 8, 9 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ ],
+  "edges" : [ ]
+} ]

@@ -1,0 +1,1119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://burrow.local/parity/inventory/schema.json",
+  "title": "parity/inventory file schemas",
+  "description": "One JSON Schema bundle for every YAML file under parity/inventory (see FORMAT.md). validate.py selects one $def with {\"$ref\": \"#/$defs/<kind>\"}.",
+  "$defs": {
+    "whenCondition": {
+      "type": "string",
+      "minLength": 1,
+      "description": "condition vocabulary, e.g. scheduler=capacity, state=RUNNING, conf:x=y, value:-1, labels, ha, secure, ui:flag, other:<free text>"
+    },
+    "field": {
+      "type": "object",
+      "required": [
+        "name",
+        "type",
+        "array",
+        "ref",
+        "values",
+        "nullable",
+        "when",
+        "source",
+        "note"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "string",
+            "int",
+            "long",
+            "float",
+            "double",
+            "boolean",
+            "enum",
+            "object",
+            "map",
+            "any"
+          ]
+        },
+        "array": {
+          "type": "boolean"
+        },
+        "ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        },
+        "unit": {
+          "type": "string"
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": "string"
+        },
+        "javaName": {
+          "type": "string"
+        },
+        "javaType": {
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "field",
+            "getter",
+            "method"
+          ]
+        },
+        "access": {
+          "type": "string"
+        },
+        "init": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "annotations": {
+          "type": "array"
+        },
+        "mapKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mapValue": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enumType": {
+          "type": "string"
+        },
+        "synthetic": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "object": {
+      "type": "object",
+      "required": [
+        "java",
+        "source",
+        "extends",
+        "xmlRoot",
+        "fields"
+      ],
+      "properties": {
+        "java": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "extends": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "xmlRoot": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "xmlType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accessType": {
+          "type": "string"
+        },
+        "seeAlso": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "jsonMode": {
+          "enum": [
+            "wrapped",
+            "unwrapped",
+            "unwrapped-stringified",
+            "nested"
+          ]
+        },
+        "rootUnwrapping": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/field"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "entityRoot": {
+      "type": "object",
+      "required": [
+        "object",
+        "jsonPath",
+        "when"
+      ],
+      "properties": {
+        "object": {
+          "type": "string",
+          "minLength": 1
+        },
+        "jsonPath": {
+          "type": "string"
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "entity": {
+      "type": "object",
+      "required": [
+        "id",
+        "description",
+        "roots"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9._-]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entityRoot"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "param": {
+      "type": "object",
+      "required": [
+        "name",
+        "in",
+        "required",
+        "values",
+        "doc"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "in": {
+          "enum": [
+            "query",
+            "path",
+            "header",
+            "form",
+            "body"
+          ]
+        },
+        "type": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "doc": {
+          "type": "string"
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "default": {}
+      },
+      "additionalProperties": true
+    },
+    "response": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "object",
+        "jsonRoot",
+        "shape",
+        "contentType"
+      ],
+      "properties": {
+        "object": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "jsonRoot": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shape": {
+          "type": "string"
+        },
+        "contentType": {
+          "type": "string"
+        },
+        "rootUnwrapping": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "resource": {
+      "type": "object",
+      "required": [
+        "id",
+        "daemon",
+        "method",
+        "path",
+        "contractPath",
+        "allowlist",
+        "readOnly",
+        "params",
+        "produces",
+        "response",
+        "errors",
+        "when",
+        "acl",
+        "source",
+        "note"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "daemon": {
+          "enum": [
+            "rm",
+            "nm",
+            "ahs",
+            "jhs",
+            "proxy",
+            "common"
+          ]
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "HEAD",
+            "OPTIONS"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "contractPath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "allowlist": {
+          "type": "boolean"
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/param"
+          }
+        },
+        "produces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "response": {
+          "$ref": "#/$defs/response"
+        },
+        "errors": {
+          "type": "array"
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        },
+        "acl": {
+          "type": "string"
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "derived": {
+      "type": "object",
+      "required": [
+        "id",
+        "entity",
+        "type",
+        "format",
+        "derivation",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][A-Za-z0-9._-]*\\.derived\\.[A-Za-z0-9_]+$"
+        },
+        "entity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "from": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "derivation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        },
+        "restGap": {
+          "type": "boolean"
+        },
+        "altSource": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "field",
+        "format",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dynamic": {
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "kv",
+            "column",
+            "metric",
+            "link",
+            "chart",
+            "button",
+            "nav",
+            "legend",
+            "title",
+            "text"
+          ]
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rest": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "resource"
+          ],
+          "properties": {
+            "resource": {
+              "type": "string"
+            },
+            "path": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "derivation": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normaliser": {
+          "type": "string"
+        },
+        "nullDisplay": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        },
+        "scenario": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tooltip": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "restGap": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "section": {
+      "type": "object",
+      "required": [
+        "id",
+        "source",
+        "items"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "page": {
+      "type": "object",
+      "required": [
+        "id",
+        "daemon",
+        "route",
+        "classes",
+        "sections"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(legacy|ui2)\\.[a-z0-9][a-z0-9._-]*$"
+        },
+        "daemon": {
+          "enum": [
+            "rm",
+            "nm",
+            "ahs",
+            "jhs",
+            "proxy"
+          ]
+        },
+        "route": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "titleDynamic": {
+          "type": "boolean"
+        },
+        "classes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        },
+        "includes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "query": {
+          "type": "array"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/section"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "pageFile": {
+      "type": "object",
+      "required": [
+        "version",
+        "pages"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "derived": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/derived"
+          }
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/page"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "restPart": {
+      "type": "object",
+      "required": [
+        "version",
+        "entities",
+        "objects",
+        "resources"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "derived": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/derived"
+          }
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entity"
+          }
+        },
+        "objects": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/object"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "restSchema": {
+      "type": "object",
+      "required": [
+        "version",
+        "entities",
+        "objects",
+        "resources"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "generated": {
+          "type": "string"
+        },
+        "derived": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/derived"
+          }
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entity"
+          }
+        },
+        "objects": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/object"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/resource"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "registryRow": {
+      "type": "object",
+      "required": [
+        "id",
+        "entity",
+        "path",
+        "origin",
+        "rest",
+        "type",
+        "nullable",
+        "when",
+        "shownBy",
+        "legacyItems",
+        "ui2Items",
+        "format",
+        "normaliser",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "rest",
+            "derived",
+            "static"
+          ]
+        },
+        "rest": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "resource",
+              "jsonPath"
+            ],
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "jsonPath": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "type": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "when": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/whenCondition"
+          }
+        },
+        "shownBy": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "legacy",
+              "ui2",
+              "rest-only"
+            ]
+          }
+        },
+        "legacyItems": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ui2Items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "format": {
+          "type": "string"
+        },
+        "normaliser": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "required",
+            "waivable"
+          ]
+        },
+        "waiver": {
+          "type": "object",
+          "required": [
+            "category",
+            "reason"
+          ],
+          "properties": {
+            "category": {
+              "enum": [
+                "internal",
+                "deprecated",
+                "secret",
+                "rendered-elsewhere",
+                "unused-by-any-ui",
+                "write-only",
+                "other"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": true
+        },
+        "note": {
+          "type": "string"
+        },
+        "derivation": {
+          "type": "string"
+        },
+        "altSource": {
+          "type": "string"
+        },
+        "composite": {
+          "type": "boolean"
+        },
+        "synthetic": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "registryFile": {
+      "type": "object",
+      "required": [
+        "version",
+        "fields"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "generated": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/registryRow"
+          }
+        },
+        "unmappedPaths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "resource",
+              "path",
+              "waiver"
+            ],
+            "properties": {
+              "resource": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "waiver": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "overridesFile": {
+      "type": "object",
+      "required": [
+        "version"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "derive": {
+          "type": "object"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "format": {
+                "type": "string"
+              },
+              "normaliser": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "required",
+                  "waivable"
+                ]
+              },
+              "unit": {
+                "type": "string"
+              },
+              "waiver": {
+                "type": "object"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "extraFields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "entity": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "origin": {
+                "enum": [
+                  "rest",
+                  "derived",
+                  "static"
+                ]
+              },
+              "rest": {
+                "type": "array"
+              },
+              "type": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "nullable": {
+                "type": "boolean"
+              },
+              "when": {
+                "type": "array"
+              },
+              "format": {
+                "type": "string"
+              },
+              "normaliser": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "required",
+                  "waivable"
+                ]
+              },
+              "waiver": {
+                "type": "object"
+              },
+              "derivation": {
+                "type": "string"
+              },
+              "altSource": {
+                "type": "string"
+              },
+              "composite": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,4920 @@
+{
+  "sparkVersion": "3.5.9",
+  "javaVersion": "openjdk version \"17.0.20.1\" 2026-08-18",
+  "pythonVersion": "3.11.15",
+  "workload": "long-running",
+  "workloadSource": "fixtures/spark/workloads/long_running.py",
+  "workloadSourceSha256": "37ad524c40d3626c",
+  "master": "local[4]",
+  "conf": {
+    "spark.app.name": "burrow-long-running",
+    "spark.ui.port": "4140",
+    "spark.ui.enabled": "true",
+    "spark.driver.bindAddress": "127.0.0.1",
+    "spark.driver.host": "127.0.0.1",
+    "spark.eventLog.enabled": "true",
+    "spark.eventLog.dir": "file:///tmp/burrow-spark-eventlogs/3.5.9",
+    "spark.local.dir": "/tmp/burrow-spark-local/3.5.9/long-running",
+    "spark.sql.shuffle.partitions": "4",
+    "spark.default.parallelism": "2",
+    "spark.ui.showConsoleProgress": "false"
+  },
+  "uiBase": "http://127.0.0.1:4140",
+  "eventLogDir": "/tmp/burrow-spark-eventlogs/3.5.9",
+  "startedAt": "2026-10-03T07:14:37.488+00:00",
+  "appId": "local-1791011680508",
+  "attempt": null,
+  "files": [
+    {
+      "file": "rest/live1.applications.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 459,
+      "sha256": "7d294b970f0c1683",
+      "capturedAt": "2026-10-03T07:14:47.846+00:00"
+    },
+    {
+      "file": "rest/live1.application.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 455,
+      "sha256": "1b5858a9c2c92b4f",
+      "capturedAt": "2026-10-03T07:14:47.853+00:00"
+    },
+    {
+      "file": "rest/live1.applications.running.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "status=running"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 459,
+      "sha256": "6748dbf059ad5bc3",
+      "capturedAt": "2026-10-03T07:14:47.878+00:00"
+    },
+    {
+      "file": "rest/live1.applications.completed.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "status=completed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:47.886+00:00"
+    },
+    {
+      "file": "rest/live1.applications.limit1.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "limit=1"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 459,
+      "sha256": "a76623e23cb84898",
+      "capturedAt": "2026-10-03T07:14:47.896+00:00"
+    },
+    {
+      "file": "rest/live1.version.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/version",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 23,
+      "sha256": "66285ee246e3e04c",
+      "capturedAt": "2026-10-03T07:14:47.908+00:00"
+    },
+    {
+      "file": "rest/live1.jobs.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1106,
+      "sha256": "db8e22b4243f11e4",
+      "capturedAt": "2026-10-03T07:14:47.955+00:00"
+    },
+    {
+      "file": "rest/live1.jobs.status-running.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=running"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1106,
+      "sha256": "db8e22b4243f11e4",
+      "capturedAt": "2026-10-03T07:14:47.965+00:00"
+    },
+    {
+      "file": "rest/live1.jobs.status-succeeded.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=succeeded"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:47.973+00:00"
+    },
+    {
+      "file": "rest/live1.jobs.status-failed.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=failed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:47.980+00:00"
+    },
+    {
+      "file": "rest/live1.job-0.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 561,
+      "sha256": "2ffd983c309d21c1",
+      "capturedAt": "2026-10-03T07:14:47.989+00:00"
+    },
+    {
+      "file": "rest/live1.job-1.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 539,
+      "sha256": "49a23d5eaa674910",
+      "capturedAt": "2026-10-03T07:14:47.996+00:00"
+    },
+    {
+      "file": "rest/live1.stages.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 11674,
+      "sha256": "da62f52bef50233f",
+      "capturedAt": "2026-10-03T07:14:48.006+00:00"
+    },
+    {
+      "file": "rest/live1.stages.details.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 22662,
+      "sha256": "33643abc071aae05",
+      "capturedAt": "2026-10-03T07:14:48.113+00:00"
+    },
+    {
+      "file": "rest/live1.stages.withSummaries.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16368,
+      "sha256": "56f9b4903041fd3d",
+      "capturedAt": "2026-10-03T07:14:48.390+00:00"
+    },
+    {
+      "file": "rest/live1.stages.status-failed.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=failed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.399+00:00"
+    },
+    {
+      "file": "rest/live1.stages.status-skipped.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=skipped"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.407+00:00"
+    },
+    {
+      "file": "rest/live1.stages.status-pending.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=pending"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5446,
+      "sha256": "a08a7206977f202f",
+      "capturedAt": "2026-10-03T07:14:48.416+00:00"
+    },
+    {
+      "file": "rest/live1.stages.status-active.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=active"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6230,
+      "sha256": "ab5d9123d37451f5",
+      "capturedAt": "2026-10-03T07:14:48.425+00:00"
+    },
+    {
+      "file": "rest/live1.stages.status-complete.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=complete"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.434+00:00"
+    },
+    {
+      "file": "rest/live1.stages.details.taskStatus-failed.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "details=true&taskStatus=FAILED"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.450+00:00"
+    },
+    {
+      "file": "rest/live1.stages.quantiles.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "withSummaries=true&quantiles=0.1,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 15109,
+      "sha256": "bb9082600541a3ba",
+      "capturedAt": "2026-10-03T07:14:48.473+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 13518,
+      "sha256": "0b83e028c7dc5a27",
+      "capturedAt": "2026-10-03T07:14:48.491+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 13522,
+      "sha256": "f6bf39902ae96eb6",
+      "capturedAt": "2026-10-03T07:14:48.506+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.details.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 13518,
+      "sha256": "0b83e028c7dc5a27",
+      "capturedAt": "2026-10-03T07:14:48.522+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 18212,
+      "sha256": "6878d58cd24529c8",
+      "capturedAt": "2026-10-03T07:14:48.643+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 17373,
+      "sha256": "2b682145459f51cf",
+      "capturedAt": "2026-10-03T07:14:48.655+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2477,
+      "sha256": "801dcaa1ba6c66b8",
+      "capturedAt": "2026-10-03T07:14:48.666+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1775,
+      "sha256": "f5f2d4947f498d06",
+      "capturedAt": "2026-10-03T07:14:48.675+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.taskList.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 7486,
+      "sha256": "9a8c6ccac0679b89",
+      "capturedAt": "2026-10-03T07:14:48.683+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5046,
+      "sha256": "41ceefead83f310f",
+      "capturedAt": "2026-10-03T07:14:48.690+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2441,
+      "sha256": "3eac1933f6c65c88",
+      "capturedAt": "2026-10-03T07:14:48.696+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3364,
+      "sha256": "faec8fd66a0a37d4",
+      "capturedAt": "2026-10-03T07:14:48.703+00:00"
+    },
+    {
+      "file": "rest/live1.stage-0-0.taskList.status-running.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "status=RUNNING"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 760,
+      "sha256": "47f7177148f8eda1",
+      "capturedAt": "2026-10-03T07:14:48.710+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2808,
+      "sha256": "dbfe16fca67a26ca",
+      "capturedAt": "2026-10-03T07:14:48.716+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2812,
+      "sha256": "4a90064bec2d1522",
+      "capturedAt": "2026-10-03T07:14:48.723+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.details.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2808,
+      "sha256": "dbfe16fca67a26ca",
+      "capturedAt": "2026-10-03T07:14:48.729+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2808,
+      "sha256": "dbfe16fca67a26ca",
+      "capturedAt": "2026-10-03T07:14:48.735+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2808,
+      "sha256": "dbfe16fca67a26ca",
+      "capturedAt": "2026-10-03T07:14:48.740+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.taskSummary.txt",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskSummary",
+        "query": ""
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "4bf8e32d7290529f",
+      "capturedAt": "2026-10-03T07:14:48.753+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.taskSummary.quantiles.txt",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "4bf8e32d7290529f",
+      "capturedAt": "2026-10-03T07:14:48.758+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.taskList.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.763+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.769+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.773+00:00"
+    },
+    {
+      "file": "rest/live1.stage-1-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.778+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2720,
+      "sha256": "f9c32d1672014df7",
+      "capturedAt": "2026-10-03T07:14:48.782+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2724,
+      "sha256": "f3fe911823c688ef",
+      "capturedAt": "2026-10-03T07:14:48.786+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.details.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2720,
+      "sha256": "f9c32d1672014df7",
+      "capturedAt": "2026-10-03T07:14:48.792+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2720,
+      "sha256": "f9c32d1672014df7",
+      "capturedAt": "2026-10-03T07:14:48.798+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2720,
+      "sha256": "f9c32d1672014df7",
+      "capturedAt": "2026-10-03T07:14:48.803+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.taskSummary.txt",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskSummary",
+        "query": ""
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "427da37032bd1d1b",
+      "capturedAt": "2026-10-03T07:14:48.806+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.taskSummary.quantiles.txt",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "427da37032bd1d1b",
+      "capturedAt": "2026-10-03T07:14:48.810+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.taskList.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.814+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.819+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.823+00:00"
+    },
+    {
+      "file": "rest/live1.stage-2-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.828+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3606,
+      "sha256": "b9ed6e79af184e4c",
+      "capturedAt": "2026-10-03T07:14:48.833+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3610,
+      "sha256": "577bd167fe27dbdd",
+      "capturedAt": "2026-10-03T07:14:48.838+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.details.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3606,
+      "sha256": "b9ed6e79af184e4c",
+      "capturedAt": "2026-10-03T07:14:48.843+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3606,
+      "sha256": "b9ed6e79af184e4c",
+      "capturedAt": "2026-10-03T07:14:48.849+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3606,
+      "sha256": "b9ed6e79af184e4c",
+      "capturedAt": "2026-10-03T07:14:48.855+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.taskSummary.txt",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskSummary",
+        "query": ""
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "235e748207ad9ad0",
+      "capturedAt": "2026-10-03T07:14:48.859+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.taskSummary.quantiles.txt",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "235e748207ad9ad0",
+      "capturedAt": "2026-10-03T07:14:48.864+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.taskList.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 761,
+      "sha256": "e98ee1f2f91a17b7",
+      "capturedAt": "2026-10-03T07:14:48.870+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 382,
+      "sha256": "08692876024811d7",
+      "capturedAt": "2026-10-03T07:14:48.875+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 761,
+      "sha256": "e98ee1f2f91a17b7",
+      "capturedAt": "2026-10-03T07:14:48.879+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.882+00:00"
+    },
+    {
+      "file": "rest/live1.stage-3-0.taskList.status-running.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "status=RUNNING"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 761,
+      "sha256": "e98ee1f2f91a17b7",
+      "capturedAt": "2026-10-03T07:14:48.887+00:00"
+    },
+    {
+      "file": "rest/live1.executors.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/executors",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1512,
+      "sha256": "4992204cf9e78efe",
+      "capturedAt": "2026-10-03T07:14:48.909+00:00"
+    },
+    {
+      "file": "rest/live1.allexecutors.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/allexecutors",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1512,
+      "sha256": "22b04d2a9e04cc77",
+      "capturedAt": "2026-10-03T07:14:48.913+00:00"
+    },
+    {
+      "file": "rest/live1.storage.rdd.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/storage/rdd",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1156,
+      "sha256": "866d5e8db05a9224",
+      "capturedAt": "2026-10-03T07:14:48.931+00:00"
+    },
+    {
+      "file": "rest/live1.storage.rdd-1.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/storage/rdd/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1152,
+      "sha256": "c5fa9ad0bf9743ae",
+      "capturedAt": "2026-10-03T07:14:48.935+00:00"
+    },
+    {
+      "file": "rest/live1.logs.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/logs",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/octet-stream",
+      "bytes": 100,
+      "sha256": "2940476cbc6c960a",
+      "capturedAt": "2026-10-03T07:14:48.941+00:00"
+    },
+    {
+      "file": "rest/live1.sql.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3742,
+      "sha256": "3289d6ee4e8598fc",
+      "capturedAt": "2026-10-03T07:14:48.980+00:00"
+    },
+    {
+      "file": "rest/live1.sql.details.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "details=true&planDescription=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3742,
+      "sha256": "0694b83f0142c0ba",
+      "capturedAt": "2026-10-03T07:14:48.987+00:00"
+    },
+    {
+      "file": "rest/live1.sql.nodetails.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "details=false&planDescription=false"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 286,
+      "sha256": "1f415f409e2f7c33",
+      "capturedAt": "2026-10-03T07:14:48.993+00:00"
+    },
+    {
+      "file": "rest/live1.sql.page.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "offset=1&length=2"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:48.997+00:00"
+    },
+    {
+      "file": "rest/live1.sql-0.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3738,
+      "sha256": "befa35be071519fb",
+      "capturedAt": "2026-10-03T07:14:49.007+00:00"
+    },
+    {
+      "file": "rest/live1.sql-0.nodetails.json",
+      "kind": "rest",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql/0",
+        "query": "details=false&planDescription=false"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 282,
+      "sha256": "11b416b233091e05",
+      "capturedAt": "2026-10-03T07:14:49.012+00:00"
+    },
+    {
+      "file": "html/live1.jobs-list.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 13696,
+      "sha256": "0a3edaa73b60b108",
+      "capturedAt": "2026-10-03T07:14:49.100+00:00"
+    },
+    {
+      "file": "html/live1.job-0.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 28719,
+      "sha256": "caedcdc6e990b3ab",
+      "capturedAt": "2026-10-03T07:14:49.144+00:00"
+    },
+    {
+      "file": "html/live1.job-1.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=1"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 16901,
+      "sha256": "f51daba051794235",
+      "capturedAt": "2026-10-03T07:14:49.161+00:00"
+    },
+    {
+      "file": "html/live1.stages-list.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/stages/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 23418,
+      "sha256": "f44f130b7e9333a8",
+      "capturedAt": "2026-10-03T07:14:49.177+00:00"
+    },
+    {
+      "file": "html/live1.stage-0-0.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=0&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 17639,
+      "sha256": "20013fe72fe7cbaf",
+      "capturedAt": "2026-10-03T07:14:49.197+00:00"
+    },
+    {
+      "file": "html/live1.stage-1-0.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=1&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 3402,
+      "sha256": "06ada8709d55652d",
+      "capturedAt": "2026-10-03T07:14:49.201+00:00"
+    },
+    {
+      "file": "html/live1.stage-2-0.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=2&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 3402,
+      "sha256": "008c67be0a0c5b39",
+      "capturedAt": "2026-10-03T07:14:49.205+00:00"
+    },
+    {
+      "file": "html/live1.stage-3-0.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=3&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 10916,
+      "sha256": "7e342f51bfc939d5",
+      "capturedAt": "2026-10-03T07:14:49.213+00:00"
+    },
+    {
+      "file": "html/live1.storage.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/storage/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 5282,
+      "sha256": "7f224bf11a371301",
+      "capturedAt": "2026-10-03T07:14:49.247+00:00"
+    },
+    {
+      "file": "html/live1.storage-rdd-1.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/storage/rdd/",
+        "query": "id=1"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 9587,
+      "sha256": "5126995361095a01",
+      "capturedAt": "2026-10-03T07:14:49.263+00:00"
+    },
+    {
+      "file": "html/live1.executors.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/executors/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 3896,
+      "sha256": "d1a34ac5e2e95539",
+      "capturedAt": "2026-10-03T07:14:49.268+00:00"
+    },
+    {
+      "file": "html/live1.sql-list.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/SQL/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 10108,
+      "sha256": "44213a44d1ce91a5",
+      "capturedAt": "2026-10-03T07:14:49.281+00:00"
+    },
+    {
+      "file": "html/live1.sql-0.html",
+      "kind": "html",
+      "phase": "live1",
+      "request": {
+        "method": "GET",
+        "path": "/SQL/execution/",
+        "query": "id=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 9165,
+      "sha256": "865c9f155a4fe942",
+      "capturedAt": "2026-10-03T07:14:49.299+00:00"
+    },
+    {
+      "file": "rest/live2.applications.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 460,
+      "sha256": "563024c6dcd88711",
+      "capturedAt": "2026-10-03T07:14:57.333+00:00"
+    },
+    {
+      "file": "rest/live2.application.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 456,
+      "sha256": "53e060791155cafe",
+      "capturedAt": "2026-10-03T07:14:57.336+00:00"
+    },
+    {
+      "file": "rest/live2.applications.running.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "status=running"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 460,
+      "sha256": "1b1549e5e5a1b796",
+      "capturedAt": "2026-10-03T07:14:57.342+00:00"
+    },
+    {
+      "file": "rest/live2.applications.completed.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "status=completed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.346+00:00"
+    },
+    {
+      "file": "rest/live2.applications.limit1.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "limit=1"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 460,
+      "sha256": "0552ba584c7113e2",
+      "capturedAt": "2026-10-03T07:14:57.351+00:00"
+    },
+    {
+      "file": "rest/live2.version.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/version",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 23,
+      "sha256": "66285ee246e3e04c",
+      "capturedAt": "2026-10-03T07:14:57.354+00:00"
+    },
+    {
+      "file": "rest/live2.jobs.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1756,
+      "sha256": "cac2b28eb51cdce4",
+      "capturedAt": "2026-10-03T07:14:57.359+00:00"
+    },
+    {
+      "file": "rest/live2.jobs.status-running.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=running"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 565,
+      "sha256": "58ba66822bee0728",
+      "capturedAt": "2026-10-03T07:14:57.363+00:00"
+    },
+    {
+      "file": "rest/live2.jobs.status-succeeded.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=succeeded"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1193,
+      "sha256": "6abb7dc6cc099601",
+      "capturedAt": "2026-10-03T07:14:57.367+00:00"
+    },
+    {
+      "file": "rest/live2.jobs.status-failed.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=failed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.375+00:00"
+    },
+    {
+      "file": "rest/live2.job-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 616,
+      "sha256": "1aa589c8fec33bc3",
+      "capturedAt": "2026-10-03T07:14:57.381+00:00"
+    },
+    {
+      "file": "rest/live2.job-1.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 592,
+      "sha256": "304283bb3af95c31",
+      "capturedAt": "2026-10-03T07:14:57.385+00:00"
+    },
+    {
+      "file": "rest/live2.job-2.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/2",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 595,
+      "sha256": "231cf431efd9762f",
+      "capturedAt": "2026-10-03T07:14:57.390+00:00"
+    },
+    {
+      "file": "rest/live2.stages.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 20194,
+      "sha256": "b850e446b5fdfc71",
+      "capturedAt": "2026-10-03T07:14:57.396+00:00"
+    },
+    {
+      "file": "rest/live2.stages.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 57676,
+      "sha256": "740de36a5b6adbd2",
+      "capturedAt": "2026-10-03T07:14:57.419+00:00"
+    },
+    {
+      "file": "rest/live2.stages.withSummaries.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 44016,
+      "sha256": "653eb7c2eb7b8195",
+      "capturedAt": "2026-10-03T07:14:57.436+00:00"
+    },
+    {
+      "file": "rest/live2.stages.status-failed.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=failed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.440+00:00"
+    },
+    {
+      "file": "rest/live2.stages.status-skipped.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=skipped"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2514,
+      "sha256": "e2704fbdd572a710",
+      "capturedAt": "2026-10-03T07:14:57.445+00:00"
+    },
+    {
+      "file": "rest/live2.stages.status-pending.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=pending"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.449+00:00"
+    },
+    {
+      "file": "rest/live2.stages.status-active.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=active"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.452+00:00"
+    },
+    {
+      "file": "rest/live2.stages.status-complete.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=complete"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 17682,
+      "sha256": "3a3aad543152f87d",
+      "capturedAt": "2026-10-03T07:14:57.457+00:00"
+    },
+    {
+      "file": "rest/live2.stages.details.taskStatus-failed.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "details=true&taskStatus=FAILED"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.462+00:00"
+    },
+    {
+      "file": "rest/live2.stages.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "withSummaries=true&quantiles=0.1,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 37512,
+      "sha256": "76706d432025a59e",
+      "capturedAt": "2026-10-03T07:14:57.476+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16541,
+      "sha256": "a1175c78a3fe8045",
+      "capturedAt": "2026-10-03T07:14:57.480+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16545,
+      "sha256": "89200d68c0062e7b",
+      "capturedAt": "2026-10-03T07:14:57.485+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16541,
+      "sha256": "a1175c78a3fe8045",
+      "capturedAt": "2026-10-03T07:14:57.490+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 21242,
+      "sha256": "c773ecd768b39b6e",
+      "capturedAt": "2026-10-03T07:14:57.497+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 20400,
+      "sha256": "6226322c13bc860a",
+      "capturedAt": "2026-10-03T07:14:57.507+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2469,
+      "sha256": "1cfa183e38aa257c",
+      "capturedAt": "2026-10-03T07:14:57.512+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1772,
+      "sha256": "9c74225a20f59e53",
+      "capturedAt": "2026-10-03T07:14:57.517+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.taskList.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10080,
+      "sha256": "69bfeef09fe21ed7",
+      "capturedAt": "2026-10-03T07:14:57.521+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5046,
+      "sha256": "41ceefead83f310f",
+      "capturedAt": "2026-10-03T07:14:57.524+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5035,
+      "sha256": "c9156d206409cac4",
+      "capturedAt": "2026-10-03T07:14:57.528+00:00"
+    },
+    {
+      "file": "rest/live2.stage-0-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3364,
+      "sha256": "faec8fd66a0a37d4",
+      "capturedAt": "2026-10-03T07:14:57.532+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10776,
+      "sha256": "277cdb9d89c7e56c",
+      "capturedAt": "2026-10-03T07:14:57.536+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10780,
+      "sha256": "e501f552a83583e6",
+      "capturedAt": "2026-10-03T07:14:57.540+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10776,
+      "sha256": "277cdb9d89c7e56c",
+      "capturedAt": "2026-10-03T07:14:57.545+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 15682,
+      "sha256": "12a2daaae5a0d448",
+      "capturedAt": "2026-10-03T07:14:57.550+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 14758,
+      "sha256": "57a6a3544c66c040",
+      "capturedAt": "2026-10-03T07:14:57.555+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2439,
+      "sha256": "d4bbee2591f9df0a",
+      "capturedAt": "2026-10-03T07:14:57.559+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1760,
+      "sha256": "717a3b15c4ac6db4",
+      "capturedAt": "2026-10-03T07:14:57.563+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.taskList.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5000,
+      "sha256": "da37e4caac9d56b1",
+      "capturedAt": "2026-10-03T07:14:57.567+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3333,
+      "sha256": "ac57534fe8a95d9c",
+      "capturedAt": "2026-10-03T07:14:57.571+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5000,
+      "sha256": "2badc4a9990d1085",
+      "capturedAt": "2026-10-03T07:14:57.575+00:00"
+    },
+    {
+      "file": "rest/live2.stage-1-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3337,
+      "sha256": "89bc6bea3d35440d",
+      "capturedAt": "2026-10-03T07:14:57.579+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8637,
+      "sha256": "2fed7844e392fec9",
+      "capturedAt": "2026-10-03T07:14:57.583+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8641,
+      "sha256": "26180a4a30e66865",
+      "capturedAt": "2026-10-03T07:14:57.586+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8637,
+      "sha256": "2fed7844e392fec9",
+      "capturedAt": "2026-10-03T07:14:57.590+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 13231,
+      "sha256": "34b75a21d93a7b56",
+      "capturedAt": "2026-10-03T07:14:57.595+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12431,
+      "sha256": "eca666137ce22d1a",
+      "capturedAt": "2026-10-03T07:14:57.600+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2382,
+      "sha256": "c216aedd20a5aa7e",
+      "capturedAt": "2026-10-03T07:14:57.604+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1738,
+      "sha256": "d8e99ddca3b012a7",
+      "capturedAt": "2026-10-03T07:14:57.609+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.taskList.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3312,
+      "sha256": "7acd1e7c5b20e88f",
+      "capturedAt": "2026-10-03T07:14:57.613+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1657,
+      "sha256": "a18059f222e5f140",
+      "capturedAt": "2026-10-03T07:14:57.617+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3312,
+      "sha256": "7acd1e7c5b20e88f",
+      "capturedAt": "2026-10-03T07:14:57.621+00:00"
+    },
+    {
+      "file": "rest/live2.stage-2-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3312,
+      "sha256": "7acd1e7c5b20e88f",
+      "capturedAt": "2026-10-03T07:14:57.625+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12561,
+      "sha256": "488d7fc2fa38d421",
+      "capturedAt": "2026-10-03T07:14:57.630+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12565,
+      "sha256": "7819c3ec30c3cd6a",
+      "capturedAt": "2026-10-03T07:14:57.635+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12561,
+      "sha256": "488d7fc2fa38d421",
+      "capturedAt": "2026-10-03T07:14:57.640+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 17528,
+      "sha256": "a40a25320d8b052a",
+      "capturedAt": "2026-10-03T07:14:57.647+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16580,
+      "sha256": "30d2ff562c0eb505",
+      "capturedAt": "2026-10-03T07:14:57.653+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2495,
+      "sha256": "f9700b214aa7c0df",
+      "capturedAt": "2026-10-03T07:14:57.657+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1782,
+      "sha256": "51f04df6c2fe64ed",
+      "capturedAt": "2026-10-03T07:14:57.662+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.taskList.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6739,
+      "sha256": "462986fe0598f94c",
+      "capturedAt": "2026-10-03T07:14:57.667+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5052,
+      "sha256": "bf68036ccd80e657",
+      "capturedAt": "2026-10-03T07:14:57.672+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5052,
+      "sha256": "7e39ef51ffea7d2c",
+      "capturedAt": "2026-10-03T07:14:57.676+00:00"
+    },
+    {
+      "file": "rest/live2.stage-3-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3377,
+      "sha256": "0f425dad948acce7",
+      "capturedAt": "2026-10-03T07:14:57.680+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:57.684+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2558,
+      "sha256": "8df07e666cf3336d",
+      "capturedAt": "2026-10-03T07:14:57.689+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:57.693+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:57.697+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:57.702+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.taskSummary.txt",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskSummary",
+        "query": ""
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "abc5052ff4fd41c9",
+      "capturedAt": "2026-10-03T07:14:57.706+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.taskSummary.quantiles.txt",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "abc5052ff4fd41c9",
+      "capturedAt": "2026-10-03T07:14:57.711+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.taskList.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.715+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.719+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.723+00:00"
+    },
+    {
+      "file": "rest/live2.stage-4-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.728+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6593,
+      "sha256": "846ad5b3fe33dbcd",
+      "capturedAt": "2026-10-03T07:14:57.733+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6597,
+      "sha256": "f3ba0fcffb0ca523",
+      "capturedAt": "2026-10-03T07:14:57.738+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6593,
+      "sha256": "846ad5b3fe33dbcd",
+      "capturedAt": "2026-10-03T07:14:57.744+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 11247,
+      "sha256": "93258992dd391eb2",
+      "capturedAt": "2026-10-03T07:14:57.753+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10423,
+      "sha256": "67fc76605864cf1c",
+      "capturedAt": "2026-10-03T07:14:57.762+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2442,
+      "sha256": "8d72e943d50caf3e",
+      "capturedAt": "2026-10-03T07:14:57.771+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1762,
+      "sha256": "1b0f75714fe6fe64",
+      "capturedAt": "2026-10-03T07:14:57.780+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.taskList.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1667,
+      "sha256": "13349166ac548014",
+      "capturedAt": "2026-10-03T07:14:57.788+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.795+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1667,
+      "sha256": "13349166ac548014",
+      "capturedAt": "2026-10-03T07:14:57.803+00:00"
+    },
+    {
+      "file": "rest/live2.stage-5-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1667,
+      "sha256": "13349166ac548014",
+      "capturedAt": "2026-10-03T07:14:57.811+00:00"
+    },
+    {
+      "file": "rest/live2.executors.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/executors",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1563,
+      "sha256": "94220dc5223aee09",
+      "capturedAt": "2026-10-03T07:14:57.822+00:00"
+    },
+    {
+      "file": "rest/live2.allexecutors.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/allexecutors",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1563,
+      "sha256": "94aabf7d74945fee",
+      "capturedAt": "2026-10-03T07:14:57.832+00:00"
+    },
+    {
+      "file": "rest/live2.storage.rdd.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/storage/rdd",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1488,
+      "sha256": "a9934e256ba37cbd",
+      "capturedAt": "2026-10-03T07:14:57.841+00:00"
+    },
+    {
+      "file": "rest/live2.storage.rdd-1.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/storage/rdd/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1484,
+      "sha256": "b99d538693d83fe1",
+      "capturedAt": "2026-10-03T07:14:57.848+00:00"
+    },
+    {
+      "file": "rest/live2.logs.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/logs",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/octet-stream",
+      "bytes": 100,
+      "sha256": "2940476cbc6c960a",
+      "capturedAt": "2026-10-03T07:14:57.855+00:00"
+    },
+    {
+      "file": "rest/live2.sql.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8092,
+      "sha256": "fc009a94cdfe5ebb",
+      "capturedAt": "2026-10-03T07:14:57.883+00:00"
+    },
+    {
+      "file": "rest/live2.sql.details.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "details=true&planDescription=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8092,
+      "sha256": "fc009a94cdfe5ebb",
+      "capturedAt": "2026-10-03T07:14:57.892+00:00"
+    },
+    {
+      "file": "rest/live2.sql.nodetails.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "details=false&planDescription=false"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 292,
+      "sha256": "6cb1146566c383be",
+      "capturedAt": "2026-10-03T07:14:57.898+00:00"
+    },
+    {
+      "file": "rest/live2.sql.page.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "offset=1&length=2"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:57.905+00:00"
+    },
+    {
+      "file": "rest/live2.sql-0.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8088,
+      "sha256": "90261e80e9706400",
+      "capturedAt": "2026-10-03T07:14:57.915+00:00"
+    },
+    {
+      "file": "rest/live2.sql-0.nodetails.json",
+      "kind": "rest",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql/0",
+        "query": "details=false&planDescription=false"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 288,
+      "sha256": "727aeff6cabae3b6",
+      "capturedAt": "2026-10-03T07:14:57.924+00:00"
+    },
+    {
+      "file": "html/live2.jobs-list.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 14779,
+      "sha256": "766810e230d827b2",
+      "capturedAt": "2026-10-03T07:14:57.940+00:00"
+    },
+    {
+      "file": "html/live2.job-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 23951,
+      "sha256": "868c47a40918d093",
+      "capturedAt": "2026-10-03T07:14:57.955+00:00"
+    },
+    {
+      "file": "html/live2.job-1.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=1"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 16879,
+      "sha256": "5506095ece3db696",
+      "capturedAt": "2026-10-03T07:14:57.975+00:00"
+    },
+    {
+      "file": "html/live2.job-2.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=2"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 25716,
+      "sha256": "f7c78a461f3fb339",
+      "capturedAt": "2026-10-03T07:14:57.991+00:00"
+    },
+    {
+      "file": "html/live2.stages-list.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/stages/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 26819,
+      "sha256": "4da5b3a3cfed6f73",
+      "capturedAt": "2026-10-03T07:14:58.002+00:00"
+    },
+    {
+      "file": "html/live2.stage-0-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=0&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 17877,
+      "sha256": "46cd48ce40a616d1",
+      "capturedAt": "2026-10-03T07:14:58.011+00:00"
+    },
+    {
+      "file": "html/live2.stage-1-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=1&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 13593,
+      "sha256": "b57244829aee1d88",
+      "capturedAt": "2026-10-03T07:14:58.019+00:00"
+    },
+    {
+      "file": "html/live2.stage-2-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=2&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 11903,
+      "sha256": "2703dc65d8bd46df",
+      "capturedAt": "2026-10-03T07:14:58.025+00:00"
+    },
+    {
+      "file": "html/live2.stage-3-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=3&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 15523,
+      "sha256": "502b43f0741f5532",
+      "capturedAt": "2026-10-03T07:14:58.031+00:00"
+    },
+    {
+      "file": "html/live2.stage-4-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=4&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 3402,
+      "sha256": "31fdaefcb7d73654",
+      "capturedAt": "2026-10-03T07:14:58.035+00:00"
+    },
+    {
+      "file": "html/live2.stage-5-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=5&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 10548,
+      "sha256": "53deb7f0ce7c71bc",
+      "capturedAt": "2026-10-03T07:14:58.040+00:00"
+    },
+    {
+      "file": "html/live2.storage.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/storage/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 5283,
+      "sha256": "27cafe0fba16f5ba",
+      "capturedAt": "2026-10-03T07:14:58.051+00:00"
+    },
+    {
+      "file": "html/live2.storage-rdd-1.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/storage/rdd/",
+        "query": "id=1"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 9903,
+      "sha256": "5806a35708476219",
+      "capturedAt": "2026-10-03T07:14:58.071+00:00"
+    },
+    {
+      "file": "html/live2.executors.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/executors/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 3896,
+      "sha256": "d1a34ac5e2e95539",
+      "capturedAt": "2026-10-03T07:14:58.078+00:00"
+    },
+    {
+      "file": "html/live2.sql-list.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/SQL/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 9621,
+      "sha256": "80403e4f2ff12136",
+      "capturedAt": "2026-10-03T07:14:58.087+00:00"
+    },
+    {
+      "file": "html/live2.sql-0.html",
+      "kind": "html",
+      "phase": "live2",
+      "request": {
+        "method": "GET",
+        "path": "/SQL/execution/",
+        "query": "id=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 12043,
+      "sha256": "b3acb648894cfa60",
+      "capturedAt": "2026-10-03T07:14:58.094+00:00"
+    },
+    {
+      "file": "rest/final.applications.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 460,
+      "sha256": "da05a26c646f0dd2",
+      "capturedAt": "2026-10-03T07:14:58.601+00:00"
+    },
+    {
+      "file": "rest/final.application.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 456,
+      "sha256": "740b7f6c6f48ee1f",
+      "capturedAt": "2026-10-03T07:14:58.606+00:00"
+    },
+    {
+      "file": "rest/final.applications.running.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "status=running"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 460,
+      "sha256": "979f7081b8aa0c3f",
+      "capturedAt": "2026-10-03T07:14:58.611+00:00"
+    },
+    {
+      "file": "rest/final.applications.completed.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "status=completed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:58.615+00:00"
+    },
+    {
+      "file": "rest/final.applications.limit1.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications",
+        "query": "limit=1"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 460,
+      "sha256": "2e68403878871086",
+      "capturedAt": "2026-10-03T07:14:58.619+00:00"
+    },
+    {
+      "file": "rest/final.version.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/version",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 23,
+      "sha256": "66285ee246e3e04c",
+      "capturedAt": "2026-10-03T07:14:58.622+00:00"
+    },
+    {
+      "file": "rest/final.jobs.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1811,
+      "sha256": "b5ea79f1713b1360",
+      "capturedAt": "2026-10-03T07:14:58.629+00:00"
+    },
+    {
+      "file": "rest/final.jobs.status-running.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=running"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:58.633+00:00"
+    },
+    {
+      "file": "rest/final.jobs.status-succeeded.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=succeeded"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1811,
+      "sha256": "b5ea79f1713b1360",
+      "capturedAt": "2026-10-03T07:14:58.638+00:00"
+    },
+    {
+      "file": "rest/final.jobs.status-failed.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs",
+        "query": "status=failed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:58.642+00:00"
+    },
+    {
+      "file": "rest/final.job-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 616,
+      "sha256": "1aa589c8fec33bc3",
+      "capturedAt": "2026-10-03T07:14:58.646+00:00"
+    },
+    {
+      "file": "rest/final.job-1.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 592,
+      "sha256": "304283bb3af95c31",
+      "capturedAt": "2026-10-03T07:14:58.650+00:00"
+    },
+    {
+      "file": "rest/final.job-2.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/jobs/2",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 595,
+      "sha256": "231cf431efd9762f",
+      "capturedAt": "2026-10-03T07:14:58.654+00:00"
+    },
+    {
+      "file": "rest/final.stages.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 20194,
+      "sha256": "b850e446b5fdfc71",
+      "capturedAt": "2026-10-03T07:14:58.659+00:00"
+    },
+    {
+      "file": "rest/final.stages.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 57676,
+      "sha256": "740de36a5b6adbd2",
+      "capturedAt": "2026-10-03T07:14:58.669+00:00"
+    },
+    {
+      "file": "rest/final.stages.withSummaries.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 44016,
+      "sha256": "653eb7c2eb7b8195",
+      "capturedAt": "2026-10-03T07:14:58.681+00:00"
+    },
+    {
+      "file": "rest/final.stages.status-failed.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=failed"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:58.689+00:00"
+    },
+    {
+      "file": "rest/final.stages.status-skipped.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=skipped"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2514,
+      "sha256": "e2704fbdd572a710",
+      "capturedAt": "2026-10-03T07:14:58.695+00:00"
+    },
+    {
+      "file": "rest/final.stages.status-pending.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=pending"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:58.699+00:00"
+    },
+    {
+      "file": "rest/final.stages.status-active.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=active"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:58.704+00:00"
+    },
+    {
+      "file": "rest/final.stages.status-complete.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "status=complete"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 17682,
+      "sha256": "3a3aad543152f87d",
+      "capturedAt": "2026-10-03T07:14:58.710+00:00"
+    },
+    {
+      "file": "rest/final.stages.details.taskStatus-failed.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "details=true&taskStatus=FAILED"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:58.716+00:00"
+    },
+    {
+      "file": "rest/final.stages.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages",
+        "query": "withSummaries=true&quantiles=0.1,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 37512,
+      "sha256": "76706d432025a59e",
+      "capturedAt": "2026-10-03T07:14:58.727+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16541,
+      "sha256": "a1175c78a3fe8045",
+      "capturedAt": "2026-10-03T07:14:58.734+00:00"
+    },
+    {
+      "file": "rest/final.stage-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16545,
+      "sha256": "89200d68c0062e7b",
+      "capturedAt": "2026-10-03T07:14:58.740+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16541,
+      "sha256": "a1175c78a3fe8045",
+      "capturedAt": "2026-10-03T07:14:58.746+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 21242,
+      "sha256": "c773ecd768b39b6e",
+      "capturedAt": "2026-10-03T07:14:58.754+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 20400,
+      "sha256": "6226322c13bc860a",
+      "capturedAt": "2026-10-03T07:14:58.763+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2469,
+      "sha256": "1cfa183e38aa257c",
+      "capturedAt": "2026-10-03T07:14:58.770+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1772,
+      "sha256": "9c74225a20f59e53",
+      "capturedAt": "2026-10-03T07:14:58.781+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.taskList.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10080,
+      "sha256": "69bfeef09fe21ed7",
+      "capturedAt": "2026-10-03T07:14:58.817+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5046,
+      "sha256": "41ceefead83f310f",
+      "capturedAt": "2026-10-03T07:14:58.831+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5035,
+      "sha256": "c9156d206409cac4",
+      "capturedAt": "2026-10-03T07:14:58.842+00:00"
+    },
+    {
+      "file": "rest/final.stage-0-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/0/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3364,
+      "sha256": "faec8fd66a0a37d4",
+      "capturedAt": "2026-10-03T07:14:58.859+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10776,
+      "sha256": "277cdb9d89c7e56c",
+      "capturedAt": "2026-10-03T07:14:58.871+00:00"
+    },
+    {
+      "file": "rest/final.stage-1.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10780,
+      "sha256": "e501f552a83583e6",
+      "capturedAt": "2026-10-03T07:14:58.876+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10776,
+      "sha256": "277cdb9d89c7e56c",
+      "capturedAt": "2026-10-03T07:14:58.883+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 15682,
+      "sha256": "12a2daaae5a0d448",
+      "capturedAt": "2026-10-03T07:14:58.890+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 14758,
+      "sha256": "57a6a3544c66c040",
+      "capturedAt": "2026-10-03T07:14:58.897+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2439,
+      "sha256": "d4bbee2591f9df0a",
+      "capturedAt": "2026-10-03T07:14:58.902+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1760,
+      "sha256": "717a3b15c4ac6db4",
+      "capturedAt": "2026-10-03T07:14:58.906+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.taskList.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5000,
+      "sha256": "da37e4caac9d56b1",
+      "capturedAt": "2026-10-03T07:14:58.911+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3333,
+      "sha256": "ac57534fe8a95d9c",
+      "capturedAt": "2026-10-03T07:14:58.915+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5000,
+      "sha256": "2badc4a9990d1085",
+      "capturedAt": "2026-10-03T07:14:58.920+00:00"
+    },
+    {
+      "file": "rest/final.stage-1-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/1/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3337,
+      "sha256": "89bc6bea3d35440d",
+      "capturedAt": "2026-10-03T07:14:58.925+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8637,
+      "sha256": "2fed7844e392fec9",
+      "capturedAt": "2026-10-03T07:14:58.930+00:00"
+    },
+    {
+      "file": "rest/final.stage-2.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8641,
+      "sha256": "26180a4a30e66865",
+      "capturedAt": "2026-10-03T07:14:58.937+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8637,
+      "sha256": "2fed7844e392fec9",
+      "capturedAt": "2026-10-03T07:14:58.942+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 13231,
+      "sha256": "34b75a21d93a7b56",
+      "capturedAt": "2026-10-03T07:14:58.948+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12431,
+      "sha256": "eca666137ce22d1a",
+      "capturedAt": "2026-10-03T07:14:58.954+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2382,
+      "sha256": "c216aedd20a5aa7e",
+      "capturedAt": "2026-10-03T07:14:58.959+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1738,
+      "sha256": "d8e99ddca3b012a7",
+      "capturedAt": "2026-10-03T07:14:58.964+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.taskList.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3312,
+      "sha256": "7acd1e7c5b20e88f",
+      "capturedAt": "2026-10-03T07:14:58.969+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1657,
+      "sha256": "a18059f222e5f140",
+      "capturedAt": "2026-10-03T07:14:58.974+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3312,
+      "sha256": "7acd1e7c5b20e88f",
+      "capturedAt": "2026-10-03T07:14:58.979+00:00"
+    },
+    {
+      "file": "rest/final.stage-2-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/2/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3312,
+      "sha256": "7acd1e7c5b20e88f",
+      "capturedAt": "2026-10-03T07:14:58.983+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12561,
+      "sha256": "488d7fc2fa38d421",
+      "capturedAt": "2026-10-03T07:14:58.989+00:00"
+    },
+    {
+      "file": "rest/final.stage-3.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12565,
+      "sha256": "7819c3ec30c3cd6a",
+      "capturedAt": "2026-10-03T07:14:58.994+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 12561,
+      "sha256": "488d7fc2fa38d421",
+      "capturedAt": "2026-10-03T07:14:58.999+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 17528,
+      "sha256": "a40a25320d8b052a",
+      "capturedAt": "2026-10-03T07:14:59.004+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 16580,
+      "sha256": "30d2ff562c0eb505",
+      "capturedAt": "2026-10-03T07:14:59.010+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2495,
+      "sha256": "f9700b214aa7c0df",
+      "capturedAt": "2026-10-03T07:14:59.015+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1782,
+      "sha256": "51f04df6c2fe64ed",
+      "capturedAt": "2026-10-03T07:14:59.020+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.taskList.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6739,
+      "sha256": "462986fe0598f94c",
+      "capturedAt": "2026-10-03T07:14:59.024+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5052,
+      "sha256": "bf68036ccd80e657",
+      "capturedAt": "2026-10-03T07:14:59.028+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 5052,
+      "sha256": "7e39ef51ffea7d2c",
+      "capturedAt": "2026-10-03T07:14:59.032+00:00"
+    },
+    {
+      "file": "rest/final.stage-3-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/3/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3377,
+      "sha256": "0f425dad948acce7",
+      "capturedAt": "2026-10-03T07:14:59.037+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:59.042+00:00"
+    },
+    {
+      "file": "rest/final.stage-4.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2558,
+      "sha256": "8df07e666cf3336d",
+      "capturedAt": "2026-10-03T07:14:59.047+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:59.051+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:59.056+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2554,
+      "sha256": "d11ee77bcfc1f530",
+      "capturedAt": "2026-10-03T07:14:59.061+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.taskSummary.txt",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskSummary",
+        "query": ""
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "abc5052ff4fd41c9",
+      "capturedAt": "2026-10-03T07:14:59.067+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.taskSummary.quantiles.txt",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 404,
+      "contentType": "text/plain",
+      "bytes": 40,
+      "sha256": "abc5052ff4fd41c9",
+      "capturedAt": "2026-10-03T07:14:59.071+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.taskList.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:59.074+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:59.078+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:59.081+00:00"
+    },
+    {
+      "file": "rest/final.stage-4-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/4/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:59.085+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6593,
+      "sha256": "846ad5b3fe33dbcd",
+      "capturedAt": "2026-10-03T07:14:59.089+00:00"
+    },
+    {
+      "file": "rest/final.stage-5.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6597,
+      "sha256": "f3ba0fcffb0ca523",
+      "capturedAt": "2026-10-03T07:14:59.094+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": "details=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 6593,
+      "sha256": "846ad5b3fe33dbcd",
+      "capturedAt": "2026-10-03T07:14:59.101+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.withSummaries.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": "withSummaries=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 11247,
+      "sha256": "93258992dd391eb2",
+      "capturedAt": "2026-10-03T07:14:59.106+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.details.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0",
+        "query": "details=true&withSummaries=true&quantiles=0.1,0.5,0.9"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 10423,
+      "sha256": "67fc76605864cf1c",
+      "capturedAt": "2026-10-03T07:14:59.111+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.taskSummary.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskSummary",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 2442,
+      "sha256": "8d72e943d50caf3e",
+      "capturedAt": "2026-10-03T07:14:59.115+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.taskSummary.quantiles.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskSummary",
+        "query": "quantiles=0.05,0.95"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1762,
+      "sha256": "1b0f75714fe6fe64",
+      "capturedAt": "2026-10-03T07:14:59.120+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.taskList.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1667,
+      "sha256": "13349166ac548014",
+      "capturedAt": "2026-10-03T07:14:59.125+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.taskList.page.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": "offset=1&length=3&sortBy=-runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:59.130+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.taskList.sortBy-runtime.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": "length=3&sortBy=runtime"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1667,
+      "sha256": "13349166ac548014",
+      "capturedAt": "2026-10-03T07:14:59.135+00:00"
+    },
+    {
+      "file": "rest/final.stage-5-0.taskList.status-success.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/stages/5/0/taskList",
+        "query": "length=2&status=SUCCESS"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1667,
+      "sha256": "13349166ac548014",
+      "capturedAt": "2026-10-03T07:14:59.139+00:00"
+    },
+    {
+      "file": "rest/final.executors.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/executors",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1565,
+      "sha256": "90de8b554b288a14",
+      "capturedAt": "2026-10-03T07:14:59.144+00:00"
+    },
+    {
+      "file": "rest/final.allexecutors.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/allexecutors",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1565,
+      "sha256": "1d6c84057809eda5",
+      "capturedAt": "2026-10-03T07:14:59.148+00:00"
+    },
+    {
+      "file": "rest/final.storage.rdd.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/storage/rdd",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1488,
+      "sha256": "a9934e256ba37cbd",
+      "capturedAt": "2026-10-03T07:14:59.150+00:00"
+    },
+    {
+      "file": "rest/final.storage.rdd-1.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/storage/rdd/1",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 1484,
+      "sha256": "b99d538693d83fe1",
+      "capturedAt": "2026-10-03T07:14:59.154+00:00"
+    },
+    {
+      "file": "rest/final.environment.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/environment",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 110216,
+      "sha256": "49211ff8fcbc7b06",
+      "capturedAt": "2026-10-03T07:14:59.189+00:00"
+    },
+    {
+      "file": "rest/final.logs.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/logs",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/octet-stream",
+      "bytes": 100,
+      "sha256": "2940476cbc6c960a",
+      "capturedAt": "2026-10-03T07:14:59.192+00:00"
+    },
+    {
+      "file": "rest/final.sql.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8092,
+      "sha256": "fc009a94cdfe5ebb",
+      "capturedAt": "2026-10-03T07:14:59.196+00:00"
+    },
+    {
+      "file": "rest/final.sql.details.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "details=true&planDescription=true"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8092,
+      "sha256": "fc009a94cdfe5ebb",
+      "capturedAt": "2026-10-03T07:14:59.201+00:00"
+    },
+    {
+      "file": "rest/final.sql.nodetails.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "details=false&planDescription=false"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 292,
+      "sha256": "6cb1146566c383be",
+      "capturedAt": "2026-10-03T07:14:59.204+00:00"
+    },
+    {
+      "file": "rest/final.sql.page.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql",
+        "query": "offset=1&length=2"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 3,
+      "sha256": "5984eac0c5c6d947",
+      "capturedAt": "2026-10-03T07:14:59.208+00:00"
+    },
+    {
+      "file": "rest/final.sql-0.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql/0",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 8088,
+      "sha256": "90261e80e9706400",
+      "capturedAt": "2026-10-03T07:14:59.212+00:00"
+    },
+    {
+      "file": "rest/final.sql-0.nodetails.json",
+      "kind": "rest",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/applications/local-1791011680508/sql/0",
+        "query": "details=false&planDescription=false"
+      },
+      "status": 200,
+      "contentType": "application/json",
+      "bytes": 288,
+      "sha256": "727aeff6cabae3b6",
+      "capturedAt": "2026-10-03T07:14:59.216+00:00"
+    },
+    {
+      "file": "html/final.jobs-list.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 14779,
+      "sha256": "edbeb17ab6349e5d",
+      "capturedAt": "2026-10-03T07:14:59.225+00:00"
+    },
+    {
+      "file": "html/final.job-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 23951,
+      "sha256": "868c47a40918d093",
+      "capturedAt": "2026-10-03T07:14:59.233+00:00"
+    },
+    {
+      "file": "html/final.job-1.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=1"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 16879,
+      "sha256": "5506095ece3db696",
+      "capturedAt": "2026-10-03T07:14:59.240+00:00"
+    },
+    {
+      "file": "html/final.job-2.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/jobs/job/",
+        "query": "id=2"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 25716,
+      "sha256": "f7c78a461f3fb339",
+      "capturedAt": "2026-10-03T07:14:59.250+00:00"
+    },
+    {
+      "file": "html/final.stages-list.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/stages/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 26819,
+      "sha256": "4da5b3a3cfed6f73",
+      "capturedAt": "2026-10-03T07:14:59.261+00:00"
+    },
+    {
+      "file": "html/final.stage-0-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=0&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 17877,
+      "sha256": "46cd48ce40a616d1",
+      "capturedAt": "2026-10-03T07:14:59.268+00:00"
+    },
+    {
+      "file": "html/final.stage-1-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=1&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 13593,
+      "sha256": "b57244829aee1d88",
+      "capturedAt": "2026-10-03T07:14:59.273+00:00"
+    },
+    {
+      "file": "html/final.stage-2-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=2&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 11903,
+      "sha256": "2703dc65d8bd46df",
+      "capturedAt": "2026-10-03T07:14:59.278+00:00"
+    },
+    {
+      "file": "html/final.stage-3-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=3&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 15523,
+      "sha256": "502b43f0741f5532",
+      "capturedAt": "2026-10-03T07:14:59.283+00:00"
+    },
+    {
+      "file": "html/final.stage-4-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=4&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 3402,
+      "sha256": "31fdaefcb7d73654",
+      "capturedAt": "2026-10-03T07:14:59.287+00:00"
+    },
+    {
+      "file": "html/final.stage-5-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/stages/stage/",
+        "query": "id=5&attempt=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 10548,
+      "sha256": "53deb7f0ce7c71bc",
+      "capturedAt": "2026-10-03T07:14:59.293+00:00"
+    },
+    {
+      "file": "html/final.storage.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/storage/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 5283,
+      "sha256": "27cafe0fba16f5ba",
+      "capturedAt": "2026-10-03T07:14:59.297+00:00"
+    },
+    {
+      "file": "html/final.storage-rdd-1.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/storage/rdd/",
+        "query": "id=1"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 9903,
+      "sha256": "5806a35708476219",
+      "capturedAt": "2026-10-03T07:14:59.304+00:00"
+    },
+    {
+      "file": "html/final.environment.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/environment/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 137177,
+      "sha256": "b7c45b3c79031ca7",
+      "capturedAt": "2026-10-03T07:14:59.529+00:00"
+    },
+    {
+      "file": "html/final.executors.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/executors/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 3896,
+      "sha256": "d1a34ac5e2e95539",
+      "capturedAt": "2026-10-03T07:14:59.532+00:00"
+    },
+    {
+      "file": "html/final.sql-list.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/SQL/",
+        "query": ""
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 9621,
+      "sha256": "80403e4f2ff12136",
+      "capturedAt": "2026-10-03T07:14:59.536+00:00"
+    },
+    {
+      "file": "html/final.sql-0.html",
+      "kind": "html",
+      "phase": "final",
+      "request": {
+        "method": "GET",
+        "path": "/SQL/execution/",
+        "query": "id=0"
+      },
+      "status": 200,
+      "contentType": "text/html;charset=utf-8",
+      "bytes": 12043,
+      "sha256": "b3acb648894cfa60",
+      "capturedAt": "2026-10-03T07:14:59.539+00:00"
+    }
+  ],
+  "finishedAt": "2026-10-03T07:14:59.540+00:00"
+}

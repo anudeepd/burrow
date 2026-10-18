@@ -1,0 +1,375 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="94c100ad-b2dc-4eb5-808c-76d374e92581">setUIRoot('')</script>
+        <script nonce="94c100ad-b2dc-4eb5-808c-76d374e92581">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="94c100ad-b2dc-4eb5-808c-76d374e92581">setAppBasePath('')</script>
+        
+        <link rel="stylesheet" href="/static/dataTables.bootstrap5.min.css" type="text/css"/><link rel="stylesheet" href="/static/jquery.dataTables.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui-dataTables.css" type="text/css"/><script src="/static/jquery.dataTables.min.js"></script><script src="/static/dataTables.bootstrap5.min.js"></script>
+        <link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/timeline-view.js"></script>
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-structured-streaming - Details for Query 5</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/StreamingQuery/">Structured Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-structured-streaming" class="text-nowrap">burrow-structured-streaming</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Details for Query 5
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-3">
+          <table id="sql-execution-table" class="table table-striped compact cell-border" style="width:100%" data-execution-id="5">
+          </table>
+          <ul class="list-unstyled small text-muted mb-2">
+                
+                <li>
+                      <strong>Sub Executions: </strong>
+                      <a href="?id=6">6</a><span>&nbsp;</span>
+                    </li>
+              </ul>
+          <div id="plan-viz-download-btn-container">
+            <select id="plan-viz-format-select">
+              <option value="svg">SVG</option>
+              <option value="dot">DOT</option>
+              <option value="txt">TXT</option>
+            </select>
+            <label for="plan-viz-format-select">
+              <a id="plan-viz-download-btn" class="downloadbutton">Download</a>
+            </label>
+            <button id="copy-plan-btn" class="btn btn-sm btn-outline-secondary ms-2" type="button" title="Copy physical plan to clipboard">
+              📋 Copy Plan</button>
+            <button id="copy-link-btn" class="btn btn-sm btn-outline-secondary ms-1" type="button" title="Copy shareable link to this execution">
+              🔗 Copy Link</button>
+          </div>
+          <script src="/static/sql/sql-table-utils.js"></script>
+          <script src="/static/sql/executionpage.js"></script>
+        </div><div>
+      <div>
+        <span data-action="togglePlanViz">
+          <h4>
+            <span id="plan-viz-graph-arrow" class="arrow-open"></span>
+            <a>Plan Visualization</a>
+          </h4>
+        </span>
+      </div>
+
+      <div id="plan-viz-content" class="row">
+        <div id="plan-viz-graph-col" class="col-12">
+          <div id="plan-viz-graph">
+            <div>
+              <input type="checkbox" id="stageId-and-taskId-checkbox"></input>
+              <span>Show the Stage ID and Task ID that corresponds to the max metric</span>
+            </div>
+            <div>
+              <input type="checkbox" id="detailed-labels-checkbox"></input>
+              <span>Show metrics in graph nodes (detailed mode)</span>
+            </div>
+            <div id="plan-viz-zoom-toolbar" class="plan-viz-zoom-toolbar">
+              <div id="plan-viz-search-collapsed" class="btn-group btn-group-sm me-2" role="group" aria-label="Search">
+                <button id="plan-viz-search-toggle" type="button" class="btn btn-light border" title="Find node (/)">🔍</button>
+              </div>
+              <div id="plan-viz-search-expanded" class="input-group input-group-sm me-2 d-none" role="group" aria-label="Search">
+                <input id="plan-viz-search-input" type="search" autocomplete="off" class="form-control form-control-sm border" placeholder="Find node..." aria-label="Find node"/>
+                <span id="plan-viz-search-count" class="input-group-text bg-light"></span>
+                <button id="plan-viz-search-prev" type="button" class="btn btn-light border" title="Previous match (Shift+Enter)">↑</button>
+                <button id="plan-viz-search-next" type="button" class="btn btn-light border" title="Next match (Enter)">↓</button>
+                <button id="plan-viz-search-close" type="button" class="btn btn-light border" title="Close search (Esc)">&times;</button>
+              </div>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Zoom controls">
+                <button id="plan-viz-zoom-out" type="button" class="btn btn-light border" title="Zoom out (-)">−</button>
+                <button id="plan-viz-zoom-reset" type="button" class="btn btn-light border" title="Reset zoom to fit (0)">
+                  <span id="plan-viz-zoom-level">100%</span>
+                </button>
+                <button id="plan-viz-zoom-in" type="button" class="btn btn-light border" title="Zoom in (+)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="plan-viz-details-col" class="col-4 d-none">
+          <div id="plan-viz-details-panel" class="sticky-top" style="top: 4rem; z-index: 1;">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold" id="plan-viz-details-title">Details</span>
+                <button id="plan-viz-panel-close" class="btn btn-sm btn-close" type="button" title="Close panel"></button>
+              </div>
+              <div class="card-body" id="plan-viz-details-body">
+                <p class="text-muted mb-0">Click a node to view details</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="plan-viz-metadata" style="display:none">
+        <div class="dot-file">
+          digraph G {
+  0 [id=&quot;node0&quot; label=&quot;WriteToDataSourceV2&quot; tooltip=&quot;WriteToDataSourceV2 MicroBatchWrite[epoch: 2, writer: org.apache.spark.sql.execution.streaming.sources.MemoryStreamingWrite@711d6457]&quot;];
+
+  subgraph cluster1 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster1&quot;;
+    label=&quot;(5)&quot;;
+    tooltip=&quot;WholeStageCodegen (5)&quot;;
+      2 [id=&quot;node2&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[count(1)])&quot;];
+  }
+     
+  3 [id=&quot;node3&quot; label=&quot;StateStoreSave&quot; tooltip=&quot;StateStoreSave [window#7-T10000ms, _groupingexpression#100L], state info [ checkpoint = file:/tmp/temporary-c0c9ff09-a0a6-49c3-b094-c89c4a498b66/state, runId = 3510a78c-3a84-4680-8197-1558cc9179c2, opId = 0, ver = 2, numPartitions = 4] stateStoreCkptIds = None, Update, 0, 1791011331214, 2&quot;];
+
+  subgraph cluster4 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster4&quot;;
+    label=&quot;(4)&quot;;
+    tooltip=&quot;WholeStageCodegen (4)&quot;;
+      5 [id=&quot;node5&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[merge_count(1)])&quot;];
+  }
+     
+  6 [id=&quot;node6&quot; label=&quot;StateStoreRestore&quot; tooltip=&quot;StateStoreRestore [window#7-T10000ms, _groupingexpression#100L], state info [ checkpoint = file:/tmp/temporary-c0c9ff09-a0a6-49c3-b094-c89c4a498b66/state, runId = 3510a78c-3a84-4680-8197-1558cc9179c2, opId = 0, ver = 2, numPartitions = 4] stateStoreCkptIds = None, 2&quot;];
+
+  subgraph cluster7 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster7&quot;;
+    label=&quot;(3)&quot;;
+    tooltip=&quot;WholeStageCodegen (3)&quot;;
+      8 [id=&quot;node8&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[merge_count(1)])&quot;];
+  }
+     
+  9 [id=&quot;node9&quot; label=&quot;Exchange&quot; tooltip=&quot;Exchange hashpartitioning(window#7-T10000ms, _groupingexpression#100L, 4), REQUIRED_BY_STATEFUL_OPERATOR, [plan_id=277]&quot;];
+
+  subgraph cluster10 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster10&quot;;
+    label=&quot;(2)&quot;;
+    tooltip=&quot;WholeStageCodegen (2)&quot;;
+      11 [id=&quot;node11&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[partial_count(1)])&quot;];    
+  12 [id=&quot;node12&quot; label=&quot;Project&quot; tooltip=&quot;Project [named_struct(start, knownnullable(precisetimestampconversion(((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) &lt; 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0), LongType, TimestampType)), end, knownnullable(precisetimestampconversion((((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) &lt; 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0) + 5000000), LongType, TimestampType))) AS window#7-T10000ms, (value#1L % 3) AS _groupingexpression#100L]&quot;];    
+  13 [id=&quot;node13&quot; label=&quot;Filter&quot; tooltip=&quot;Filter isnotnull(timestamp#0-T10000ms)&quot;];
+  }
+     
+  14 [id=&quot;node14&quot; label=&quot;EventTimeWatermark&quot; tooltip=&quot;EventTimeWatermark b1c526c5-8d46-4401-95b6-c7ab09b1f277, timestamp#0: timestamp, 10 seconds&quot;];
+
+  subgraph cluster15 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster15&quot;;
+    label=&quot;(1)&quot;;
+    tooltip=&quot;WholeStageCodegen (1)&quot;;
+      16 [id=&quot;node16&quot; label=&quot;Project&quot; tooltip=&quot;Project [timestamp#0, value#1L]&quot;];
+  }
+     
+  17 [id=&quot;node17&quot; label=&quot;MicroBatchScan&quot; tooltip=&quot;MicroBatchScan[timestamp#0, value#1L] class org.apache.spark.sql.execution.streaming.sources.RateStreamTable$$anon$1&quot;];
+  2-&gt;0;
+
+  3-&gt;2;
+
+  5-&gt;3;
+
+  6-&gt;5;
+
+  8-&gt;6;
+
+  9-&gt;8;
+
+  11-&gt;9;
+
+  12-&gt;11;
+
+  13-&gt;12;
+
+  14-&gt;13;
+
+  16-&gt;14;
+
+  17-&gt;16;
+
+}
+        </div>
+        <div class="node-details">
+          {
+  &quot;node0&quot;:{&quot;name&quot;:&quot;WriteToDataSourceV2&quot;,&quot;desc&quot;:&quot;WriteToDataSourceV2 MicroBatchWrite[epoch: 2, writer: org.apache.spark.sql.execution.streaming.sources.MemoryStreamingWrite@711d6457]&quot;,&quot;metrics&quot;:[]},
+  &quot;node2&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[count(1)])&quot;,&quot;metrics&quot;:[]},
+  &quot;cluster1&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (5)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (5)&quot;,&quot;metrics&quot;:[],&quot;children&quot;:[&quot;node2&quot;]},
+  &quot;node3&quot;:{&quot;name&quot;:&quot;StateStoreSave&quot;,&quot;desc&quot;:&quot;StateStoreSave [window#7-T10000ms, _groupingexpression#100L], state info [ checkpoint = file:\/tmp\/temporary-c0c9ff09-a0a6-49c3-b094-c89c4a498b66\/state, runId = 3510a78c-3a84-4680-8197-1558cc9179c2, opId = 0, ver = 2, numPartitions = 4] stateStoreCkptIds = None, Update, 0, 1791011331214, 2&quot;,&quot;metrics&quot;:[]},
+  &quot;node5&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[merge_count(1)])&quot;,&quot;metrics&quot;:[]},
+  &quot;cluster4&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (4)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (4)&quot;,&quot;metrics&quot;:[],&quot;children&quot;:[&quot;node5&quot;]},
+  &quot;node6&quot;:{&quot;name&quot;:&quot;StateStoreRestore&quot;,&quot;desc&quot;:&quot;StateStoreRestore [window#7-T10000ms, _groupingexpression#100L], state info [ checkpoint = file:\/tmp\/temporary-c0c9ff09-a0a6-49c3-b094-c89c4a498b66\/state, runId = 3510a78c-3a84-4680-8197-1558cc9179c2, opId = 0, ver = 2, numPartitions = 4] stateStoreCkptIds = None, 2&quot;,&quot;metrics&quot;:[]},
+  &quot;node8&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[merge_count(1)])&quot;,&quot;metrics&quot;:[]},
+  &quot;cluster7&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (3)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (3)&quot;,&quot;metrics&quot;:[],&quot;children&quot;:[&quot;node8&quot;]},
+  &quot;node9&quot;:{&quot;name&quot;:&quot;Exchange&quot;,&quot;desc&quot;:&quot;Exchange hashpartitioning(window#7-T10000ms, _groupingexpression#100L, 4), REQUIRED_BY_STATEFUL_OPERATOR, [plan_id=277]&quot;,&quot;metrics&quot;:[]},
+  &quot;node11&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[window#7-T10000ms, _groupingexpression#100L], functions=[partial_count(1)])&quot;,&quot;metrics&quot;:[]},
+  &quot;node12&quot;:{&quot;name&quot;:&quot;Project&quot;,&quot;desc&quot;:&quot;Project [named_struct(start, knownnullable(precisetimestampconversion(((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) &lt; 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0), LongType, TimestampType)), end, knownnullable(precisetimestampconversion((((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) &lt; 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0) + 5000000), LongType, TimestampType))) AS window#7-T10000ms, (value#1L % 3) AS _groupingexpression#100L]&quot;,&quot;metrics&quot;:[]},
+  &quot;node13&quot;:{&quot;name&quot;:&quot;Filter&quot;,&quot;desc&quot;:&quot;Filter isnotnull(timestamp#0-T10000ms)&quot;,&quot;metrics&quot;:[]},
+  &quot;cluster10&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (2)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (2)&quot;,&quot;metrics&quot;:[],&quot;children&quot;:[&quot;node11&quot;,&quot;node12&quot;,&quot;node13&quot;]},
+  &quot;node14&quot;:{&quot;name&quot;:&quot;EventTimeWatermark&quot;,&quot;desc&quot;:&quot;EventTimeWatermark b1c526c5-8d46-4401-95b6-c7ab09b1f277, timestamp#0: timestamp, 10 seconds&quot;,&quot;metrics&quot;:[]},
+  &quot;node16&quot;:{&quot;name&quot;:&quot;Project&quot;,&quot;desc&quot;:&quot;Project [timestamp#0, value#1L]&quot;,&quot;metrics&quot;:[]},
+  &quot;cluster15&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (1)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (1)&quot;,&quot;metrics&quot;:[],&quot;children&quot;:[&quot;node16&quot;]},
+  &quot;node17&quot;:{&quot;name&quot;:&quot;MicroBatchScan&quot;,&quot;desc&quot;:&quot;MicroBatchScan[timestamp#0, value#1L] class org.apache.spark.sql.execution.streaming.sources.RateStreamTable$$anon$1&quot;,&quot;metrics&quot;:[]}
+}
+        </div>
+      </div>
+      <link rel="stylesheet" href="/static/sql/spark-sql-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/sql/spark-sql-viz.js"></script>
+    </div><div>
+      <span class="collapse-table" data-bs-toggle="collapse" data-bs-target="#physical-plan-details" aria-expanded="false" aria-controls="physical-plan-details" data-collapse-name="collapse-plan-details">
+        <h4>
+          <span class="collapse-table-arrow arrow-closed"></span>
+          <a>Plan Details</a>
+        </h4>
+      </span>
+      <div class="collapsible-table collapse" id="physical-plan-details">
+        <pre>== Physical Plan ==
+WriteToDataSourceV2 (13)
++- * HashAggregate (12)
+   +- StateStoreSave (11)
+      +- * HashAggregate (10)
+         +- StateStoreRestore (9)
+            +- * HashAggregate (8)
+               +- Exchange (7)
+                  +- * HashAggregate (6)
+                     +- * Project (5)
+                        +- * Filter (4)
+                           +- EventTimeWatermark (3)
+                              +- * Project (2)
+                                 +- MicroBatchScan (1)
+
+
+(1) MicroBatchScan
+Output [2]: [timestamp#0, value#1L]
+class org.apache.spark.sql.execution.streaming.sources.RateStreamTable$$anon$1
+
+(2) Project [codegen id : 1]
+Output [2]: [timestamp#0, value#1L]
+Input [2]: [timestamp#0, value#1L]
+
+(3) EventTimeWatermark
+Input [2]: [timestamp#0, value#1L]
+Arguments: b1c526c5-8d46-4401-95b6-c7ab09b1f277, timestamp#0: timestamp, 10 seconds
+
+(4) Filter [codegen id : 2]
+Input [2]: [timestamp#0-T10000ms, value#1L]
+Condition : isnotnull(timestamp#0-T10000ms)
+
+(5) Project [codegen id : 2]
+Output [2]: [named_struct(start, knownnullable(precisetimestampconversion(((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) &lt; 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0), LongType, TimestampType)), end, knownnullable(precisetimestampconversion((((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - CASE WHEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) &lt; 0) THEN (((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) + 5000000) ELSE ((precisetimestampconversion(timestamp#0-T10000ms, TimestampType, LongType) - 0) % 5000000) END) - 0) + 5000000), LongType, TimestampType))) AS window#7-T10000ms, (value#1L % 3) AS _groupingexpression#100L]
+Input [2]: [timestamp#0-T10000ms, value#1L]
+
+(6) HashAggregate [codegen id : 2]
+Input [2]: [window#7-T10000ms, _groupingexpression#100L]
+Keys [2]: [window#7-T10000ms, _groupingexpression#100L]
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count(1)#6L]
+Results [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+
+(7) Exchange
+Input [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+Arguments: hashpartitioning(window#7-T10000ms, _groupingexpression#100L, 4), REQUIRED_BY_STATEFUL_OPERATOR, [plan_id=277]
+
+(8) HashAggregate [codegen id : 3]
+Input [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+Keys [2]: [window#7-T10000ms, _groupingexpression#100L]
+Functions [1]: [merge_count(1)]
+Aggregate Attributes [1]: [count(1)#6L]
+Results [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+
+(9) StateStoreRestore
+Input [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+Arguments: [window#7-T10000ms, _groupingexpression#100L], state info [ checkpoint = file:/tmp/temporary-c0c9ff09-a0a6-49c3-b094-c89c4a498b66/state, runId = 3510a78c-3a84-4680-8197-1558cc9179c2, opId = 0, ver = 2, numPartitions = 4] stateStoreCkptIds = None, 2
+
+(10) HashAggregate [codegen id : 4]
+Input [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+Keys [2]: [window#7-T10000ms, _groupingexpression#100L]
+Functions [1]: [merge_count(1)]
+Aggregate Attributes [1]: [count(1)#6L]
+Results [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+
+(11) StateStoreSave
+Input [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+Arguments: [window#7-T10000ms, _groupingexpression#100L], state info [ checkpoint = file:/tmp/temporary-c0c9ff09-a0a6-49c3-b094-c89c4a498b66/state, runId = 3510a78c-3a84-4680-8197-1558cc9179c2, opId = 0, ver = 2, numPartitions = 4] stateStoreCkptIds = None, Update, 0, 1791011331214, 2
+
+(12) HashAggregate [codegen id : 5]
+Input [3]: [window#7-T10000ms, _groupingexpression#100L, count#16L]
+Keys [2]: [window#7-T10000ms, _groupingexpression#100L]
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#6L]
+Results [3]: [window#7-T10000ms, _groupingexpression#100L AS k#2L, count(1)#6L AS count#3L]
+
+(13) WriteToDataSourceV2
+Input [3]: [window#7-T10000ms, k#2L, count#3L]
+Arguments: MicroBatchWrite[epoch: 2, writer: org.apache.spark.sql.execution.streaming.sources.MemoryStreamingWrite@711d6457]
+
+</pre>
+      </div>
+    </div><div>
+      <span class="collapse-table" data-bs-toggle="collapse" data-bs-target="#sql-properties" aria-expanded="false" aria-controls="sql-properties" data-collapse-name="collapse-sql-properties">
+        <h4>
+          <span class="collapse-table-arrow arrow-closed"></span>
+          <a>SQL / DataFrame Properties</a>
+        </h4>
+      </span>
+      <div class="collapsible-table collapse" id="sql-properties">
+        <div class="table-responsive">
+    <table class="table table-bordered table-hover table-sm table-striped sortable">
+      <thead><th width="50.0%" class="">Name</th><th width="50.0%" class="">Value</th></thead>
+      <tbody>
+        <tr><td>spark.sql.adaptive.enabled</td><td>false</td></tr><tr><td>spark.sql.cbo.enabled</td><td>false</td></tr><tr><td>spark.sql.requireAllClusterKeysForDistribution</td><td>false</td></tr><tr><td>spark.sql.streaming.internal.stateStore.partitions</td><td>4</td></tr><tr><td>spark.sql.streaming.offsetLog.formatVersion</td><td>1</td></tr>
+      </tbody>
+    </table>
+    </div>
+      </div>
+    </div><br/>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:38:52</span><span id="footer-uptime" data-start-time="1791011332019"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

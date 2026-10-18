@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- burrow test cluster — rendered by cluster.py setup. -->
+<configuration>
+  <property><name>fs.defaultFS</name><value>file:///</value></property>
+  <property><name>hadoop.tmp.dir</name><value>@@DATA@@/hadoop-tmp</value></property>
+  <!-- simple authentication; submitting users come from HADOOP_USER_NAME -->
+  <property><name>hadoop.security.authentication</name><value>simple</value></property>
+  <property><name>hadoop.security.authorization</name><value>false</value></property>
+  <!-- racks: /rack1 /rack1 /rack2 for 127.0.0.2/.3/.4 -->
+  <property><name>net.topology.script.file.name</name><value>@@CONF@@/topology.sh</value></property>
+  <property><name>hadoop.http.staticuser.user</name><value>dr.who</value></property>
+  <property><name>io.file.buffer.size</name><value>65536</value></property>
+</configuration>

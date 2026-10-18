@@ -1,0 +1,3339 @@
+{
+ "routeKey": "/scheduler",
+ "url": "http://127.0.0.1:8787/scheduler?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.type",
+   "raw": "capacityScheduler",
+   "yn": false,
+   "fmt": null,
+   "text": "Capacity Scheduler",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.queuePath",
+   "raw": "root",
+   "yn": false,
+   "fmt": null,
+   "text": "root",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.utilizedMBPercent",
+   "raw": "205",
+   "yn": false,
+   "fmt": "pct",
+   "text": "205.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.allocatedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.queueCapacityVectorInfo.configuredCapacityVector",
+   "raw": "[memory-mb=100.0%,vcores=100.0%]",
+   "yn": false,
+   "fmt": null,
+   "text": "memory-mb 100% · vcores 100%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.maximumAllocation.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.maximumAllocation.vCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4 vCores",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.rmSchedulerBusyPercent",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.rmEventQueueSize",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.schedulerEventQueueSize",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.queuePath",
+   "raw": "root",
+   "yn": false,
+   "fmt": null,
+   "text": "root",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "root",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.capacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteMaxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.derived.burstRoomPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.derived.headroomMb",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.numActiveApplications",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.numPendingApplications",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.allocatedContainers",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.reservedContainers",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.pendingContainers",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.numContainers",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.resources.resourceUsagesByPartition.used.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.resources.resourceUsagesByPartition.used.vCores",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.resources.resourceUsagesByPartition.reserved.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.resources.resourceUsagesByPartition.pending.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.resources.resourceUsagesByPartition.amLimit.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.resources.resourceUsagesByPartition.amUsed.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.resources.resourceUsagesByPartition.userAmLimit.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxAMLimitPercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMinResource.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMaxResource.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.maxApplications",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.maxApplicationsPerUser",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.userLimit",
+   "raw": "",
+   "yn": true,
+   "fmt": "pct",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.userLimitFactor",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.orderingPolicyInfo",
+   "raw": "utilization",
+   "yn": false,
+   "fmt": null,
+   "text": "utilization",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.preemptionDisabled",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.intraQueuePreemptionDisabled",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.defaultNodeLabelExpression",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.defaultPriority",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.weight",
+   "raw": "-1",
+   "yn": false,
+   "fmt": null,
+   "text": "-1",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.normalizedWeight",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.maxParallelApps",
+   "raw": "2147483647",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,147,483,647",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.queueType",
+   "raw": "parent",
+   "yn": false,
+   "fmt": null,
+   "text": "parent",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.creationMethod",
+   "raw": "static",
+   "yn": false,
+   "fmt": null,
+   "text": "static",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.autoCreationEligibility",
+   "raw": "off",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.isAutoCreatedLeafQueue",
+   "raw": "false",
+   "yn": false,
+   "fmt": null,
+   "text": "no",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.mode",
+   "raw": "percentage",
+   "yn": false,
+   "fmt": null,
+   "text": "percentage",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.queuePath",
+   "raw": "root.adhoc",
+   "yn": false,
+   "fmt": null,
+   "text": "adhoc",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.capacity",
+   "raw": "5",
+   "yn": false,
+   "fmt": "pct",
+   "text": "5.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxCapacity",
+   "raw": "5",
+   "yn": false,
+   "fmt": "pct",
+   "text": "5.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteCapacity",
+   "raw": "5",
+   "yn": false,
+   "fmt": "pct",
+   "text": "5.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteMaxCapacity",
+   "raw": "5",
+   "yn": false,
+   "fmt": "pct",
+   "text": "5.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.derived.burstRoomPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.derived.headroomMb",
+   "raw": "153",
+   "yn": false,
+   "fmt": "mb",
+   "text": "153",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.numActiveApplications",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.reservedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.pendingContainers",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.resources.resourceUsagesByPartition.used.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B · 0 vCores",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.resources.resourceUsagesByPartition.used.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.resources.resourceUsagesByPartition.reserved.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.resources.resourceUsagesByPartition.pending.memory",
+   "raw": "768",
+   "yn": false,
+   "fmt": "mb",
+   "text": "768",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.resources.resourceUsagesByPartition.amLimit.memory",
+   "raw": "256",
+   "yn": false,
+   "fmt": "mb",
+   "text": "256",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.resources.resourceUsagesByPartition.amUsed.memory",
+   "raw": "768",
+   "yn": false,
+   "fmt": "mb",
+   "text": "768",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.resources.resourceUsagesByPartition.userAmLimit.memory",
+   "raw": "256",
+   "yn": false,
+   "fmt": "mb",
+   "text": "256",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxAMLimitPercentage",
+   "raw": "5",
+   "yn": false,
+   "fmt": "pct",
+   "text": "5.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMinResource.memory",
+   "raw": "153",
+   "yn": false,
+   "fmt": "mb",
+   "text": "153",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMaxResource.memory",
+   "raw": "153",
+   "yn": false,
+   "fmt": "mb",
+   "text": "153",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.maxApplications",
+   "raw": "500",
+   "yn": false,
+   "fmt": "int",
+   "text": "500",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.maxApplicationsPerUser",
+   "raw": "500",
+   "yn": false,
+   "fmt": "int",
+   "text": "500",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.userLimit",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.userLimitFactor",
+   "raw": "3",
+   "yn": false,
+   "fmt": null,
+   "text": "3",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.derived.orderingPolicyDisplayName",
+   "raw": "FifoOrderingPolicy",
+   "yn": false,
+   "fmt": null,
+   "text": "FifoOrderingPolicy",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.orderingPolicyInfo",
+   "raw": "fifo",
+   "yn": false,
+   "fmt": null,
+   "text": "fifo",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.preemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.intraQueuePreemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.nodeLabels",
+   "raw": "*",
+   "yn": false,
+   "fmt": null,
+   "text": "*",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.defaultNodeLabelExpression",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.defaultPriority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.weight",
+   "raw": "-1",
+   "yn": false,
+   "fmt": null,
+   "text": "-1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.normalizedWeight",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.maxParallelApps",
+   "raw": "2147483647",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,147,483,647",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.queueType",
+   "raw": "leaf",
+   "yn": false,
+   "fmt": null,
+   "text": "leaf",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.creationMethod",
+   "raw": "static",
+   "yn": false,
+   "fmt": null,
+   "text": "static",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.autoCreationEligibility",
+   "raw": "off",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.isAutoCreatedLeafQueue",
+   "raw": "false",
+   "yn": false,
+   "fmt": null,
+   "text": "no",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.mode",
+   "raw": "percentage",
+   "yn": false,
+   "fmt": null,
+   "text": "percentage",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.queuePath",
+   "raw": "root.default",
+   "yn": false,
+   "fmt": null,
+   "text": "default",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.capacity",
+   "raw": "30.000002",
+   "yn": false,
+   "fmt": "pct",
+   "text": "30.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteCapacity",
+   "raw": "30.000002",
+   "yn": false,
+   "fmt": "pct",
+   "text": "30.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteMaxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.derived.burstRoomPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.derived.headroomMb",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.numActiveApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.reservedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.pendingContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.resources.resourceUsagesByPartition.used.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B · 0 vCores",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.resources.resourceUsagesByPartition.used.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.resources.resourceUsagesByPartition.reserved.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.resources.resourceUsagesByPartition.pending.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.resources.resourceUsagesByPartition.amLimit.memory",
+   "raw": "1536",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1,536",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.resources.resourceUsagesByPartition.amUsed.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.resources.resourceUsagesByPartition.userAmLimit.memory",
+   "raw": "1536",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1,536",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxAMLimitPercentage",
+   "raw": "50",
+   "yn": false,
+   "fmt": "pct",
+   "text": "50.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMinResource.memory",
+   "raw": "921",
+   "yn": false,
+   "fmt": "mb",
+   "text": "921",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMaxResource.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.maxApplications",
+   "raw": "3000",
+   "yn": false,
+   "fmt": "int",
+   "text": "3,000",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.maxApplicationsPerUser",
+   "raw": "3000",
+   "yn": false,
+   "fmt": "int",
+   "text": "3,000",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.userLimit",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.userLimitFactor",
+   "raw": "3",
+   "yn": false,
+   "fmt": null,
+   "text": "3",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.derived.orderingPolicyDisplayName",
+   "raw": "FifoOrderingPolicy",
+   "yn": false,
+   "fmt": null,
+   "text": "FifoOrderingPolicy",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.orderingPolicyInfo",
+   "raw": "fifo",
+   "yn": false,
+   "fmt": null,
+   "text": "fifo",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.preemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.intraQueuePreemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.nodeLabels",
+   "raw": "*",
+   "yn": false,
+   "fmt": null,
+   "text": "*",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.defaultNodeLabelExpression",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.defaultPriority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.weight",
+   "raw": "-1",
+   "yn": false,
+   "fmt": null,
+   "text": "-1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.normalizedWeight",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.maxParallelApps",
+   "raw": "2147483647",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,147,483,647",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.queueType",
+   "raw": "leaf",
+   "yn": false,
+   "fmt": null,
+   "text": "leaf",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.creationMethod",
+   "raw": "static",
+   "yn": false,
+   "fmt": null,
+   "text": "static",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.autoCreationEligibility",
+   "raw": "off",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.isAutoCreatedLeafQueue",
+   "raw": "false",
+   "yn": false,
+   "fmt": null,
+   "text": "no",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.mode",
+   "raw": "percentage",
+   "yn": false,
+   "fmt": null,
+   "text": "percentage",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.queuePath",
+   "raw": "root.etl",
+   "yn": false,
+   "fmt": null,
+   "text": "etl",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.capacity",
+   "raw": "65",
+   "yn": false,
+   "fmt": "pct",
+   "text": "65.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteCapacity",
+   "raw": "65",
+   "yn": false,
+   "fmt": "pct",
+   "text": "65.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteMaxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.derived.burstRoomPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.derived.headroomMb",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.numActiveApplications",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.numPendingApplications",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.reservedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.pendingContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.numContainers",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.resources.resourceUsagesByPartition.used.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B · 0 vCores",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.resources.resourceUsagesByPartition.used.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.resources.resourceUsagesByPartition.reserved.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.resources.resourceUsagesByPartition.pending.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.resources.resourceUsagesByPartition.amLimit.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.resources.resourceUsagesByPartition.amUsed.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.resources.resourceUsagesByPartition.userAmLimit.memory",
+   "raw": "",
+   "yn": true,
+   "fmt": "mb",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxAMLimitPercentage",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMinResource.memory",
+   "raw": "1996",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1,996",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMaxResource.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.maxApplications",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.maxApplicationsPerUser",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.userLimit",
+   "raw": "",
+   "yn": true,
+   "fmt": "pct",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.userLimitFactor",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.orderingPolicyInfo",
+   "raw": "utilization",
+   "yn": false,
+   "fmt": null,
+   "text": "utilization",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.preemptionDisabled",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.intraQueuePreemptionDisabled",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.nodeLabels",
+   "raw": "*",
+   "yn": false,
+   "fmt": null,
+   "text": "*",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.defaultNodeLabelExpression",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.defaultPriority",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.weight",
+   "raw": "-1",
+   "yn": false,
+   "fmt": null,
+   "text": "-1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.normalizedWeight",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.maxParallelApps",
+   "raw": "2147483647",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,147,483,647",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.queueType",
+   "raw": "parent",
+   "yn": false,
+   "fmt": null,
+   "text": "parent",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.creationMethod",
+   "raw": "static",
+   "yn": false,
+   "fmt": null,
+   "text": "static",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.autoCreationEligibility",
+   "raw": "off",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.isAutoCreatedLeafQueue",
+   "raw": "false",
+   "yn": false,
+   "fmt": null,
+   "text": "no",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.mode",
+   "raw": "percentage",
+   "yn": false,
+   "fmt": null,
+   "text": "percentage",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.queuePath",
+   "raw": "root.etl.ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.capacity",
+   "raw": "60.000004",
+   "yn": false,
+   "fmt": "pct",
+   "text": "60.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteCapacity",
+   "raw": "39",
+   "yn": false,
+   "fmt": "pct",
+   "text": "39.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteMaxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.derived.burstRoomPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.derived.headroomMb",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.numActiveApplications",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.reservedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.pendingContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.numContainers",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.resources.resourceUsagesByPartition.used.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B · 0 vCores",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.resources.resourceUsagesByPartition.used.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.resources.resourceUsagesByPartition.reserved.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.resources.resourceUsagesByPartition.pending.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.resources.resourceUsagesByPartition.amLimit.memory",
+   "raw": "1536",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1,536",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.resources.resourceUsagesByPartition.amUsed.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.resources.resourceUsagesByPartition.userAmLimit.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxAMLimitPercentage",
+   "raw": "50",
+   "yn": false,
+   "fmt": "pct",
+   "text": "50.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMinResource.memory",
+   "raw": "1198",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1,198",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMaxResource.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.maxApplications",
+   "raw": "3900",
+   "yn": false,
+   "fmt": "int",
+   "text": "3,900",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.maxApplicationsPerUser",
+   "raw": "3900",
+   "yn": false,
+   "fmt": "int",
+   "text": "3,900",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.userLimit",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.userLimitFactor",
+   "raw": "3",
+   "yn": false,
+   "fmt": null,
+   "text": "3",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.derived.orderingPolicyDisplayName",
+   "raw": "FairOrderingPolicy",
+   "yn": false,
+   "fmt": null,
+   "text": "FairOrderingPolicy",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.orderingPolicyInfo",
+   "raw": "fair",
+   "yn": false,
+   "fmt": null,
+   "text": "fair",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.preemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.intraQueuePreemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.nodeLabels",
+   "raw": "*",
+   "yn": false,
+   "fmt": null,
+   "text": "*",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.defaultNodeLabelExpression",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.defaultPriority",
+   "raw": "5",
+   "yn": false,
+   "fmt": "int",
+   "text": "5",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.weight",
+   "raw": "-1",
+   "yn": false,
+   "fmt": null,
+   "text": "-1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.normalizedWeight",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.maxParallelApps",
+   "raw": "2147483647",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,147,483,647",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.queueType",
+   "raw": "leaf",
+   "yn": false,
+   "fmt": null,
+   "text": "leaf",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.creationMethod",
+   "raw": "static",
+   "yn": false,
+   "fmt": null,
+   "text": "static",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.autoCreationEligibility",
+   "raw": "off",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.isAutoCreatedLeafQueue",
+   "raw": "false",
+   "yn": false,
+   "fmt": null,
+   "text": "no",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.mode",
+   "raw": "percentage",
+   "yn": false,
+   "fmt": null,
+   "text": "percentage",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.queuePath",
+   "raw": "root.etl.transform",
+   "yn": false,
+   "fmt": null,
+   "text": "transform",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "",
+   "tag": "div"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.capacity",
+   "raw": "40",
+   "yn": false,
+   "fmt": "pct",
+   "text": "40.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteCapacity",
+   "raw": "26",
+   "yn": false,
+   "fmt": "pct",
+   "text": "26.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteUsedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.absoluteMaxCapacity",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.derived.burstRoomPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.derived.headroomMb",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.numActiveApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.allocatedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.reservedContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.pendingContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.resources.resourceUsagesByPartition.used.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B · 0 vCores",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.resources.resourceUsagesByPartition.used.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.resources.resourceUsagesByPartition.reserved.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.resources.resourceUsagesByPartition.pending.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.resources.resourceUsagesByPartition.amLimit.memory",
+   "raw": "1536",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1,536",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.resources.resourceUsagesByPartition.amUsed.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.resources.resourceUsagesByPartition.userAmLimit.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.maxAMLimitPercentage",
+   "raw": "50",
+   "yn": false,
+   "fmt": "pct",
+   "text": "50.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMinResource.memory",
+   "raw": "798",
+   "yn": false,
+   "fmt": "mb",
+   "text": "798",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.effectiveMaxResource.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3,072",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.maxApplications",
+   "raw": "2600",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,600",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.maxApplicationsPerUser",
+   "raw": "2600",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,600",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.userLimit",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.userLimitFactor",
+   "raw": "3",
+   "yn": false,
+   "fmt": null,
+   "text": "3",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.derived.orderingPolicyDisplayName",
+   "raw": "FifoOrderingPolicy",
+   "yn": false,
+   "fmt": null,
+   "text": "FifoOrderingPolicy",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.orderingPolicyInfo",
+   "raw": "fifo",
+   "yn": false,
+   "fmt": null,
+   "text": "fifo",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.preemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.intraQueuePreemptionDisabled",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.nodeLabels",
+   "raw": "*",
+   "yn": false,
+   "fmt": null,
+   "text": "*",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.defaultNodeLabelExpression",
+   "raw": "",
+   "yn": true,
+   "fmt": null,
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.defaultPriority",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.weight",
+   "raw": "-1",
+   "yn": false,
+   "fmt": null,
+   "text": "-1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.normalizedWeight",
+   "raw": "0",
+   "yn": false,
+   "fmt": null,
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.maxParallelApps",
+   "raw": "2147483647",
+   "yn": false,
+   "fmt": "int",
+   "text": "2,147,483,647",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.queueType",
+   "raw": "leaf",
+   "yn": false,
+   "fmt": null,
+   "text": "leaf",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.creationMethod",
+   "raw": "static",
+   "yn": false,
+   "fmt": null,
+   "text": "static",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.autoCreationEligibility",
+   "raw": "off",
+   "yn": false,
+   "fmt": null,
+   "text": "off",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.isAutoCreatedLeafQueue",
+   "raw": "false",
+   "yn": false,
+   "fmt": null,
+   "text": "no",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.mode",
+   "raw": "percentage",
+   "yn": false,
+   "fmt": null,
+   "text": "percentage",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0% of its share used",
+   "tag": "span"
+  },
+  {
+   "entity": "root",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0% free inside its share",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0% of its share used",
+   "tag": "span"
+  },
+  {
+   "entity": "root.default",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0% free inside its share",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0% of its share used",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0% free inside its share",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0% of its share used",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0% free inside its share",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0% of its share used",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0% free inside its share",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.capacities.queueCapacitiesByPartition.usedCapacity",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0% of its share used",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.transform",
+   "field": "queue.derived.freeGuaranteedPct",
+   "raw": "100",
+   "yn": false,
+   "fmt": "pct",
+   "text": "100.0% free inside its share",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.username",
+   "raw": "carol",
+   "yn": false,
+   "fmt": null,
+   "text": "carol",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.isActive",
+   "raw": "true",
+   "yn": false,
+   "fmt": null,
+   "text": "active",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.userResourceLimit",
+   "raw": "{\"memory\":256,\"vCores\":1,\"resourceInformations\":{\"resourceInformation\":[{\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":256,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}},{\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":1,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}}]}}",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:256, vCores:1>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.userResourceLimit.memory",
+   "raw": "256",
+   "yn": false,
+   "fmt": "mb",
+   "text": "256",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.userResourceLimit.vCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.userWeight",
+   "raw": "1",
+   "yn": false,
+   "fmt": null,
+   "text": "1.0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.resourcesUsed",
+   "raw": "{\"memory\":0,\"vCores\":0,\"resourceInformations\":{\"resourceInformation\":[{\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":0,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}},{\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":0,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}}]}}",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:0, vCores:0>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.resourcesUsed.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.resourcesUsed.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.derived.maxAmResource",
+   "raw": "<memory:256, vCores:1>",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:256, vCores:1>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.AMResourceUsed",
+   "raw": "{\"memory\":768,\"vCores\":1,\"resourceInformations\":{\"resourceInformation\":[{\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":768,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}},{\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":1,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}}]}}",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:768, vCores:1>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.AMResourceUsed.memory",
+   "raw": "768",
+   "yn": false,
+   "fmt": "mb",
+   "text": "768",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.AMResourceUsed.vCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.numActiveApplications",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.adhoc#carol",
+   "field": "queueuser.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.username",
+   "raw": "alice",
+   "yn": false,
+   "fmt": null,
+   "text": "alice",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.isActive",
+   "raw": "false",
+   "yn": false,
+   "fmt": null,
+   "text": "false",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.userResourceLimit",
+   "raw": "{\"memory\":1280,\"vCores\":1,\"resourceInformations\":{\"resourceInformation\":[{\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":1280,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}},{\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":1,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}}]}}",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:1280, vCores:1>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.userResourceLimit.memory",
+   "raw": "1280",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1280",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.userResourceLimit.vCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.userWeight",
+   "raw": "1",
+   "yn": false,
+   "fmt": null,
+   "text": "1.0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.resourcesUsed",
+   "raw": "{\"memory\":0,\"vCores\":0,\"resourceInformations\":{\"resourceInformation\":[{\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":0,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}},{\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":0,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}}]}}",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:0, vCores:0>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.resourcesUsed.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.resourcesUsed.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.derived.maxAmResource",
+   "raw": "<memory:0, vCores:0>",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:0, vCores:0>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.AMResourceUsed",
+   "raw": "{\"memory\":0,\"vCores\":0,\"resourceInformations\":{\"resourceInformation\":[{\"name\":\"memory-mb\",\"resourceType\":\"COUNTABLE\",\"units\":\"Mi\",\"value\":0,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}},{\"name\":\"vcores\",\"resourceType\":\"COUNTABLE\",\"units\":\"\",\"value\":0,\"minimumAllocation\":0,\"maximumAllocation\":9223372036854776000,\"tags\":[],\"attributes\":{}}]}}",
+   "yn": false,
+   "fmt": null,
+   "text": "<memory:0, vCores:0>",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.AMResourceUsed.memory",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.AMResourceUsed.vCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.numActiveApplications",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "root.etl.ingest#alice",
+   "field": "queueuser.numPendingApplications",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "queue.derived.partitionUiTag",
+   "raw": "Partition: <DEFAULT_PARTITION> <memory:3072, vCores:4>",
+   "yn": false,
+   "fmt": null,
+   "text": "Partition: <DEFAULT_PARTITION> <memory:3072, vCores:4>",
+   "tag": "span"
+  },
+  {
+   "entity": "gpu",
+   "field": "queue.derived.partitionUiTag",
+   "raw": "Partition: gpu <memory:3072, vCores:4>",
+   "yn": false,
+   "fmt": null,
+   "text": "Partition: gpu <memory:3072, vCores:4>",
+   "tag": "span"
+  },
+  {
+   "entity": "ssd",
+   "field": "queue.derived.partitionUiTag",
+   "raw": "Partition: ssd <memory:3072, vCores:4>",
+   "yn": false,
+   "fmt": null,
+   "text": "Partition: ssd <memory:3072, vCores:4>",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.nodeLabels",
+   "raw": "[]",
+   "yn": false,
+   "fmt": "text",
+   "text": "Default",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.id",
+   "raw": "127.0.0.4:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.4:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.availMemoryMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.4:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.nodeLabels",
+   "raw": "[\"gpu\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "gpu",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.id",
+   "raw": "127.0.0.2:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.2:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.numContainers",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.availMemoryMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.2:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.nodeLabels",
+   "raw": "[\"ssd\"]",
+   "yn": false,
+   "fmt": "text",
+   "text": "ssd",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.id",
+   "raw": "127.0.0.3:8041",
+   "yn": false,
+   "fmt": "text",
+   "text": "127.0.0.3:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.numContainers",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.usedMemoryMB",
+   "raw": "1024",
+   "yn": false,
+   "fmt": "mb",
+   "text": "1 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.availMemoryMB",
+   "raw": "2048",
+   "yn": false,
+   "fmt": "mb",
+   "text": "2 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.usedVirtualCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.availableVirtualCores",
+   "raw": "2",
+   "yn": false,
+   "fmt": "int",
+   "text": "2",
+   "tag": "span"
+  },
+  {
+   "entity": "127.0.0.3:8041",
+   "field": "node.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "root",
+  "root.adhoc",
+  "root.default",
+  "root.etl",
+  "root.etl.ingest",
+  "root.etl.transform",
+  "root.adhoc#carol",
+  "root.etl.ingest#alice",
+  "gpu",
+  "ssd",
+  "127.0.0.4:8041",
+  "127.0.0.2:8041",
+  "127.0.0.3:8041"
+ ],
+ "title": "Scheduler · burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nScheduler\nRefresh\nTYPE\nCapacity Scheduler\nROOT QUEUE\nroot\nQUEUES\n6\nOVER THEIR SHARE\n0\nCLUSTER MEMORY USED\n205.0%\n0 B\nof\n3 GiB\nSCHEDULING RESOURCE TYPE\nmemory-mb 100% · vcores 100%\nMINIMUM ALLOCATION\n—\nnot in the REST contract\nMAXIMUM ALLOCATION\n3 GiB\n·\n4 vCores\nMAXIMUM CLUSTER APPLICATION PRIORITY\n—\nnot in the REST contract\nSCHEDULER BUSY %\n0.0%\nRM DISPATCHER EVENTQUEUE SIZE\n0\nSCHEDULER DISPATCHER EVENTQUEUE SIZE\n0\nQueues\nActivities\nHealth\nConfiguration\nQueue headroom\nPartition\n<DEFAULT_PARTITION>\nused · color shows pressure\nguaranteed share\nmax capacity\nfree = unused guaranteed share\nscale 0–100.0%\nOrder siblings by\nName\nUsed\nFree\nApps\nSort\nColumns\n39/39\nExport\nQueue\nState\nUsage / headroom\nUsed % of share\nCapacity %\nMax Capacity %\nAbsolute Capacity %\nAbsolute Used %\nAbsolute Max %\nFree (of share)\nRoom to max\nHeadroom\nApplications\nContainers\nNum Containers\nMemory Used\nVCores Used\nMemory Reserved\nMemory Pending\nAM Limit\nAM Used\nUser AM Limit\nMax AM Limit %\nEffective Min\nEffective Max\nMax Applications\nMax Apps / User\nUser Limit %\nUser Limit Factor\nOrdering Policy\nPreemption\nNode Labels\nDefault Label Expression\nDefault App Priority\nWeight\nMax Parallel Apps\nQueue Type\nAuto-created\nMode\nroot\n—\n100.0%\nfree\n0.0%\n100.0%\n100.0%\n100.0%\n0.0%\n100.0%\n100.0%\nfree\n100.0%\nfree\n—\n—\nactive\n·\n—\npending\n—\nalloc\n·\n—\nres\n·\n—\npend\n—\n—\n—\n—\n—\n—\n—\n—\n0.0%\n3,072\n3,072\n—\n—\n—\n—\nutilization\n—\n/\n—\nintra\n—\n—\n—\n-1\n/\n0\n2,147,483,647\nparent\n/\nstatic\n/\noff\nno\npercentage\nadhoc\n500/user\nRunning\n100.0%\nfree\n0.0%\n5.0%\n5.0%\n5.0%\n0.0%\n5.0%\n100.0%\nfree\n100.0%\nfree\n153\n1\nactive\n·\n0\npending\n0\nalloc\n·\n0\nres\n·\n1\npend\n0\n0 B · 0 vCores\n0\n0\n768\n256\n768\n256\n5.0%\n153\n153\n500\n500\n100.0%\n3\nFifoOrderingPolicy\nfifo\noff\n/\noff\nintra\n*\n—\n0\n-1\n/\n0\n2,147,483,647\nleaf\n/\nstatic\n/\noff\nno\npercentage\ndefault\n3,000/user\nRunning\n100.0%\nfree\n0.0%\n30.0%\n100.0%\n30.0%\n0.0%\n100.0%\n100.0%\nfree\n100.0%\nfree\n3,072\n0\nactive\n·\n0\npending\n0\nalloc\n·\n0\nres\n·\n0\npend\n0\n0 B · 0 vCores\n0\n0\n0\n1,536\n0\n1,536\n50.0%\n921\n3,072\n3,000\n3,000\n100.0%\n3\nFifoOrderingPolicy\nfifo\noff\n/\noff\nintra\n*\n—\n0\n-1\n/\n0\n2,147,483,647\nleaf\n/\nstatic\n/\noff\nno\npercentage\netl\nRunning\n100.0%\nfree\n0.0%\n65.0%\n100.0%\n65.0%\n0.0%\n100.0%\n100.0%\nfree\n100.0%\nfree\n3,072\n1\nactive\n·\n—\npending\n0\nalloc\n·\n0\nres\n·\n0\npend\n—\n0 B · 0 vCores\n0\n0\n0\n—\n—\n—\n0.0%\n1,996\n3,072\n—\n—\n—\n—\nutilization\n—\n/\n—\nintra\n*\n—\n—\n-1\n/\n0\n2,147,483,647\nparent\n/\nstatic\n/\noff\nno\npercentage\ningest\n3,900/user\nRunning\n100.0%\nfree\n0.0%\n60.0%\n100.0%\n39.0%\n0.0%\n100.0%\n100.0%\nfree\n100.0%\nfree\n3,072\n1\nactive\n·\n0\npending\n2\nalloc\n·\n0\nres\n·\n0\npend\n2\n0 B · 0 vCores\n0\n0\n0\n1,536\n0\n0\n50.0%\n1,198\n3,072\n3,900\n3,900\n100.0%\n3\nFairOrderingPolicy\nfair\noff\n/\noff\nintra\n*\n—\n5\n-1\n/\n0\n2,147,483,647\nleaf\n/\nstatic\n/\noff\nno\npercentage\ntransform\n2,600/user\nRunning\n100.0%\nfree\n0.0%\n40.0%\n100.0%\n26.0%\n0.0%\n100.0%\n100.0%\nfree\n100.0%\nfree\n3,072\n0\nactive\n·\n0\npending\n0\nalloc\n·\n0\nres\n·\n0\npend\n0\n0 B · 0 vCores\n0\n0\n0\n1,536\n0\n0\n50.0%\n798\n3,072\n2,600\n2,600\n100.0%\n3\nFifoOrderingPolicy\nfifo\noff\n/\noff\nintra\n*\n—\n0\n-1\n/\n0\n2,147,483,647\nleaf\n/\nstatic\n/\noff\nno\npercentage\n6 rows\nScroll for more columns\nshift-click header: multi-sort\nroot — 0.0% of its share used, 100.0% free inside its share\nroot.default — 0.0% of its share used, 100.0% free inside its share\nroot.adhoc — 0.0% of its share used, 100.0% free inside its share\nroot.etl — 0.0% of its share used, 100.0% free inside its share\nroot.etl.ingest — 0.0% of its share used, 100.0% free inside its share\nroot.etl.transform — 0.0% of its share used, 100.0% free inside its share\nQueue users\n1 active\nSort\nColumns\n9/9\nExport\nQueue\nUser Name\nUser Limit Resource\nWeight\nUsed Resource\nMax AM Resource\nUsed AM Resource\nSchedulable Apps\nNon-Schedulable Apps\nroot.adhoc\ncarol\nactive\n<memory:256, vCores:1>\n1.0\n<memory:0, vCores:0>\n<memory:25"
+}

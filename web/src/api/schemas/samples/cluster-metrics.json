@@ -1,0 +1,119 @@
+{
+  "clusterMetrics": {
+    "appsSubmitted": 12,
+    "appsCompleted": 9,
+    "appsPending": 1,
+    "appsRunning": 1,
+    "appsFailed": 1,
+    "appsKilled": 0,
+    "reservedMB": 0,
+    "availableMB": 6144,
+    "allocatedMB": 2048,
+    "pendingMB": 1024,
+    "reservedVirtualCores": 0,
+    "availableVirtualCores": 6,
+    "allocatedVirtualCores": 2,
+    "pendingVirtualCores": 1,
+    "containersAllocated": 2,
+    "containersReserved": 0,
+    "containersPending": 1,
+    "totalMB": 8192,
+    "utilizedMB": 2048,
+    "totalVirtualCores": 8,
+    "utilizedVirtualCores": 2,
+    "utilizedMBPercent": 25,
+    "utilizedVirtualCoresPercent": 25,
+    "rmSchedulerBusyPercent": -1,
+    "totalNodes": 2,
+    "lostNodes": 0,
+    "unhealthyNodes": 0,
+    "decommissioningNodes": 0,
+    "decommissionedNodes": 0,
+    "rebootedNodes": 0,
+    "activeNodes": 2,
+    "shutdownNodes": 0,
+    "containerAssignedPerSecond": 0,
+    "totalUsedResourcesAcrossPartition": {
+      "memory": 2048,
+      "vCores": 2,
+      "resourceInformations": {
+        "resourceInformation": [
+          {
+            "attributes": {},
+            "maximumAllocation": 8192,
+            "minimumAllocation": 1024,
+            "name": "memory-mb",
+            "resourceType": "COUNTABLE",
+            "units": "Mi",
+            "value": 2048
+          },
+          {
+            "attributes": {},
+            "maximumAllocation": 4,
+            "minimumAllocation": 1,
+            "name": "vcores",
+            "resourceType": "COUNTABLE",
+            "units": "",
+            "value": 2
+          }
+        ]
+      }
+    },
+    "totalClusterResourcesAcrossPartition": {
+      "memory": 8192,
+      "vCores": 8,
+      "resourceInformations": {
+        "resourceInformation": [
+          {
+            "attributes": {},
+            "maximumAllocation": 8192,
+            "minimumAllocation": 1024,
+            "name": "memory-mb",
+            "resourceType": "COUNTABLE",
+            "units": "Mi",
+            "value": 8192
+          },
+          {
+            "attributes": {},
+            "maximumAllocation": 4,
+            "minimumAllocation": 1,
+            "name": "vcores",
+            "resourceType": "COUNTABLE",
+            "units": "",
+            "value": 8
+          }
+        ]
+      }
+    },
+    "totalReservedResourcesAcrossPartition": {
+      "memory": 0,
+      "vCores": 0,
+      "resourceInformations": {
+        "resourceInformation": [
+          {
+            "attributes": {},
+            "maximumAllocation": 8192,
+            "minimumAllocation": 1024,
+            "name": "memory-mb",
+            "resourceType": "COUNTABLE",
+            "units": "Mi",
+            "value": 0
+          },
+          {
+            "attributes": {},
+            "maximumAllocation": 4,
+            "minimumAllocation": 1,
+            "name": "vcores",
+            "resourceType": "COUNTABLE",
+            "units": "",
+            "value": 0
+          }
+        ]
+      }
+    },
+    "totalAllocatedContainersAcrossPartition": 2,
+    "crossPartitionMetricsAvailable": true,
+    "rmEventQueueSize": 0,
+    "schedulerEventQueueSize": 0
+  }
+}

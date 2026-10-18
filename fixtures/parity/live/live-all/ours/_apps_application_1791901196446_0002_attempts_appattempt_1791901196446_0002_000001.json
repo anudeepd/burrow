@@ -1,0 +1,567 @@
+{
+ "routeKey": "/apps/application_1791901196446_0002/attempts/appattempt_1791901196446_0002_000001",
+ "url": "http://127.0.0.1:8787/apps/application_1791901196446_0002/attempts/appattempt_1791901196446_0002_000001?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.name",
+   "raw": "ys-running-ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-running-ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": null,
+   "text": "UNDEFINED",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.id",
+   "raw": "application_1791901196446_0002",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0002",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.user",
+   "raw": "alice",
+   "yn": false,
+   "fmt": null,
+   "text": "alice",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.queue",
+   "raw": "root.etl.ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "root.etl.ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.priority",
+   "raw": "5",
+   "yn": false,
+   "fmt": "int",
+   "text": "5",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.elapsedTime",
+   "raw": "443517",
+   "yn": false,
+   "fmt": "ms",
+   "text": "7m 23s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationTags",
+   "raw": "running,burrow",
+   "yn": false,
+   "fmt": null,
+   "text": "running,burrow",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0002/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.appAttemptState",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.appAttemptId",
+   "raw": "appattempt_1791901196446_0002_000001",
+   "yn": false,
+   "fmt": null,
+   "text": "appattempt_1791901196446_0002_000001",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.startTime",
+   "raw": "1791901313959",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:53",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.finishedTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "In progress",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.elapsedText",
+   "raw": "443551",
+   "yn": false,
+   "fmt": "ms",
+   "text": "7m 23s",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.containerId",
+   "raw": "container_1791901196446_0002_01_000001",
+   "yn": false,
+   "fmt": null,
+   "text": "container_1791901196446_0002_01_000001",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.hostPortText",
+   "raw": "smadayma:44351",
+   "yn": false,
+   "fmt": null,
+   "text": "smadayma:44351",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.host",
+   "raw": "smadayma",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.rpcPort",
+   "raw": "44351",
+   "yn": false,
+   "fmt": "int",
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.nodeId",
+   "raw": "127.0.0.3:8041",
+   "yn": false,
+   "fmt": null,
+   "text": "127.0.0.3:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.nodeHttpAddress",
+   "raw": "127.0.0.3:8042",
+   "yn": false,
+   "fmt": null,
+   "text": "127.0.0.3:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.exportPorts",
+   "raw": "null",
+   "yn": false,
+   "fmt": null,
+   "text": "None",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.assignedNodeId",
+   "raw": "127.0.0.3:8041",
+   "yn": false,
+   "fmt": null,
+   "text": "127.0.0.3:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.allocatedMB",
+   "raw": "512",
+   "yn": false,
+   "fmt": "mb",
+   "text": "512 MiB",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.allocatedVCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.trackingUiText",
+   "raw": "ApplicationMaster",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0002/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.logsLink",
+   "raw": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000001/alice",
+   "yn": false,
+   "fmt": null,
+   "text": "Open aggregated logs",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.diagnosticsInfo",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "None reported",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.containerId",
+   "raw": "container_1791901196446_0002_01_000002",
+   "yn": false,
+   "fmt": null,
+   "text": "container_1791901196446_0002_01_000002",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.nodeHttpAddress",
+   "raw": "http://127.0.0.3:8042",
+   "yn": false,
+   "fmt": null,
+   "text": "http://127.0.0.3:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.containerState",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.allocatedMB",
+   "raw": "512",
+   "yn": false,
+   "fmt": "mb",
+   "text": "512 MiB",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.allocatedVCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.containerExitStatus",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000002",
+   "field": "container.logUrl",
+   "raw": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000002/alice",
+   "yn": false,
+   "fmt": null,
+   "text": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000002/alice",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.containerId",
+   "raw": "container_1791901196446_0002_01_000001",
+   "yn": false,
+   "fmt": null,
+   "text": "container_1791901196446_0002_01_000001",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.nodeHttpAddress",
+   "raw": "http://127.0.0.3:8042",
+   "yn": false,
+   "fmt": null,
+   "text": "http://127.0.0.3:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.containerState",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.allocatedMB",
+   "raw": "512",
+   "yn": false,
+   "fmt": "mb",
+   "text": "512 MiB",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.allocatedVCores",
+   "raw": "1",
+   "yn": false,
+   "fmt": "int",
+   "text": "1",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.containerExitStatus",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "container_1791901196446_0002_01_000001",
+   "field": "container.logUrl",
+   "raw": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000001/alice",
+   "yn": false,
+   "fmt": null,
+   "text": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000001/alice",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.appBlacklistedNodesText",
+   "raw": "-",
+   "yn": false,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.blacklistedNodes",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.rmBlacklistedNodesText",
+   "raw": "-",
+   "yn": false,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.nodesBlacklistedBySystem",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "-",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.nodeLocalContainers.by.nodeLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.nodeLocalContainers.by.rackLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.nodeLocalContainers.by.offSwitchRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.rackLocalContainers.by.nodeLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.rackLocalContainers.by.rackLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.rackLocalContainers.by.offSwitchRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.offSwitchContainers.by.nodeLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.offSwitchContainers.by.rackLocalRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.localityStatistics.offSwitchContainers.by.offSwitchRequest",
+   "raw": "",
+   "yn": true,
+   "fmt": "int",
+   "text": "—",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "application_1791901196446_0002",
+  "appattempt_1791901196446_0002_000001",
+  "container_1791901196446_0002_01_000001",
+  "container_1791901196446_0002_01_000002"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nys-running-ingest\nRunning\nUNDEFINED\napplication_1791901196446_0002\n·\nUser alice\n·\nType SPARK\n·\nQueue root.etl.ingest\n·\nPriority 5\n·\nelapsed\n7m 23s\nrunning\nburrow\nrunning,burrow\nApplicationMaster\nYARN application page\nOpen in burrow\nSpark UI\nOverview\nAttempts\nLogs\nSpark\nAttempt 1\nRunning\nCopy attempt ID\nappattempt_1791901196446_0002_000001\nStarted\tFinished\tDuration\tRetained containers\n2026-10-13 19:51:53\tIn progress\t7m 23s\t2\nApplication master\nApplication master\nContainer\tcontainer_1791901196446_0002_01_000001\nHost / RPC port\tsmadayma:44351\n\nNode ID\t127.0.0.3:8041\nNode HTTP address\t127.0.0.3:8042\nExposed ports\tNone\nAllocated resources\t\n127.0.0.3:8041\n512 MiB · 1 vCores\nTracking and diagnostics\nTracking and diagnostics\nAttempt tracking\tApplicationMaster\nApplication tracking\tApplication UI\nAggregated logs\tOpen aggregated logs\nDiagnostics\tNone reported\nApplication diagnostics\tView application details\nContainers\n2 retained\nSort\nColumns\n6/6\nExport\nContainer ID\nNode\nState\nResources\nExit status\nLogs\ncontainer_1791901196446_0002_01_000002\nhttp://127.0.0.3:8042\nRunning\n512 MiB · 1 vCores\n0\nLogs\nhttp://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000002/alice\ncontainer_1791901196446_0002_01_000001\nhttp://127.0.0.3:8042\nRunning\n512 MiB · 1 vCores\n0\nLogs\nhttp://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000001/alice\n2 rows\nshift-click header: multi-sort\nOutstanding resource requests\nNo outstanding resource requests.\nScheduling details\nNode exclusions\nNode exclusions\nExcluded by application\t-\nExcluded by system\t-\nContainer locality · unavailable\n\nThe ResourceManager does not report locality counts for this attempt. A dash means unavailable, not zero.\n\nContainers / request locality\tNode Local Request\tRack Local Request\tOff Switch Request\nNum Node Local Containers (satisfied by)\t—\t—\t—\nNum Rack Local Containers (satisfied by)\t—\t—\t—\nNum Off Switch Containers (satisfied by)\t—\t—\t—"
+}

@@ -1,0 +1,719 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="541219fd-b110-48c1-acc1-9380832c22c7">setUIRoot('')</script>
+        <script nonce="541219fd-b110-48c1-acc1-9380832c22c7">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="541219fd-b110-48c1-acc1-9380832c22c7">setAppBasePath('')</script>
+        
+        <link rel="stylesheet" href="/static/dataTables.bootstrap5.min.css" type="text/css"/><link rel="stylesheet" href="/static/jquery.dataTables.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui-dataTables.css" type="text/css"/><script src="/static/jquery.dataTables.min.js"></script><script src="/static/dataTables.bootstrap5.min.js"></script>
+        <link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/timeline-view.js"></script>
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-df-join-aqe - Details for Query 1</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-df-join-aqe" class="text-nowrap">burrow-df-join-aqe</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Details for Query 1
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-3">
+          <table id="sql-execution-table" class="table table-striped compact cell-border" style="width:100%" data-execution-id="1">
+          </table>
+          
+          <div id="plan-viz-download-btn-container">
+            <select id="plan-viz-format-select">
+              <option value="svg">SVG</option>
+              <option value="dot">DOT</option>
+              <option value="txt">TXT</option>
+            </select>
+            <label for="plan-viz-format-select">
+              <a id="plan-viz-download-btn" class="downloadbutton">Download</a>
+            </label>
+            <button id="copy-plan-btn" class="btn btn-sm btn-outline-secondary ms-2" type="button" title="Copy physical plan to clipboard">
+              📋 Copy Plan</button>
+            <button id="copy-link-btn" class="btn btn-sm btn-outline-secondary ms-1" type="button" title="Copy shareable link to this execution">
+              🔗 Copy Link</button>
+          </div>
+          <script src="/static/sql/sql-table-utils.js"></script>
+          <script src="/static/sql/executionpage.js"></script>
+        </div><div>
+      <div>
+        <span data-action="togglePlanViz">
+          <h4>
+            <span id="plan-viz-graph-arrow" class="arrow-open"></span>
+            <a>Plan Visualization</a>
+          </h4>
+        </span>
+      </div>
+
+      <div id="plan-viz-content" class="row">
+        <div id="plan-viz-graph-col" class="col-12">
+          <div id="plan-viz-graph">
+            <div>
+              <input type="checkbox" id="stageId-and-taskId-checkbox"></input>
+              <span>Show the Stage ID and Task ID that corresponds to the max metric</span>
+            </div>
+            <div>
+              <input type="checkbox" id="detailed-labels-checkbox"></input>
+              <span>Show metrics in graph nodes (detailed mode)</span>
+            </div>
+            <div id="plan-viz-zoom-toolbar" class="plan-viz-zoom-toolbar">
+              <div id="plan-viz-search-collapsed" class="btn-group btn-group-sm me-2" role="group" aria-label="Search">
+                <button id="plan-viz-search-toggle" type="button" class="btn btn-light border" title="Find node (/)">🔍</button>
+              </div>
+              <div id="plan-viz-search-expanded" class="input-group input-group-sm me-2 d-none" role="group" aria-label="Search">
+                <input id="plan-viz-search-input" type="search" autocomplete="off" class="form-control form-control-sm border" placeholder="Find node..." aria-label="Find node"/>
+                <span id="plan-viz-search-count" class="input-group-text bg-light"></span>
+                <button id="plan-viz-search-prev" type="button" class="btn btn-light border" title="Previous match (Shift+Enter)">↑</button>
+                <button id="plan-viz-search-next" type="button" class="btn btn-light border" title="Next match (Enter)">↓</button>
+                <button id="plan-viz-search-close" type="button" class="btn btn-light border" title="Close search (Esc)">&times;</button>
+              </div>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Zoom controls">
+                <button id="plan-viz-zoom-out" type="button" class="btn btn-light border" title="Zoom out (-)">−</button>
+                <button id="plan-viz-zoom-reset" type="button" class="btn btn-light border" title="Reset zoom to fit (0)">
+                  <span id="plan-viz-zoom-level">100%</span>
+                </button>
+                <button id="plan-viz-zoom-in" type="button" class="btn btn-light border" title="Zoom in (+)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="plan-viz-details-col" class="col-4 d-none">
+          <div id="plan-viz-details-panel" class="sticky-top" style="top: 4rem; z-index: 1;">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold" id="plan-viz-details-title">Details</span>
+                <button id="plan-viz-panel-close" class="btn btn-sm btn-close" type="button" title="Close panel"></button>
+              </div>
+              <div class="card-body" id="plan-viz-details-body">
+                <p class="text-muted mb-0">Click a node to view details</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="plan-viz-metadata" style="display:none">
+        <div class="dot-file">
+          digraph G {
+  0 [id=&quot;node0&quot; label=&quot;AdaptiveSparkPlan&quot; tooltip=&quot;AdaptiveSparkPlan isFinalPlan=true&quot;];
+
+  subgraph cluster1 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster1&quot;;
+    label=&quot;(6) / 0 ms&quot;;
+    tooltip=&quot;WholeStageCodegen (6)&quot;;
+      2 [id=&quot;node2&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[], functions=[count(1)])&quot;];
+  }
+     
+  3 [id=&quot;node3&quot; label=&quot;Exchange&quot; tooltip=&quot;Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=441]&quot;];
+
+  subgraph cluster4 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster4&quot;;
+    label=&quot;(5) / 30 ms&quot;;
+    tooltip=&quot;WholeStageCodegen (5)&quot;;
+      5 [id=&quot;node5&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[], functions=[partial_count(1)])&quot;];    
+  6 [id=&quot;node6&quot; label=&quot;Project&quot; tooltip=&quot;Project&quot;];    
+  7 [id=&quot;node7&quot; label=&quot;SortMergeJoin&quot; tooltip=&quot;SortMergeJoin [cust#1L], [cust#31L], Inner&quot;];
+  }
+     
+
+  subgraph cluster8 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster8&quot;;
+    label=&quot;(3) / 77 ms&quot;;
+    tooltip=&quot;WholeStageCodegen (3)&quot;;
+      9 [id=&quot;node9&quot; label=&quot;Sort&quot; tooltip=&quot;Sort [cust#1L ASC NULLS FIRST], false, 0&quot;];    
+  10 [id=&quot;node10&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[cust#1L], functions=[])&quot;];
+  }
+     
+  11 [id=&quot;node11&quot; label=&quot;AQEShuffleRead&quot; tooltip=&quot;AQEShuffleRead coalesced&quot;];
+  12 [id=&quot;node12&quot; label=&quot;Exchange&quot; tooltip=&quot;Exchange hashpartitioning(cust#1L, 8), ENSURE_REQUIREMENTS, [plan_id=358]&quot;];
+
+  subgraph cluster13 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster13&quot;;
+    label=&quot;(1) / 159 ms&quot;;
+    tooltip=&quot;WholeStageCodegen (1)&quot;;
+      14 [id=&quot;node14&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[cust#1L], functions=[])&quot;];    
+  15 [id=&quot;node15&quot; label=&quot;Project&quot; tooltip=&quot;Project [(id#0L % 1000) AS cust#1L]&quot;];    
+  16 [id=&quot;node16&quot; label=&quot;Filter&quot; tooltip=&quot;Filter isnotnull((id#0L % 1000))&quot;];    
+  17 [id=&quot;node17&quot; label=&quot;Range&quot; tooltip=&quot;Range (0, 200000, step=1, splits=4)&quot;];
+  }
+     
+
+  subgraph cluster18 {
+    isCluster=&quot;true&quot;;
+    id=&quot;cluster18&quot;;
+    label=&quot;(4) / 44 ms&quot;;
+    tooltip=&quot;WholeStageCodegen (4)&quot;;
+      19 [id=&quot;node19&quot; label=&quot;Sort&quot; tooltip=&quot;Sort [cust#31L ASC NULLS FIRST], false, 0&quot;];    
+  20 [id=&quot;node20&quot; label=&quot;HashAggregate&quot; tooltip=&quot;HashAggregate(keys=[cust#31L], functions=[])&quot;];
+  }
+     
+  21 [id=&quot;node21&quot; label=&quot;AQEShuffleRead&quot; tooltip=&quot;AQEShuffleRead coalesced&quot;];
+  2-&gt;0 [label=&quot;1&quot; labeltooltip=&quot;1 rows&quot;];
+
+  3-&gt;2;
+
+  5-&gt;3 [label=&quot;1&quot; labeltooltip=&quot;1 rows&quot;];
+
+  6-&gt;5;
+
+  7-&gt;6 [label=&quot;1,000&quot; labeltooltip=&quot;1,000 rows&quot;];
+
+  9-&gt;7;
+
+  10-&gt;9 [label=&quot;1,000&quot; labeltooltip=&quot;1,000 rows&quot;];
+
+  11-&gt;10;
+
+  12-&gt;11;
+
+  14-&gt;12 [label=&quot;4,000&quot; labeltooltip=&quot;4,000 rows&quot;];
+
+  15-&gt;14;
+
+  16-&gt;15 [label=&quot;200,000&quot; labeltooltip=&quot;200,000 rows&quot;];
+
+  17-&gt;16 [label=&quot;200,000&quot; labeltooltip=&quot;200,000 rows&quot;];
+
+  19-&gt;7;
+
+  20-&gt;19 [label=&quot;1,000&quot; labeltooltip=&quot;1,000 rows&quot;];
+
+  21-&gt;20;
+
+  12-&gt;21;
+
+}
+        </div>
+        <div class="node-details">
+          {
+  &quot;node0&quot;:{&quot;name&quot;:&quot;AdaptiveSparkPlan&quot;,&quot;desc&quot;:&quot;AdaptiveSparkPlan isFinalPlan=true&quot;,&quot;metrics&quot;:[]},
+  &quot;node2&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[], functions=[count(1)])&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;time in aggregation build&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;}]},
+  &quot;cluster1&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (6)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (6)&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;duration&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;}],&quot;children&quot;:[&quot;node2&quot;]},
+  &quot;node3&quot;:{&quot;name&quot;:&quot;Exchange&quot;,&quot;desc&quot;:&quot;Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=441]&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;shuffle records written&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote merged reqs duration&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;remote merged blocks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;records read&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;local bytes read&quot;,&quot;value&quot;:&quot;59.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;merged fetch fallback count&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;local blocks read&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote merged chunks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote blocks read&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;data size&quot;,&quot;value&quot;:&quot;16.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;local merged bytes read&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;local merged chunks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;shuffle write time&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;nsTiming&quot;},{&quot;name&quot;:&quot;remote merged bytes read&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;local merged blocks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;corrupt merged block chunks&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;fetch wait time&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;remote bytes read&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of partitions&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote reqs duration&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;remote bytes read to disk&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;shuffle bytes written&quot;,&quot;value&quot;:&quot;59.0 B&quot;,&quot;type&quot;:&quot;size&quot;}]},
+  &quot;node5&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[], functions=[partial_count(1)])&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;spill size&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;time in aggregation build&quot;,&quot;value&quot;:&quot;29 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;peak memory&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;number of sort fallback tasks&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;avg hash probes per key&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;average&quot;}]},
+  &quot;node6&quot;:{&quot;name&quot;:&quot;Project&quot;,&quot;desc&quot;:&quot;Project&quot;,&quot;metrics&quot;:[]},
+  &quot;node7&quot;:{&quot;name&quot;:&quot;SortMergeJoin&quot;,&quot;desc&quot;:&quot;SortMergeJoin [cust#1L], [cust#31L], Inner&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;1,000&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;spill size&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;}]},
+  &quot;cluster4&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (5)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (5)&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;duration&quot;,&quot;value&quot;:&quot;30 ms&quot;,&quot;type&quot;:&quot;timing&quot;}],&quot;children&quot;:[&quot;node5&quot;,&quot;node6&quot;,&quot;node7&quot;]},
+  &quot;node9&quot;:{&quot;name&quot;:&quot;Sort&quot;,&quot;desc&quot;:&quot;Sort [cust#1L ASC NULLS FIRST], false, 0&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;sort time&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;peak memory&quot;,&quot;value&quot;:&quot;8.1 MiB&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;spill size&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;}]},
+  &quot;node10&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[cust#1L], functions=[])&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;spill size&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;time in aggregation build&quot;,&quot;value&quot;:&quot;5 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;peak memory&quot;,&quot;value&quot;:&quot;256.0 KiB&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;1,000&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;number of sort fallback tasks&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;avg hash probes per key&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;average&quot;}]},
+  &quot;cluster8&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (3)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (3)&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;duration&quot;,&quot;value&quot;:&quot;77 ms&quot;,&quot;type&quot;:&quot;timing&quot;}],&quot;children&quot;:[&quot;node9&quot;,&quot;node10&quot;]},
+  &quot;node11&quot;:{&quot;name&quot;:&quot;AQEShuffleRead&quot;,&quot;desc&quot;:&quot;AQEShuffleRead coalesced&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;number of partitions&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;number of empty partitions&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;partition data size&quot;,&quot;value&quot;:&quot;27.4 KiB&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of coalesced partitions&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;}]},
+  &quot;node12&quot;:{&quot;name&quot;:&quot;Exchange&quot;,&quot;desc&quot;:&quot;Exchange hashpartitioning(cust#1L, 8), ENSURE_REQUIREMENTS, [plan_id=358]&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;shuffle records written&quot;,&quot;value&quot;:&quot;4,000&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote merged reqs duration&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;remote merged blocks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;records read&quot;,&quot;value&quot;:&quot;8,000&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;local bytes read&quot;,&quot;value&quot;:&quot;52.3 KiB&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;merged fetch fallback count&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;local blocks read&quot;,&quot;value&quot;:&quot;8&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote merged chunks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote blocks read&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;data size&quot;,&quot;value&quot;:&quot;total (min, med, max (stageId: taskId))\n62.5 KiB (15.6 KiB, 15.6 KiB, 15.6 KiB (stage 18.0: task 12))&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;local merged bytes read&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;local merged chunks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;shuffle write time&quot;,&quot;value&quot;:&quot;total (min, med, max (stageId: taskId))\n8 ms (1 ms, 2 ms, 2 ms (stage 18.0: task 11))&quot;,&quot;type&quot;:&quot;nsTiming&quot;},{&quot;name&quot;:&quot;remote merged bytes read&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;local merged blocks fetched&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;corrupt merged block chunks&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;fetch wait time&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;remote bytes read&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of partitions&quot;,&quot;value&quot;:&quot;8&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;remote reqs duration&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;remote bytes read to disk&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;shuffle bytes written&quot;,&quot;value&quot;:&quot;total (min, med, max (stageId: taskId))\n26.1 KiB (6.5 KiB, 6.5 KiB, 6.5 KiB (stage 18.0: task 12))&quot;,&quot;type&quot;:&quot;size&quot;}]},
+  &quot;node14&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[cust#1L], functions=[])&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;spill size&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;time in aggregation build&quot;,&quot;value&quot;:&quot;total (min, med, max (stageId: taskId))\n58 ms (11 ms, 17 ms, 18 ms (stage 18.0: task 12))&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;peak memory&quot;,&quot;value&quot;:&quot;total (min, med, max (stageId: taskId))\n1024.0 KiB (256.0 KiB, 256.0 KiB, 256.0 KiB (stage 18.0: task 12))&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;4,000&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;number of sort fallback tasks&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;avg hash probes per key&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;average&quot;}]},
+  &quot;node15&quot;:{&quot;name&quot;:&quot;Project&quot;,&quot;desc&quot;:&quot;Project [(id#0L % 1000) AS cust#1L]&quot;,&quot;metrics&quot;:[]},
+  &quot;node16&quot;:{&quot;name&quot;:&quot;Filter&quot;,&quot;desc&quot;:&quot;Filter isnotnull((id#0L % 1000))&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;200,000&quot;,&quot;type&quot;:&quot;sum&quot;}]},
+  &quot;node17&quot;:{&quot;name&quot;:&quot;Range&quot;,&quot;desc&quot;:&quot;Range (0, 200000, step=1, splits=4)&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;200,000&quot;,&quot;type&quot;:&quot;sum&quot;}]},
+  &quot;cluster13&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (1)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (1)&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;duration&quot;,&quot;value&quot;:&quot;total (min, med, max (stageId: taskId))\n159 ms (24 ms, 55 ms, 55 ms (stage 18.0: task 12))&quot;,&quot;type&quot;:&quot;timing&quot;}],&quot;children&quot;:[&quot;node14&quot;,&quot;node15&quot;,&quot;node16&quot;,&quot;node17&quot;]},
+  &quot;node19&quot;:{&quot;name&quot;:&quot;Sort&quot;,&quot;desc&quot;:&quot;Sort [cust#31L ASC NULLS FIRST], false, 0&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;sort time&quot;,&quot;value&quot;:&quot;0 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;peak memory&quot;,&quot;value&quot;:&quot;8.1 MiB&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;spill size&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;}]},
+  &quot;node20&quot;:{&quot;name&quot;:&quot;HashAggregate&quot;,&quot;desc&quot;:&quot;HashAggregate(keys=[cust#31L], functions=[])&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;spill size&quot;,&quot;value&quot;:&quot;0.0 B&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;time in aggregation build&quot;,&quot;value&quot;:&quot;3 ms&quot;,&quot;type&quot;:&quot;timing&quot;},{&quot;name&quot;:&quot;peak memory&quot;,&quot;value&quot;:&quot;256.0 KiB&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of output rows&quot;,&quot;value&quot;:&quot;1,000&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;number of sort fallback tasks&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;avg hash probes per key&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;average&quot;}]},
+  &quot;cluster18&quot;:{&quot;name&quot;:&quot;WholeStageCodegen (4)&quot;,&quot;desc&quot;:&quot;WholeStageCodegen (4)&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;duration&quot;,&quot;value&quot;:&quot;44 ms&quot;,&quot;type&quot;:&quot;timing&quot;}],&quot;children&quot;:[&quot;node19&quot;,&quot;node20&quot;]},
+  &quot;node21&quot;:{&quot;name&quot;:&quot;AQEShuffleRead&quot;,&quot;desc&quot;:&quot;AQEShuffleRead coalesced&quot;,&quot;metrics&quot;:[{&quot;name&quot;:&quot;number of partitions&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;number of empty partitions&quot;,&quot;value&quot;:&quot;0&quot;,&quot;type&quot;:&quot;sum&quot;},{&quot;name&quot;:&quot;partition data size&quot;,&quot;value&quot;:&quot;27.4 KiB&quot;,&quot;type&quot;:&quot;size&quot;},{&quot;name&quot;:&quot;number of coalesced partitions&quot;,&quot;value&quot;:&quot;1&quot;,&quot;type&quot;:&quot;sum&quot;}]}
+}
+        </div>
+      </div>
+      <link rel="stylesheet" href="/static/sql/spark-sql-viz.css" type="text/css"/><script src="/static/d3.min.js"></script><script src="/static/dagre-d3.min.js"></script><script src="/static/graphlib-dot.min.js"></script><script src="/static/sql/spark-sql-viz.js"></script>
+    </div><div>
+      <span class="collapse-table" data-bs-toggle="collapse" data-bs-target="#physical-plan-details" aria-expanded="false" aria-controls="physical-plan-details" data-collapse-name="collapse-plan-details">
+        <h4>
+          <span class="collapse-table-arrow arrow-closed"></span>
+          <a>Plan Details</a>
+        </h4>
+      </span>
+      <div class="collapsible-table collapse" id="physical-plan-details">
+        <div>
+            <ul class="nav nav-pills nav-pills-sm mb-2" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active btn-sm" data-bs-toggle="pill" data-bs-target="#plan-unified-tab" type="button" role="tab">Unified</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link btn-sm" data-bs-toggle="pill" data-bs-target="#plan-split-tab" type="button" role="tab">Split</button>
+              </li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="plan-unified-tab" role="tabpanel">
+                <pre>== Physical Plan ==
+AdaptiveSparkPlan (37)
++- == Final Plan ==
+   ResultQueryStage (21), Statistics(sizeInBytes=8.0 EiB)
+   +- * HashAggregate (20)
+      +- ShuffleQueryStage (19), Statistics(sizeInBytes=16.0 B, rowCount=1)
+         +- Exchange (18)
+            +- * HashAggregate (17)
+               +- * Project (16)
+                  +- * SortMergeJoin Inner (15)
+                     :- * Sort (9)
+                     :  +- * HashAggregate (8)
+                     :     +- AQEShuffleRead (7), coalesced
+                     :        +- ShuffleQueryStage (6), Statistics(sizeInBytes=62.5 KiB, rowCount=4.00E+3)
+                     :           +- Exchange (5)
+                     :              +- * HashAggregate (4)
+                     :                 +- * Project (3)
+                     :                    +- * Filter (2)
+                     :                       +- * Range (1)
+                     +- * Sort (14)
+                        +- * HashAggregate (13)
+                           +- AQEShuffleRead (12), coalesced
+                              +- ShuffleQueryStage (11), Statistics(sizeInBytes=62.5 KiB, rowCount=4.00E+3)
+                                 +- ReusedExchange (10)
++- == Initial Plan ==
+   HashAggregate (36)
+   +- Exchange (35)
+      +- HashAggregate (34)
+         +- Project (33)
+            +- SortMergeJoin Inner (32)
+               :- Sort (24)
+               :  +- HashAggregate (23)
+               :     +- Exchange (22)
+               :        +- HashAggregate (4)
+               :           +- Project (3)
+               :              +- Filter (2)
+               :                 +- Range (1)
+               +- Sort (31)
+                  +- HashAggregate (30)
+                     +- Exchange (29)
+                        +- HashAggregate (28)
+                           +- Project (27)
+                              +- Filter (26)
+                                 +- Range (25)
+
+
+(1) Range [codegen id : 1]
+Output [1]: [id#0L]
+Arguments: Range (0, 200000, step=1, splits=Some(4))
+
+(2) Filter [codegen id : 1]
+Input [1]: [id#0L]
+Condition : isnotnull((id#0L % 1000))
+
+(3) Project [codegen id : 1]
+Output [1]: [(id#0L % 1000) AS cust#1L]
+Input [1]: [id#0L]
+
+(4) HashAggregate [codegen id : 1]
+Input [1]: [cust#1L]
+Keys [1]: [cust#1L]
+Functions: []
+Aggregate Attributes: []
+Results [1]: [cust#1L]
+
+(5) Exchange
+Input [1]: [cust#1L]
+Arguments: hashpartitioning(cust#1L, 8), ENSURE_REQUIREMENTS, [plan_id=358]
+
+(6) ShuffleQueryStage
+Output [1]: [cust#1L]
+Arguments: 0
+
+(7) AQEShuffleRead
+Input [1]: [cust#1L]
+Arguments: coalesced
+
+(8) HashAggregate [codegen id : 3]
+Input [1]: [cust#1L]
+Keys [1]: [cust#1L]
+Functions: []
+Aggregate Attributes: []
+Results [1]: [cust#1L]
+
+(9) Sort [codegen id : 3]
+Input [1]: [cust#1L]
+Arguments: [cust#1L ASC NULLS FIRST], false, 0
+
+(10) ReusedExchange [Reuses operator id: 5]
+Output [1]: [cust#31L]
+
+(11) ShuffleQueryStage
+Output [1]: [cust#31L]
+Arguments: 2
+
+(12) AQEShuffleRead
+Input [1]: [cust#31L]
+Arguments: coalesced
+
+(13) HashAggregate [codegen id : 4]
+Input [1]: [cust#31L]
+Keys [1]: [cust#31L]
+Functions: []
+Aggregate Attributes: []
+Results [1]: [cust#31L]
+
+(14) Sort [codegen id : 4]
+Input [1]: [cust#31L]
+Arguments: [cust#31L ASC NULLS FIRST], false, 0
+
+(15) SortMergeJoin [codegen id : 5]
+Left keys [1]: [cust#1L]
+Right keys [1]: [cust#31L]
+Join type: Inner
+Join condition: None
+
+(16) Project [codegen id : 5]
+Output: []
+Input [2]: [cust#1L, cust#31L]
+
+(17) HashAggregate [codegen id : 5]
+Input: []
+Keys: []
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count#40L]
+Results [1]: [count#41L]
+
+(18) Exchange
+Input [1]: [count#41L]
+Arguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=441]
+
+(19) ShuffleQueryStage
+Output [1]: [count#41L]
+Arguments: 3
+
+(20) HashAggregate [codegen id : 6]
+Input [1]: [count#41L]
+Keys: []
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#39L]
+Results [1]: [count(1)#39L AS count#35L]
+
+(21) ResultQueryStage
+Output [1]: [count#35L]
+Arguments: 4
+
+(22) Exchange
+Input [1]: [cust#1L]
+Arguments: hashpartitioning(cust#1L, 8), ENSURE_REQUIREMENTS, [plan_id=311]
+
+(23) HashAggregate
+Input [1]: [cust#1L]
+Keys [1]: [cust#1L]
+Functions: []
+Aggregate Attributes: []
+Results [1]: [cust#1L]
+
+(24) Sort
+Input [1]: [cust#1L]
+Arguments: [cust#1L ASC NULLS FIRST], false, 0
+
+(25) Range
+Output [1]: [id#30L]
+Arguments: Range (0, 200000, step=1, splits=Some(4))
+
+(26) Filter
+Input [1]: [id#30L]
+Condition : isnotnull((id#30L % 1000))
+
+(27) Project
+Output [1]: [(id#30L % 1000) AS cust#31L]
+Input [1]: [id#30L]
+
+(28) HashAggregate
+Input [1]: [cust#31L]
+Keys [1]: [cust#31L]
+Functions: []
+Aggregate Attributes: []
+Results [1]: [cust#31L]
+
+(29) Exchange
+Input [1]: [cust#31L]
+Arguments: hashpartitioning(cust#31L, 8), ENSURE_REQUIREMENTS, [plan_id=313]
+
+(30) HashAggregate
+Input [1]: [cust#31L]
+Keys [1]: [cust#31L]
+Functions: []
+Aggregate Attributes: []
+Results [1]: [cust#31L]
+
+(31) Sort
+Input [1]: [cust#31L]
+Arguments: [cust#31L ASC NULLS FIRST], false, 0
+
+(32) SortMergeJoin
+Left keys [1]: [cust#1L]
+Right keys [1]: [cust#31L]
+Join type: Inner
+Join condition: None
+
+(33) Project
+Output: []
+Input [2]: [cust#1L, cust#31L]
+
+(34) HashAggregate
+Input: []
+Keys: []
+Functions [1]: [partial_count(1)]
+Aggregate Attributes [1]: [count#40L]
+Results [1]: [count#41L]
+
+(35) Exchange
+Input [1]: [count#41L]
+Arguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=323]
+
+(36) HashAggregate
+Input [1]: [count#41L]
+Keys: []
+Functions [1]: [count(1)]
+Aggregate Attributes [1]: [count(1)#39L]
+Results [1]: [count(1)#39L AS count#35L]
+
+(37) AdaptiveSparkPlan
+Output [1]: [count#35L]
+Arguments: isFinalPlan=true
+
+</pre>
+              </div>
+              <div class="tab-pane fade" id="plan-split-tab" role="tabpanel">
+                <div class="row">
+                  <div class="col-6">
+                    <h6 class="fw-bold text-muted">Initial Plan</h6>
+                    <pre class="border rounded p-2" style="font-size: 0.8rem; max-height: 600px; overflow: auto;">HashAggregate (36)
+   +- Exchange (35)
+      +- HashAggregate (34)
+         +- Project (33)
+            +- SortMergeJoin Inner (32)
+               :- Sort (24)
+               :  +- HashAggregate (23)
+               :     +- Exchange (22)
+               :        +- HashAggregate (4)
+               :           +- Project (3)
+               :              +- Filter (2)
+               :                 +- Range (1)
+               +- Sort (31)
+                  +- HashAggregate (30)
+                     +- Exchange (29)
+                        +- HashAggregate (28)
+                           +- Project (27)
+                              +- Filter (26)
+                                 +- Range (25)</pre>
+                  </div>
+                  <div class="col-6">
+                    <h6 class="fw-bold text-muted">Final Plan</h6>
+                    <pre class="border rounded p-2" style="font-size: 0.8rem; max-height: 600px; overflow: auto;">ResultQueryStage (21), Statistics(sizeInBytes=8.0 EiB)
+   +- * HashAggregate (20)
+      +- ShuffleQueryStage (19), Statistics(sizeInBytes=16.0 B, rowCount=1)
+         +- Exchange (18)
+            +- * HashAggregate (17)
+               +- * Project (16)
+                  +- * SortMergeJoin Inner (15)
+                     :- * Sort (9)
+                     :  +- * HashAggregate (8)
+                     :     +- AQEShuffleRead (7), coalesced
+                     :        +- ShuffleQueryStage (6), Statistics(sizeInBytes=62.5 KiB, rowCount=4.00E+3)
+                     :           +- Exchange (5)
+                     :              +- * HashAggregate (4)
+                     :                 +- * Project (3)
+                     :                    +- * Filter (2)
+                     :                       +- * Range (1)
+                     +- * Sort (14)
+                        +- * HashAggregate (13)
+                           +- AQEShuffleRead (12), coalesced
+                              +- ShuffleQueryStage (11), Statistics(sizeInBytes=62.5 KiB, rowCount=4.00E+3)
+                                 +- ReusedExchange (10)</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div><div>
+      <span class="collapse-table" data-bs-toggle="collapse" data-bs-target="#sql-jobs-table" aria-expanded="true" aria-controls="sql-jobs-table" data-collapse-name="collapse-sql-jobs">
+        <h4>
+          <span class="collapse-table-arrow arrow-open"></span>
+          <a>Associated Jobs (3)</a>
+        </h4>
+      </span>
+      <div class="collapsible-table collapse show" id="sql-jobs-table">
+        <div>
+      <span class="expand-application-timeline">
+        <span class="expand-application-timeline-arrow arrow-closed"></span>
+        <a>Job Timeline</a>
+      </span>
+      <div id="application-timeline" class="collapsed">
+        <div class="control-panel">
+          <div id="application-timeline-zoom-lock">
+            <input type="checkbox"></input>
+            <span>Enable zooming</span>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript" nonce="541219fd-b110-48c1-acc1-9380832c22c7">
+        drawApplicationTimeline([{'id': 'jobs', 'content': '<div>Jobs</div>'}], [{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011539291),
+  'end': new Date(1791011539437),
+  'content': '<div class="application-timeline-content"' +
+    'data-bs-html="true" data-bs-toggle="tooltip"' +
+    'data-bs-title="self-join of a shared aggregate (ReusedExchange) (Job 6)<br>' +
+    'Status: SUCCEEDED<br>' +
+    'Duration: 0.1 s">' +
+    'self-join of a shared aggregate (ReusedExchange) (Job 6)</div>'
+},{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011539545),
+  'end': new Date(1791011539692),
+  'content': '<div class="application-timeline-content"' +
+    'data-bs-html="true" data-bs-toggle="tooltip"' +
+    'data-bs-title="self-join of a shared aggregate (ReusedExchange) (Job 7)<br>' +
+    'Status: SUCCEEDED<br>' +
+    'Duration: 0.1 s">' +
+    'self-join of a shared aggregate (ReusedExchange) (Job 7)</div>'
+},{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791011539731),
+  'end': new Date(1791011539762),
+  'content': '<div class="application-timeline-content"' +
+    'data-bs-html="true" data-bs-toggle="tooltip"' +
+    'data-bs-title="self-join of a shared aggregate (ReusedExchange) (Job 8)<br>' +
+    'Status: SUCCEEDED<br>' +
+    'Duration: 31 ms">' +
+    'self-join of a shared aggregate (ReusedExchange) (Job 8)</div>'
+}], 1791011539194, 330);
+      </script>
+    </div>
+        <div class="table-responsive">
+        <table class="table table-bordered table-hover table-sm sortable">
+          <thead>
+            <tr>
+              <th>Job ID</th>
+              <th>Description</th>
+              <th>Submitted</th>
+              <th>Duration</th>
+              <th class="sorttable_nosort">Stages: Succeeded/Total</th>
+              <th class="sorttable_nosort">Tasks (for all stages): Succeeded/Total</th>
+            </tr>
+          </thead>
+          <tbody><tr id="job-8">
+            <td><a href="/jobs/job/?id=8">8</a></td>
+            <td>
+              <span class="description-input">self-join of a shared aggregate (ReusedExchange)</span>
+              <a href="/jobs/job/?id=8" class="name-link">$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768</a>
+            </td>
+            <td sorttable_customkey="1791011539731">2026/10/03 12:42:19</td>
+            <td sorttable_customkey="31">31 ms</td>
+            <td class="stage-progress-cell">1/1 (2 skipped)</td>
+            <td class="progress-cell">
+              <div class="progress-stacked" title="1/1 (5 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (5 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+            </td>
+          </tr><tr id="job-7">
+            <td><a href="/jobs/job/?id=7">7</a></td>
+            <td>
+              <span class="description-input">self-join of a shared aggregate (ReusedExchange)</span>
+              <a href="/jobs/job/?id=7" class="name-link">$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768</a>
+            </td>
+            <td sorttable_customkey="1791011539545">2026/10/03 12:42:19</td>
+            <td sorttable_customkey="147">0.1 s</td>
+            <td class="stage-progress-cell">1/1 (1 skipped)</td>
+            <td class="progress-cell">
+              <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+            </td>
+          </tr><tr id="job-6">
+            <td><a href="/jobs/job/?id=6">6</a></td>
+            <td>
+              <span class="description-input">self-join of a shared aggregate (ReusedExchange)</span>
+              <a href="/jobs/job/?id=6" class="name-link">$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768</a>
+            </td>
+            <td sorttable_customkey="1791011539291">2026/10/03 12:42:19</td>
+            <td sorttable_customkey="146">0.1 s</td>
+            <td class="stage-progress-cell">1/1 </td>
+            <td class="progress-cell">
+              <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+            </td>
+          </tr></tbody>
+        </table>
+        </div>
+      </div>
+    </div><br/>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:42:09</span><span id="footer-uptime" data-start-time="1791011529714"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

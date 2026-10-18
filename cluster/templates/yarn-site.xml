@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!-- burrow test cluster — rendered by cluster.py setup. -->
+<configuration>
+  <!-- ResourceManager: everything on 127.0.0.1 -->
+  <property><name>yarn.resourcemanager.hostname</name><value>127.0.0.1</value></property>
+  <property><name>yarn.resourcemanager.webapp.address</name><value>127.0.0.1:8088</value></property>
+  <property><name>yarn.resourcemanager.recovery.enabled</name><value>false</value></property>
+  <property><name>yarn.resourcemanager.max-completed-applications</name><value>10000</value></property>
+  <property><name>yarn.resourcemanager.am.max-attempts</name><value>3</value></property>
+  <property><name>yarn.resourcemanager.nodemanagers.heartbeat-interval-ms</name><value>1000</value></property>
+  <property><name>yarn.cluster.max-application-priority</name><value>10</value></property>
+  <property><name>yarn.webapp.ui2.enable</name><value>true</value></property>
+  <!-- ACLs: only the OS user (and the anonymous web user dr.who) administers YARN; queue ACLs live in the scheduler config -->
+  <property><name>yarn.acl.enable</name><value>true</value></property>
+  <property><name>yarn.admin.acl</name><value>@@USER@@,dr.who</value></property>
+  <property><name>yarn.timeline-service.enabled</name><value>false</value></property>
+  <property><name>yarn.system-metrics-publisher.enabled</name><value>false</value></property>
+
+  <!-- Scheduler -->
+  <property><name>yarn.resourcemanager.scheduler.class</name><value>@@SCHEDULER_CLASS@@</value></property>
+  <property><name>yarn.scheduler.minimum-allocation-mb</name><value>256</value></property>
+  <property><name>yarn.scheduler.increment-allocation-mb</name><value>256</value></property>
+  <property><name>yarn.scheduler.maximum-allocation-mb</name><value>3072</value></property>
+  <property><name>yarn.scheduler.minimum-allocation-vcores</name><value>1</value></property>
+  <property><name>yarn.scheduler.maximum-allocation-vcores</name><value>4</value></property>
+@@SCHED_PROPS@@
+
+  <!-- Log aggregation to the local filesystem; JobHistory Server serves it -->
+  <property><name>yarn.log-aggregation-enable</name><value>true</value></property>
+  <property><name>yarn.nodemanager.remote-app-log-dir</name><value>file://@@DATA@@/app-logs</value></property>
+  <property><name>yarn.nodemanager.remote-app-log-dir-suffix</name><value>logs</value></property>
+  <property><name>yarn.log.server.url</name><value>http://127.0.0.1:19888/jobhistory/logs</value></property>
+  <property><name>yarn.log-aggregation.retain-seconds</name><value>-1</value></property>
+
+  <!-- NodeManager defaults shared by all three (host-specific bits are appended per NM) -->
+  <property><name>yarn.nodemanager.resource.memory-mb</name><value>3072</value></property>
+  <property><name>yarn.nodemanager.resource.cpu-vcores</name><value>4</value></property>
+  <property><name>yarn.nodemanager.resource.detect-hardware-capabilities</name><value>false</value></property>
+  <property><name>yarn.nodemanager.pmem-check-enabled</name><value>false</value></property>
+  <property><name>yarn.nodemanager.vmem-check-enabled</name><value>false</value></property>
+  <property><name>yarn.nodemanager.aux-services</name><value>mapreduce_shuffle</value></property>
+  <property><name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name><value>org.apache.hadoop.mapred.ShuffleHandler</value></property>
+  <!-- keep container dirs (and their not-yet-purged logs) readable on the NM for 15 min after completion -->
+  <property><name>yarn.nodemanager.delete.debug-delay-sec</name><value>900</value></property>
+  <property><name>yarn.nodemanager.log.retain-seconds</name><value>900</value></property>
+  <property><name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name><value>99</value></property>
+  <property><name>yarn.nodemanager.disk-health-checker.min-free-space-per-disk-mb</name><value>256</value></property>
+  <property><name>yarn.nodemanager.env-whitelist</name><value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,HADOOP_MAPRED_HOME,PATH,LANG,TZ</value></property>
+@@LABEL_PROPS@@
+@@NM_PROPS@@
+</configuration>

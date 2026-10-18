@@ -1,0 +1,16 @@
+{
+  "clusterInfo": {
+    "id": 1791011093262,
+    "startedOn": 1791011093262,
+    "state": "STARTED",
+    "haState": "INITIALIZING",
+    "rmStateStoreName": "org.apache.hadoop.yarn.server.resourcemanager.recovery.NullRMStateStore",
+    "resourceManagerVersion": "3.4.3",
+    "resourceManagerBuildVersion": "3.4.3 from 9d50c6884666e794e45102260a4017bb31802e1b by stevel source checksum c9603bc1c4231988d03efcad81a27cf",
+    "resourceManagerVersionBuiltOn": "2026-02-13T14:31Z",
+    "hadoopVersion": "3.4.3",
+    "hadoopBuildVersion": "3.4.3 from 9d50c6884666e794e45102260a4017bb31802e1b by stevel source checksum 2331238c4c2929e66645316a32a8613",
+    "hadoopVersionBuiltOn": "2026-02-13T14:23Z",
+    "haZooKeeperConnectionState": "Could not find leader elector. Verify both HA and automatic failover are enabled."
+  }
+}

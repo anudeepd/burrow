@@ -1,0 +1,35 @@
+{
+  "appActivities": {
+    "applicationId": "application_1767225600000_0003",
+    "diagnostic": "",
+    "timestamp": 1767225900000,
+    "dateTime": "Sat Jan 01 00:05:00 UTC 2026",
+    "allocations": [
+      {
+        "nodeId": "nm1:35000",
+        "timestamp": 1767225900000,
+        "dateTime": "Sat Jan 01 00:05:00 UTC 2026",
+        "queueName": "root.a",
+        "appPriority": 0,
+        "allocationState": "ALLOCATED",
+        "diagnostic": "",
+        "children": [
+          {
+            "requestPriority": 1,
+            "allocationRequestId": 0,
+            "allocationState": "ALLOCATED",
+            "children": [
+              {
+                "name": "nm1",
+                "allocationState": "ALLOCATED",
+                "nodeId": "nm1:35000",
+                "nodeIds": [],
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

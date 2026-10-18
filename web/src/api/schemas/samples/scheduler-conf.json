@@ -1,0 +1,12 @@
+{
+  "property": [
+    {
+      "name": "yarn.scheduler.capacity.root.queues",
+      "value": "a,b"
+    },
+    {
+      "name": "yarn.scheduler.capacity.root.a.capacity",
+      "value": "30"
+    }
+  ]
+}

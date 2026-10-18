@@ -1,0 +1,20 @@
+{
+  "appAttempts": {
+    "appAttempt": [
+      {
+        "id": 1,
+        "startTime": 1767225700000,
+        "finishedTime": 0,
+        "containerId": "container_1767225600000_0003_01_000001",
+        "nodeHttpAddress": "nm1:8042",
+        "nodeId": "nm1:35000",
+        "logsLink": "http://nm1:8042/node/containerlogs/container_1767225600000_0003_01_000001/alice",
+        "blacklistedNodes": "",
+        "nodesBlacklistedBySystem": "",
+        "appAttemptId": "appattempt_1767225600000_0003_000001",
+        "exportPorts": "{}",
+        "appAttemptState": "RUNNING"
+      }
+    ]
+  }
+}

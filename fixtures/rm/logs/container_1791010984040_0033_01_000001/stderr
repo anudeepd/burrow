@@ -1,0 +1,82 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+26/10/03 13:21:12 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+26/10/03 13:21:12 INFO ApplicationMaster: ApplicationAttemptId: appattempt_1791010984040_0033_000001
+26/10/03 13:21:13 INFO ApplicationMaster: Starting the user application in a separate Thread
+26/10/03 13:21:13 INFO ApplicationMaster: Waiting for spark context initialization...
+26/10/03 13:21:22 INFO YarnRMClient: Registering the ApplicationMaster
+26/10/03 13:21:23 INFO ApplicationMaster: Preparing Local resources
+26/10/03 13:21:23 INFO ApplicationMaster: 
+===============================================================================
+Default YARN executor launch context:
+  env:
+    PYSPARK_PYTHON -> /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python
+    SPARK_YARN_STAGING_DIR -> file:/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/alice/.sparkStaging/application_1791010984040_0033
+    PYTHONPATH -> {{PWD}}/__pyfiles__<CPS>{{PWD}}/pyspark.zip<CPS>{{PWD}}/py4j-0.10.9.9-src.zip
+    SPARK_PREFER_IPV6 -> false
+    SPARK_USER -> alice
+    JAVA_HOME -> /home/puppyseal/Documents/code_repos/burrow/.cluster/jdk-17.0.20.1+1
+    CLASSPATH -> {{PWD}}<CPS>{{PWD}}/__spark_conf__<CPS>{{PWD}}/__spark_libs__/*<CPS>/home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/pyspark/jars/*<CPS>{{PWD}}/__spark_conf__/__hadoop_conf__
+
+  command:
+    {{JAVA_HOME}}/bin/java \ 
+      -server \ 
+      -Xmx512m \ 
+      '-Djava.net.preferIPv6Addresses=false' \ 
+      '-XX:+IgnoreUnrecognizedVMOptions' \ 
+      '--add-modules=jdk.incubator.vector' \ 
+      '--add-opens=java.base/java.lang=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.io=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.net=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.nio=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.util=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED' \ 
+      '--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.nio.cs=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.security.action=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.util.calendar=ALL-UNNAMED' \ 
+      '--add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED' \ 
+      '-Dio.netty.tryReflectionSetAccessible=true' \ 
+      '-Dio.netty.allocator.type=pooled' \ 
+      '-Dio.netty.handler.ssl.defaultEndpointVerificationAlgorithm=NONE' \ 
+      '--sun-misc-unsafe-memory-access=allow' \ 
+      '--enable-native-access=ALL-UNNAMED' \ 
+      '-XX:+UseSerialGC' \ 
+      -Djava.io.tmpdir={{PWD}}/tmp \ 
+      '-Dspark.driver.port=32937' \ 
+      '-Dspark.history.ui.port=18080' \ 
+      '-Dspark.ui.port=0' \ 
+      -Dspark.yarn.app.container.log.dir=<LOG_DIR> \ 
+      -XX:OnOutOfMemoryError='kill %p' \ 
+      org.apache.spark.executor.YarnCoarseGrainedExecutorBackend \ 
+      --driver-url \ 
+      spark://CoarseGrainedScheduler@smadayma:32937 \ 
+      --executor-id \ 
+      <executorId> \ 
+      --hostname \ 
+      <hostname> \ 
+      --cores \ 
+      1 \ 
+      --app-id \ 
+      application_1791010984040_0033 \ 
+      --resourceProfileId \ 
+      0 \ 
+      1><LOG_DIR>/stdout \ 
+      2><LOG_DIR>/stderr
+
+  resources:
+    pyspark.zip -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/alice/.sparkStaging/application_1791010984040_0033/pyspark.zip" } size: 3713087 timestamp: 1791013861913 type: FILE visibility: PRIVATE
+    __pyfiles__/_common.py -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/alice/.sparkStaging/application_1791010984040_0033/_common.py" } size: 1170 timestamp: 1791013862012 type: FILE visibility: PRIVATE
+    py4j-0.10.9.9-src.zip -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/alice/.sparkStaging/application_1791010984040_0033/py4j-0.10.9.9-src.zip" } size: 43108 timestamp: 1791013861958 type: FILE visibility: PRIVATE
+    __spark_conf__ -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/alice/.sparkStaging/application_1791010984040_0033/__spark_conf__.zip" } size: 202585 timestamp: 1791013862409 type: ARCHIVE visibility: PRIVATE
+
+===============================================================================
+26/10/03 13:21:23 INFO YarnAllocator: Resource profile 0 doesn't exist, adding it
+26/10/03 13:21:24 INFO YarnAllocator: Will request 1 executor container(s) for ResourceProfile Id: 0, each with 1 core(s) and 768 MB memory. with custom resources: <memory:768, vCores:1>
+26/10/03 13:21:24 INFO YarnAllocator: Submitted 1 unlocalized container requests.
+26/10/03 13:21:24 INFO ApplicationMaster: Started progress reporter thread with (heartbeat: 3000, initial allocation: 200) intervals
+26/10/03 13:21:25 INFO YarnAllocator: Launching container container_1791010984040_0033_01_000002 on host 127.0.0.4 for executor with ID 1 for ResourceProfile Id 0
+26/10/03 13:21:25 INFO YarnAllocator: Received 1 containers from YARN, launching executors on 1 of them.

@@ -1,0 +1,416 @@
+WARNING: Using incubator modules: jdk.incubator.vector
+26/10/03 13:50:26 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+26/10/03 13:50:26 INFO ApplicationMaster: ApplicationAttemptId: appattempt_1791015583684_0002_000001
+26/10/03 13:50:26 INFO ApplicationMaster: Starting the user application in a separate Thread
+26/10/03 13:50:26 INFO ApplicationMaster: Waiting for spark context initialization...
+26/10/03 13:50:28 INFO YarnRMClient: Registering the ApplicationMaster
+26/10/03 13:50:28 INFO ApplicationMaster: Preparing Local resources
+26/10/03 13:50:28 INFO ApplicationMaster: 
+===============================================================================
+Default YARN executor launch context:
+  env:
+    PYSPARK_PYTHON -> /home/puppyseal/Documents/code_repos/burrow/.venv/bin/python
+    SPARK_YARN_STAGING_DIR -> file:/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/carol/.sparkStaging/application_1791015583684_0002
+    PYTHONPATH -> {{PWD}}/__pyfiles__<CPS>{{PWD}}/pyspark.zip<CPS>{{PWD}}/py4j-0.10.9.9-src.zip
+    SPARK_PREFER_IPV6 -> false
+    SPARK_USER -> carol
+    JAVA_HOME -> /home/puppyseal/Documents/code_repos/burrow/.cluster/jdk-17.0.20.1+1
+    CLASSPATH -> {{PWD}}<CPS>{{PWD}}/__spark_conf__<CPS>{{PWD}}/__spark_libs__/*<CPS>/home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/pyspark/jars/*<CPS>{{PWD}}/__spark_conf__/__hadoop_conf__
+
+  command:
+    {{JAVA_HOME}}/bin/java \ 
+      -server \ 
+      -Xmx512m \ 
+      '-Djava.net.preferIPv6Addresses=false' \ 
+      '-XX:+IgnoreUnrecognizedVMOptions' \ 
+      '--add-modules=jdk.incubator.vector' \ 
+      '--add-opens=java.base/java.lang=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.io=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.net=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.nio=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.util=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED' \ 
+      '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED' \ 
+      '--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.nio.cs=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.security.action=ALL-UNNAMED' \ 
+      '--add-opens=java.base/sun.util.calendar=ALL-UNNAMED' \ 
+      '--add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED' \ 
+      '-Dio.netty.tryReflectionSetAccessible=true' \ 
+      '-Dio.netty.allocator.type=pooled' \ 
+      '-Dio.netty.handler.ssl.defaultEndpointVerificationAlgorithm=NONE' \ 
+      '--sun-misc-unsafe-memory-access=allow' \ 
+      '--enable-native-access=ALL-UNNAMED' \ 
+      '-XX:+UseSerialGC' \ 
+      -Djava.io.tmpdir={{PWD}}/tmp \ 
+      '-Dspark.driver.port=42899' \ 
+      '-Dspark.history.ui.port=18080' \ 
+      '-Dspark.ui.port=0' \ 
+      -Dspark.yarn.app.container.log.dir=<LOG_DIR> \ 
+      -XX:OnOutOfMemoryError='kill %p' \ 
+      org.apache.spark.executor.YarnCoarseGrainedExecutorBackend \ 
+      --driver-url \ 
+      spark://CoarseGrainedScheduler@smadayma:42899 \ 
+      --executor-id \ 
+      <executorId> \ 
+      --hostname \ 
+      <hostname> \ 
+      --cores \ 
+      1 \ 
+      --app-id \ 
+      application_1791015583684_0002 \ 
+      --resourceProfileId \ 
+      0 \ 
+      1><LOG_DIR>/stdout \ 
+      2><LOG_DIR>/stderr
+
+  resources:
+    pyspark.zip -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/carol/.sparkStaging/application_1791015583684_0002/pyspark.zip" } size: 3713087 timestamp: 1791015624777 type: FILE visibility: PRIVATE
+    __pyfiles__/_common.py -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/carol/.sparkStaging/application_1791015583684_0002/_common.py" } size: 1170 timestamp: 1791015624811 type: FILE visibility: PRIVATE
+    py4j-0.10.9.9-src.zip -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/carol/.sparkStaging/application_1791015583684_0002/py4j-0.10.9.9-src.zip" } size: 43108 timestamp: 1791015624795 type: FILE visibility: PRIVATE
+    __spark_conf__ -> resource { scheme: "file" port: -1 file: "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/carol/.sparkStaging/application_1791015583684_0002/__spark_conf__.zip" } size: 202574 timestamp: 1791015624896 type: ARCHIVE visibility: PRIVATE
+
+===============================================================================
+26/10/03 13:50:29 INFO YarnAllocator: Resource profile 0 doesn't exist, adding it
+26/10/03 13:50:29 INFO YarnAllocator: Will request 2 executor container(s) for ResourceProfile Id: 0, each with 1 core(s) and 768 MB memory. with custom resources: <memory:768, vCores:1>
+26/10/03 13:50:29 INFO YarnAllocator: Submitted 2 unlocalized container requests.
+26/10/03 13:50:29 INFO ApplicationMaster: Started progress reporter thread with (heartbeat: 3000, initial allocation: 200) intervals
+26/10/03 13:50:29 INFO YarnAllocator: Launching container container_1791015583684_0002_01_000002 on host 127.0.0.4 for executor with ID 1 for ResourceProfile Id 0
+26/10/03 13:50:29 INFO YarnAllocator: Received 1 containers from YARN, launching executors on 1 of them.
+26/10/03 13:50:30 INFO YarnAllocator: Launching container container_1791015583684_0002_01_000003 on host 127.0.0.4 for executor with ID 2 for ResourceProfile Id 0
+26/10/03 13:50:30 INFO YarnAllocator: Received 1 containers from YARN, launching executors on 1 of them.
+26/10/03 13:50:37 WARN TaskSetManager: Lost task 0.0 in stage 2.0 (TID 8) (127.0.0.4 executor 1): org.apache.spark.api.python.PythonException: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=0
+ SQLSTATE: 38000
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:665)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1063)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1045)
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:602)
+	at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+	at scala.collection.mutable.Growable.addAll(Growable.scala:61)
+	at scala.collection.mutable.Growable.addAll$(Growable.scala:57)
+	at scala.collection.mutable.ArrayBuilder.addAll(ArrayBuilder.scala:75)
+	at scala.collection.IterableOnceOps.toArray(IterableOnce.scala:1528)
+	at scala.collection.IterableOnceOps.toArray$(IterableOnce.scala:1521)
+	at org.apache.spark.InterruptibleIterator.toArray(InterruptibleIterator.scala:28)
+	at org.apache.spark.rdd.RDD.$anonfun$collect$2(RDD.scala:1073)
+	at org.apache.spark.SparkContext.$anonfun$runJob$5(SparkContext.scala:2536)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:93)
+	at org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:206)
+	at org.apache.spark.scheduler.Task.run(Task.scala:147)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:894)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:897)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+26/10/03 13:50:37 WARN TaskSetManager: Lost task 1.0 in stage 2.0 (TID 9) (127.0.0.4 executor 2): org.apache.spark.api.python.PythonException: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=25
+ SQLSTATE: 38000
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:665)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1063)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1045)
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:602)
+	at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+	at scala.collection.mutable.Growable.addAll(Growable.scala:61)
+	at scala.collection.mutable.Growable.addAll$(Growable.scala:57)
+	at scala.collection.mutable.ArrayBuilder.addAll(ArrayBuilder.scala:75)
+	at scala.collection.IterableOnceOps.toArray(IterableOnce.scala:1528)
+	at scala.collection.IterableOnceOps.toArray$(IterableOnce.scala:1521)
+	at org.apache.spark.InterruptibleIterator.toArray(InterruptibleIterator.scala:28)
+	at org.apache.spark.rdd.RDD.$anonfun$collect$2(RDD.scala:1073)
+	at org.apache.spark.SparkContext.$anonfun$runJob$5(SparkContext.scala:2536)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:93)
+	at org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:206)
+	at org.apache.spark.scheduler.Task.run(Task.scala:147)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:894)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:897)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+26/10/03 13:50:37 WARN TaskSetManager: Lost task 3.0 in stage 2.0 (TID 11) (127.0.0.4 executor 1): org.apache.spark.api.python.PythonException: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=75
+ SQLSTATE: 38000
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:665)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1063)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1045)
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:602)
+	at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+	at scala.collection.mutable.Growable.addAll(Growable.scala:61)
+	at scala.collection.mutable.Growable.addAll$(Growable.scala:57)
+	at scala.collection.mutable.ArrayBuilder.addAll(ArrayBuilder.scala:75)
+	at scala.collection.IterableOnceOps.toArray(IterableOnce.scala:1528)
+	at scala.collection.IterableOnceOps.toArray$(IterableOnce.scala:1521)
+	at org.apache.spark.InterruptibleIterator.toArray(InterruptibleIterator.scala:28)
+	at org.apache.spark.rdd.RDD.$anonfun$collect$2(RDD.scala:1073)
+	at org.apache.spark.SparkContext.$anonfun$runJob$5(SparkContext.scala:2536)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:93)
+	at org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:206)
+	at org.apache.spark.scheduler.Task.run(Task.scala:147)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:894)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:897)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+26/10/03 13:50:37 WARN TaskSetManager: Lost task 2.0 in stage 2.0 (TID 10) (127.0.0.4 executor 2): org.apache.spark.api.python.PythonException: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=50
+ SQLSTATE: 38000
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:665)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1063)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1045)
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:602)
+	at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+	at scala.collection.mutable.Growable.addAll(Growable.scala:61)
+	at scala.collection.mutable.Growable.addAll$(Growable.scala:57)
+	at scala.collection.mutable.ArrayBuilder.addAll(ArrayBuilder.scala:75)
+	at scala.collection.IterableOnceOps.toArray(IterableOnce.scala:1528)
+	at scala.collection.IterableOnceOps.toArray$(IterableOnce.scala:1521)
+	at org.apache.spark.InterruptibleIterator.toArray(InterruptibleIterator.scala:28)
+	at org.apache.spark.rdd.RDD.$anonfun$collect$2(RDD.scala:1073)
+	at org.apache.spark.SparkContext.$anonfun$runJob$5(SparkContext.scala:2536)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:93)
+	at org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:206)
+	at org.apache.spark.scheduler.Task.run(Task.scala:147)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:894)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:897)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+26/10/03 13:50:38 WARN TaskSetManager: Lost task 1.1 in stage 2.0 (TID 12) (127.0.0.4 executor 1): org.apache.spark.api.python.PythonException: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=25
+ SQLSTATE: 38000
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:665)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1063)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1045)
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:602)
+	at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+	at scala.collection.mutable.Growable.addAll(Growable.scala:61)
+	at scala.collection.mutable.Growable.addAll$(Growable.scala:57)
+	at scala.collection.mutable.ArrayBuilder.addAll(ArrayBuilder.scala:75)
+	at scala.collection.IterableOnceOps.toArray(IterableOnce.scala:1528)
+	at scala.collection.IterableOnceOps.toArray$(IterableOnce.scala:1521)
+	at org.apache.spark.InterruptibleIterator.toArray(InterruptibleIterator.scala:28)
+	at org.apache.spark.rdd.RDD.$anonfun$collect$2(RDD.scala:1073)
+	at org.apache.spark.SparkContext.$anonfun$runJob$5(SparkContext.scala:2536)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:93)
+	at org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:206)
+	at org.apache.spark.scheduler.Task.run(Task.scala:147)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:894)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:897)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+26/10/03 13:50:38 WARN TaskSetManager: Lost task 3.1 in stage 2.0 (TID 13) (127.0.0.4 executor 2): org.apache.spark.api.python.PythonException: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=75
+ SQLSTATE: 38000
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:665)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1063)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1045)
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:602)
+	at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+	at scala.collection.mutable.Growable.addAll(Growable.scala:61)
+	at scala.collection.mutable.Growable.addAll$(Growable.scala:57)
+	at scala.collection.mutable.ArrayBuilder.addAll(ArrayBuilder.scala:75)
+	at scala.collection.IterableOnceOps.toArray(IterableOnce.scala:1528)
+	at scala.collection.IterableOnceOps.toArray$(IterableOnce.scala:1521)
+	at org.apache.spark.InterruptibleIterator.toArray(InterruptibleIterator.scala:28)
+	at org.apache.spark.rdd.RDD.$anonfun$collect$2(RDD.scala:1073)
+	at org.apache.spark.SparkContext.$anonfun$runJob$5(SparkContext.scala:2536)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:93)
+	at org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:206)
+	at org.apache.spark.scheduler.Task.run(Task.scala:147)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:894)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:897)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+26/10/03 13:50:38 WARN TaskSetManager: Lost task 2.1 in stage 2.0 (TID 14) (127.0.0.4 executor 1): org.apache.spark.api.python.PythonException: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000002/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=50
+ SQLSTATE: 38000
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:665)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1063)
+	at org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:1045)
+	at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:602)
+	at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+	at scala.collection.mutable.Growable.addAll(Growable.scala:61)
+	at scala.collection.mutable.Growable.addAll$(Growable.scala:57)
+	at scala.collection.mutable.ArrayBuilder.addAll(ArrayBuilder.scala:75)
+	at scala.collection.IterableOnceOps.toArray(IterableOnce.scala:1528)
+	at scala.collection.IterableOnceOps.toArray$(IterableOnce.scala:1521)
+	at org.apache.spark.InterruptibleIterator.toArray(InterruptibleIterator.scala:28)
+	at org.apache.spark.rdd.RDD.$anonfun$collect$2(RDD.scala:1073)
+	at org.apache.spark.SparkContext.$anonfun$runJob$5(SparkContext.scala:2536)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:93)
+	at org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:206)
+	at org.apache.spark.scheduler.Task.run(Task.scala:147)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:894)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:86)
+	at org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:83)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:97)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:897)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+26/10/03 13:50:38 ERROR TaskSetManager: Task 3 in stage 2.0 failed 4 times; aborting job
+26/10/03 13:50:38 WARN TaskSetManager: Lost task 2.3 in stage 2.0 (TID 20) (127.0.0.4 executor 2): TaskKilled (Stage cancelled: [PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=75
+ SQLSTATE: 38000)
+26/10/03 13:50:38 ERROR ApplicationMaster: User application exited with status 1
+26/10/03 13:50:38 INFO ApplicationMaster: Final app status: FAILED, exitCode: 1, (reason: User application exited with status 1)
+26/10/03 13:50:39 INFO ApplicationMaster: Deleting staging directory file:/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/staging/carol/.sparkStaging/application_1791015583684_0002
+26/10/03 13:50:39 INFO ApplicationMaster: Unregistering ApplicationMaster with FAILED (diag message: User application exited with status 1)
