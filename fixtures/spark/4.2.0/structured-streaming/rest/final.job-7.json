@@ -1,0 +1,23 @@
+{
+  "jobId" : 7,
+  "name" : "start at NativeMethodAccessorImpl.java:0",
+  "description" : "rate_counts\nid = 4fd629d6-0726-4a16-b3aa-50452c2e0ea3\nrunId = 3510a78c-3a84-4680-8197-1558cc9179c2\nbatch = 7",
+  "submissionTime" : "2026-10-03T07:09:12.130GMT",
+  "completionTime" : "2026-10-03T07:09:12.283GMT",
+  "stageIds" : [ 14, 15 ],
+  "jobGroup" : "3510a78c-3a84-4680-8197-1558cc9179c2",
+  "jobTags" : [ "spark-session-77229476-ea0b-40c6-b518-097319d06095", "spark-session-77229476-ea0b-40c6-b518-097319d06095-execution-root-id-15" ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 6,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 6,
+  "numSkippedTasks" : 0,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 6,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 2,
+  "numSkippedStages" : 0,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

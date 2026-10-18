@@ -1,0 +1,30 @@
+{
+  "activities": {
+    "nodeId": "nm1:35000",
+    "timestamp": 1767225900000,
+    "dateTime": "Sat Jan 01 00:05:00 UTC 2026",
+    "diagnostic": "",
+    "allocations": [
+      {
+        "partition": "",
+        "updatedContainerId": "container_1767225600000_0003_01_000002",
+        "finalAllocationState": "ALLOCATED",
+        "root": {
+          "name": "root",
+          "allocationState": "SKIPPED",
+          "diagnostic": "Queue does not need more resource",
+          "nodeIds": [],
+          "children": [
+            {
+              "name": "root.a",
+              "allocationState": "ALLOCATED",
+              "nodeIds": ["nm1:35000"],
+              "count": 1,
+              "children": []
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

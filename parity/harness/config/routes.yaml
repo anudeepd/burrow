@@ -1,0 +1,144 @@
+# Map inventory pages to our SPA routes (PLAN.md §5) and to the legacy route the scraper should use.
+#
+# `rules` are evaluated in order; `match` is a JavaScript regex against the inventory page id.
+#   ours          SPA route template; params come from the scenario ({appId} {attemptId} {containerId}
+#                 {nodeId} {queue} {state}). `null` = no SPA counterpart, which MUST come with
+#                 `outOfScope: <reason>` so those items are reported as `not-applicable`, never hidden.
+#   query         extra query fragments appended to the SPA route (dropped when a queryUnless entry matches)
+# `legacyRoutes` overrides the route-alternative heuristic for a page id.
+#
+# `includePages` / `excludePages` are regexes deciding which inventory pages take part in the
+# differential (P2) gate. Default is `^legacy\.`: the legacy Hamlet UI is the P2 baseline
+# (PLAN.md §8), while ui2.yaml is a *secondary inventory source* (P0) that the harness must not
+# silently treat as legacy. Pages filtered out are listed in summary.json under `scopeExcluded`.
+version: 1
+
+includePages:
+  - "^legacy\\."
+excludePages: []
+
+# Legacy Hamlet chrome (nav menu, header/footer, DataTables widget chrome) that our SPA reproduces
+# by design differently (PLAN.md §5). Items in these sections are reported as `chrome-only`
+# (counted, visible, non-fatal) instead of `legacy-only`. Systematic, not per-row.
+chromeSections:
+  - "^legacy\\.rm\\.shared\\.chrome\\."
+  - "^ui2\\.shared\\."
+  - "\\.datatable$"
+
+# Shared-sidebar policy. The stock UI repeats the Cluster / Cluster Nodes / Scheduler / User Metrics blocks
+# (legacy.rm.shared.metrics.*) on cluster-about, apps, nodes and the scheduler page, while our SPA renders each
+# datum once. An item of a section matching one of these patterns counts as covered when ours renders its field with
+# an EQUAL value on ANY route crawled in the same scenario. Own route is always tried first and is never overridden
+# (a differing value there stays a mismatch); the matching route is reported on the row (`sharedFromRoute`). A field
+# rendered on no crawled route stays legacy-only. Systematic by section id, not per row.
+sharedSections:
+  - "^legacy\\.rm\\.shared\\.metrics\\."
+
+# Field aliases. The single-attempt resource (GET /apps/{id}/appattempts/{attId}, webapp AppAttemptInfo) and the attempts list
+# (rm AppAttemptInfo) name the same datum differently; legacy items are registered against the single-attempt names while our
+# SPA is fed by the list. An ours datum tagged with the alias id is compared as the item's field (value still compared exactly).
+fieldAliases:
+  attempt.startedTime: attempt.startTime
+  attempt.amContainerId: attempt.containerId
+
+# Fields where the inventory's normaliser is missing or wrong; provisional, reviewable, and shown on
+# every affected row (`normaliserOverride`). Each entry should end up in the registry instead.
+normaliserOverrides:
+  cluster.info.haState: lowercase
+  cluster.metrics.utilizedMBPercent: percent
+  cluster.metrics.utilizedVirtualCoresPercent: percent
+  cluster.metrics.availableMB: mb
+  # legacy renders a formatted date, our cell carries the raw epoch in data-yv: the item's normaliser
+  # must canonicalise both sides (FORMAT `na-as-null+epoch`), otherwise a correct value reads as a
+  # mismatch. Provisional until the registry rows carry it.
+  app.startedTime: na-as-null+epoch
+  app.launchTime: na-as-null+epoch
+  app.finishedTime: na-as-null+epoch
+  attempt.startTime: na-as-null+epoch
+  attempt.finishedTime: na-as-null+epoch
+  container.startedTime: na-as-null+epoch
+  container.finishedTime: na-as-null+epoch
+  # `%.1f` cell vs raw number
+  app.queueUsagePercentage: na-as-null+percent
+  app.clusterUsagePercentage: na-as-null+percent
+  # Tracking UI anchor: our href is rebuilt from the operator-configured RM base, legacy prints the host the
+  # RM advertises for itself, so compare the URL path (and let the scheme/host choice stay a product decision).
+  app.trackingUrl: url-path
+
+legacyRoutes:
+  legacy.rm.apps: "/cluster/apps/{app.state}"
+  legacy.rm.cluster-about: "/cluster/cluster"
+
+rules:
+  # ---- cluster ---------------------------------------------------------------
+  - match: "^legacy\\.rm\\.cluster-about$"
+    ours: "/"
+  - match: "^legacy\\.rm\\.apps$"
+    ours: "/apps"
+    # deliberately no `state=` facet: the SPA's state param name is a UI concern and filtering by it
+    # could hide rows; parity is per-entity, so we crawl the unfiltered list (verified necessary:
+    # `?state=RUNNING` rendered 0 datums in gate run #1 while `/apps` rendered 27 app.* ids per row)
+    query: []
+  - match: "^legacy\\.rm\\.failure$"
+    ours: null
+    outOfScope: "PLAN.md §5 has no failure page; the diagnostics shown there are rendered on /apps/$appId (app.diagnostics)"
+  - match: "^legacy\\.rm\\.(nodes|nodes-running|nodes-inactive)$"
+    ours: "/nodes"
+  - match: "^legacy\\.rm\\.node$"
+    ours: "/nodes/{nodeId}"
+  - match: "^legacy\\.(rm|nm)\\.(node-labels|nodelabels)$"
+    ours: "/node-labels"
+  # ---- applications ----------------------------------------------------------
+  # The legacy app page carries the app overview *and* the attempts/containers tables; our SPA
+  # splits those across tabs, so one legacy page maps to several SPA routes and the crawl merges
+  # their datum maps (see run.mjs captureOneOurs/merge).
+  - match: "^legacy\\.rm\\.app$"
+    ours:
+      - "/apps/{appId}"
+      - "/apps/{appId}/attempts"
+      - "/apps/{appId}/attempts/{attemptId}"
+      - "/apps/{appId}/containers/{containerId}"
+  - match: "^legacy\\.rm\\.(appattempt|app-attempt|attempt)$"
+    ours:
+      - "/apps/{appId}/attempts/{attemptId}"
+      - "/apps/{appId}/attempts/{attemptId}/containers/{containerId}"
+  - match: "^legacy\\.rm\\.container$"
+    ours:
+      - "/apps/{appId}/containers/{containerId}"
+      - "/apps/{appId}/attempts/{attemptId}"
+  # ---- scheduler -------------------------------------------------------------
+  # The stock capacity-scheduler page renders the queue tree, the activities tables and the
+  # "Last scheduler run" health block in ONE document; our SPA splits them into tabs, so crawl every
+  # tab and merge the datums (the documented "a legacy page may be split across several SPA routes").
+  - match: "^legacy\\.rm\\.scheduler(\\.|$)"
+    ours:
+      - "/scheduler"
+      - "/scheduler?tab=health"
+      - "/scheduler?tab=activities"
+  - match: "^legacy\\.rm\\.(queue|queue-apps)$"
+    ours: "/scheduler/{queue}"
+  # ---- log aggregation status (per-app) -> the app page's logs/aggregation section
+  - match: "^legacy\\.rm\\.logaggregationstatus"
+    ours: "/apps/{appId}"
+  # ---- tools -----------------------------------------------------------------
+  - match: "^legacy\\.rm\\.(conf|tools-conf)$"
+    ours: "/tools/conf"
+  - match: "^legacy\\.rm\\.(jmx|tools-jmx|tools-metrics)$"
+    ours: "/tools/jmx"
+  - match: "^legacy\\.rm\\.(stacks|tools-stacks)$"
+    ours: "/tools/stacks"
+  - match: "^legacy\\.rm\\.(logs|tools-logs)(\\.|$)"
+    ours: "/tools/logs"
+  - match: "^legacy\\.rm\\.tools\\.loglevel$"
+    ours: null
+    outOfScope: "the /logLevel daemon page changes the RM's log4j levels; write actions are an explicit non-goal in PLAN.md §1, and §5 has no route for it"
+  - match: "^legacy\\.rm\\.errors(\\.|$)"
+    ours: null
+    outOfScope: "PLAN.md §5 has no errors/warnings route: the legacy page needs the RM's log4j WarningError appender (Err&Warn metrics), which no SPA route in this milestone renders; the data is also unavailable unless the appender is installed"
+  # ---- explicitly out of scope (documented, counted in the report) -----------
+  - match: "^legacy\\.(nm|ahs|jhs|proxy)\\."
+    ours: null
+    outOfScope: "PLAN.md §5 (and the non-goals in §1) cover container logs from the app page; the NodeManager/AHS/JHS daemon-native pages have no SPA counterpart in this milestone"
+  - match: "^ui2\\."
+    ours: null
+    outOfScope: "UI2/Ember is a secondary inventory source (PLAN.md §8 P0); the legacy Hamlet UI is the parity baseline"

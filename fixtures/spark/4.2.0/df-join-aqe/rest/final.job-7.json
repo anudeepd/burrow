@@ -1,0 +1,22 @@
+{
+  "jobId" : 7,
+  "name" : "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+  "description" : "self-join of a shared aggregate (ReusedExchange)",
+  "submissionTime" : "2026-10-03T07:12:19.545GMT",
+  "completionTime" : "2026-10-03T07:12:19.692GMT",
+  "stageIds" : [ 19, 20 ],
+  "jobTags" : [ "spark-session-5c441f4b-7544-4f16-893b-c29d91be9e54", "spark-session-5c441f4b-7544-4f16-893b-c29d91be9e54-execution-root-id-1" ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 5,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 1,
+  "numSkippedTasks" : 4,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 1,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 1,
+  "numSkippedStages" : 1,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

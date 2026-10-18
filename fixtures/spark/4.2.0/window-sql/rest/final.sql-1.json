@@ -1,0 +1,236 @@
+{
+  "id" : 1,
+  "status" : "COMPLETED",
+  "description" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/window_sql.py:16",
+  "planDescription" : "== Physical Plan ==\nAdaptiveSparkPlan (18)\n+- == Final Plan ==\n   ResultQueryStage (11), Statistics(sizeInBytes=8.0 EiB)\n   +- * Filter (10)\n      +- Window (9)\n         +- * Sort (8)\n            +- Window (7)\n               +- * Sort (6)\n                  +- AQEShuffleRead (5), coalesced\n                     +- ShuffleQueryStage (4), Statistics(sizeInBytes=78.1 KiB, rowCount=2.00E+3)\n                        +- Exchange (3)\n                           +- * Project (2)\n                              +- * Scan ExistingRDD (1)\n+- == Initial Plan ==\n   Filter (17)\n   +- Window (16)\n      +- Sort (15)\n         +- Window (14)\n            +- Sort (13)\n               +- Exchange (12)\n                  +- Project (2)\n                     +- Scan ExistingRDD (1)\n\n\n(1) Scan ExistingRDD [codegen id : 1]\nOutput [4]: [id#0L, dept#1, sal#2L, yr#3L]\nArguments: [id#0L, dept#1, sal#2L, yr#3L], MapPartitionsRDD[4] at applySchemaToPythonRDD at NativeMethodAccessorImpl.java:0, ExistingRDD, UnknownPartitioning(0)\n\n(2) Project [codegen id : 1]\nOutput [3]: [id#0L, dept#1, sal#2L]\nInput [4]: [id#0L, dept#1, sal#2L, yr#3L]\n\n(3) Exchange\nInput [3]: [id#0L, dept#1, sal#2L]\nArguments: hashpartitioning(dept#1, 4), ENSURE_REQUIREMENTS, [plan_id=37]\n\n(4) ShuffleQueryStage\nOutput [3]: [id#0L, dept#1, sal#2L]\nArguments: 0\n\n(5) AQEShuffleRead\nInput [3]: [id#0L, dept#1, sal#2L]\nArguments: coalesced\n\n(6) Sort [codegen id : 2]\nInput [3]: [id#0L, dept#1, sal#2L]\nArguments: [dept#1 ASC NULLS FIRST, sal#2L DESC NULLS LAST], false, 0\n\n(7) Window\nInput [3]: [id#0L, dept#1, sal#2L]\nArguments: [rank(sal#2L) windowspecdefinition(dept#1, sal#2L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rk#4], [dept#1], [sal#2L DESC NULLS LAST]\n\n(8) Sort [codegen id : 3]\nInput [4]: [id#0L, dept#1, sal#2L, rk#4]\nArguments: [dept#1 ASC NULLS FIRST, id#0L ASC NULLS FIRST], false, 0\n\n(9) Window\nInput [4]: [id#0L, dept#1, sal#2L, rk#4]\nArguments: [sum(sal#2L) windowspecdefinition(dept#1, id#0L ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, currentrow$())) AS run#5L, lag(sal#2L, -1, null) windowspecdefinition(dept#1, id#0L ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS prev#6L], [dept#1], [id#0L ASC NULLS FIRST]\n\n(10) Filter [codegen id : 4]\nInput [6]: [id#0L, dept#1, sal#2L, rk#4, run#5L, prev#6L]\nCondition : (rk#4 <= 3)\n\n(11) ResultQueryStage\nOutput [6]: [id#0L, dept#1, sal#2L, rk#4, run#5L, prev#6L]\nArguments: 1\n\n(12) Exchange\nInput [3]: [id#0L, dept#1, sal#2L]\nArguments: hashpartitioning(dept#1, 4), ENSURE_REQUIREMENTS, [plan_id=23]\n\n(13) Sort\nInput [3]: [id#0L, dept#1, sal#2L]\nArguments: [dept#1 ASC NULLS FIRST, sal#2L DESC NULLS LAST], false, 0\n\n(14) Window\nInput [3]: [id#0L, dept#1, sal#2L]\nArguments: [rank(sal#2L) windowspecdefinition(dept#1, sal#2L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rk#4], [dept#1], [sal#2L DESC NULLS LAST]\n\n(15) Sort\nInput [4]: [id#0L, dept#1, sal#2L, rk#4]\nArguments: [dept#1 ASC NULLS FIRST, id#0L ASC NULLS FIRST], false, 0\n\n(16) Window\nInput [4]: [id#0L, dept#1, sal#2L, rk#4]\nArguments: [sum(sal#2L) windowspecdefinition(dept#1, id#0L ASC NULLS FIRST, specifiedwindowframe(RowFrame, -3, currentrow$())) AS run#5L, lag(sal#2L, -1, null) windowspecdefinition(dept#1, id#0L ASC NULLS FIRST, specifiedwindowframe(RowFrame, -1, -1)) AS prev#6L], [dept#1], [id#0L ASC NULLS FIRST]\n\n(17) Filter\nInput [6]: [id#0L, dept#1, sal#2L, rk#4, run#5L, prev#6L]\nCondition : (rk#4 <= 3)\n\n(18) AdaptiveSparkPlan\nOutput [6]: [id#0L, dept#1, sal#2L, rk#4, run#5L, prev#6L]\nArguments: isFinalPlan=true\n\n",
+  "submissionTime" : "2026-10-03T07:06:19.162GMT",
+  "duration" : 3097,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 0, 1 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 13,
+    "nodeName" : "Scan ExistingRDD",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "2,000"
+    } ]
+  }, {
+    "nodeId" : 12,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 11,
+    "nodeName" : "WholeStageCodegen (1)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n426 ms (213 ms, 213 ms, 213 ms (stage 0.0: task 1))"
+    } ]
+  }, {
+    "nodeId" : 10,
+    "nodeName" : "Exchange",
+    "metrics" : [ {
+      "name" : "shuffle records written",
+      "value" : "2,000"
+    }, {
+      "name" : "remote merged reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "records read",
+      "value" : "2,000"
+    }, {
+      "name" : "local bytes read",
+      "value" : "21.1 KiB"
+    }, {
+      "name" : "merged fetch fallback count",
+      "value" : "0"
+    }, {
+      "name" : "local blocks read",
+      "value" : "2"
+    }, {
+      "name" : "remote merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "remote blocks read",
+      "value" : "0"
+    }, {
+      "name" : "data size",
+      "value" : "total (min, med, max (stageId: taskId))\n78.1 KiB (39.1 KiB, 39.1 KiB, 39.1 KiB (stage 0.0: task 1))"
+    }, {
+      "name" : "local merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "shuffle write time",
+      "value" : "total (min, med, max (stageId: taskId))\n22 ms (11 ms, 11 ms, 11 ms (stage 0.0: task 1))"
+    }, {
+      "name" : "remote merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "corrupt merged block chunks",
+      "value" : "0"
+    }, {
+      "name" : "fetch wait time",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of partitions",
+      "value" : "4"
+    }, {
+      "name" : "remote reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read to disk",
+      "value" : "0.0 B"
+    }, {
+      "name" : "shuffle bytes written",
+      "value" : "total (min, med, max (stageId: taskId))\n21.1 KiB (10.5 KiB, 10.6 KiB, 10.6 KiB (stage 0.0: task 0))"
+    } ]
+  }, {
+    "nodeId" : 9,
+    "nodeName" : "AQEShuffleRead",
+    "metrics" : [ {
+      "name" : "number of partitions",
+      "value" : "1"
+    }, {
+      "name" : "number of empty partitions",
+      "value" : "1"
+    }, {
+      "name" : "partition data size",
+      "value" : "22.2 KiB"
+    }, {
+      "name" : "number of coalesced partitions",
+      "value" : "1"
+    } ]
+  }, {
+    "nodeId" : 8,
+    "nodeName" : "Sort",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ {
+      "name" : "sort time",
+      "value" : "22 ms"
+    }, {
+      "name" : "peak memory",
+      "value" : "8.1 MiB"
+    }, {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    } ]
+  }, {
+    "nodeId" : 7,
+    "nodeName" : "WholeStageCodegen (2)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "327 ms"
+    } ]
+  }, {
+    "nodeId" : 6,
+    "nodeName" : "Window",
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of segment-tree frames prepared",
+      "value" : "0"
+    }, {
+      "name" : "number of segment-tree fallback frames prepared",
+      "value" : "0"
+    } ]
+  }, {
+    "nodeId" : 5,
+    "nodeName" : "Sort",
+    "wholeStageCodegenId" : 3,
+    "metrics" : [ {
+      "name" : "sort time",
+      "value" : "29 ms"
+    }, {
+      "name" : "peak memory",
+      "value" : "8.1 MiB"
+    }, {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    } ]
+  }, {
+    "nodeId" : 4,
+    "nodeName" : "WholeStageCodegen (3)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "200 ms"
+    } ]
+  }, {
+    "nodeId" : 3,
+    "nodeName" : "Window",
+    "metrics" : [ {
+      "name" : "spill size",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of segment-tree frames prepared",
+      "value" : "0"
+    }, {
+      "name" : "number of segment-tree fallback frames prepared",
+      "value" : "0"
+    } ]
+  }, {
+    "nodeId" : 2,
+    "nodeName" : "Filter",
+    "wholeStageCodegenId" : 4,
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "15"
+    } ]
+  }, {
+    "nodeId" : 1,
+    "nodeName" : "WholeStageCodegen (4)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "17 ms"
+    } ]
+  }, {
+    "nodeId" : 0,
+    "nodeName" : "AdaptiveSparkPlan",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ {
+    "fromId" : 2,
+    "toId" : 0
+  }, {
+    "fromId" : 3,
+    "toId" : 2
+  }, {
+    "fromId" : 5,
+    "toId" : 3
+  }, {
+    "fromId" : 6,
+    "toId" : 5
+  }, {
+    "fromId" : 8,
+    "toId" : 6
+  }, {
+    "fromId" : 9,
+    "toId" : 8
+  }, {
+    "fromId" : 10,
+    "toId" : 9
+  }, {
+    "fromId" : 12,
+    "toId" : 10
+  }, {
+    "fromId" : 13,
+    "toId" : 12
+  } ],
+  "queryId" : "01a10095-ca77-73cb-aff0-fd49aed62288",
+  "errorMessage" : "",
+  "rootExecutionId" : 1
+}

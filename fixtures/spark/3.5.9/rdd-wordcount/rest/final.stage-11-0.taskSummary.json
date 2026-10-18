@@ -1,0 +1,51 @@
+{
+  "quantiles" : [ 0.05, 0.25, 0.5, 0.75, 0.95 ],
+  "duration" : [ 103.0, 104.0, 130.0, 138.0, 146.0 ],
+  "executorDeserializeTime" : [ 2.0, 2.0, 3.0, 3.0, 3.0 ],
+  "executorDeserializeCpuTime" : [ 2707296.0, 2731322.0, 2736781.0, 2911079.0, 3129120.0 ],
+  "executorRunTime" : [ 96.0, 96.0, 116.0, 129.0, 136.0 ],
+  "executorCpuTime" : [ 1.2167563E7, 1.2387482E7, 1.3780578E7, 1.4926331E7, 1.6471901E7 ],
+  "resultSize" : [ 1578.0, 1578.0, 1578.0, 2266.0, 2309.0 ],
+  "jvmGcTime" : [ 0.0, 0.0, 0.0, 5.0, 5.0 ],
+  "resultSerializationTime" : [ 0.0, 0.0, 0.0, 0.0, 6.0 ],
+  "gettingResultTime" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+  "schedulerDelay" : [ 4.0, 6.0, 6.0, 6.0, 7.0 ],
+  "peakExecutionMemory" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+  "memoryBytesSpilled" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+  "diskBytesSpilled" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+  "inputMetrics" : {
+    "bytesRead" : [ 0.0, 0.0, 99.0, 106.0, 160.0 ],
+    "recordsRead" : [ 0.0, 0.0, 2.0, 2.0, 3.0 ]
+  },
+  "outputMetrics" : {
+    "bytesWritten" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+    "recordsWritten" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ]
+  },
+  "shuffleReadMetrics" : {
+    "readBytes" : [ 0.0, 0.0, 0.0, 147.0, 231.0 ],
+    "readRecords" : [ 0.0, 0.0, 0.0, 2.0, 3.0 ],
+    "remoteBlocksFetched" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+    "localBlocksFetched" : [ 0.0, 0.0, 0.0, 2.0, 3.0 ],
+    "fetchWaitTime" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+    "remoteBytesRead" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+    "remoteBytesReadToDisk" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+    "totalBlocksFetched" : [ 0.0, 0.0, 0.0, 2.0, 3.0 ],
+    "remoteReqsDuration" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+    "shufflePushReadMetricsDist" : {
+      "corruptMergedBlockChunks" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "mergedFetchFallbackCount" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "remoteMergedBlocksFetched" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "localMergedBlocksFetched" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "remoteMergedChunksFetched" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "localMergedChunksFetched" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "remoteMergedBytesRead" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "localMergedBytesRead" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ],
+      "remoteMergedReqsDuration" : [ 0.0, 0.0, 0.0, 0.0, 0.0 ]
+    }
+  },
+  "shuffleWriteMetrics" : {
+    "writeBytes" : [ 99.0, 100.0, 101.0, 171.0, 226.0 ],
+    "writeRecords" : [ 1.0, 1.0, 1.0, 2.0, 2.0 ],
+    "writeTime" : [ 791362.0, 950045.0, 1102773.0, 1450689.0, 1656659.0 ]
+  }
+}

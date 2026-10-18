@@ -1,0 +1,38 @@
+[ {
+  "id" : 6,
+  "name" : "word-counts",
+  "numPartitions" : 3,
+  "numCachedPartitions" : 3,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 365,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:44847",
+    "memoryUsed" : 365,
+    "memoryRemaining" : 455436981,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 365,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 455436981,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_6_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 99,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_6_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 160,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_6_2",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 106,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+} ]

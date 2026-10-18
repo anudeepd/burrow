@@ -1,0 +1,304 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">setUIRoot('')</script>
+        <script nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">setAppBasePath('')</script>
+        
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-structured-streaming - Streaming Query Statistics</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/StreamingQuery/">Structured Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-structured-streaming" class="text-nowrap">burrow-structured-streaming</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Streaming Query Statistics
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <script src="/static/d3.min.js"></script><link rel="stylesheet" href="/static/streaming-page.css" type="text/css"/><script type="module" src="/static/streaming-page.js"></script><script type="module" src="/static/structured-streaming-page.js"></script><div>Running batches for
+      <strong>
+        12 seconds 783 ms
+      </strong>
+      since
+      <strong>
+        2026/10/03 12:38:59
+      </strong>
+      (<strong>7</strong> completed batches)
+    </div><br/><div><strong>Name: </strong>rate_counts</div><div><strong>Id: </strong>4fd629d6-0726-4a16-b3aa-50452c2e0ea3</div><div><strong>RunId: </strong>3510a78c-3a84-4680-8197-1558cc9179c2</div><br/><script nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">var formattedTimeToValues = {};
+formattedTimeToValues["12:38:59.296"] = ["1786.0","52.0","1.0","0.0","497.0","49.0"];
+formattedTimeToValues["12:39:01.722"] = ["792.0","58.0","0.0","0.0","68.0","44.0"];
+formattedTimeToValues["12:39:02.692"] = ["421.0","39.0","0.0","0.0","46.0","33.0"];
+formattedTimeToValues["12:39:04.000"] = ["312.0","46.0","0.0","0.0","30.0","31.0"];
+formattedTimeToValues["12:39:06.000"] = ["314.0","55.0","0.0","0.0","30.0","33.0"];
+formattedTimeToValues["12:39:08.000"] = ["335.0","56.0","0.0","0.0","22.0","38.0"];
+formattedTimeToValues["12:39:10.000"] = ["360.0","63.0","0.0","0.0","45.0","44.0"];</script><script nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">var formattedTimeTipStrings = {};
+formattedTimeTipStrings["12:38:59.296"] = 'batch 0 (12:38:59.296)';
+formattedTimeTipStrings["12:39:01.722"] = 'batch 1 (12:39:01.722)';
+formattedTimeTipStrings["12:39:02.692"] = 'batch 2 (12:39:02.692)';
+formattedTimeTipStrings["12:39:04.000"] = 'batch 3 (12:39:04.000)';
+formattedTimeTipStrings["12:39:06.000"] = 'batch 4 (12:39:06.000)';
+formattedTimeTipStrings["12:39:08.000"] = 'batch 5 (12:39:08.000)';
+formattedTimeTipStrings["12:39:10.000"] = 'batch 6 (12:39:10.000)';</script><script nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">var timeFormat = {};
+timeFormat[1791011339296] = '12:38:59.296';
+timeFormat[1791011341722] = '12:39:01.722';
+timeFormat[1791011342692] = '12:39:02.692';
+timeFormat[1791011344000] = '12:39:04.000';
+timeFormat[1791011346000] = '12:39:06.000';
+timeFormat[1791011348000] = '12:39:08.000';
+timeFormat[1791011350000] = '12:39:10.000';</script><script nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">var timeTipStrings = {};
+timeTipStrings[1791011339296] = 'batch 0 (12:38:59.296)';
+timeTipStrings[1791011341722] = 'batch 1 (12:39:01.722)';
+timeTipStrings[1791011342692] = 'batch 2 (12:39:02.692)';
+timeTipStrings[1791011344000] = 'batch 3 (12:39:04.000)';
+timeTipStrings[1791011346000] = 'batch 4 (12:39:06.000)';
+timeTipStrings[1791011348000] = 'batch 5 (12:39:08.000)';
+timeTipStrings[1791011350000] = 'batch 6 (12:39:10.000)';</script><table id="stat-table" class="table table-bordered" style="width: auto">
+        <thead>
+          <tr>
+            <th style="width: 160px;"></th>
+            <th style="width: 492px;">Timelines</th>
+            <th style="width: 350px;">Histograms</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="vertical-align: middle;">
+              <div style="width: 160px;">
+                <div><strong>Input Rate <sup>
+      (<a data-bs-toggle="tooltip" title="The aggregate (across all sources) rate of data arriving.">?</a>)
+    </sup></strong></div>
+              </div>
+            </td>
+            <td class="timeline"><div id="input-rate-timeline"></div></td>
+            <td class="histogram"><div id="input-rate-histogram"></div></td>
+          </tr>
+          <tr>
+            <td style="vertical-align: middle;">
+              <div style="width: 160px;">
+                <div><strong>Process Rate <sup>
+      (<a data-bs-toggle="tooltip" title="The aggregate (across all sources) rate at which Spark is processing data.">?</a>)
+    </sup></strong></div>
+              </div>
+            </td>
+            <td class="timeline"><div id="process-rate-timeline"></div></td>
+            <td class="histogram"><div id="process-rate-histogram"></div></td>
+          </tr>
+          <tr>
+            <td style="vertical-align: middle;">
+              <div style="width: 160px;">
+                <div><strong>Input Rows <sup>
+      (<a data-bs-toggle="tooltip" title="The aggregate (across all sources) number of records processed in a trigger.">?</a>)
+    </sup></strong></div>
+              </div>
+            </td>
+            <td class="timeline"><div id="input-rows-timeline"></div></td>
+            <td class="histogram"><div id="input-rows-histogram"></div></td>
+          </tr>
+          <tr>
+            <td style="vertical-align: middle;">
+              <div style="width: 160px;">
+                <div><strong>Batch Duration <sup>
+      (<a data-bs-toggle="tooltip" title="The process duration of each batch.">?</a>)
+    </sup></strong></div>
+              </div>
+            </td>
+            <td class="timeline"><div id="batch-duration-timeline"></div></td>
+            <td class="histogram"><div id="batch-duration-histogram"></div></td>
+          </tr>
+          <tr>
+            <td style="vertical-align: middle;">
+              <div style="width: auto;">
+                <div><strong>Operation Duration <sup>
+      (<a data-bs-toggle="tooltip" title="The amount of time taken to perform various operations in milliseconds.">?</a>)
+    </sup></strong></div>
+              </div>
+            </td>
+            <td class="duration-area-stack" colspan="2"><div id="duration-area-stack"></div></td>
+          </tr>
+          <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Global Watermark Gap <sup>
+      (<a data-bs-toggle="tooltip" title="The gap between batch timestamp and global watermark for the batch.">?</a>)
+    </sup></strong></div>
+            </div>
+          </td>
+          <td class="watermark-gap-timeline"><div id="watermark-gap-timeline"></div></td>
+          <td class="watermark-gap-histogram"><div id="watermark-gap-histogram"></div></td>
+        </tr>
+          <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Aggregated Number Of Total State Rows <sup>
+      (<a data-bs-toggle="tooltip" title="Aggregated number of total state rows.">?</a>)
+    </sup></strong></div>
+            </div>
+          </td>
+          <td class="aggregated-num-total-state-rows-timeline"><div id="aggregated-num-total-state-rows-timeline"></div></td>
+          <td class="aggregated-num-total-state-rows-histogram"><div id="aggregated-num-total-state-rows-histogram"></div></td>
+        </tr><tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Aggregated Number Of Updated State Rows <sup>
+      (<a data-bs-toggle="tooltip" title="Aggregated number of updated state rows.">?</a>)
+    </sup></strong></div>
+            </div>
+          </td>
+          <td class="aggregated-num-updated-state-rows-timeline"><div id="aggregated-num-updated-state-rows-timeline"></div></td>
+          <td class="aggregated-num-updated-state-rows-histogram"><div id="aggregated-num-updated-state-rows-histogram"></div></td>
+        </tr><tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Aggregated Number Of Removed State Rows<sup>
+      (<a data-bs-toggle="tooltip" title="Aggregated number of state rows removed from the state. Normally it means the number of rows evicted from the state because watermark has passed, except in flatMapGroupsWithState, where users can manually remove the state.">?</a>)
+    </sup></strong></div>
+            </div>
+          </td>
+          <td class="aggregated-num-removed-state-rows-timeline"><div id="aggregated-num-removed-state-rows-timeline"></div></td>
+          <td class="aggregated-num-removed-state-rows-histogram"><div id="aggregated-num-removed-state-rows-histogram"></div></td>
+        </tr><tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Aggregated State Memory Used In Bytes <sup>
+      (<a data-bs-toggle="tooltip" title="Aggregated state memory used in bytes.">?</a>)
+    </sup></strong></div>
+            </div>
+          </td>
+          <td class="aggregated-state-memory-used-bytes-timeline"><div id="aggregated-state-memory-used-bytes-timeline"></div></td>
+          <td class="aggregated-state-memory-used-bytes-histogram"><div id="aggregated-state-memory-used-bytes-histogram"></div></td>
+        </tr><tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Aggregated Number Of Late Rows Dropped By Watermark <sup>
+      (<a data-bs-toggle="tooltip" title="Accumulates all late input rows being dropped in stateful operators by watermark. This only represents the late rows ever reached to stateful operators, not rows from the source. A row could be filtered out at an earlier stage.">?</a>)
+    </sup></strong></div>
+            </div>
+          </td>
+          <td class="aggregated-num-rows-dropped-by-watermark-timeline"><div id="aggregated-num-rows-dropped-by-watermark-timeline"></div></td>
+          <td class="aggregated-num-rows-dropped-by-watermark-histogram"><div id="aggregated-num-rows-dropped-by-watermark-histogram"></div></td>
+        </tr>
+        </tbody>
+      </table><script type="module" nonce="cedc41f5-6b21-496b-b298-20dc0f0e6eb8">
+import {registerTimeline} from "/static/streaming-page.js";
+import {drawHistogram} from "/static/streaming-page.js";
+import {drawAreaStack} from "/static/structured-streaming-page.js";
+import {registerHistogram} from "/static/streaming-page.js";
+import {drawTimeline} from "/static/streaming-page.js";
+
+$(document).ready(function() {
+    var v1 = [{"x": 1791011339296, "y": 0.0},{"x": 1791011341722, "y": 32.97609233305853},{"x": 1791011342692, "y": 41.23711340206186},{"x": 1791011344000, "y": 30.581039755351682},{"x": 1791011346000, "y": 40.0},{"x": 1791011348000, "y": 40.0},{"x": 1791011350000, "y": 40.0}];
+var v2 = [{"x": 1791011339296, "y": 0.0},{"x": 1791011341722, "y": 82.7300930713547},{"x": 1791011342692, "y": 73.52941176470588},{"x": 1791011344000, "y": 94.33962264150944},{"x": 1791011346000, "y": 183.90804597701148},{"x": 1791011348000, "y": 176.60044150110375},{"x": 1791011350000, "y": 155.6420233463035}];
+var v3 = [{"x": 1791011339296, "y": 0.0},{"x": 1791011341722, "y": 80.0},{"x": 1791011342692, "y": 40.0},{"x": 1791011344000, "y": 40.0},{"x": 1791011346000, "y": 80.0},{"x": 1791011348000, "y": 80.0},{"x": 1791011350000, "y": 80.0}];
+var v4 = [{"x": 1791011339296, "y": 2406.0},{"x": 1791011341722, "y": 967.0},{"x": 1791011342692, "y": 544.0},{"x": 1791011344000, "y": 424.0},{"x": 1791011346000, "y": 435.0},{"x": 1791011348000, "y": 453.0},{"x": 1791011350000, "y": 514.0}];
+registerTimeline(0.0, 41.23711340206186);
+registerHistogram(v1.map(function(d) { return d.y; }), 0.0, 41.23711340206186);
+registerTimeline(0.0, 183.90804597701148);
+registerHistogram(v2.map(function(d) { return d.y; }), 0.0, 183.90804597701148);
+registerTimeline(0.0, 80.0);
+registerHistogram(v3.map(function(d) { return d.y; }), 0.0, 80.0);
+registerTimeline(0.0, 2406.0);
+registerHistogram(v4.map(function(d) { return d.y; }), 0.0, 2406.0);
+var v5 = [{x: "12:38:59.296", "addBatch": "1786.0","commitOffsets": "52.0","getBatch": "1.0","latestOffset": "0.0","queryPlanning": "497.0","walCommit": "49.0"},{x: "12:39:01.722", "addBatch": "792.0","commitOffsets": "58.0","getBatch": "0.0","latestOffset": "0.0","queryPlanning": "68.0","walCommit": "44.0"},{x: "12:39:02.692", "addBatch": "421.0","commitOffsets": "39.0","getBatch": "0.0","latestOffset": "0.0","queryPlanning": "46.0","walCommit": "33.0"},{x: "12:39:04.000", "addBatch": "312.0","commitOffsets": "46.0","getBatch": "0.0","latestOffset": "0.0","queryPlanning": "30.0","walCommit": "31.0"},{x: "12:39:06.000", "addBatch": "314.0","commitOffsets": "55.0","getBatch": "0.0","latestOffset": "0.0","queryPlanning": "30.0","walCommit": "33.0"},{x: "12:39:08.000", "addBatch": "335.0","commitOffsets": "56.0","getBatch": "0.0","latestOffset": "0.0","queryPlanning": "22.0","walCommit": "38.0"},{x: "12:39:10.000", "addBatch": "360.0","commitOffsets": "63.0","getBatch": "0.0","latestOffset": "0.0","queryPlanning": "45.0","walCommit": "44.0"}];
+var v6 = ["addBatch","commitOffsets","getBatch","latestOffset","queryPlanning","walCommit"];
+var v7 = [{"x": 1791011342692, "y": 11.478},{"x": 1791011344000, "y": 11.786},{"x": 1791011346000, "y": 12.786},{"x": 1791011348000, "y": 12.786},{"x": 1791011350000, "y": 12.786}];
+registerTimeline(0.0, 12.786);
+registerHistogram(v7.map(function(d) { return d.y; }), 0.0, 12.786);
+var v8 = [{"x": 1791011339296, "y": 0.0},{"x": 1791011341722, "y": 6.0},{"x": 1791011342692, "y": 6.0},{"x": 1791011344000, "y": 6.0},{"x": 1791011346000, "y": 9.0},{"x": 1791011348000, "y": 9.0},{"x": 1791011350000, "y": 9.0}];
+var v9 = [{"x": 1791011339296, "y": 0.0},{"x": 1791011341722, "y": 6.0},{"x": 1791011342692, "y": 3.0},{"x": 1791011344000, "y": 3.0},{"x": 1791011346000, "y": 6.0},{"x": 1791011348000, "y": 3.0},{"x": 1791011350000, "y": 3.0}];
+var v10 = [{"x": 1791011339296, "y": 0.0},{"x": 1791011341722, "y": 0.0},{"x": 1791011342692, "y": 0.0},{"x": 1791011344000, "y": 0.0},{"x": 1791011346000, "y": 0.0},{"x": 1791011348000, "y": 0.0},{"x": 1791011350000, "y": 0.0}];
+var v11 = [{"x": 1791011339296, "y": 1056.0},{"x": 1791011341722, "y": 3192.0},{"x": 1791011342692, "y": 3800.0},{"x": 1791011344000, "y": 3832.0},{"x": 1791011346000, "y": 4504.0},{"x": 1791011348000, "y": 4664.0},{"x": 1791011350000, "y": 4728.0}];
+var v12 = [{"x": 1791011339296, "y": 0.0},{"x": 1791011341722, "y": 0.0},{"x": 1791011342692, "y": 0.0},{"x": 1791011344000, "y": 0.0},{"x": 1791011346000, "y": 0.0},{"x": 1791011348000, "y": 0.0},{"x": 1791011350000, "y": 0.0}];
+registerTimeline(0.0, 9.0);
+registerHistogram(v8.map(function(d) { return d.y; }), 0.0, 9.0);
+registerTimeline(0.0, 6.0);
+registerHistogram(v9.map(function(d) { return d.y; }), 0.0, 6.0);
+registerTimeline(0.0, 0.0);
+registerHistogram(v10.map(function(d) { return d.y; }), 0.0, 0.0);
+registerTimeline(0.0, 4728.0);
+registerHistogram(v11.map(function(d) { return d.y; }), 0.0, 4728.0);
+registerTimeline(0.0, 0.0);
+registerHistogram(v12.map(function(d) { return d.y; }), 0.0, 0.0);
+    drawTimeline('#input-rate-timeline', v1, 1791011339296, 1791011350000, 0.0, 41.23711340206186, 'records/sec');
+drawHistogram('#input-rate-histogram', v1.map(function(d) { return d.y; }), 0.0, 41.23711340206186, 'records/sec');
+drawTimeline('#process-rate-timeline', v2, 1791011339296, 1791011350000, 0.0, 183.90804597701148, 'records/sec');
+drawHistogram('#process-rate-histogram', v2.map(function(d) { return d.y; }), 0.0, 183.90804597701148, 'records/sec');
+drawTimeline('#input-rows-timeline', v3, 1791011339296, 1791011350000, 0.0, 80.0, 'records');
+drawHistogram('#input-rows-histogram', v3.map(function(d) { return d.y; }), 0.0, 80.0, 'records');
+drawTimeline('#batch-duration-timeline', v4, 1791011339296, 1791011350000, 0.0, 2406.0, 'ms');
+drawHistogram('#batch-duration-histogram', v4.map(function(d) { return d.y; }), 0.0, 2406.0, 'ms');
+drawAreaStack('#duration-area-stack', v6, v5)
+drawTimeline('#watermark-gap-timeline', v7, 1791011339296, 1791011350000, 0.0, 12.786, 'seconds');
+drawHistogram('#watermark-gap-histogram', v7.map(function(d) { return d.y; }), 0.0, 12.786, 'seconds');
+drawTimeline('#aggregated-num-total-state-rows-timeline', v8, 1791011339296, 1791011350000, 0.0, 9.0, 'records');
+drawHistogram('#aggregated-num-total-state-rows-histogram', v8.map(function(d) { return d.y; }), 0.0, 9.0, 'records');
+drawTimeline('#aggregated-num-updated-state-rows-timeline', v9, 1791011339296, 1791011350000, 0.0, 6.0, 'records');
+drawHistogram('#aggregated-num-updated-state-rows-histogram', v9.map(function(d) { return d.y; }), 0.0, 6.0, 'records');
+drawTimeline('#aggregated-num-removed-state-rows-timeline', v10, 1791011339296, 1791011350000, 0.0, 0.0, 'records');
+drawHistogram('#aggregated-num-removed-state-rows-histogram', v10.map(function(d) { return d.y; }), 0.0, 0.0, 'records');
+drawTimeline('#aggregated-state-memory-used-bytes-timeline', v11, 1791011339296, 1791011350000, 0.0, 4728.0, 'bytes');
+drawHistogram('#aggregated-state-memory-used-bytes-histogram', v11.map(function(d) { return d.y; }), 0.0, 4728.0, 'bytes');
+drawTimeline('#aggregated-num-rows-dropped-by-watermark-timeline', v12, 1791011339296, 1791011350000, 0.0, 0.0, 'records');
+drawHistogram('#aggregated-num-rows-dropped-by-watermark-histogram', v12.map(function(d) { return d.y; }), 0.0, 0.0, 'records');
+});</script>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:38:52</span><span id="footer-uptime" data-start-time="1791011332019"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

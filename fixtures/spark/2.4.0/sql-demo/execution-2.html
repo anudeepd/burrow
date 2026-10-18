@@ -1,0 +1,192 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/vis.min.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/webui.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/timeline-view.css" type="text/css"/><script src="/proxy/application_1791822093166_0005/static/sorttable.js"></script><script src="/proxy/application_1791822093166_0005/static/jquery-1.11.1.min.js"></script><script src="/proxy/application_1791822093166_0005/static/vis.min.js"></script><script src="/proxy/application_1791822093166_0005/static/bootstrap-tooltip.js"></script><script src="/proxy/application_1791822093166_0005/static/initialize-tooltips.js"></script><script src="/proxy/application_1791822093166_0005/static/table.js"></script><script src="/proxy/application_1791822093166_0005/static/additional-metrics.js"></script><script src="/proxy/application_1791822093166_0005/static/timeline-view.js"></script><script src="/proxy/application_1791822093166_0005/static/log-view.js"></script><script src="/proxy/application_1791822093166_0005/static/webui.js"></script><script>setUIRoot('/proxy/application_1791822093166_0005')</script>
+        
+        
+        <link rel="shortcut icon" href="/proxy/application_1791822093166_0005/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-spark24-sql-demo - Details for Query 2</title>
+      </head>
+      <body>
+        <div class="navbar navbar-static-top">
+          <div class="navbar-inner">
+            <div class="brand">
+              <a href="/proxy/application_1791822093166_0005/" class="brand">
+                <img src="/proxy/application_1791822093166_0005/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">2.4.0</span>
+              </a>
+            </div>
+            <p class="navbar-text pull-right">
+              <strong title="burrow-spark24-sql-demo">burrow-spark24-sql-demo</strong> application UI
+            </p>
+            <ul class="nav"><li class="">
+        <a href="/proxy/application_1791822093166_0005/jobs/">Jobs</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/stages/">Stages</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/storage/">Storage</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/environment/">Environment</a>
+      </li><li class="">
+        <a href="/proxy/application_1791822093166_0005/executors/">Executors</a>
+      </li><li class="active">
+        <a href="/proxy/application_1791822093166_0005/SQL/">SQL</a>
+      </li></ul>
+          </div>
+        </div>
+        <div class="container-fluid">
+          <div class="row-fluid">
+            <div class="span12">
+              <h3 style="vertical-align: bottom; display: inline-block;">
+                Details for Query 2
+                
+              </h3>
+            </div>
+          </div>
+          <div>
+          <ul class="unstyled">
+            <li>
+              <strong>Submitted Time: </strong>2026/10/12 22:07:55
+            </li>
+            <li>
+              <strong>Duration: </strong>2 s
+            </li>
+            
+            <li>
+            <strong>Succeeded Jobs: </strong>
+            <a href="/proxy/application_1791822093166_0005/jobs/job/?id=0">0</a><span>&nbsp;</span><a href="/proxy/application_1791822093166_0005/jobs/job/?id=1">1</a><span>&nbsp;</span><a href="/proxy/application_1791822093166_0005/jobs/job/?id=2">2</a><span>&nbsp;</span>
+          </li>
+            
+          </ul>
+        </div><div>
+      <div id="plan-viz-graph"></div>
+      <div id="plan-viz-metadata" style="display:none">
+        <div class="dot-file">
+          digraph G {
+
+  subgraph cluster0 {
+    label=&quot;WholeStageCodegen\n\n\n26 ms (1 ms, 2 ms, 19 ms)&quot;;
+      1 [label=&quot;Sort\n \nsort time total (min, med, max): \n0 ms (0 ms, 0 ms, 0 ms)\npeak memory total (min, med, max): \n20.3 MB (4.1 MB, 4.1 MB, 4.1 MB)\nspill size total (min, med, max): \n0.0 B (0.0 B, 0.0 B, 0.0 B)&quot;];
+  }
+     
+  2 [label=&quot;Exchange\n \ndata size total (min, med, max): \n197.0 B (39.0 B, 79.0 B, 79.0 B)&quot;];
+
+  subgraph cluster3 {
+    label=&quot;WholeStageCodegen\n\n\n31 ms (1 ms, 1 ms, 9 ms)&quot;;
+      4 [label=&quot;HashAggregate\n \nspill size total (min, med, max): \n0.0 B (0.0 B, 0.0 B, 0.0 B)\naggregate time total (min, med, max): \n4 ms (0 ms, 0 ms, 4 ms)\npeak memory total (min, med, max): \n28.0 MB (256.0 KB, 256.0 KB, 4.2 MB)\nnumber of output rows: 10\navg hash probe (min, med, max): \n(1, 1, 1)&quot;];
+  }
+     
+  5 [label=&quot;Exchange\n \ndata size total (min, med, max): \n796.0 B (199.0 B, 199.0 B, 199.0 B)&quot;];
+
+  subgraph cluster6 {
+    label=&quot;WholeStageCodegen\n\n\n149 ms (11 ms, 14 ms, 113 ms)&quot;;
+      7 [label=&quot;HashAggregate\n \nspill size total (min, med, max): \n0.0 B (0.0 B, 0.0 B, 0.0 B)\naggregate time total (min, med, max): \n29 ms (3 ms, 5 ms, 17 ms)\npeak memory total (min, med, max): \n1024.0 KB (256.0 KB, 256.0 KB, 256.0 KB)\nnumber of output rows: 20\navg hash probe (min, med, max): \n(0, 0, 0)&quot;];    
+  8 [label=&quot;Project&quot;];    
+  9 [label=&quot;BroadcastHashJoin\n \nnumber of output rows: 20,000\navg hash probe (min, med, max): \n(1, 1, 1)&quot;];    
+  10 [label=&quot;Project&quot;];    
+  11 [label=&quot;Filter\n \nnumber of output rows: 20,000&quot;];    
+  12 [label=&quot;Range\n \nnumber of output rows: 20,000&quot;];
+  }
+     
+  13 [label=&quot;BroadcastExchange\n \ndata size (bytes): 1,049,376\ntime to collect (ms): 926\ntime to build (ms): 26\ntime to broadcast (ms): 4&quot;];
+
+  subgraph cluster14 {
+    label=&quot;WholeStageCodegen\n\n\n0 ms (0 ms, 0 ms, 0 ms)&quot;;
+      15 [label=&quot;Project&quot;];    
+  16 [label=&quot;Range\n \nnumber of output rows: 100&quot;];
+  }
+     
+  2-&gt;1;
+
+  4-&gt;2;
+
+  5-&gt;4;
+
+  7-&gt;5;
+
+  8-&gt;7;
+
+  9-&gt;8;
+
+  10-&gt;9;
+
+  11-&gt;10;
+
+  12-&gt;11;
+
+  13-&gt;9;
+
+  15-&gt;13;
+
+  16-&gt;15;
+
+}
+        </div>
+        <div id="plan-viz-metadata-size">17</div>
+        <div id="plan-meta-data-1">Sort [region#10 ASC NULLS FIRST], true, 0</div><div id="plan-meta-data-0">WholeStageCodegen</div><div id="plan-meta-data-2">Exchange rangepartitioning(region#10 ASC NULLS FIRST, 8)</div><div id="plan-meta-data-4">HashAggregate(keys=[region#10], functions=[sum(amount#3), count(1)])</div><div id="plan-meta-data-3">WholeStageCodegen</div><div id="plan-meta-data-5">Exchange hashpartitioning(region#10, 8)</div><div id="plan-meta-data-7">HashAggregate(keys=[region#10], functions=[partial_sum(amount#3), partial_count(1)])</div><div id="plan-meta-data-8">Project [amount#3, region#10]</div><div id="plan-meta-data-9">BroadcastHashJoin [customer_id#2], [customer_id#9], Inner, BuildRight</div><div id="plan-meta-data-10">Project [cast((id#0L % 100) as int) AS customer_id#2, cast(CheckOverflow((promote_precision(cast(cast(id#0L as decimal(20,0)) as decimal(21,1))) * 0.5), DecimalType(22,1)) as double) AS amount#3]</div><div id="plan-meta-data-11">Filter isnotnull(cast((id#0L % 100) as int))</div><div id="plan-meta-data-12">Range (0, 20000, step=1, splits=4)</div><div id="plan-meta-data-6">WholeStageCodegen</div><div id="plan-meta-data-13">BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)))</div><div id="plan-meta-data-15">Project [cast(id#7L as int) AS customer_id#9, concat(region-, cast((id#7L % 5) as string)) AS region#10]</div><div id="plan-meta-data-16">Range (0, 100, step=1, splits=4)</div><div id="plan-meta-data-14">WholeStageCodegen</div>
+      </div>
+      <link rel="stylesheet" href="/proxy/application_1791822093166_0005/static/sql/spark-sql-viz.css" type="text/css"/><script src="/proxy/application_1791822093166_0005/static/d3.min.js"></script><script src="/proxy/application_1791822093166_0005/static/dagre-d3.min.js"></script><script src="/proxy/application_1791822093166_0005/static/graphlib-dot.min.js"></script><script src="/proxy/application_1791822093166_0005/static/sql/spark-sql-viz.js"></script>
+      <script>$(function() { renderPlanViz(); })</script>
+    </div><div>
+      <span style="cursor: pointer;" onclick="clickPhysicalPlanDetails();">
+        <span id="physical-plan-details-arrow" class="arrow-closed"></span>
+        <a>Details</a>
+      </span>
+    </div><div id="physical-plan-details" style="display: none;">
+      <pre>== Parsed Logical Plan ==
+'Sort ['c.region ASC NULLS FIRST], true
++- 'Aggregate ['c.region], ['c.region, 'SUM('o.amount) AS revenue#13, 'COUNT(1) AS order_count#14]
+   +- 'Join Inner, ('o.customer_id = 'c.customer_id)
+      :- 'SubqueryAlias `o`
+      :  +- 'UnresolvedRelation `orders`
+      +- 'SubqueryAlias `c`
+         +- 'UnresolvedRelation `customers`
+
+== Analyzed Logical Plan ==
+region: string, revenue: double, order_count: bigint
+Project [region#10, revenue#13, order_count#14L]
++- Sort [region#10 ASC NULLS FIRST], true
+   +- Aggregate [region#10], [region#10, sum(amount#3) AS revenue#13, count(1) AS order_count#14L]
+      +- Join Inner, (customer_id#2 = customer_id#9)
+         :- SubqueryAlias `o`
+         :  +- SubqueryAlias `orders`
+         :     +- Project [id#0L, cast((id#0L % cast(100 as bigint)) as int) AS customer_id#2, cast(CheckOverflow((promote_precision(cast(cast(id#0L as decimal(20,0)) as decimal(21,1))) * promote_precision(cast(0.5 as decimal(21,1)))), DecimalType(22,1)) as double) AS amount#3]
+         :        +- Range (0, 20000, step=1, splits=Some(4))
+         +- SubqueryAlias `c`
+            +- SubqueryAlias `customers`
+               +- Project [cast(id#7L as int) AS customer_id#9, concat(region-, cast((id#7L % cast(5 as bigint)) as string)) AS region#10]
+                  +- Range (0, 100, step=1, splits=Some(4))
+
+== Optimized Logical Plan ==
+Sort [region#10 ASC NULLS FIRST], true
++- Aggregate [region#10], [region#10, sum(amount#3) AS revenue#13, count(1) AS order_count#14L]
+   +- Project [amount#3, region#10]
+      +- Join Inner, (customer_id#2 = customer_id#9)
+         :- Project [cast((id#0L % 100) as int) AS customer_id#2, cast(CheckOverflow((promote_precision(cast(cast(id#0L as decimal(20,0)) as decimal(21,1))) * 0.5), DecimalType(22,1)) as double) AS amount#3]
+         :  +- Filter isnotnull(cast((id#0L % 100) as int))
+         :     +- Range (0, 20000, step=1, splits=Some(4))
+         +- Project [cast(id#7L as int) AS customer_id#9, concat(region-, cast((id#7L % 5) as string)) AS region#10]
+            +- Range (0, 100, step=1, splits=Some(4))
+
+== Physical Plan ==
+*(4) Sort [region#10 ASC NULLS FIRST], true, 0
++- Exchange rangepartitioning(region#10 ASC NULLS FIRST, 8)
+   +- *(3) HashAggregate(keys=[region#10], functions=[sum(amount#3), count(1)], output=[region#10, revenue#13, order_count#14L])
+      +- Exchange hashpartitioning(region#10, 8)
+         +- *(2) HashAggregate(keys=[region#10], functions=[partial_sum(amount#3), partial_count(1)], output=[region#10, sum#31, count#32L])
+            +- *(2) Project [amount#3, region#10]
+               +- *(2) BroadcastHashJoin [customer_id#2], [customer_id#9], Inner, BuildRight
+                  :- *(2) Project [cast((id#0L % 100) as int) AS customer_id#2, cast(CheckOverflow((promote_precision(cast(cast(id#0L as decimal(20,0)) as decimal(21,1))) * 0.5), DecimalType(22,1)) as double) AS amount#3]
+                  :  +- *(2) Filter isnotnull(cast((id#0L % 100) as int))
+                  :     +- *(2) Range (0, 20000, step=1, splits=4)
+                  +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, false] as bigint)))
+                     +- *(1) Project [cast(id#7L as int) AS customer_id#9, concat(region-, cast((id#7L % 5) as string)) AS region#10]
+                        +- *(1) Range (0, 100, step=1, splits=4)</pre>
+    </div><script>
+      function clickPhysicalPlanDetails() {
+        $('#physical-plan-details').toggle();
+        $('#physical-plan-details-arrow').toggleClass('arrow-open').toggleClass('arrow-closed');
+      }
+    </script><br/>
+        </div>
+      </body>
+    </html>

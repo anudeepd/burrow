@@ -1,0 +1,25 @@
+{
+  "scenario": "finished",
+  "appId": "application_1791010984040_0002",
+  "state": "FINISHED",
+  "finalStatus": "SUCCEEDED",
+  "name": "appdetail-finished",
+  "user": "bob",
+  "queue": "root.default",
+  "capturedFrom": "http://127.0.0.1:8088/ws/v1/cluster",
+  "capturedBy": "fixtures/rm/app/capture.py",
+  "files": [
+    "MANIFEST.json",
+    "app.json",
+    "appattempts.json",
+    "apps.json",
+    "container-appattempt_1791010984040_0002_000001-container_1791010984040_0002_01_000001.json",
+    "container-appattempt_1791010984040_0002_000001-container_1791010984040_0002_01_000002.json",
+    "containers-appattempt_1791010984040_0002_000001.json",
+    "priority.json",
+    "queue.json",
+    "scheduler-app-activities.json",
+    "state.json",
+    "timeouts.json"
+  ]
+}

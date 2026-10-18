@@ -1,0 +1,190 @@
+[ {
+  "taskId" : 3,
+  "index" : 1,
+  "attempt" : 0,
+  "partitionId" : 1,
+  "launchTime" : "2026-10-03T07:12:49.043GMT",
+  "duration" : 98,
+  "executorId" : "driver",
+  "host" : "localhost",
+  "status" : "FAILED",
+  "taskLocality" : "PROCESS_LOCAL",
+  "speculative" : false,
+  "accumulatorUpdates" : [ ],
+  "errorMessage" : "org.apache.spark.api.python.PythonException: Traceback (most recent call last):\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/worker.py\", line 1247, in main\n    process()\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/worker.py\", line 1237, in process\n    out_iter = func(split_index, iterator)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 5434, in pipeline_func\n    return func(split, prev_func(split, iterator))\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 5434, in pipeline_func\n    return func(split, prev_func(split, iterator))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 840, in func\n    return f(iterator)\n           ^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 3983, in combineLocally\n    merger.mergeValues(iterator)\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/shuffle.py\", line 256, in mergeValues\n    for k, v in iterator:\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/util.py\", line 83, in wrapper\n    return f(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py\", line 13, in boom\n    raise ValueError(\"task blew up on 13\")\nValueError: task blew up on 13\n\n\tat org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:572)\n\tat org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:784)\n\tat org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:766)\n\tat org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:525)\n\tat org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)\n\tat scala.collection.Iterator$GroupedIterator.fill(Iterator.scala:1211)\n\tat scala.collection.Iterator$GroupedIterator.hasNext(Iterator.scala:1217)\n\tat scala.collection.Iterator$$anon$10.hasNext(Iterator.scala:460)\n\tat org.apache.spark.shuffle.sort.BypassMergeSortShuffleWriter.write(BypassMergeSortShuffleWriter.java:140)\n\tat org.apache.spark.shuffle.ShuffleWriteProcessor.write(ShuffleWriteProcessor.scala:59)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:104)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:54)\n\tat org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:166)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:141)\n\tat org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:621)\n\tat org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:64)\n\tat org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:61)\n\tat org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:94)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:624)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\n",
+  "taskMetrics" : {
+    "executorDeserializeTime" : 0,
+    "executorDeserializeCpuTime" : 0,
+    "executorRunTime" : 78,
+    "executorCpuTime" : 0,
+    "resultSize" : 0,
+    "jvmGcTime" : 0,
+    "resultSerializationTime" : 0,
+    "memoryBytesSpilled" : 0,
+    "diskBytesSpilled" : 0,
+    "peakExecutionMemory" : 0,
+    "inputMetrics" : {
+      "bytesRead" : 0,
+      "recordsRead" : 0
+    },
+    "outputMetrics" : {
+      "bytesWritten" : 0,
+      "recordsWritten" : 0
+    },
+    "shuffleReadMetrics" : {
+      "remoteBlocksFetched" : 0,
+      "localBlocksFetched" : 0,
+      "fetchWaitTime" : 0,
+      "remoteBytesRead" : 0,
+      "remoteBytesReadToDisk" : 0,
+      "localBytesRead" : 0,
+      "recordsRead" : 0,
+      "remoteReqsDuration" : 0,
+      "shufflePushReadMetrics" : {
+        "corruptMergedBlockChunks" : 0,
+        "mergedFetchFallbackCount" : 0,
+        "remoteMergedBlocksFetched" : 0,
+        "localMergedBlocksFetched" : 0,
+        "remoteMergedChunksFetched" : 0,
+        "localMergedChunksFetched" : 0,
+        "remoteMergedBytesRead" : 0,
+        "localMergedBytesRead" : 0,
+        "remoteMergedReqsDuration" : 0
+      }
+    },
+    "shuffleWriteMetrics" : {
+      "bytesWritten" : 0,
+      "writeTime" : 0,
+      "recordsWritten" : 0
+    }
+  },
+  "executorLogs" : { },
+  "schedulerDelay" : 20,
+  "gettingResultTime" : 0
+}, {
+  "taskId" : 6,
+  "index" : 3,
+  "attempt" : 0,
+  "partitionId" : 3,
+  "launchTime" : "2026-10-03T07:12:49.327GMT",
+  "duration" : 80,
+  "executorId" : "driver",
+  "host" : "localhost",
+  "status" : "KILLED",
+  "taskLocality" : "PROCESS_LOCAL",
+  "speculative" : false,
+  "accumulatorUpdates" : [ ],
+  "errorMessage" : "Stage cancelled: Job aborted due to stage failure: Task 1 in stage 1.0 failed 2 times, most recent failure: Lost task 1.1 in stage 1.0 (TID 5) (localhost executor driver): org.apache.spark.api.python.PythonException: Traceback (most recent call last):\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/worker.py\", line 1247, in main\n    process()\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/worker.py\", line 1237, in process\n    out_iter = func(split_index, iterator)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 5434, in pipeline_func\n    return func(split, prev_func(split, iterator))\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 5434, in pipeline_func\n    return func(split, prev_func(split, iterator))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 840, in func\n    return f(iterator)\n           ^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 3983, in combineLocally\n    merger.mergeValues(iterator)\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/shuffle.py\", line 256, in mergeValues\n    for k, v in iterator:\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/util.py\", line 83, in wrapper\n    return f(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py\", line 13, in boom\n    raise ValueError(\"task blew up on 13\")\nValueError: task blew up on 13\n\n\tat org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:572)\n\tat org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:784)\n\tat org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:766)\n\tat org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:525)\n\tat org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)\n\tat scala.collection.Iterator$GroupedIterator.fill(Iterator.scala:1211)\n\tat scala.collection.Iterator$GroupedIterator.hasNext(Iterator.scala:1217)\n\tat scala.collection.Iterator$$anon$10.hasNext(Iterator.scala:460)\n\tat org.apache.spark.shuffle.sort.BypassMergeSortShuffleWriter.write(BypassMergeSortShuffleWriter.java:140)\n\tat org.apache.spark.shuffle.ShuffleWriteProcessor.write(ShuffleWriteProcessor.scala:59)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:104)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:54)\n\tat org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:166)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:141)\n\tat org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:621)\n\tat org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:64)\n\tat org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:61)\n\tat org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:94)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:624)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\n\nDriver stacktrace:",
+  "taskMetrics" : {
+    "executorDeserializeTime" : 0,
+    "executorDeserializeCpuTime" : 0,
+    "executorRunTime" : 75,
+    "executorCpuTime" : 0,
+    "resultSize" : 0,
+    "jvmGcTime" : 0,
+    "resultSerializationTime" : 0,
+    "memoryBytesSpilled" : 0,
+    "diskBytesSpilled" : 0,
+    "peakExecutionMemory" : 0,
+    "inputMetrics" : {
+      "bytesRead" : 0,
+      "recordsRead" : 0
+    },
+    "outputMetrics" : {
+      "bytesWritten" : 0,
+      "recordsWritten" : 0
+    },
+    "shuffleReadMetrics" : {
+      "remoteBlocksFetched" : 0,
+      "localBlocksFetched" : 0,
+      "fetchWaitTime" : 0,
+      "remoteBytesRead" : 0,
+      "remoteBytesReadToDisk" : 0,
+      "localBytesRead" : 0,
+      "recordsRead" : 0,
+      "remoteReqsDuration" : 0,
+      "shufflePushReadMetrics" : {
+        "corruptMergedBlockChunks" : 0,
+        "mergedFetchFallbackCount" : 0,
+        "remoteMergedBlocksFetched" : 0,
+        "localMergedBlocksFetched" : 0,
+        "remoteMergedChunksFetched" : 0,
+        "localMergedChunksFetched" : 0,
+        "remoteMergedBytesRead" : 0,
+        "localMergedBytesRead" : 0,
+        "remoteMergedReqsDuration" : 0
+      }
+    },
+    "shuffleWriteMetrics" : {
+      "bytesWritten" : 146,
+      "writeTime" : 1000271,
+      "recordsWritten" : 2
+    }
+  },
+  "executorLogs" : { },
+  "schedulerDelay" : 5,
+  "gettingResultTime" : 0
+}, {
+  "taskId" : 5,
+  "index" : 1,
+  "attempt" : 1,
+  "partitionId" : 1,
+  "launchTime" : "2026-10-03T07:12:49.325GMT",
+  "duration" : 71,
+  "executorId" : "driver",
+  "host" : "localhost",
+  "status" : "FAILED",
+  "taskLocality" : "PROCESS_LOCAL",
+  "speculative" : false,
+  "accumulatorUpdates" : [ ],
+  "errorMessage" : "org.apache.spark.api.python.PythonException: Traceback (most recent call last):\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/worker.py\", line 1247, in main\n    process()\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/worker.py\", line 1237, in process\n    out_iter = func(split_index, iterator)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 5434, in pipeline_func\n    return func(split, prev_func(split, iterator))\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 5434, in pipeline_func\n    return func(split, prev_func(split, iterator))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 840, in func\n    return f(iterator)\n           ^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/rdd.py\", line 3983, in combineLocally\n    merger.mergeValues(iterator)\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/shuffle.py\", line 256, in mergeValues\n    for k, v in iterator:\n  File \"/home/puppyseal/Documents/code_repos/burrow/.venv-spark35/lib/python3.11/site-packages/pyspark/python/lib/pyspark.zip/pyspark/util.py\", line 83, in wrapper\n    return f(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py\", line 13, in boom\n    raise ValueError(\"task blew up on 13\")\nValueError: task blew up on 13\n\n\tat org.apache.spark.api.python.BasePythonRunner$ReaderIterator.handlePythonException(PythonRunner.scala:572)\n\tat org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:784)\n\tat org.apache.spark.api.python.PythonRunner$$anon$3.read(PythonRunner.scala:766)\n\tat org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:525)\n\tat org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)\n\tat scala.collection.Iterator$GroupedIterator.fill(Iterator.scala:1211)\n\tat scala.collection.Iterator$GroupedIterator.hasNext(Iterator.scala:1217)\n\tat scala.collection.Iterator$$anon$10.hasNext(Iterator.scala:460)\n\tat org.apache.spark.shuffle.sort.BypassMergeSortShuffleWriter.write(BypassMergeSortShuffleWriter.java:140)\n\tat org.apache.spark.shuffle.ShuffleWriteProcessor.write(ShuffleWriteProcessor.scala:59)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:104)\n\tat org.apache.spark.scheduler.ShuffleMapTask.runTask(ShuffleMapTask.scala:54)\n\tat org.apache.spark.TaskContext.runTaskWithListeners(TaskContext.scala:166)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:141)\n\tat org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$4(Executor.scala:621)\n\tat org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally(SparkErrorUtils.scala:64)\n\tat org.apache.spark.util.SparkErrorUtils.tryWithSafeFinally$(SparkErrorUtils.scala:61)\n\tat org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:94)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:624)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.base/java.lang.Thread.run(Thread.java:840)\n",
+  "taskMetrics" : {
+    "executorDeserializeTime" : 0,
+    "executorDeserializeCpuTime" : 0,
+    "executorRunTime" : 65,
+    "executorCpuTime" : 0,
+    "resultSize" : 0,
+    "jvmGcTime" : 0,
+    "resultSerializationTime" : 0,
+    "memoryBytesSpilled" : 0,
+    "diskBytesSpilled" : 0,
+    "peakExecutionMemory" : 0,
+    "inputMetrics" : {
+      "bytesRead" : 0,
+      "recordsRead" : 0
+    },
+    "outputMetrics" : {
+      "bytesWritten" : 0,
+      "recordsWritten" : 0
+    },
+    "shuffleReadMetrics" : {
+      "remoteBlocksFetched" : 0,
+      "localBlocksFetched" : 0,
+      "fetchWaitTime" : 0,
+      "remoteBytesRead" : 0,
+      "remoteBytesReadToDisk" : 0,
+      "localBytesRead" : 0,
+      "recordsRead" : 0,
+      "remoteReqsDuration" : 0,
+      "shufflePushReadMetrics" : {
+        "corruptMergedBlockChunks" : 0,
+        "mergedFetchFallbackCount" : 0,
+        "remoteMergedBlocksFetched" : 0,
+        "localMergedBlocksFetched" : 0,
+        "remoteMergedChunksFetched" : 0,
+        "localMergedChunksFetched" : 0,
+        "remoteMergedBytesRead" : 0,
+        "localMergedBytesRead" : 0,
+        "remoteMergedReqsDuration" : 0
+      }
+    },
+    "shuffleWriteMetrics" : {
+      "bytesWritten" : 0,
+      "writeTime" : 0,
+      "recordsWritten" : 0
+    }
+  },
+  "executorLogs" : { },
+  "schedulerDelay" : 6,
+  "gettingResultTime" : 0
+} ]

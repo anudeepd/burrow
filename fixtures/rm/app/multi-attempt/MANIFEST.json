@@ -1,0 +1,25 @@
+{
+  "scenario": "multi-attempt",
+  "appId": "application_1791010984040_0004",
+  "state": "FINISHED",
+  "finalStatus": "FAILED",
+  "name": "appdetail-multiattempt",
+  "user": "carol",
+  "queue": "root.default",
+  "capturedFrom": "http://127.0.0.1:8088/ws/v1/cluster",
+  "capturedBy": "fixtures/rm/app/capture.py",
+  "files": [
+    "app.json",
+    "appattempts.json",
+    "apps.json",
+    "container-appattempt_1791010984040_0004_000001-container_1791010984040_0004_01_000002.json",
+    "container-appattempt_1791010984040_0004_000003-container_1791010984040_0004_03_000001.json",
+    "containers-appattempt_1791010984040_0004_000001.json",
+    "containers-appattempt_1791010984040_0004_000002.json",
+    "containers-appattempt_1791010984040_0004_000003.json",
+    "priority.json",
+    "queue.json",
+    "state.json",
+    "timeouts.json"
+  ]
+}

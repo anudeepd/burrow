@@ -1,0 +1,151 @@
+{
+  "kind": "job",
+  "granularity": "stage",
+  "jobId": 5,
+  "edgesInferred": true,
+  "stages": [
+    {
+      "stageId": 13,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 13 (skipped)",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "status": "SKIPPED"
+    },
+    {
+      "stageId": 14,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 14 (skipped)",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "status": "SKIPPED"
+    },
+    {
+      "stageId": 15,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 15 (skipped)",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "status": "SKIPPED"
+    },
+    {
+      "stageId": 16,
+      "attempt": 0,
+      "skipped": true,
+      "label": "Stage 16 (skipped)",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        15,
+        16,
+        20
+      ],
+      "status": "SKIPPED"
+    },
+    {
+      "stageId": 17,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 17",
+      "clusters": [],
+      "nodes": [],
+      "edges": [],
+      "rddIds": [
+        21,
+        22,
+        23
+      ],
+      "status": "COMPLETE"
+    }
+  ],
+  "edges": [
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 13,
+      "toStage": 14
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 13,
+      "toStage": 15
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 14,
+      "toStage": 15
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 13,
+      "toStage": 16
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 14,
+      "toStage": 16
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 15,
+      "toStage": 16
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 13,
+      "toStage": 17
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 14,
+      "toStage": 17
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 15,
+      "toStage": 17
+    },
+    {
+      "from": null,
+      "to": null,
+      "fromStage": 16,
+      "toStage": 17
+    }
+  ]
+}

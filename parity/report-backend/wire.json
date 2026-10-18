@@ -1,0 +1,218 @@
+{
+ "generatedAt": "2026-10-11T11:49:06.553Z",
+ "status": "pass",
+ "reason": "compared 65 passthrough endpoints, 11 spark checks, 2 live sampling races",
+ "compared": 65,
+ "mismatches": [],
+ "skipped": [],
+ "samplingRaces": [
+  {
+   "path": "/ws/v1/cluster/scheduler/bulk-activities",
+   "ourPath": "/api/yarn/scheduler/bulk-activities",
+   "reason": "Hadoop consumes a shared recording deque; separate windows preserve every distinct decision field and total activity count, with order/repetition frequency and event clocks varying"
+  },
+  {
+   "path": "/stacks",
+   "ourPath": "/api/rm/stacks",
+   "reason": "thread identities and dump sections preserved; live stack frames/counters differ between requests",
+   "threads": 259
+  }
+ ],
+ "ignored": [
+  {
+   "path": "$.appActivities.timestamp",
+   "kind": "value",
+   "a": 1791719344960,
+   "b": 1791719344962,
+   "reason": "$.appActivities.timestamp is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=2ms <= 2000ms"
+  },
+  {
+   "path": "$.apps.app[14].elapsedTime",
+   "kind": "value",
+   "a": 884887,
+   "b": 884892,
+   "reason": "$.apps.app[14].elapsedTime is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=5ms <= 5000ms"
+  },
+  {
+   "path": "$.app.elapsedTime",
+   "kind": "value",
+   "a": 884904,
+   "b": 884906,
+   "reason": "$.app.elapsedTime is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=2ms <= 5000ms"
+  },
+  {
+   "path": "$.container[0].elapsedTime",
+   "kind": "value",
+   "a": "870557",
+   "b": "870559",
+   "reason": "$.container[0].elapsedTime is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=2ms <= 5000ms"
+  },
+  {
+   "path": "$.container[1].elapsedTime",
+   "kind": "value",
+   "a": "869556",
+   "b": "869559",
+   "reason": "$.container[1].elapsedTime is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=3ms <= 5000ms"
+  },
+  {
+   "path": "$.container[2].elapsedTime",
+   "kind": "value",
+   "a": "884585",
+   "b": "884588",
+   "reason": "$.container[2].elapsedTime is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=3ms <= 5000ms"
+  },
+  {
+   "path": "$.elapsedTime",
+   "kind": "value",
+   "a": "870568",
+   "b": "870572",
+   "reason": "$.elapsedTime is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=4ms <= 5000ms"
+  },
+  {
+   "path": "$.apps.app[0].elapsedTime",
+   "kind": "value",
+   "a": 885178,
+   "b": 885180,
+   "reason": "$.apps.app[0].elapsedTime is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=2ms <= 5000ms"
+  }
+ ],
+ "ignoredCount": 8,
+ "spark": {
+  "status": "pass",
+  "reason": "spark REST compared (application, jobs, stages, executors, allexecutors, environment, storage/rdd, sql, streaming/statistics, streaming/receivers, streaming/batches); id coverage: n/a",
+  "app": "application_1791698585485_0014",
+  "source": "live-proxy",
+  "checked": [
+   {
+    "resource": "application",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/application",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": []
+   },
+   {
+    "resource": "jobs",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/jobs",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/jobs",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": []
+   },
+   {
+    "resource": "stages",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/stages",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/stages",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": []
+   },
+   {
+    "resource": "executors",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/executors",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/executors",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": [
+     {
+      "path": "$[0].totalDuration",
+      "kind": "value",
+      "a": 875987,
+      "b": 875993,
+      "reason": "$[0].totalDuration is computed from the wall clock at serialization time (RMAppImpl / ContainerInfo), so two sequential requests always drift; |Δ|=6ms <= 2000ms"
+     }
+    ]
+   },
+   {
+    "resource": "allexecutors",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/allexecutors",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/allexecutors",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": []
+   },
+   {
+    "resource": "environment",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/environment",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/environment",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": []
+   },
+   {
+    "resource": "storage/rdd",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/storage/rdd",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/storage/rdd",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": []
+   },
+   {
+    "resource": "sql",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/sql",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/sql",
+    "status": [
+     200,
+     200
+    ],
+    "ignored": []
+   },
+   {
+    "resource": "streaming/statistics",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/streaming/statistics",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/streaming/statistics",
+    "status": [
+     404,
+     404
+    ],
+    "unsupported": true
+   },
+   {
+    "resource": "streaming/receivers",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/streaming/receivers",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/streaming/receivers",
+    "status": [
+     404,
+     404
+    ],
+    "unsupported": true
+   },
+   {
+    "resource": "streaming/batches",
+    "url": "http://127.0.0.1:8088/proxy/application_1791698585485_0014/api/v1/applications/application_1791698585485_0014/streaming/batches",
+    "ourUrl": "http://127.0.0.1:8791/api/spark/application_1791698585485_0014/streaming/batches",
+    "status": [
+     404,
+     404
+    ],
+    "unsupported": true
+   }
+  ],
+  "skipped": [
+   {
+    "resource": "DOM identifiers",
+    "reason": "no Spark UI captures supplied; REST passthrough alone is proved"
+   },
+   {
+    "resource": "*",
+    "reason": "inventory declares no spark.* REST fields yet (parity/inventory/src/rest-spark.yaml); id coverage reported only"
+   }
+  ],
+  "mismatches": [],
+  "idCoverage": []
+ }
+}

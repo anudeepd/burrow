@@ -1,0 +1,22 @@
+{
+  "jobId" : 26,
+  "name" : "runJob at PythonRDD.scala:181",
+  "description" : "Streaming job from <a href=\"/streaming/batch/?id=1791011636000\">[output operation 0, batch time 12:43:56]</a>",
+  "submissionTime" : "2026-10-03T07:13:58.462GMT",
+  "completionTime" : "2026-10-03T07:13:58.537GMT",
+  "stageIds" : [ 52, 53 ],
+  "jobTags" : [ ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 3,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 1,
+  "numSkippedTasks" : 2,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 1,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 1,
+  "numSkippedStages" : 1,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

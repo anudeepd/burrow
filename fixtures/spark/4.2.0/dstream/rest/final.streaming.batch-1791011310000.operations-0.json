@@ -1,0 +1,9 @@
+{
+  "outputOpId" : 0,
+  "name" : "callForeachRDD at NativeMethodAccessorImpl.java:0",
+  "description" : "org.apache.spark.streaming.api.python.PythonDStream.callForeachRDD(PythonDStream.scala)\njava.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\njava.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\njava.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\njava.base/java.lang.reflect.Method.invoke(Method.java:569)\npy4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)\npy4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:374)\npy4j.Gateway.invoke(Gateway.java:282)\npy4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)\npy4j.commands.CallCommand.execute(CallCommand.java:79)\npy4j.ClientServerConnection.waitForCommands(ClientServerConnection.java:184)\npy4j.ClientServerConnection.run(ClientServerConnection.java:108)\njava.base/java.lang.Thread.run(Thread.java:840)",
+  "startTime" : "2026-10-03T07:08:30.199GMT",
+  "endTime" : "2026-10-03T07:08:31.832GMT",
+  "duration" : 1633,
+  "jobIds" : [ 0, 1 ]
+}

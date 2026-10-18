@@ -1,0 +1,801 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery-3.5.1.min.js"></script><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/timeline-view.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script>setUIRoot('')</script>
+        <script>setAppBasePath('')</script>
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-dstream - Streaming Statistics</title>
+      </head>
+      <body>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img src="/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">3.5.9</span>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/streaming/">Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-dstream" class="text-nowrap">burrow-dstream</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+          </div>
+        </nav>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <h3 style="vertical-align: bottom; white-space: nowrap; overflow: hidden;
+                text-overflow: ellipsis;">
+                Streaming Statistics
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <script src="/static/d3.min.js"></script><link rel="stylesheet" href="/static/streaming-page.css" type="text/css"/><script src="/static/streaming-page.js"></script><script>onClickTimeline = getOnClickTimelineFunction();</script><div>Running batches of
+      <strong>
+        1 second 
+      </strong>
+      for
+      <strong>
+        12 seconds 42 ms
+      </strong>
+      since
+      <strong>
+        2026/10/03 12:43:50
+      </strong>
+      (<strong>8</strong>
+      completed batches, <strong>0</strong> records)
+    </div><br/><script>var timeFormat = {};
+timeFormat[1791011631000] = '12:43:51';
+timeFormat[1791011632000] = '12:43:52';
+timeFormat[1791011633000] = '12:43:53';
+timeFormat[1791011634000] = '12:43:54';
+timeFormat[1791011635000] = '12:43:55';
+timeFormat[1791011636000] = '12:43:56';
+timeFormat[1791011637000] = '12:43:57';
+timeFormat[1791011638000] = '12:43:58';
+timeFormat[1791011639000] = '12:43:59';
+timeFormat[1791011640000] = '12:44:00';
+timeFormat[1791011641000] = '12:44:01';
+timeFormat[1791011642000] = '12:44:02';</script><script>var timeTipStrings = {};
+timeTipStrings[1791011631000] = timeFormat[1791011631000];
+timeTipStrings[1791011632000] = timeFormat[1791011632000];
+timeTipStrings[1791011633000] = timeFormat[1791011633000];
+timeTipStrings[1791011634000] = timeFormat[1791011634000];
+timeTipStrings[1791011635000] = timeFormat[1791011635000];
+timeTipStrings[1791011636000] = timeFormat[1791011636000];
+timeTipStrings[1791011637000] = timeFormat[1791011637000];
+timeTipStrings[1791011638000] = timeFormat[1791011638000];
+timeTipStrings[1791011639000] = timeFormat[1791011639000];
+timeTipStrings[1791011640000] = timeFormat[1791011640000];
+timeTipStrings[1791011641000] = timeFormat[1791011641000];
+timeTipStrings[1791011642000] = timeFormat[1791011642000];</script><table id="stat-table" class="table table-bordered" style="width: auto">
+      <thead>
+        <tr>
+          <th style="width: 160px;"></th>
+          <th style="width: 492px;">Timelines (Last 12 batches, 4 active, 8 completed)</th>
+          <th style="width: 350px;">Histograms</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div>
+              <span class="expand-input-rate">
+                    <span class="expand-input-rate-arrow arrow-closed"></span>
+                    <a data-toggle="tooltip" title="Show/hide details of each receiver" data-placement="top">
+                      <strong>Input Rate</strong>
+                    </a>
+                  </span>
+              </div>
+              
+              <div>Avg: 0.00 records/sec</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="all-stream-records-timeline"></div></td>
+          <td class="histogram"><div id="all-stream-records-histogram"></div></td>
+        </tr>
+      <tr id="inputs-table" style="display: none;">
+          <td colspan="3">
+            <table class="table table-bordered" style="width: auto">
+      <thead>
+        <tr>
+          <th style="width: 151px;"></th>
+          <th style="width: 167px; padding: 8px 0 8px 0"><div style="margin: 0 8px 0 8px">Status</div></th>
+          <th style="width: 167px; padding: 8px 0 8px 0"><div style="margin: 0 8px 0 8px">Executor ID / Host</div></th>
+          <th style="width: 166px; padding: 8px 0 8px 0"><div style="margin: 0 8px 0 8px">Last Error Time</div></th>
+          <th>Last Error Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+      <td rowspan="2" style="vertical-align: middle; width: 151px;">
+        <div style="width: 151px;">
+          <div style="word-wrap: break-word;"><strong>Queue stream [0]</strong></div>
+          <div>Avg: 0.00 records/sec</div>
+        </div>
+      </td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td><div style="width: 342px;">-</div></td>
+    </tr><tr>
+      <td colspan="3" class="timeline">
+        <div id="stream-0-records-timeline"></div>
+      </td>
+      <td class="histogram"><div id="stream-0-records-histogram"></div></td>
+    </tr>
+      </tbody>
+    </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Scheduling Delay <sup>
+      (<a data-toggle="tooltip" data-placement="top" title="Time taken by Streaming scheduler to submit jobs of a batch">?</a>)
+    </sup></strong></div>
+              <div>Avg: 1 second 708 ms</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="scheduling-delay-timeline"></div></td>
+          <td class="histogram"><div id="scheduling-delay-histogram"></div></td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Processing Time <sup>
+      (<a data-toggle="tooltip" data-placement="top" title="Time taken to process all jobs of a batch">?</a>)
+    </sup></strong></div>
+              <div>Avg: 1 second 307 ms</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="processing-time-timeline"></div></td>
+          <td class="histogram"><div id="processing-time-histogram"></div></td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle;">
+            <div style="width: 160px;">
+              <div><strong>Total Delay <sup>
+      (<a data-toggle="tooltip" data-placement="top" title="Total time taken to handle a batch">?</a>)
+    </sup></strong></div>
+              <div>Avg: 2 seconds 914 ms</div>
+            </div>
+          </td>
+          <td class="timeline"><div id="total-delay-timeline"></div></td>
+          <td class="histogram"><div id="total-delay-histogram"></div></td>
+        </tr>
+      </tbody>
+    </table><script>
+$(document).ready(function() {
+    var v1 = [{"x": 1791011631000, "y": 0.0},{"x": 1791011632000, "y": 0.0},{"x": 1791011633000, "y": 0.0},{"x": 1791011634000, "y": 0.0},{"x": 1791011635000, "y": 0.0},{"x": 1791011636000, "y": 0.0},{"x": 1791011637000, "y": 0.0},{"x": 1791011638000, "y": 0.0},{"x": 1791011639000, "y": 0.0},{"x": 1791011640000, "y": 0.0},{"x": 1791011641000, "y": 0.0},{"x": 1791011642000, "y": 0.0}];
+var v2 = [{"x": 1791011631000, "y": 0.005},{"x": 1791011632000, "y": 1.415},{"x": 1791011633000, "y": 1.549},{"x": 1791011634000, "y": 1.756},{"x": 1791011635000, "y": 1.79},{"x": 1791011636000, "y": 2.038},{"x": 1791011637000, "y": 2.078},{"x": 1791011638000, "y": 2.229},{"x": 1791011639000, "y": 2.516}];
+var v3 = [{"x": 1791011631000, "y": 2.567},{"x": 1791011632000, "y": 1.072},{"x": 1791011633000, "y": 1.085},{"x": 1791011634000, "y": 1.073},{"x": 1791011635000, "y": 1.202},{"x": 1791011636000, "y": 1.057},{"x": 1791011637000, "y": 1.155},{"x": 1791011638000, "y": 1.248}];
+var v4 = [{"x": 1791011631000, "y": 2.572},{"x": 1791011632000, "y": 2.487},{"x": 1791011633000, "y": 2.634},{"x": 1791011634000, "y": 2.829},{"x": 1791011635000, "y": 2.992},{"x": 1791011636000, "y": 3.095},{"x": 1791011637000, "y": 3.233},{"x": 1791011638000, "y": 3.477}];
+registerTimeline(0.0, 0.0);
+registerHistogram(v1.map(function(d) { return d.y; }), 0.0, 0.0);
+var v5 = [{"x": 1791011631000, "y": 0.0},{"x": 1791011632000, "y": 0.0},{"x": 1791011633000, "y": 0.0},{"x": 1791011634000, "y": 0.0},{"x": 1791011635000, "y": 0.0},{"x": 1791011636000, "y": 0.0},{"x": 1791011637000, "y": 0.0},{"x": 1791011638000, "y": 0.0},{"x": 1791011639000, "y": 0.0},{"x": 1791011640000, "y": 0.0},{"x": 1791011641000, "y": 0.0},{"x": 1791011642000, "y": 0.0}];
+registerTimeline(0.0, 0.0);
+registerHistogram(v5.map(function(d) { return d.y; }), 0.0, 0.0);
+registerTimeline(0.0, 3.477);
+registerHistogram(v2.map(function(d) { return d.y; }), 0.0, 3.477);
+registerTimeline(0.0, 3.477);
+registerHistogram(v3.map(function(d) { return d.y; }), 0.0, 3.477);
+registerTimeline(0.0, 3.477);
+registerHistogram(v4.map(function(d) { return d.y; }), 0.0, 3.477);
+    drawTimeline('#all-stream-records-timeline', v1, 1791011631000, 1791011642000, 0.0, 0.0, 'records/sec');
+drawHistogram('#all-stream-records-histogram', v1.map(function(d) { return d.y; }), 0.0, 0.0, 'records/sec');
+drawTimeline('#stream-0-records-timeline', v5, 1791011631000, 1791011642000, 0.0, 0.0, 'records/sec');
+drawHistogram('#stream-0-records-histogram', v5.map(function(d) { return d.y; }), 0.0, 0.0, 'records/sec');
+drawTimeline('#scheduling-delay-timeline', v2, 1791011631000, 1791011642000, 0.0, 3.477, 'sec');
+drawHistogram('#scheduling-delay-histogram', v2.map(function(d) { return d.y; }), 0.0, 3.477, 'sec');
+drawTimeline('#processing-time-timeline', v3, 1791011631000, 1791011642000, 0.0, 3.477, 'sec', 1.0);
+drawHistogram('#processing-time-histogram', v3.map(function(d) { return d.y; }), 0.0, 3.477, 'sec', 1.0);
+drawTimeline('#total-delay-timeline', v4, 1791011631000, 1791011642000, 0.0, 3.477, 'sec');
+drawHistogram('#total-delay-histogram', v4.map(function(d) { return d.y; }), 0.0, 3.477, 'sec');
+});</script><div class="row">
+          <div class="col-12">
+            <span id="runningBatches" class="collapse-aggregated-runningBatches collapse-table" onClick="collapseTable('collapse-aggregated-runningBatches',
+                  'aggregated-runningBatches')">
+              <h4>
+                <span class="collapse-table-arrow arrow-open"></span>
+                <a>Running Batches (1)</a>
+              </h4>
+            </span>
+            <div class="aggregated-runningBatches collapsible-table">
+              <div>
+        <div>
+      <div>
+        <form id="form-runningBatches-table-top-page" method="get" action="/streaming/?&runningBatches.sort=Batch+Time&runningBatches.desc=true#runningBatches" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="runningBatches.sort" value="Batch Time"/><input type="hidden" name="runningBatches.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="runningBatches.page" id="form-runningBatches-table-top-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-runningBatches-table-top-page-size" name="runningBatches.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="runningBatches-table">
+          <thead>
+      <tr><th>
+            <a href="/streaming/?&runningBatches.sort=Batch+Time&runningBatches.desc=false&runningBatches.pageSize=100#runningBatches">
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Batch Time&nbsp;&#x25BE;
+              </span>
+            </a>
+          </th><th>
+              <a href="/streaming/?&runningBatches.sort=Records&runningBatches.pageSize=100#runningBatches">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Records
+                </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&runningBatches.sort=Scheduling+Delay&runningBatches.pageSize=100#runningBatches">
+                <span data-toggle="tooltip" data-placement="top" title="Time taken by Streaming scheduler to submit jobs of a batch">
+                  Scheduling Delay
+                </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&runningBatches.sort=Processing+Time&runningBatches.pageSize=100#runningBatches">
+                <span data-toggle="tooltip" data-placement="top" title="Time taken to process all jobs of a batch">
+                  Processing Time
+                </span>
+              </a>
+            </th><th>
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Output Ops: Succeeded/Total
+              </span>
+            </th><th>
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Status
+              </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr>
+      <td id="batch-1791011639000" isFailed="false">
+        <a href="batch?id=1791011639000">
+          2026/10/03 12:43:59
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 3 s </td>
+      <td> - </td>
+      <td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        2/3
+        (1 running)
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 66.66666666666666%"></div>
+      <div class="progress-bar progress-started" style="width: 33.33333333333333%"></div>
+    </div>
+    </td><td> processing </td>
+    </tr>
+          </tbody>
+        </table>
+        <div>
+      <div>
+        <form id="form-runningBatches-table-bottom-page" method="get" action="/streaming/?&runningBatches.sort=Batch+Time&runningBatches.desc=true#runningBatches" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="runningBatches.sort" value="Batch Time"/><input type="hidden" name="runningBatches.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="runningBatches.page" id="form-runningBatches-table-bottom-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-runningBatches-table-bottom-page-size" name="runningBatches.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+      </div>
+            </div>
+          </div>
+        </div><div class="row">
+          <div class="col-12">
+            <span id="waitingBatches" class="collapse-aggregated-waitingBatches collapse-table" onClick="collapseTable('collapse-aggregated-waitingBatches',
+                  'aggregated-waitingBatches')">
+              <h4>
+                <span class="collapse-table-arrow arrow-open"></span>
+                <a>Waiting Batches (3)</a>
+              </h4>
+            </span>
+            <div class="aggregated-waitingBatches collapsible-table">
+              <div>
+        <div>
+      <div>
+        <form id="form-waitingBatches-table-top-page" method="get" action="/streaming/?&waitingBatches.sort=Batch+Time&waitingBatches.desc=true#waitingBatches" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="waitingBatches.sort" value="Batch Time"/><input type="hidden" name="waitingBatches.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="waitingBatches.page" id="form-waitingBatches-table-top-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-waitingBatches-table-top-page-size" name="waitingBatches.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="waitingBatches-table">
+          <thead>
+      <tr><th>
+            <a href="/streaming/?&waitingBatches.sort=Batch+Time&waitingBatches.desc=false&waitingBatches.pageSize=100#waitingBatches">
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Batch Time&nbsp;&#x25BE;
+              </span>
+            </a>
+          </th><th>
+              <a href="/streaming/?&waitingBatches.sort=Records&waitingBatches.pageSize=100#waitingBatches">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Records
+                </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&waitingBatches.sort=Scheduling+Delay&waitingBatches.pageSize=100#waitingBatches">
+                <span data-toggle="tooltip" data-placement="top" title="Time taken by Streaming scheduler to submit jobs of a batch">
+                  Scheduling Delay
+                </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&waitingBatches.sort=Processing+Time&waitingBatches.pageSize=100#waitingBatches">
+                <span data-toggle="tooltip" data-placement="top" title="Time taken to process all jobs of a batch">
+                  Processing Time
+                </span>
+              </a>
+            </th><th>
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Output Ops: Succeeded/Total
+              </span>
+            </th><th>
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Status
+              </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr>
+      <td id="batch-1791011642000" isFailed="false">
+        <a href="batch?id=1791011642000">
+          2026/10/03 12:44:02
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> - </td>
+      <td> - </td>
+      <td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        0/3
+        (3 running)
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 0.0%"></div>
+      <div class="progress-bar progress-started" style="width: 100.0%"></div>
+    </div>
+    </td><td> queued </td>
+    </tr><tr>
+      <td id="batch-1791011641000" isFailed="false">
+        <a href="batch?id=1791011641000">
+          2026/10/03 12:44:01
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> - </td>
+      <td> - </td>
+      <td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        0/3
+        (3 running)
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 0.0%"></div>
+      <div class="progress-bar progress-started" style="width: 100.0%"></div>
+    </div>
+    </td><td> queued </td>
+    </tr><tr>
+      <td id="batch-1791011640000" isFailed="false">
+        <a href="batch?id=1791011640000">
+          2026/10/03 12:44:00
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> - </td>
+      <td> - </td>
+      <td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        0/3
+        (3 running)
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 0.0%"></div>
+      <div class="progress-bar progress-started" style="width: 100.0%"></div>
+    </div>
+    </td><td> queued </td>
+    </tr>
+          </tbody>
+        </table>
+        <div>
+      <div>
+        <form id="form-waitingBatches-table-bottom-page" method="get" action="/streaming/?&waitingBatches.sort=Batch+Time&waitingBatches.desc=true#waitingBatches" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="waitingBatches.sort" value="Batch Time"/><input type="hidden" name="waitingBatches.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="waitingBatches.page" id="form-waitingBatches-table-bottom-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-waitingBatches-table-bottom-page-size" name="waitingBatches.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+      </div>
+            </div>
+          </div>
+        </div><div class="row">
+          <div class="col-12">
+            <span id="completedBatches" class="collapse-aggregated-completedBatches collapse-table" onClick="collapseTable('collapse-aggregated-completedBatches',
+                  'aggregated-completedBatches')">
+              <h4>
+                <span class="collapse-table-arrow arrow-open"></span>
+                <a>Completed Batches (last 8
+                  out of 8)</a>
+              </h4>
+            </span>
+            <div class="aggregated-completedBatches collapsible-table">
+              <div>
+        <div>
+      <div>
+        <form id="form-completedBatches-table-top-page" method="get" action="/streaming/?&completedBatches.sort=Batch+Time&completedBatches.desc=true#completedBatches" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completedBatches.sort" value="Batch Time"/><input type="hidden" name="completedBatches.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completedBatches.page" id="form-completedBatches-table-top-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completedBatches-table-top-page-size" name="completedBatches.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completedBatches-table">
+          <thead>
+      <tr><th>
+            <a href="/streaming/?&completedBatches.sort=Batch+Time&completedBatches.desc=false&completedBatches.pageSize=100#completedBatches">
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Batch Time&nbsp;&#x25BE;
+              </span>
+            </a>
+          </th><th>
+              <a href="/streaming/?&completedBatches.sort=Records&completedBatches.pageSize=100#completedBatches">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Records
+                </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&completedBatches.sort=Scheduling+Delay&completedBatches.pageSize=100#completedBatches">
+                <span data-toggle="tooltip" data-placement="top" title="Time taken by Streaming scheduler to submit jobs of a batch">
+                  Scheduling Delay
+                </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&completedBatches.sort=Processing+Time&completedBatches.pageSize=100#completedBatches">
+                <span data-toggle="tooltip" data-placement="top" title="Time taken to process all jobs of a batch">
+                  Processing Time
+                </span>
+              </a>
+            </th><th>
+              <a href="/streaming/?&completedBatches.sort=Total+Delay&completedBatches.pageSize=100#completedBatches">
+                <span data-toggle="tooltip" data-placement="top" title="Total time taken to handle a batch">
+                  Total Delay
+                </span>
+              </a>
+            </th><th>
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Output Ops: Succeeded/Total
+              </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr>
+      <td id="batch-1791011638000" isFailed="false">
+        <a href="batch?id=1791011638000">
+          2026/10/03 12:43:58
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 2 s </td>
+      <td> 1 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011637000" isFailed="false">
+        <a href="batch?id=1791011637000">
+          2026/10/03 12:43:57
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 2 s </td>
+      <td> 1 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011636000" isFailed="false">
+        <a href="batch?id=1791011636000">
+          2026/10/03 12:43:56
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 2 s </td>
+      <td> 1 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011635000" isFailed="false">
+        <a href="batch?id=1791011635000">
+          2026/10/03 12:43:55
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 2 s </td>
+      <td> 1 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011634000" isFailed="false">
+        <a href="batch?id=1791011634000">
+          2026/10/03 12:43:54
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 2 s </td>
+      <td> 1 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011633000" isFailed="false">
+        <a href="batch?id=1791011633000">
+          2026/10/03 12:43:53
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 2 s </td>
+      <td> 1 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011632000" isFailed="false">
+        <a href="batch?id=1791011632000">
+          2026/10/03 12:43:52
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 1 s </td>
+      <td> 1 s </td>
+      <td> 2 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr><tr>
+      <td id="batch-1791011631000" isFailed="false">
+        <a href="batch?id=1791011631000">
+          2026/10/03 12:43:51
+        </a>
+      </td>
+      <td> 0 records </td>
+      <td> 5 ms </td>
+      <td> 3 s </td>
+      <td> 3 s </td><td class="progress-cell">
+      <div class="progress">
+      <span style="text-align:center; position:absolute; width:100%;">
+        3/3
+        
+        
+        
+        
+      </span>
+      <div class="progress-bar progress-completed" style="width: 100.0%"></div>
+      <div class="progress-bar progress-started" style="width: 0.0%"></div>
+    </div>
+    </td>
+    </tr>
+          </tbody>
+        </table>
+        <div>
+      <div>
+        <form id="form-completedBatches-table-bottom-page" method="get" action="/streaming/?&completedBatches.sort=Batch+Time&completedBatches.desc=true#completedBatches" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completedBatches.sort" value="Batch Time"/><input type="hidden" name="completedBatches.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completedBatches.page" id="form-completedBatches-table-bottom-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completedBatches-table-bottom-page-size" name="completedBatches.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+      </div>
+            </div>
+          </div>
+        </div>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>

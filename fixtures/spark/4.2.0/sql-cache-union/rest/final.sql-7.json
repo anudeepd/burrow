@@ -1,0 +1,171 @@
+{
+  "id" : 7,
+  "status" : "COMPLETED",
+  "description" : "count at NativeMethodAccessorImpl.java:0",
+  "planDescription" : "== Physical Plan ==\nAdaptiveSparkPlan (14)\n+- == Final Plan ==\n   ResultQueryStage (10), Statistics(sizeInBytes=8.0 EiB)\n   +- * HashAggregate (9)\n      +- ShuffleQueryStage (8), Statistics(sizeInBytes=64.0 B, rowCount=4)\n         +- Exchange (7)\n            +- * HashAggregate (6)\n               +- TableCacheQueryStage (5), Statistics(sizeInBytes=781.3 KiB, rowCount=5.00E+4)\n                  +- InMemoryTableScan (1) (columnarIn=false, columnarOut=true)\n                        +- InMemoryRelation (2)\n                              +- * Project (4)\n                                 +- * Range (3)\n+- == Initial Plan ==\n   HashAggregate (13)\n   +- Exchange (12)\n      +- HashAggregate (11)\n         +- InMemoryTableScan (1) (columnarIn=false, columnarOut=true)\n               +- InMemoryRelation (2)\n                     +- * Project (4)\n                        +- * Range (3)\n\n\n(1) InMemoryTableScan\nOutput: []\n\n(2) InMemoryRelation\nArguments: [k#1L, v#2L], StorageLevel(disk, memory, deserialized, 1 replicas)\n\n(3) Range [codegen id : 1]\nOutput [1]: [id#0L]\nArguments: Range (0, 50000, step=1, splits=Some(4))\n\n(4) Project [codegen id : 1]\nOutput [2]: [(id#0L % 100) AS k#1L, (id#0L * 3) AS v#2L]\nInput [1]: [id#0L]\n\n(5) TableCacheQueryStage\nOutput: []\nArguments: 0\n\n(6) HashAggregate [codegen id : 1]\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#371L]\nResults [1]: [count#372L]\n\n(7) Exchange\nInput [1]: [count#372L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=371]\n\n(8) ShuffleQueryStage\nOutput [1]: [count#372L]\nArguments: 1\n\n(9) HashAggregate [codegen id : 2]\nInput [1]: [count#372L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#340L]\nResults [1]: [count(1)#340L AS count#337L]\n\n(10) ResultQueryStage\nOutput [1]: [count#337L]\nArguments: 2\n\n(11) HashAggregate\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#371L]\nResults [1]: [count#372L]\n\n(12) Exchange\nInput [1]: [count#372L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=347]\n\n(13) HashAggregate\nInput [1]: [count#372L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#340L]\nResults [1]: [count(1)#340L AS count#337L]\n\n(14) AdaptiveSparkPlan\nOutput [1]: [count#337L]\nArguments: isFinalPlan=true\n\n",
+  "submissionTime" : "2026-10-03T07:06:39.958GMT",
+  "duration" : 337,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 11, 12, 13 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ {
+    "nodeId" : 9,
+    "nodeName" : "Range",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "50,000"
+    } ]
+  }, {
+    "nodeId" : 8,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 7,
+    "nodeName" : "WholeStageCodegen (1)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n372 ms (54 ms, 129 ms, 130 ms (stage 24.0: task 39))"
+    } ]
+  }, {
+    "nodeId" : 6,
+    "nodeName" : "InMemoryTableScan",
+    "metrics" : [ {
+      "name" : "number of output rows",
+      "value" : "50,000"
+    } ]
+  }, {
+    "nodeId" : 5,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ {
+      "name" : "time in aggregation build",
+      "value" : "total (min, med, max (stageId: taskId))\n6 ms (1 ms, 2 ms, 2 ms (stage 25.0: task 44))"
+    }, {
+      "name" : "number of output rows",
+      "value" : "4"
+    } ]
+  }, {
+    "nodeId" : 4,
+    "nodeName" : "WholeStageCodegen (1)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "total (min, med, max (stageId: taskId))\n9 ms (1 ms, 3 ms, 3 ms (stage 25.0: task 44))"
+    } ]
+  }, {
+    "nodeId" : 3,
+    "nodeName" : "Exchange",
+    "metrics" : [ {
+      "name" : "shuffle records written",
+      "value" : "4"
+    }, {
+      "name" : "remote merged reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "records read",
+      "value" : "4"
+    }, {
+      "name" : "local bytes read",
+      "value" : "236.0 B"
+    }, {
+      "name" : "merged fetch fallback count",
+      "value" : "0"
+    }, {
+      "name" : "local blocks read",
+      "value" : "4"
+    }, {
+      "name" : "remote merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "remote blocks read",
+      "value" : "0"
+    }, {
+      "name" : "data size",
+      "value" : "total (min, med, max (stageId: taskId))\n64.0 B (16.0 B, 16.0 B, 16.0 B (stage 25.0: task 44))"
+    }, {
+      "name" : "local merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged chunks fetched",
+      "value" : "0"
+    }, {
+      "name" : "shuffle write time",
+      "value" : "total (min, med, max (stageId: taskId))\n2 ms (0 ms, 0 ms, 0 ms (stage 25.0: task 45))"
+    }, {
+      "name" : "remote merged bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "local merged blocks fetched",
+      "value" : "0"
+    }, {
+      "name" : "corrupt merged block chunks",
+      "value" : "0"
+    }, {
+      "name" : "fetch wait time",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read",
+      "value" : "0.0 B"
+    }, {
+      "name" : "number of partitions",
+      "value" : "1"
+    }, {
+      "name" : "remote reqs duration",
+      "value" : "0 ms"
+    }, {
+      "name" : "remote bytes read to disk",
+      "value" : "0.0 B"
+    }, {
+      "name" : "shuffle bytes written",
+      "value" : "total (min, med, max (stageId: taskId))\n236.0 B (59.0 B, 59.0 B, 59.0 B (stage 25.0: task 44))"
+    } ]
+  }, {
+    "nodeId" : 2,
+    "nodeName" : "HashAggregate",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ {
+      "name" : "time in aggregation build",
+      "value" : "0 ms"
+    }, {
+      "name" : "number of output rows",
+      "value" : "1"
+    } ]
+  }, {
+    "nodeId" : 1,
+    "nodeName" : "WholeStageCodegen (2)",
+    "metrics" : [ {
+      "name" : "duration",
+      "value" : "1 ms"
+    } ]
+  }, {
+    "nodeId" : 0,
+    "nodeName" : "AdaptiveSparkPlan",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ {
+    "fromId" : 2,
+    "toId" : 0
+  }, {
+    "fromId" : 3,
+    "toId" : 2
+  }, {
+    "fromId" : 5,
+    "toId" : 3
+  }, {
+    "fromId" : 6,
+    "toId" : 5
+  }, {
+    "fromId" : 8,
+    "toId" : 6
+  }, {
+    "fromId" : 9,
+    "toId" : 8
+  } ],
+  "queryId" : "01a10096-1bcf-7565-b421-133dbac005f5",
+  "errorMessage" : "",
+  "rootExecutionId" : 7
+}

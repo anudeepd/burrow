@@ -1,0 +1,56 @@
+[ {
+  "id" : 1,
+  "name" : "slow-source",
+  "numPartitions" : 6,
+  "numCachedPartitions" : 6,
+  "storageLevel" : "Memory Serialized 1x Replicated",
+  "memoryUsed" : 528,
+  "diskUsed" : 0,
+  "dataDistribution" : [ {
+    "address" : "127.0.0.1:46621",
+    "memoryUsed" : 528,
+    "memoryRemaining" : 455474266,
+    "diskUsed" : 0,
+    "onHeapMemoryUsed" : 528,
+    "offHeapMemoryUsed" : 0,
+    "onHeapMemoryRemaining" : 455474266,
+    "offHeapMemoryRemaining" : 0
+  } ],
+  "partitions" : [ {
+    "blockName" : "rdd_1_0",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 88,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_1_1",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 88,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_1_2",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 88,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_1_3",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 88,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_1_5",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 88,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  }, {
+    "blockName" : "rdd_1_4",
+    "storageLevel" : "Memory Serialized 1x Replicated",
+    "memoryUsed" : 88,
+    "diskUsed" : 0,
+    "executors" : [ "driver" ]
+  } ]
+} ]

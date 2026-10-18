@@ -1,0 +1,52 @@
+/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/context.py:376: RuntimeWarning: Failed to add file [file:///home/puppyseal/Documents/code_repos/burrow/cluster/workloads/_common.py] specified in 'spark.submit.pyFiles' to Python path:
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/filecache/10
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/spark-139f71c8-9459-475d-a695-baf8313226e4/userFiles-99ca77c3-4ceb-405e-aaa1-24d003b1b80d
+  /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages/pyspark/jars/spark-core_2.13-4.2.0.jar
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/__pyfiles__
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip
+  /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/py4j-0.10.9.9-src.zip
+  /home/puppyseal/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python312.zip
+  /home/puppyseal/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12
+  /home/puppyseal/.local/share/uv/python/cpython-3.12-linux-x86_64-gnu/lib/python3.12/lib-dynload
+  /home/puppyseal/Documents/code_repos/burrow/.venv/lib/python3.12/site-packages
+  warnings.warn(
+Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 22, in <module>
+    sc.parallelize(range(100), 4).map(boom).count()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in count
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2154, in sum
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 1911, in fold
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 1699, in collect
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/py4j-0.10.9.9-src.zip/py4j/java_gateway.py", line 1362, in __call__
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/errors/exceptions/captured.py", line 257, in deco
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3622, in main
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3610, in process
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/util.py", line 159, in wrapper
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+      ^^^^^^^^^^^^^^^^^
+pyspark.errors.exceptions.captured.PythonException: An exception was thrown from the Python worker:
+Traceback (most recent call last):
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3622, in main
+    process()
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/worker.py", line 3610, in process
+    out_iter = func(split_index, iterator)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 5290, in pipeline_func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 703, in func
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <lambda>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/pyspark.zip/pyspark/core/rdd.py", line 2179, in <genexpr>
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000003/pyspark.zip/pyspark/util.py", line 159, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/carol/appcache/application_1791015583684_0002/container_1791015583684_0002_01_000001/failing_job.py", line 16, in boom
+    raise ValueError("burrow deliberate failure in task: x=%d" % x)
+ValueError: burrow deliberate failure in task: x=75

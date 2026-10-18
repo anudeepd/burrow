@@ -1,0 +1,22 @@
+{
+  "properties": [
+    {
+      "key": "yarn.resourcemanager.hostname",
+      "value": "rm",
+      "isFinal": false,
+      "resource": "yarn-site.xml"
+    },
+    {
+      "key": "yarn.nodemanager.resource.memory-mb",
+      "value": "4096",
+      "isFinal": true,
+      "resource": "yarn-site.xml"
+    },
+    {
+      "key": "fs.s3a.secret.key",
+      "value": "<redacted>",
+      "isFinal": false,
+      "resource": "core-site.xml"
+    }
+  ]
+}
