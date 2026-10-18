@@ -1,0 +1,199 @@
+<!DOCTYPE html><html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><link rel="stylesheet" href="/static/timeline-view.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery-3.5.1.min.js"></script><script src="/static/vis-timeline-graph2d.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/timeline-view.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script>setUIRoot('')</script>
+        <script>setAppBasePath('')</script>
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo-77x50px-hd.png"></link>
+        <title>burrow-structured-streaming - Streaming Query</title>
+      </head>
+      <body>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img src="/static/spark-logo-77x50px-hd.png"/>
+                <span class="version">3.5.9</span>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/StreamingQuery/">Structured Streaming</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-structured-streaming" class="text-nowrap">burrow-structured-streaming</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+          </div>
+        </nav>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <h3 style="vertical-align: bottom; white-space: nowrap; overflow: hidden;
+                text-overflow: ellipsis;">
+                Streaming Query
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <span id="completed" class="collapse-aggregated-completedQueries collapse-table" onClick="collapseTable('collapse-aggregated-completedQueries','aggregated-completedQueries')">
+          <h5 id="completedqueries">
+            <span class="collapse-table-arrow arrow-open"></span>
+            <a>Completed Streaming Queries (1)</a>
+          </h5>
+        </span><div>
+            <ul class="aggregated-completedQueries collapsible-table">
+              <div>
+        <div>
+      <div>
+        <form id="form-completed-table-top-page" method="get" action="/StreamingQuery/?&completed.sort=Start+Time&completed.desc=true#completed" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completed.sort" value="Start Time"/><input type="hidden" name="completed.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completed.page" id="form-completed-table-top-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completed-table-top-page-size" name="completed.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completed-table">
+          <thead>
+      <tr><th>
+              <a href="/StreamingQuery/?&completed.sort=Name&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Name
+                </span>
+              </a>
+            </th><th>
+              <a href="/StreamingQuery/?&completed.sort=Status&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Status
+                </span>
+              </a>
+            </th><th>
+              <a href="/StreamingQuery/?&completed.sort=ID&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  ID
+                </span>
+              </a>
+            </th><th>
+              <a href="/StreamingQuery/?&completed.sort=Run+ID&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Run ID
+                </span>
+              </a>
+            </th><th>
+            <a href="/StreamingQuery/?&completed.sort=Start+Time&completed.desc=false&completed.pageSize=100#completed">
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Start Time&nbsp;&#x25BE;
+              </span>
+            </a>
+          </th><th>
+              <a href="/StreamingQuery/?&completed.sort=Duration&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Duration
+                </span>
+              </a>
+            </th><th>
+              <a href="/StreamingQuery/?&completed.sort=Avg+Input+%2Fsec&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Avg Input /sec
+                </span>
+              </a>
+            </th><th>
+              <a href="/StreamingQuery/?&completed.sort=Avg+Process+%2Fsec&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Avg Process /sec
+                </span>
+              </a>
+            </th><th>
+              <a href="/StreamingQuery/?&completed.sort=Latest+Batch&completed.pageSize=100#completed">
+                <span data-toggle="tooltip" data-placement="top" title="">
+                  Latest Batch
+                </span>
+              </a>
+            </th><th>
+              <span data-toggle="tooltip" data-placement="top" title="">
+                Error
+              </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr>
+      <td>rate_counts</td>
+      <td>FINISHED</td>
+      <td>00a09ce7-1564-4c87-b68c-3ff1eb62d57a</td>
+      <td><a href="/StreamingQuery/statistics/?id=61db4652-e827-43ba-9389-5973a94b8fac">61db4652-e827-43ba-9389-5973a94b8fac</a></td>
+      <td>2026/10/03 12:44:18</td>
+      <td>15 seconds 705 ms</td>
+      <td>34.29</td>
+      <td>150.96</td>
+      <td>8</td>
+      <td>-</td>
+    </tr>
+          </tbody>
+        </table>
+        <div>
+      <div>
+        <form id="form-completed-table-bottom-page" method="get" action="/StreamingQuery/?&completed.sort=Start+Time&completed.desc=true#completed" class="form-inline float-right justify-content-end" style="margin-bottom: 0px;">
+          <input type="hidden" name="completed.sort" value="Start Time"/><input type="hidden" name="completed.desc" value="true"/>
+          <label>1 Pages. Jump to</label>
+          <input type="text" name="completed.page" id="form-completed-table-bottom-page-no" value="1" class="col-1 form-control"/>
+
+          <label>. Show </label>
+          <input type="text" id="form-completed-table-bottom-page-size" name="completed.pageSize" value="100" class="col-1 form-control"/>
+          <label>items in a page.</label>
+
+          <button type="submit" class="btn btn-spark">Go</button>
+        </form>
+      </div>
+      <div>
+        <span style="float: left; padding-top: 4px; padding-right: 4px;">Page: </span>
+        <ul class="pagination">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+    </div>
+      </div>
+            </ul>
+          </div>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>

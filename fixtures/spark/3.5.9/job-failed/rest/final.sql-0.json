@@ -1,0 +1,41 @@
+{
+  "id" : 0,
+  "status" : "FAILED",
+  "description" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py:31",
+  "planDescription" : "== Physical Plan ==\n* Project (3)\n+- BatchEvalPython (2)\n   +- * Range (1)\n\n\n(1) Range [codegen id : 1]\nOutput [1]: [id#0L]\nArguments: Range (0, 10, step=1, splits=Some(2))\n\n(2) BatchEvalPython\nInput [1]: [id#0L]\nArguments: [bad(id#0L)#2], [pythonUDF0#5]\n\n(3) Project [codegen id : 2]\nOutput [1]: [pythonUDF0#5 AS bad(id)#3]\nInput [2]: [id#0L, pythonUDF0#5]\n\n",
+  "submissionTime" : "2026-10-03T07:12:51.286GMT",
+  "duration" : 1196,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ 2 ],
+  "nodes" : [ {
+    "nodeId" : 4,
+    "nodeName" : "Range",
+    "wholeStageCodegenId" : 1,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 3,
+    "nodeName" : "WholeStageCodegen (1)",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 2,
+    "nodeName" : "BatchEvalPython",
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 1,
+    "nodeName" : "Project",
+    "wholeStageCodegenId" : 2,
+    "metrics" : [ ]
+  }, {
+    "nodeId" : 0,
+    "nodeName" : "WholeStageCodegen (2)",
+    "metrics" : [ ]
+  } ],
+  "edges" : [ {
+    "fromId" : 2,
+    "toId" : 1
+  }, {
+    "fromId" : 4,
+    "toId" : 2
+  } ]
+}

@@ -1,0 +1,902 @@
+{
+  "scheduler": {
+    "schedulerInfo": {
+      "type": "fairScheduler",
+      "rootQueue": {
+        "maxApps": 2147483647,
+        "minResources": {
+          "memory": 0,
+          "vCores": 0,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 0
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "maxResources": {
+          "memory": 8192,
+          "vCores": 8,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 8192
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 8
+              }
+            ]
+          }
+        },
+        "usedResources": {
+          "memory": 1024,
+          "vCores": 1,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 1024
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "amUsedResources": {
+          "memory": 1024,
+          "vCores": 1,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 1024
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "amMaxResources": {
+          "memory": 4096,
+          "vCores": 4,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 4096
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 4
+              }
+            ]
+          }
+        },
+        "demandResources": {
+          "memory": 1024,
+          "vCores": 1,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 1024
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "steadyFairResources": {
+          "memory": 4096,
+          "vCores": 4,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 4096
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 4
+              }
+            ]
+          }
+        },
+        "fairResources": {
+          "memory": 4096,
+          "vCores": 4,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 4096
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 4
+              }
+            ]
+          }
+        },
+        "clusterResources": {
+          "memory": 8192,
+          "vCores": 8,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 8192
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 8
+              }
+            ]
+          }
+        },
+        "reservedResources": {
+          "memory": 0,
+          "vCores": 0,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 0
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "maxContainerAllocation": {
+          "memory": 8192,
+          "vCores": 4,
+          "resourceInformations": {
+            "resourceInformation": [
+              {
+                "attributes": {},
+                "maximumAllocation": 8192,
+                "minimumAllocation": 1024,
+                "name": "memory-mb",
+                "resourceType": "COUNTABLE",
+                "units": "Mi",
+                "value": 8192
+              },
+              {
+                "attributes": {},
+                "maximumAllocation": 4,
+                "minimumAllocation": 1,
+                "name": "vcores",
+                "resourceType": "COUNTABLE",
+                "units": "",
+                "value": 4
+              }
+            ]
+          }
+        },
+        "pendingContainers": 0,
+        "allocatedContainers": 1,
+        "reservedContainers": 0,
+        "queueName": "root",
+        "schedulingPolicy": "fair",
+        "preemptable": true,
+        "childQueues": {
+          "queue": [
+            {
+              "type": "fairSchedulerLeafQueueInfo",
+              "maxApps": 2147483647,
+              "minResources": {
+                "memory": 0,
+                "vCores": 0,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 0
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              "maxResources": {
+                "memory": 8192,
+                "vCores": 8,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 8192
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 8
+                    }
+                  ]
+                }
+              },
+              "usedResources": {
+                "memory": 1024,
+                "vCores": 1,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 1024
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              "amUsedResources": {
+                "memory": 1024,
+                "vCores": 1,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 1024
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              "amMaxResources": {
+                "memory": 4096,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 4096
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "demandResources": {
+                "memory": 1024,
+                "vCores": 1,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 1024
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              "steadyFairResources": {
+                "memory": 4096,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 4096
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "fairResources": {
+                "memory": 4096,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 4096
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "clusterResources": {
+                "memory": 8192,
+                "vCores": 8,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 8192
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 8
+                    }
+                  ]
+                }
+              },
+              "reservedResources": {
+                "memory": 0,
+                "vCores": 0,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 0
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              "maxContainerAllocation": {
+                "memory": 8192,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 8192
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "pendingContainers": 0,
+              "allocatedContainers": 1,
+              "reservedContainers": 0,
+              "queueName": "root.default",
+              "schedulingPolicy": "fair",
+              "preemptable": true,
+              "numPendingApps": 0,
+              "numActiveApps": 1
+            },
+            {
+              "type": "fairSchedulerLeafQueueInfo",
+              "maxApps": 2147483647,
+              "minResources": {
+                "memory": 0,
+                "vCores": 0,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 0
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              "maxResources": {
+                "memory": 8192,
+                "vCores": 8,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 8192
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 8
+                    }
+                  ]
+                }
+              },
+              "usedResources": {
+                "memory": 1024,
+                "vCores": 1,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 1024
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              "amUsedResources": {
+                "memory": 1024,
+                "vCores": 1,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 1024
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              "amMaxResources": {
+                "memory": 4096,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 4096
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "demandResources": {
+                "memory": 1024,
+                "vCores": 1,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 1024
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              "steadyFairResources": {
+                "memory": 4096,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 4096
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "fairResources": {
+                "memory": 4096,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 4096
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "clusterResources": {
+                "memory": 8192,
+                "vCores": 8,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 8192
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 8
+                    }
+                  ]
+                }
+              },
+              "reservedResources": {
+                "memory": 0,
+                "vCores": 0,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 0
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              "maxContainerAllocation": {
+                "memory": 8192,
+                "vCores": 4,
+                "resourceInformations": {
+                  "resourceInformation": [
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 8192,
+                      "minimumAllocation": 1024,
+                      "name": "memory-mb",
+                      "resourceType": "COUNTABLE",
+                      "units": "Mi",
+                      "value": 8192
+                    },
+                    {
+                      "attributes": {},
+                      "maximumAllocation": 4,
+                      "minimumAllocation": 1,
+                      "name": "vcores",
+                      "resourceType": "COUNTABLE",
+                      "units": "",
+                      "value": 4
+                    }
+                  ]
+                }
+              },
+              "pendingContainers": 0,
+              "allocatedContainers": 1,
+              "reservedContainers": 0,
+              "queueName": "root.users",
+              "schedulingPolicy": "fair",
+              "preemptable": true,
+              "numPendingApps": 0,
+              "numActiveApps": 1
+            }
+          ]
+        }
+      }
+    }
+  }
+}

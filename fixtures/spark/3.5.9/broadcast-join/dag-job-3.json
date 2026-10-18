@@ -1,0 +1,47 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 3,
+  "stages": [
+    {
+      "stageId": 4,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 4",
+      "clusters": [
+        {
+          "id": "cluster31",
+          "name": "parallelize",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 12,
+          "name": "PythonRDD",
+          "callsite": "sum at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/broadcast_join.py:13",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": null
+        },
+        {
+          "id": 11,
+          "name": "ParallelCollectionRDD",
+          "callsite": "readRDDFromFile at PythonRDD.scala:289",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster31"
+        }
+      ],
+      "edges": [
+        {
+          "from": 11,
+          "to": 12
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

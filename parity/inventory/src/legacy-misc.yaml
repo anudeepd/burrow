@@ -1,0 +1,161 @@
+# Legacy RM UI — miscellaneous routed pages.
+#   /cluster/errors-and-warnings            -> legacy.rm.errors
+#   /cluster/logaggregationstatus/{app.id}  -> legacy.rm.logaggregationstatus
+# NOT declared here (see report / footer notes):
+#   legacy.rm.failure  is already declared in src/legacy-apps.yaml:95-105 (RedirectionErrorPage -> static.error.proxyRedirect).
+#   /cluster/queue/{queue.name} renders the SAME page as legacy.rm.apps (RmController#queue only setTitle; the default
+#     view for RmController is RmView, whose content() is AppsBlockWithMetrics) — already inventoried as legacy.rm.apps.
+#   RmController#submit ("Application Submission Not Allowed") has NO route in RMWebApp.setup() (RMWebApp.java:67-81).
+#     The conf key yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled exists (RM_WEBAPP_DELEGATION_TOKEN_AUTH_FILTER,
+#     YarnConfiguration.java:568-570) but only installs an authentication filter (RMWebAppUtil.setupSecurityAndFilters) and does
+#     NOT register /submit -> submit() is dead code in 3.4.3, no page.
+# Sources: hadoop-yarn-server-resourcemanager/.../webapp/{RMErrorsAndWarningsPage,RMAppLogAggregationStatusBlock,
+#   AppLogAggregationStatusPage,RmController,RMWebApp}.java,
+#   hadoop-yarn-server-common/org/apache/hadoop/yarn/server/webapp/ErrorsAndWarningsBlock.java,
+#   hadoop-yarn-api/.../records/LogAggregationStatus.java,
+#   hadoop-yarn-common/.../util/Log4jWarningErrorMetricsAppender.java
+version: 1
+derived:
+  # --- /cluster/errors-and-warnings: Log4j error/warning count tables (ErrorsAndWarningsBlock.MetricsBase) ---
+  # cutoffs = [(now-60)/1000, (now-300)/1000, (now-900)/1000, (now-3600)/1000, (now-21600)/1000, (now-43200)/1000, (now-84600)/1000]
+  - {id: cluster.metrics.derived.log4jErrorCount1Min, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getErrorCounts(getCutoffs()).get(0)  (index i = i-th cutoff; 1 min window)", source: "ErrorsAndWarningsBlock.java:226", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jErrorCount5Min, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getErrorCounts(getCutoffs()).get(1)", source: "ErrorsAndWarningsBlock.java:226", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jErrorCount15Min, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getErrorCounts(getCutoffs()).get(2)", source: "ErrorsAndWarningsBlock.java:226", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jErrorCount1Hour, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getErrorCounts(getCutoffs()).get(3)", source: "ErrorsAndWarningsBlock.java:226", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jErrorCount6Hours, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getErrorCounts(getCutoffs()).get(4)", source: "ErrorsAndWarningsBlock.java:226", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jErrorCount12Hours, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getErrorCounts(getCutoffs()).get(5)", source: "ErrorsAndWarningsBlock.java:226", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jErrorCount24Hours, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getErrorCounts(getCutoffs()).get(6)  (NOTE: cutoff is now-84600s, source typo for 86400)", source: "ErrorsAndWarningsBlock.java:226,177", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jWarningCount1Min, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getWarningCounts(getCutoffs()).get(0)", source: "ErrorsAndWarningsBlock.java:244", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jWarningCount5Min, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getWarningCounts(getCutoffs()).get(1)", source: "ErrorsAndWarningsBlock.java:244", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jWarningCount15Min, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getWarningCounts(getCutoffs()).get(2)", source: "ErrorsAndWarningsBlock.java:244", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jWarningCount1Hour, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getWarningCounts(getCutoffs()).get(3)", source: "ErrorsAndWarningsBlock.java:244", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jWarningCount6Hours, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getWarningCounts(getCutoffs()).get(4)", source: "ErrorsAndWarningsBlock.java:244", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jWarningCount12Hours, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getWarningCounts(getCutoffs()).get(5)", source: "ErrorsAndWarningsBlock.java:244", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jWarningCount24Hours, entity: cluster.metrics, type: int, format: int, from: [], derivation: "appender.getWarningCounts(getCutoffs()).get(6)", source: "ErrorsAndWarningsBlock.java:244", restGap: true, altSource: "none"}
+  # --- /cluster/errors-and-warnings: messages table (table#messages) ---
+  - {id: cluster.metrics.derived.log4jMessageText, entity: cluster.metrics, type: string, format: html-escaped, from: [], derivation: "String message = entry.getKey(); if (message.length() > 80 || message.contains(\"\\n\")) displayMessage = message.split(\"\\n\")[0] truncated to 80 chars shown in a <pre><a href=# onclick=toggleContent(this)> ... <div class=toggle-content><pre>full message</pre></div> else <pre>message", source: "ErrorsAndWarningsBlock.java:128-150", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jMessageType, entity: cluster.metrics, type: enum, values: [Error, Warning], format: enum, from: [], derivation: "source.getKey()  (sources map keys: \"Error\" -> errorsData, \"Warning\" -> warningsData)", source: "ErrorsAndWarningsBlock.java:119-121", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jMessageCount, entity: cluster.metrics, type: long, format: int, from: [], derivation: "String.valueOf(entry.getValue().count)", source: "ErrorsAndWarningsBlock.java:151", restGap: true, altSource: "none"}
+  - {id: cluster.metrics.derived.log4jMessageLastTime, entity: cluster.metrics, type: string, format: epoch-datetime, from: [], derivation: "Times.format(ele.timestampSeconds * 1000)", source: "ErrorsAndWarningsBlock.java:152", restGap: true, altSource: "none"}
+  # --- /cluster/logaggregationstatus/{app.id}: per-NodeManager rows of rmApp.getLogAggregationReportsForApp() ---
+  - {id: app.derived.logAggReportNodeId, entity: app, type: string, format: none, from: [], derivation: "report.getKey().toString()  (Map<NodeId, LogAggregationReport> rmApp.getLogAggregationReportsForApp(); per NM)", source: "RMAppLogAggregationStatusBlock.java:152", restGap: true, altSource: "none"}
+  - {id: app.derived.logAggReportStatusText, entity: app, type: string, format: enum, from: [], derivation: "status == null ? \"N/A\" : status.toString()   where status = report.getValue() == null ? null : report.getValue().getLogAggregationStatus()", source: "RMAppLogAggregationStatusBlock.java:153", restGap: true, altSource: "none"}
+  - {id: app.derived.logAggReportDiagnostics, entity: app, type: string, format: none, from: [], derivation: "message == null ? \"N/A\" : message   where message = report.getValue() == null ? null : report.getValue().getDiagnosticMessage()", source: "RMAppLogAggregationStatusBlock.java:154", restGap: true, altSource: "none"}
+  - {id: app.derived.logAggReportFailures, entity: app, type: string, format: none, from: [], derivation: "failureMessage == null ? \"N/A\" : failureMessage   where failureMessage = report.getValue() == null ? null : ((RMAppImpl)rmApp).getLogAggregationFailureMessagesForNM(report.getKey())", source: "RMAppLogAggregationStatusBlock.java:155", restGap: true, altSource: "none"}
+pages:
+  - id: legacy.rm.errors
+    daemon: rm
+    route: /cluster/errors-and-warnings
+    title: "Errors and Warnings in the ResourceManager"
+    classes: [RmController#errorsAndWarnings, RMErrorsAndWarningsPage, ErrorsAndWarningsBlock, ErrorMetrics, WarningMetrics]
+    includes: [legacy.rm.shared.chrome]
+    query:
+      - {name: cutoff, doc: "period in seconds; default = Time.now()/1000 (show all). Read from ctx.requestContext().get('cutoff',''), Integer.parseInt; <=0 or non-numeric => now. Select options 60/300/900/3600/21600/43200/86400 reload the page with ?cutoff=<v>."}
+    sections:
+      - id: legacy.rm.errors.admin
+        title: null
+        source: "ErrorsAndWarningsBlock.java:73"
+        when: ["other:AdminACLsManager.areACLsEnabled() && (callerUGI == null || !adminAclsManager.isAdmin(callerUGI))"]
+        scenario: "yarn.resourcemanager.admin.acl enabled and the caller is not an admin"
+        items:
+          - {id: legacy.rm.errors.admin.notice, label: "This page is for admins only.", kind: text, field: static.errors.adminOnly, format: none, source: "ErrorsAndWarningsBlock.java:73", note: "rendered INSTEAD of metrics/tables; when ACLs are disabled every caller is treated as admin"}
+      - id: legacy.rm.errors.metrics-error
+        title: "Error Metrics"
+        source: "ErrorsAndWarningsBlock.java:218"
+        when: ["other:GenericsUtil.isLog4jLogger(ErrorsAndWarningsBlock.class) && Log4jWarningErrorMetricsAppender.findAppender() != null"]
+        scenario: "RM JVM uses log4j (not slf4j binding to another impl) and a Log4jWarningErrorMetricsAppender instance exists"
+        items:
+          - {id: legacy.rm.errors.metrics-error.title, label: "Error Metrics", kind: title, field: static.section.errorMetrics, format: none, source: "ErrorsAndWarningsBlock.java:218", note: "h3(tableHeading) above table#metricsoverview"}
+          - {id: legacy.rm.errors.metrics-error.count-1min, label: "Last 1 minute", kind: metric, field: cluster.metrics.derived.log4jErrorCount1Min, rest: null, derivation: "appender.getErrorCounts(getCutoffs()).get(0)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:196,226", restGap: true}
+          - {id: legacy.rm.errors.metrics-error.count-5min, label: "Last 5 minutes", kind: metric, field: cluster.metrics.derived.log4jErrorCount5Min, rest: null, derivation: "appender.getErrorCounts(getCutoffs()).get(1)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:197,226", restGap: true}
+          - {id: legacy.rm.errors.metrics-error.count-15min, label: "Last 15 minutes", kind: metric, field: cluster.metrics.derived.log4jErrorCount15Min, rest: null, derivation: "appender.getErrorCounts(getCutoffs()).get(2)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:198,226", restGap: true}
+          - {id: legacy.rm.errors.metrics-error.count-1hour, label: "Last 1 hour", kind: metric, field: cluster.metrics.derived.log4jErrorCount1Hour, rest: null, derivation: "appender.getErrorCounts(getCutoffs()).get(3)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:199,226", restGap: true}
+          - {id: legacy.rm.errors.metrics-error.count-6hours, label: "Last 6 hours", kind: metric, field: cluster.metrics.derived.log4jErrorCount6Hours, rest: null, derivation: "appender.getErrorCounts(getCutoffs()).get(4)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:200,226", restGap: true}
+          - {id: legacy.rm.errors.metrics-error.count-12hours, label: "Last 12 hours", kind: metric, field: cluster.metrics.derived.log4jErrorCount12Hours, rest: null, derivation: "appender.getErrorCounts(getCutoffs()).get(5)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:201,226", restGap: true}
+          - {id: legacy.rm.errors.metrics-error.count-24hours, label: "Last 24 hours", kind: metric, field: cluster.metrics.derived.log4jErrorCount24Hours, rest: null, derivation: "appender.getErrorCounts(getCutoffs()).get(6)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:202,226", restGap: true}
+      - id: legacy.rm.errors.metrics-warning
+        title: "Warning Metrics"
+        source: "ErrorsAndWarningsBlock.java:236"
+        when: ["other:GenericsUtil.isLog4jLogger(ErrorsAndWarningsBlock.class) && Log4jWarningErrorMetricsAppender.findAppender() != null"]
+        items:
+          - {id: legacy.rm.errors.metrics-warning.title, label: "Warning Metrics", kind: title, field: static.section.warningMetrics, format: none, source: "ErrorsAndWarningsBlock.java:236", note: "h3(tableHeading) above a second table#metricsoverview"}
+          - {id: legacy.rm.errors.metrics-warning.count-1min, label: "Last 1 minute", kind: metric, field: cluster.metrics.derived.log4jWarningCount1Min, rest: null, derivation: "appender.getWarningCounts(getCutoffs()).get(0)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:196,244", restGap: true}
+          - {id: legacy.rm.errors.metrics-warning.count-5min, label: "Last 5 minutes", kind: metric, field: cluster.metrics.derived.log4jWarningCount5Min, rest: null, derivation: "appender.getWarningCounts(getCutoffs()).get(1)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:197,244", restGap: true}
+          - {id: legacy.rm.errors.metrics-warning.count-15min, label: "Last 15 minutes", kind: metric, field: cluster.metrics.derived.log4jWarningCount15Min, rest: null, derivation: "appender.getWarningCounts(getCutoffs()).get(2)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:198,244", restGap: true}
+          - {id: legacy.rm.errors.metrics-warning.count-1hour, label: "Last 1 hour", kind: metric, field: cluster.metrics.derived.log4jWarningCount1Hour, rest: null, derivation: "appender.getWarningCounts(getCutoffs()).get(3)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:199,244", restGap: true}
+          - {id: legacy.rm.errors.metrics-warning.count-6hours, label: "Last 6 hours", kind: metric, field: cluster.metrics.derived.log4jWarningCount6Hours, rest: null, derivation: "appender.getWarningCounts(getCutoffs()).get(4)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:200,244", restGap: true}
+          - {id: legacy.rm.errors.metrics-warning.count-12hours, label: "Last 12 hours", kind: metric, field: cluster.metrics.derived.log4jWarningCount12Hours, rest: null, derivation: "appender.getWarningCounts(getCutoffs()).get(5)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:201,244", restGap: true}
+          - {id: legacy.rm.errors.metrics-warning.count-24hours, label: "Last 24 hours", kind: metric, field: cluster.metrics.derived.log4jWarningCount24Hours, rest: null, derivation: "appender.getWarningCounts(getCutoffs()).get(6)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:202,244", restGap: true}
+      - id: legacy.rm.errors.controls
+        title: null
+        source: "ErrorsAndWarningsBlock.java:80"
+        when: ["other:GenericsUtil.isLog4jLogger(ErrorsAndWarningsBlock.class) && Log4jWarningErrorMetricsAppender.findAppender() != null"]
+        items:
+          - {id: legacy.rm.errors.controls.reload, label: "View data for the last ", kind: button, field: static.errors.reloadLabel, format: none, source: "ErrorsAndWarningsBlock.java:80", note: "div>button onclick=reloadPage(); followed by select#cutoff"}
+          - {id: legacy.rm.errors.controls.option-1min, label: "1 min", kind: button, field: static.errors.cutoff.1min, format: none, source: "ErrorsAndWarningsBlock.java:81", note: "select#cutoff option value=60"}
+          - {id: legacy.rm.errors.controls.option-5min, label: "5 min", kind: button, field: static.errors.cutoff.5min, format: none, source: "ErrorsAndWarningsBlock.java:82", note: "option value=300"}
+          - {id: legacy.rm.errors.controls.option-15min, label: "15 min", kind: button, field: static.errors.cutoff.15min, format: none, source: "ErrorsAndWarningsBlock.java:82", note: "option value=900"}
+          - {id: legacy.rm.errors.controls.option-1hour, label: "1 hour", kind: button, field: static.errors.cutoff.1hour, format: none, source: "ErrorsAndWarningsBlock.java:83", note: "option value=3600"}
+          - {id: legacy.rm.errors.controls.option-6hours, label: "6 hours", kind: button, field: static.errors.cutoff.6hours, format: none, source: "ErrorsAndWarningsBlock.java:84", note: "option value=21600"}
+          - {id: legacy.rm.errors.controls.option-12hours, label: "12 hours", kind: button, field: static.errors.cutoff.12hours, format: none, source: "ErrorsAndWarningsBlock.java:85", note: "option value=43200"}
+          - {id: legacy.rm.errors.controls.option-24hours, label: "24 hours", kind: button, field: static.errors.cutoff.24hours, format: none, source: "ErrorsAndWarningsBlock.java:85", note: "option value=86400"}
+      - id: legacy.rm.errors.messages
+        title: null
+        source: "ErrorsAndWarningsBlock.java:106"
+        when: ["other:GenericsUtil.isLog4jLogger(ErrorsAndWarningsBlock.class) && Log4jWarningErrorMetricsAppender.findAppender() != null"]
+        items:
+          - {id: legacy.rm.errors.messages.col-message, label: "Message", kind: column, field: cluster.metrics.derived.log4jMessageText, rest: null, derivation: "entry.getKey() (message store key); >80 chars or contains newline => first line truncated to 80 + toggle-content div", format: html-escaped, source: "ErrorsAndWarningsBlock.java:107", restGap: true, note: 'th.th(.message, "Message"); rendered inside a pre block'}
+          - {id: legacy.rm.errors.messages.col-type, label: "Type", kind: column, field: cluster.metrics.derived.log4jMessageType, rest: null, derivation: "source.getKey() => \"Error\" | \"Warning\"", format: enum, source: "ErrorsAndWarningsBlock.java:108", restGap: true}
+          - {id: legacy.rm.errors.messages.col-count, label: "Count", kind: column, field: cluster.metrics.derived.log4jMessageCount, rest: null, derivation: "String.valueOf(ele.count)", format: int, normaliser: int, source: "ErrorsAndWarningsBlock.java:108,151", restGap: true, note: "column index 2: sType numeric, bSearchable false"}
+          - {id: legacy.rm.errors.messages.col-lasttime, label: "Latest Message Time", kind: column, field: cluster.metrics.derived.log4jMessageLastTime, rest: null, derivation: "Times.format(ele.timestampSeconds * 1000)", format: epoch-datetime, normaliser: epoch, source: "ErrorsAndWarningsBlock.java:109,152", restGap: true, note: "column index 3: sType date; default sort [[3,'desc']]"}
+      - id: legacy.rm.errors.datatable
+        title: null
+        source: "RMErrorsAndWarningsPage.java:39"
+        items:
+          - {id: legacy.rm.errors.datatable.length, label: "Show _MENU_ entries", kind: legend, field: static.datatable.length, format: none, source: "hadoop-yarn-common/org/apache/hadoop/yarn/webapp/view/JQueryUI.java:205", note: "tableInit(): iDisplayLength:20, aLengthMenu:[20, 40, 60, 80, 100] (no bProcessing)"}
+          - {id: legacy.rm.errors.datatable.search, label: "Search:", kind: button, field: static.datatable.search, format: none, source: "hadoop-yarn-common/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js:166", note: "free-text filter (Count column has bSearchable:false)"}
+          - {id: legacy.rm.errors.datatable.info, label: "Showing _START_ to _END_ of _TOTAL_ entries", kind: legend, field: static.datatable.info, format: none, source: "hadoop-yarn-common/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js:166"}
+          - {id: legacy.rm.errors.datatable.empty, label: "No data available in table", kind: legend, field: static.datatable.empty, format: none, source: "hadoop-yarn-common/webapps/static/dt-1.11.5/js/jquery.dataTables.min.js:166", note: "NO dedicated 'No errors/warnings' empty string exists in 3.4.3; when no messages match the cutoff the tbody stays empty and DataTables shows this default"}
+  - id: legacy.rm.logaggregationstatus
+    daemon: rm
+    route: /cluster/logaggregationstatus/{app.id}
+    title: "Application {app.id}"
+    titleDynamic: true
+    classes: [RmController#logaggregationstatus, AppLogAggregationStatusPage, RMAppLogAggregationStatusBlock]
+    includes: [legacy.rm.shared.chrome]
+    query:
+      - {name: app.id, doc: "path param APPLICATION_ID (YarnWebParams.APPLICATION_ID = app.id). AppLogAggregationStatusPage: empty => title 'Bad request: missing application ID'; block: empty => puts 'Bad request: requires Application ID' and returns; Apps.toAppID failure => puts 'Invalid Application ID: <aid>' and returns"}
+    sections:
+      - id: legacy.rm.logaggregationstatus.description
+        title: null
+        source: "RMAppLogAggregationStatusBlock.java:83"
+        items:
+          - {id: legacy.rm.logaggregationstatus.description.col-status, label: "Log Aggregation Status", kind: column, field: static.logAggregationStatus.colStatus, format: none, source: "RMAppLogAggregationStatusBlock.java:88", note: "table#LogAggregationStatusDecription (sic)"}
+          - {id: legacy.rm.logaggregationstatus.description.col-description, label: "Description", kind: column, field: static.logAggregationStatus.colDescription, format: none, source: "RMAppLogAggregationStatusBlock.java:89"}
+          - {id: legacy.rm.logaggregationstatus.description.disabled, label: "DISABLED", kind: legend, field: static.logAggregationStatus.disabled, format: none, source: "RMAppLogAggregationStatusBlock.java:91-92", note: 'Description cell: "Log Aggregation is Disabled." (LogAggregationStatus.DISABLED)'}
+          - {id: legacy.rm.logaggregationstatus.description.notstart, label: "NOT_START", kind: legend, field: static.logAggregationStatus.notStart, format: none, source: "RMAppLogAggregationStatusBlock.java:93-94", note: 'Description cell: "Log Aggregation does not Start." (LogAggregationStatus.NOT_START)'}
+          - {id: legacy.rm.logaggregationstatus.description.running, label: "RUNNING", kind: legend, field: static.logAggregationStatus.running, format: none, source: "RMAppLogAggregationStatusBlock.java:95-96", note: 'Description cell: "Log Aggregation is Running." (LogAggregationStatus.RUNNING)'}
+          - {id: legacy.rm.logaggregationstatus.description.runningwithfailure, label: "RUNNING_WITH_FAILURE", kind: legend, field: static.logAggregationStatus.runningWithFailure, format: none, source: "RMAppLogAggregationStatusBlock.java:97-99", note: 'Description cell: "Log Aggregation is Running, but has failures in previous cycles" (LogAggregationStatus.RUNNING_WITH_FAILURE)'}
+          - {id: legacy.rm.logaggregationstatus.description.succeeded, label: "SUCCEEDED", kind: legend, field: static.logAggregationStatus.succeeded, format: none, source: "RMAppLogAggregationStatusBlock.java:100-102", note: 'Description cell: "Log Aggregation is Succeeded. All of the logs have been aggregated successfully." (LogAggregationStatus.SUCCEEDED)'}
+          - {id: legacy.rm.logaggregationstatus.description.failed, label: "FAILED", kind: legend, field: static.logAggregationStatus.failed, format: none, source: "RMAppLogAggregationStatusBlock.java:103-105", note: 'Description cell: "Log Aggregation is Failed. At least one of the logs have not been aggregated." (LogAggregationStatus.FAILED)'}
+          - {id: legacy.rm.logaggregationstatus.description.timeout, label: "TIME_OUT", kind: legend, field: static.logAggregationStatus.timeOut, format: none, source: "RMAppLogAggregationStatusBlock.java:106-109", note: 'Description cell: "The application is finished, but the log aggregation status is not updated for a long time. Not sure whether the log aggregation is finished or not." (LogAggregationStatus.TIME_OUT)'}
+      - id: legacy.rm.logaggregationstatus.summary
+        title: "Log Aggregation: "
+        source: "RMAppLogAggregationStatusBlock.java:116"
+        items:
+          - {id: legacy.rm.logaggregationstatus.summary.status, label: "Log Aggregation: ", dynamic: true, kind: title, field: app.logAggregationStatus, rest: {resource: rm.app, path: "app.logAggregationStatus"}, derivation: 'join("Log Aggregation: ", rmApp == null ? "N/A" : rmApp.getLogAggregationStatusForAppReport() == null ? "N/A" : rmApp.getLogAggregationStatusForAppReport().name())', format: enum, normaliser: after-colon+enum-name, nullDisplay: "N/A", source: "RMAppLogAggregationStatusBlock.java:117-122", note: "h3; AppInfo.logAggregationStatus is populated from the same RMApp.getLogAggregationStatusForAppReport() (AppInfo.java:207)"}
+      - id: legacy.rm.logaggregationstatus.table
+        title: null
+        source: "RMAppLogAggregationStatusBlock.java:128-156 (one row per entry of rmApp.getLogAggregationReportsForApp(); empty until an NM reports, while the app-level status is NOT_START/DISABLED)"
+        when: ["fact:logAggReportsPresent"]
+        items:
+          - {id: legacy.rm.logaggregationstatus.table.node, label: "NodeId", kind: column, field: app.derived.logAggReportNodeId, rest: null, derivation: "report.getKey().toString()", format: none, source: "RMAppLogAggregationStatusBlock.java:129,152", restGap: true, note: "one row per NodeManager in rmApp.getLogAggregationReportsForApp(); no REST resource exposes these per-NM reports"}
+          - {id: legacy.rm.logaggregationstatus.table.status, label: "Log Aggregation Status", kind: column, field: app.derived.logAggReportStatusText, rest: null, derivation: "status == null ? \"N/A\" : status.toString()", format: enum, normaliser: na-as-null+enum-name, nullDisplay: "N/A", source: "RMAppLogAggregationStatusBlock.java:130,153", restGap: true}
+          - {id: legacy.rm.logaggregationstatus.table.diagnostics, label: "Last {N} Diagnostic Messages", dynamic: true, kind: column, field: app.derived.logAggReportDiagnostics, rest: null, derivation: '"Last " + maxLogAggregationDiagnosticsInMemory + " Diagnostic Messages"   where maxLogAggregationDiagnosticsInMemory = conf.getInt(YarnConfiguration.RM_MAX_LOG_AGGREGATION_DIAGNOSTICS_IN_MEMORY, DEFAULT_RM_MAX_LOG_AGGREGATION_DIAGNOSTICS_IN_MEMORY)  (key yarn.resourcemanager.max-log-aggregation-diagnostics-in-memory, default 10)', format: none, nullDisplay: "N/A", source: "RMAppLogAggregationStatusBlock.java:131-132,154", restGap: true}
+          - {id: legacy.rm.logaggregationstatus.table.failures, label: "Last {N} Failure Messages", dynamic: true, kind: column, field: app.derived.logAggReportFailures, rest: null, derivation: '"Last " + maxLogAggregationDiagnosticsInMemory + " Failure Messages"', format: none, nullDisplay: "N/A", source: "RMAppLogAggregationStatusBlock.java:133-134,155", restGap: true}
+      - id: legacy.rm.logaggregationstatus.badrequest
+        title: null
+        source: "RMAppLogAggregationStatusBlock.java:67"
+        items:
+          - {id: legacy.rm.logaggregationstatus.badrequest.missing, label: "Bad request: requires Application ID", kind: text, field: static.logAggregationStatus.badRequest, format: none, when: ["other:$(APPLICATION_ID) is empty"], source: "RMAppLogAggregationStatusBlock.java:67", scenario: "request reaches the block with an empty app.id (and is NOT the page title path)", note: "puts(...) then return; page title instead shows 'Bad request: missing application ID' (AppLogAggregationStatusPage.java:32-34)"}
+          - {id: legacy.rm.logaggregationstatus.badrequest.invalid, label: "Invalid Application ID: ", dynamic: true, kind: text, field: static.logAggregationStatus.invalidAppId, fields: [app.id], derivation: '"Invalid Application ID: " + aid', format: none, when: ["other:Apps.toAppID(aid) throws"], source: "RMAppLogAggregationStatusBlock.java:75", scenario: "app.id is not a valid ApplicationId (e.g. malformed application_ id)"}

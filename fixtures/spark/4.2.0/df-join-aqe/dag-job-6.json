@@ -1,0 +1,78 @@
+{
+  "kind": "job",
+  "granularity": "rdd",
+  "jobId": 6,
+  "stages": [
+    {
+      "stageId": 18,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 18",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_357",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_358",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 24,
+          "name": "ParallelCollectionRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_357"
+        },
+        {
+          "id": 25,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_357"
+        },
+        {
+          "id": 26,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_357"
+        },
+        {
+          "id": 27,
+          "name": "MapPartitionsRDD",
+          "callsite": "$anonfun$withThreadLocalCaptured$1 at CompletableFuture.java:1768",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_358"
+        }
+      ],
+      "edges": [
+        {
+          "from": 24,
+          "to": 25
+        },
+        {
+          "from": 25,
+          "to": 26
+        },
+        {
+          "from": 26,
+          "to": 27
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

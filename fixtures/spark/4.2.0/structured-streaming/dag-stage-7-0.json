@@ -1,0 +1,130 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 7,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 7",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_378",
+          "name": "Exchange",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_381",
+          "name": "WholeStageCodegen (3)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_382",
+          "name": "StateStoreRestore",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_385",
+          "name": "WholeStageCodegen (4)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_386",
+          "name": "StateStoreSave",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_389",
+          "name": "WholeStageCodegen (5)",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 42,
+          "name": "ShuffledRowRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_378"
+        },
+        {
+          "id": 43,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_381"
+        },
+        {
+          "id": 44,
+          "name": "ReadStateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_382"
+        },
+        {
+          "id": 45,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_385"
+        },
+        {
+          "id": 46,
+          "name": "StateStoreRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_386"
+        },
+        {
+          "id": 47,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "unordered",
+          "clusterId": "cluster_spark_plan_389"
+        }
+      ],
+      "edges": [
+        {
+          "from": 42,
+          "to": 43
+        },
+        {
+          "from": 43,
+          "to": 44
+        },
+        {
+          "from": 44,
+          "to": 45
+        },
+        {
+          "from": 45,
+          "to": 46
+        },
+        {
+          "from": 46,
+          "to": 47
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": 41,
+      "to": 42,
+      "fromStage": null,
+      "toStage": 7
+    }
+  ]
+}

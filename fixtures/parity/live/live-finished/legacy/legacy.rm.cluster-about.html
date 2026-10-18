@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><head><meta http-equiv="X-UA-Compatible" content="IE=8">
+  <meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+  <title>
+    About the Cluster
+  </title>
+  <link rel="stylesheet" href="/static/yarn.css">
+  <style type="text/css">
+    #layout { height: 100%; }
+    #layout thead td { height: 3em; }
+    #layout #navcell { width: 11em; padding: 0 1em; }
+    #layout td.content { padding-top: 0 }
+    #layout tbody { vertical-align: top; }
+    #layout tfoot td { height: 4em; }
+  </style>
+  <link rel="stylesheet" href="/static/jquery/themes-1.9.1/base/jquery-ui.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jquery.dataTables.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/jui-dt.css">
+  <link rel="stylesheet" href="/static/dt-1.11.5/css/custom_datatable.css">
+  <script type="text/javascript" src="/static/jquery/jquery-3.6.0.min.js">
+  </script>
+  <script type="text/javascript" src="/static/jquery/jquery-ui-1.13.2.custom.min.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-1.11.5/js/jquery.dataTables.min.js">
+  </script>
+  <script type="text/javascript" src="/static/yarn.dt.plugins.js">
+  </script>
+  <script type="text/javascript" src="/static/dt-sorting/natural.js">
+  </script>
+  <style type="text/css">
+    #jsnotice { padding: 0.2em; text-align: center; }
+    .ui-progressbar { height: 1em; min-width: 5em }
+  </style>
+  <script type="text/javascript">
+    $(function() {
+      $('#nav').accordion({autoHeight:false, active:0});
+    });
+  </script>
+  </head><body><div id="jsnotice" class="ui-state-error" style="display: none;">
+    This page will not function without javascript enabled. Please enable javascript on your browser.
+  </div>
+  <script type="text/javascript">
+    $('#jsnotice').hide();
+  </script>
+  <table id="layout" class="ui-widget-content">
+    <thead>
+      <tr>
+        <td colspan="2">
+          <div id="header" class="ui-widget">
+            <div id="user">
+              Logged in as: dr.who
+            </div>
+            <div id="logo">
+              <img src="/static/hadoop-st.png">
+            </div>
+            <h1>
+              About the Cluster
+            </h1>
+          </div>
+        </td>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div id="footer" class="ui-widget">
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <tr>
+        <td id="navcell">
+          <div id="nav" class="ui-accordion ui-widget ui-helper-reset" role="tablist">
+            <h3 class="ui-accordion-header ui-corner-top ui-state-default ui-accordion-header-active ui-state-active ui-accordion-icons" role="tab" id="ui-id-1" aria-controls="ui-id-2" aria-selected="true" aria-expanded="true" tabindex="0"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-s"></span>
+              Cluster
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content ui-accordion-content-active" id="ui-id-2" aria-labelledby="ui-id-1" role="tabpanel" aria-hidden="false" style="height: 222.766px;">
+              <li>
+                <a href="/cluster/cluster">About</a>
+              </li><li>
+                <a href="/cluster/nodes">Nodes</a>
+              </li><li>
+                <a href="/cluster/nodelabels">Node Labels</a>
+              </li><li>
+                <a href="/cluster/apps">Applications</a>
+                <ul>
+                  <li>
+                  </li><li>
+                    <a href="/cluster/apps/NEW">NEW</a>
+                  </li><li>
+                    <a href="/cluster/apps/NEW_SAVING">NEW_SAVING</a>
+                  </li><li>
+                    <a href="/cluster/apps/SUBMITTED">SUBMITTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/ACCEPTED">ACCEPTED</a>
+                  </li><li>
+                    <a href="/cluster/apps/RUNNING">RUNNING</a>
+                  </li><li>
+                    <a href="/cluster/apps/FINISHED">FINISHED</a>
+                  </li><li>
+                    <a href="/cluster/apps/FAILED">FAILED</a>
+                  </li><li>
+                    <a href="/cluster/apps/KILLED">KILLED</a>
+                </li></ul>
+              </li><li>
+                <a href="/cluster/scheduler">Scheduler</a>
+            </li></ul>
+            <h3 class="ui-accordion-header ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons" role="tab" id="ui-id-3" aria-controls="ui-id-4" aria-selected="false" aria-expanded="false" tabindex="-1"><span class="ui-accordion-header-icon ui-icon ui-icon-triangle-1-e"></span>
+              Tools
+            </h3>
+            <ul class="ui-accordion-content ui-corner-bottom ui-helper-reset ui-widget-content" id="ui-id-4" aria-labelledby="ui-id-3" role="tabpanel" aria-hidden="true" style="display: none; height: 222.766px;">
+              <li>
+                <a href="/conf">Configuration</a>
+              </li><li>
+                <a href="/logs">Local logs</a>
+              </li><li>
+                <a href="/stacks">Server stacks</a>
+              </li><li>
+                <a href="/jmx?qry=Hadoop:*">Server metrics</a>
+            </li></ul>
+          </div>
+        </td>
+        <td class="content">
+          <style type="text/css">
+            .metrics {margin-bottom:5px}
+          </style>
+          <div class="metrics">
+            <h3>
+              Cluster Metrics
+            </h3>
+            <table id="metricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Apps Submitted
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Pending
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Running
+                  </th>
+                  <th class="ui-state-default">
+                    Apps Completed
+                  </th>
+                  <th class="ui-state-default">
+                    Containers Running
+                  </th>
+                  <th class="ui-state-default">
+                    Used Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Total Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Reserved Resources
+                  </th>
+                  <th class="ui-state-default">
+                    Physical Mem Used %
+                  </th>
+                  <th class="ui-state-default">
+                    Physical VCores Used %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    3
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    1
+                  </td>
+                  <td>
+                    2
+                  </td>
+                  <td>
+                    &lt;memory:1 GB, vCores:2&gt;
+                  </td>
+                  <td>
+                    &lt;memory:9 GB, vCores:12&gt;
+                  </td>
+                  <td>
+                    &lt;memory:0 B, vCores:0&gt;
+                  </td>
+                  <td>
+                    203
+                  </td>
+                  <td>
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h3>
+              Cluster Nodes Metrics
+            </h3>
+            <table id="nodemetricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Active Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Decommissioning Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Decommissioned Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Lost Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Unhealthy Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Rebooted Nodes
+                  </th>
+                  <th class="ui-state-default">
+                    Shutdown Nodes
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    <a href="/cluster/nodes">3</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/decommissioning">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/decommissioned">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/lost">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/unhealthy">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/rebooted">0</a>
+                  </td>
+                  <td>
+                    <a href="/cluster/nodes/shutdown">0</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <h3>
+              Scheduler Metrics
+            </h3>
+            <table id="schedulermetricsoverview">
+              <thead class="ui-widget-header">
+                <tr>
+                  <th class="ui-state-default">
+                    Scheduler Type
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduling Resource Type
+                  </th>
+                  <th class="ui-state-default">
+                    Minimum Allocation
+                  </th>
+                  <th class="ui-state-default">
+                    Maximum Allocation
+                  </th>
+                  <th class="ui-state-default">
+                    Maximum Cluster Application Priority
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduler Busy %
+                  </th>
+                  <th class="ui-state-default">
+                    RM Dispatcher EventQueue Size
+                  </th>
+                  <th class="ui-state-default">
+                    Scheduler Dispatcher EventQueue Size
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="ui-widget-content">
+                <tr>
+                  <td>
+                    Capacity Scheduler
+                  </td>
+                  <td>
+                    [memory-mb (unit=Mi), vcores]
+                  </td>
+                  <td>
+                    &lt;memory:256, vCores:1&gt;
+                  </td>
+                  <td>
+                    &lt;memory:3072, vCores:4&gt;
+                  </td>
+                  <td>
+                    10
+                  </td>
+                  <td>
+                    0
+                  </td>
+                  <td>
+                    0
+                  </td>
+                  <td>
+                    0
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="info-wrap ui-widget-content ui-corner-bottom">
+            <table class="info">
+              <tbody><tr>
+                <th class="ui-state-default" colspan="2">
+                  Cluster overview
+                </th>
+              </tr>
+              <tr class="odd">
+                <th>
+                  Cluster ID:
+                </th>
+                <td>
+                  1791901196446
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  ResourceManager state:
+                </th>
+                <td>
+                  STARTED
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  ResourceManager HA state:
+                </th>
+                <td>
+                  active
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  ResourceManager HA zookeeper connection state:
+                </th>
+                <td>
+                  Could not find leader elector. Verify both HA and automatic failover are enabled.
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  ResourceManager RMStateStore:
+                </th>
+                <td>
+                  org.apache.hadoop.yarn.server.resourcemanager.recovery.NullRMStateStore
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  ResourceManager started on:
+                </th>
+                <td>
+                  Tue Oct 13 19:49:56 +0530 2026
+                </td>
+              </tr>
+              <tr class="odd">
+                <th>
+                  ResourceManager version:
+                </th>
+                <td>
+                  3.4.3 from 9d50c6884666e794e45102260a4017bb31802e1b by stevel source checksum c9603bc1c4231988d03efcad81a27cf on 2026-02-13T14:31Z
+                </td>
+              </tr>
+              <tr class="even">
+                <th>
+                  Hadoop version:
+                </th>
+                <td>
+                  3.4.3 from 9d50c6884666e794e45102260a4017bb31802e1b by stevel source checksum 2331238c4c2929e66645316a32a8613 on 2026-02-13T14:23Z
+                </td>
+              </tr>
+            </tbody></table>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</body></html>

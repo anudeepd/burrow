@@ -1,0 +1,25 @@
+[ {
+  "id" : 0,
+  "status" : "COMPLETED",
+  "description" : "join+groupBy+orderBy",
+  "planDescription" : "",
+  "submissionTime" : "2026-10-03T07:12:29.389GMT",
+  "duration" : 2280,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 0, 5, 1, 2, 3, 4 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ ],
+  "edges" : [ ]
+}, {
+  "id" : 1,
+  "status" : "COMPLETED",
+  "description" : "self-join of a shared aggregate (ReusedExchange)",
+  "planDescription" : "",
+  "submissionTime" : "2026-10-03T07:12:31.837GMT",
+  "duration" : 518,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ 6, 7, 8 ],
+  "failedJobIds" : [ ],
+  "nodes" : [ ],
+  "edges" : [ ]
+} ]

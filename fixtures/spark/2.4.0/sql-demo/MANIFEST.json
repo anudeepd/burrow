@@ -1,0 +1,65 @@
+{
+  "sparkVersion": "2.4.0",
+  "javaVersion": "Temurin 8.0.504 (Spark driver); Temurin 17 local YARN daemons/executor",
+  "workload": "sql-join-aggregate",
+  "workloadSource": "workload.scala",
+  "workloadSourceSha256": "dbe87e2f6254e6829df9d4cdf99b196ba8c050c04a9d0920278f7ff458b5c28a",
+  "master": "yarn",
+  "appId": "application_1791822093166_0005",
+  "attempt": null,
+  "capturedAt": "2026-10-12T22:16:26+05:30",
+  "files": [
+    {
+      "file": "sql.html",
+      "kind": "html",
+      "bytes": 8999,
+      "sha256": "e43b6c0dad561adebcde74f1decd7c91b906e014dfa587c94bc8e089b1b82bd5",
+      "request": {
+        "method": "GET",
+        "path": "/proxy/application_1791822093166_0005/SQL/",
+        "query": ""
+      },
+      "capturedAt": "2026-10-12T22:09:05+05:30"
+    },
+    {
+      "file": "execution-2.html",
+      "kind": "html",
+      "bytes": 12339,
+      "sha256": "ffb9e4bf5f6a54fcc689092ac50d3a3880662aa49cda9885daef6be730d5bc36",
+      "request": {
+        "method": "GET",
+        "path": "/proxy/application_1791822093166_0005/SQL/execution/",
+        "query": "id=2"
+      },
+      "capturedAt": "2026-10-12T22:09:05+05:30"
+    },
+    {
+      "file": "workload.scala",
+      "kind": "source",
+      "bytes": 987,
+      "sha256": "dbe87e2f6254e6829df9d4cdf99b196ba8c050c04a9d0920278f7ff458b5c28a"
+    },
+    {
+      "file": "api-sql.json",
+      "kind": "adapted-json",
+      "bytes": 903,
+      "sha256": "47c05e0ce003e4d5519b239f3d9bb6a92594ed0fbef0d4c35be2d1aedf096269",
+      "request": {
+        "method": "GET",
+        "path": "/api/spark/{appId}/sql",
+        "query": ""
+      }
+    },
+    {
+      "file": "api-execution-2.json",
+      "kind": "adapted-json",
+      "bytes": 8717,
+      "sha256": "fc11e1bd811e9ac21e764b2b174df9dcc598fc0d131c1e9516c626e363976350",
+      "request": {
+        "method": "GET",
+        "path": "/api/spark/{appId}/sql/2",
+        "query": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id" : 0,
+  "status" : "FAILED",
+  "description" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py:31",
+  "planDescription" : "",
+  "submissionTime" : "2026-10-03T07:07:30.247GMT",
+  "duration" : 1833,
+  "runningJobIds" : [ ],
+  "successJobIds" : [ ],
+  "failedJobIds" : [ 2 ],
+  "nodes" : [ ],
+  "edges" : [ ],
+  "queryId" : "01a10096-e001-710c-bac9-9ff688406691",
+  "errorMessage" : "[PYTHON_EXCEPTION] An exception was thrown from the Python worker: Traceback (most recent call last):\n  File \"/home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/job_failed.py\", line 28, in bad\n    return 1 // (x - x)\n           ~~^^~~~~~~~~\nZeroDivisionError: integer division or modulo by zero\n SQLSTATE: 38000",
+  "rootExecutionId" : 0
+}

@@ -1,0 +1,21 @@
+{
+  "jobId" : 2,
+  "name" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/barrier_scopes.py:36",
+  "submissionTime" : "2026-10-03T07:13:22.688GMT",
+  "completionTime" : "2026-10-03T07:13:23.521GMT",
+  "stageIds" : [ 2, 3 ],
+  "jobTags" : [ ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 4,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 4,
+  "numSkippedTasks" : 0,
+  "numFailedTasks" : 0,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 4,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 2,
+  "numSkippedStages" : 0,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

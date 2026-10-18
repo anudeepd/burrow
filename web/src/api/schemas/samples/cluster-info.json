@@ -1,0 +1,16 @@
+{
+  "clusterInfo": {
+    "id": 1767225600000,
+    "startedOn": 1767225600000,
+    "state": "STARTED",
+    "haState": "ACTIVE",
+    "rmStateStoreName": "org.apache.hadoop.yarn.server.resourcemanager.recovery.NullRMStateStore",
+    "resourceManagerVersion": "3.4.3",
+    "resourceManagerBuildVersion": "3.4.3 from 1a2b3c by root source checksum abcdef",
+    "resourceManagerVersionBuiltOn": "2026-02-01T10:00Z",
+    "hadoopVersion": "3.4.3",
+    "hadoopBuildVersion": "3.4.3 from 1a2b3c by root source checksum abcdef",
+    "hadoopVersionBuiltOn": "2026-02-01T09:50Z",
+    "haZooKeeperConnectionState": "ResourceManager HA is not enabled."
+  }
+}

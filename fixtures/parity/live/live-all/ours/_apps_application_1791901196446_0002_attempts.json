@@ -1,0 +1,268 @@
+{
+ "routeKey": "/apps/application_1791901196446_0002/attempts",
+ "url": "http://127.0.0.1:8787/apps/application_1791901196446_0002/attempts?parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.name",
+   "raw": "ys-running-ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "ys-running-ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.state",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.finalStatus",
+   "raw": "UNDEFINED",
+   "yn": false,
+   "fmt": null,
+   "text": "UNDEFINED",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.id",
+   "raw": "application_1791901196446_0002",
+   "yn": false,
+   "fmt": null,
+   "text": "application_1791901196446_0002",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.user",
+   "raw": "alice",
+   "yn": false,
+   "fmt": null,
+   "text": "alice",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationType",
+   "raw": "SPARK",
+   "yn": false,
+   "fmt": null,
+   "text": "SPARK",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.queue",
+   "raw": "root.etl.ingest",
+   "yn": false,
+   "fmt": null,
+   "text": "root.etl.ingest",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.priority",
+   "raw": "5",
+   "yn": false,
+   "fmt": "int",
+   "text": "5",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.elapsedTime",
+   "raw": "441054",
+   "yn": false,
+   "fmt": "ms",
+   "text": "7m 21s",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.applicationTags",
+   "raw": "running,burrow",
+   "yn": false,
+   "fmt": null,
+   "text": "running,burrow",
+   "tag": "span"
+  },
+  {
+   "entity": "application_1791901196446_0002",
+   "field": "app.trackingUrl",
+   "raw": "http://smadayma:8088/proxy/application_1791901196446_0002/",
+   "yn": false,
+   "fmt": null,
+   "text": "ApplicationMaster",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.appAttemptId",
+   "raw": "appattempt_1791901196446_0002_000001",
+   "yn": false,
+   "fmt": null,
+   "text": "appattempt_1791901196446_0002_000001",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.appAttemptState",
+   "raw": "RUNNING",
+   "yn": false,
+   "fmt": "text",
+   "text": "Running",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.startTime",
+   "raw": "1791901313959",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:51:53",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.finishedTime",
+   "raw": "0",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "—",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.elapsedText",
+   "raw": "441082",
+   "yn": false,
+   "fmt": "ms",
+   "text": "7m 21s",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.containerId",
+   "raw": "container_1791901196446_0002_01_000001",
+   "yn": false,
+   "fmt": null,
+   "text": "container_1791901196446_0002_01_000001",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.nodeHttpAddress",
+   "raw": "127.0.0.3:8042",
+   "yn": false,
+   "fmt": null,
+   "text": "127.0.0.3:8042",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.nodeId",
+   "raw": "127.0.0.3:8041",
+   "yn": false,
+   "fmt": null,
+   "text": "127.0.0.3:8041",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.logsLink",
+   "raw": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000001/alice",
+   "yn": false,
+   "fmt": null,
+   "text": "http://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000001/alice",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.appBlacklistedNodesCount",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.blacklistedNodes",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.derived.rmBlacklistedNodesCount",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "appattempt_1791901196446_0002_000001",
+   "field": "attempt.nodesBlacklistedBySystem",
+   "raw": "",
+   "yn": false,
+   "fmt": null,
+   "text": "",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_",
+  "application_1791901196446_0002",
+  "appattempt_1791901196446_0002_000001"
+ ],
+ "title": "burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nys-running-ingest\nRunning\nUNDEFINED\napplication_1791901196446_0002\n·\nUser alice\n·\nType SPARK\n·\nQueue root.etl.ingest\n·\nPriority 5\n·\nelapsed\n7m 21s\nrunning\nburrow\nrunning,burrow\nApplicationMaster\nYARN application page\nOpen in burrow\nSpark UI\nOverview\nAttempts\nLogs\nSpark\n1 attempt · final status UNDEFINED\nSort\nColumns\n11/11\nExport\nAttempt ID\nState\nStarted\nFinished\nElapsed\nAM Container\nNode\nNode ID (RPC)\nLogs\nNodes blacklisted by the application\nNodes blacklisted by the RM for the app\nappattempt_1791901196446_0002_000001\nRunning\n2026-10-13 19:51:53\n—\n7m 21s\ncontainer_1791901196446_0002_01_000001\n127.0.0.3:8042\n127.0.0.3:8041\nLogs\nhttp://127.0.0.3:8042/node/containerlogs/container_1791901196446_0002_01_000001/alice\n0\n0\n1 row\nScroll for more columns\nshift-click header: multi-sort"
+}

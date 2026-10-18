@@ -1,0 +1,893 @@
+/*
+ * DAG visual language. The dark palette follows the supplied reference; the light palette follows the app theme.
+ *
+ * Every state that is encoded by colour is *also* encoded structurally:
+ *   status      → node tone (fill/stroke) + a corner shape + an aria label
+ *   running     → animated shimmer, replaced by a static hatch under reduced motion
+ *   flowing     → moving dashes, replaced by a static short-dash texture under reduced motion
+ *   skipped     → dashed outline + reduced opacity
+ *   selected    → 2px accent ring + the drawer opening
+ *   hovered     → stronger seam (never the only cue for anything)
+ */
+
+.burrow-dag-frame {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+/* Hide the secondary summary when the panel itself is narrow, even if the viewport is wide enough to show it. */
+@container (max-width: 40rem) {
+  .burrow-dag-toolbar-summary {
+    display: none;
+  }
+}
+
+.burrow-dag {
+  color-scheme: dark;
+  --ground: #090d12;
+  --ground-raised: #070c10;
+  --fabric: #111820;
+  --fabric-2: #17222b;
+  --fabric-3: #1d2934;
+  --well: #101a23;
+  --ink: #f4f8fb;
+  --ink-2: #c0ccd6;
+  --ink-3: #8fa0ae;
+  --ink-4: #71818e;
+  --seam: #28333d;
+  --seam-soft: #19242d;
+  --seam-strong: #3e4e5c;
+  --live: #4cd7d7;
+  --ok: #5ed991;
+  --fail: #ff747b;
+  --wait: #f4c95d;
+  --fresh: #4cd7d7;
+  --warn: #ffad66;
+  --idle: #9aabb8;
+  --focus: var(--live);
+  --selection: color-mix(in oklch, var(--live) 28%, transparent);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--seam);
+  border-radius: var(--r-lg);
+  background-color: var(--fabric);
+  overflow: hidden;
+}
+
+html[data-theme="light"] .burrow-dag {
+  color-scheme: light;
+  --ground: #edf2f5;
+  --ground-raised: #f4f7f9;
+  --fabric: #ffffff;
+  --fabric-2: #f6f9fb;
+  --fabric-3: #e7eef2;
+  --well: #e8eef2;
+  --ink: #111820;
+  --ink-2: #33424e;
+  --ink-3: #536571;
+  --ink-4: #667783;
+  --seam: #cbd6dc;
+  --seam-soft: #dee6ea;
+  --seam-strong: #9eb0ba;
+  --live: #007d80;
+  --ok: #167a44;
+  --fail: #b42331;
+  --wait: #8a5b00;
+  --fresh: #365fb5;
+  --warn: #a94c19;
+  --idle: #596a76;
+  --focus: var(--live);
+  --selection: color-mix(in oklch, var(--live) 18%, transparent);
+}
+
+.burrow-dag-toolbar-slot {
+  min-height: 46px;
+}
+
+.burrow-dag-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 260px;
+  overflow: hidden;
+  background-color: var(--ground-raised);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--seam-soft) 72%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--seam-soft) 72%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0;
+  /* Keep the browser's vertical page scroll available when a touch starts over the graph. */
+  touch-action: pan-y pinch-zoom;
+}
+
+/* inferred graphs (REST-only fallback): the pane itself gets a hatch so the picture is never mistaken for the real
+   operation graph, and the legend carries the note. */
+.burrow-dag[data-inferred="true"] .burrow-dag-stage {
+  background-image: repeating-linear-gradient(45deg, var(--seam-soft) 0 1px, transparent 1px 8px);
+}
+
+.burrow-dag-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  user-select: none;
+  transition: opacity var(--dur-content) var(--ease-out);
+}
+.burrow-dag[data-dag-layout="pending"] .burrow-dag-svg,
+.burrow-dag[data-dag-layout="error"] .burrow-dag-svg {
+  opacity: 0;
+  pointer-events: none;
+}
+/* the drag affordance: the selector used to be unclosed, so a free-standing rule below made every DAG always `grabbing` */
+.burrow-dag[data-panning="true"] .burrow-dag-svg {
+  cursor: grabbing;
+}
+
+/* ---------- clusters (operation scopes / WholeStageCodegen) ---------- */
+.burrow-dag-cluster {
+  fill: color-mix(in oklch, var(--fabric) 92%, transparent);
+  stroke: var(--seam-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: none;
+  rx: var(--r-lg);
+}
+.burrow-dag-cluster[data-depth="1"] {
+  fill: color-mix(in oklch, var(--fabric-2) 60%, transparent);
+  stroke: var(--seam);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.burrow-dag-cluster-label {
+  fill: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  pointer-events: none;
+}
+.burrow-dag-cluster[data-dimmed="true"] {
+  opacity: 0.4;
+}
+
+/* ---------- nodes ---------- */
+.burrow-dag-node {
+  cursor: pointer;
+}
+.burrow-dag-node-body {
+  fill: var(--fabric-2);
+  stroke: var(--tone, var(--seam-strong));
+  stroke-width: 2;
+  transition:
+    stroke var(--dur-fast) var(--ease-out),
+    fill var(--dur-base) var(--ease-out);
+}
+.burrow-dag-node[data-kind="stage"] .burrow-dag-node-body {
+  fill: var(--fabric-2);
+}
+.burrow-dag-node[data-kind="sql"] .burrow-dag-node-body {
+  fill: var(--fabric-2);
+}
+.burrow-dag-node[data-tone="live"] .burrow-dag-node-body {
+  stroke: var(--live);
+}
+.burrow-dag-node[data-tone="ok"] .burrow-dag-node-body {
+  stroke: var(--ok);
+}
+.burrow-dag-node[data-tone="wait"] .burrow-dag-node-body {
+  stroke: var(--wait);
+}
+.burrow-dag-node[data-tone="fail"] .burrow-dag-node-body {
+  stroke: var(--fail);
+}
+.burrow-dag-node[data-tone="fresh"] .burrow-dag-node-body {
+  stroke: var(--fresh);
+}
+.burrow-dag-node[data-tone="idle"] .burrow-dag-node-body {
+  stroke: var(--seam-strong);
+}
+.burrow-dag-node[data-cached="true"] .burrow-dag-node-body {
+  stroke: var(--fresh);
+  stroke-width: 2;
+}
+.burrow-dag-node[data-skipped="true"] {
+  opacity: 0.68;
+}
+.burrow-dag-node[data-skipped="true"] .burrow-dag-node-body {
+  stroke-dasharray: 5 4;
+}
+.burrow-dag-node[data-hovered="true"] .burrow-dag-node-body {
+  stroke: var(--ink-2);
+}
+.burrow-dag-node[data-selected="true"] .burrow-dag-node-body {
+  stroke: var(--live);
+  stroke-width: 2;
+}
+.burrow-dag-node[data-dimmed="true"] {
+  opacity: 0.28;
+}
+/* Selecting a node dims the rest of the graph: a snap to 28% reads as a repaint, a short tween reads as focus. */
+.burrow-dag-node,
+.burrow-dag-cluster {
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+/* Keep the status glyph and spine in the accessible SVG while carrying status visually on the card border. */
+.burrow-dag-node-spine {
+  fill: transparent;
+  opacity: 0;
+  transition: fill var(--dur-base) var(--ease-out);
+}
+.burrow-dag-node[data-status="skipped"] .burrow-dag-node-spine {
+  fill: var(--idle);
+}
+
+/* ghost stubs: an edge endpoint that lives on another page */
+.burrow-dag-node[data-kind="ghost"] .burrow-dag-node-body {
+  fill: var(--well);
+  stroke: var(--seam-strong);
+  stroke-dasharray: 4 3;
+}
+.burrow-dag-node[data-kind="ghost"] .burrow-dag-glyph {
+  color: var(--tone, var(--idle));
+}
+.burrow-dag-glyph {
+  opacity: 0;
+}
+@media (forced-colors: active) {
+  .burrow-dag-glyph {
+    color: CanvasText;
+  }
+}
+
+.burrow-dag-node[data-kind="ghost"] .burrow-dag-node-spine {
+  fill: var(--seam-strong);
+}
+
+/* running nodes shimmer: an overlay rect swept by a translating highlight */
+.burrow-dag-node-shimmer {
+  fill: transparent;
+  pointer-events: none;
+  opacity: 0;
+}
+html:not([data-motion="reduced"]):not([data-parity])
+  .burrow-dag[data-visible="true"]
+  .burrow-dag-node[data-running="true"]
+  .burrow-dag-node-shimmer {
+  opacity: 1;
+  animation: burrow-dag-shimmer 2.2s linear infinite;
+}
+/* reduced motion: a static diagonal hatch says "running" without moving */
+.burrow-dag-node[data-running="true"] .burrow-dag-node-hatch {
+  fill: none;
+  stroke: color-mix(in oklch, var(--live) 45%, transparent);
+  stroke-width: 1;
+  opacity: 0;
+}
+html[data-motion="reduced"] .burrow-dag-node[data-running="true"] .burrow-dag-node-hatch,
+html[data-parity] .burrow-dag-node[data-running="true"] .burrow-dag-node-hatch {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .burrow-dag-node[data-running="true"] .burrow-dag-node-hatch {
+    opacity: 1;
+  }
+  .burrow-dag-node[data-running="true"] .burrow-dag-node-shimmer {
+    opacity: 0;
+    animation: none;
+  }
+  /* Edge flow is gated by the in-app data attribute, but OS motion preferences do not set that attribute. */
+  .burrow-dag-node-shimmer,
+  .burrow-dag-edge-flow,
+  .burrow-dag-flash {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* status glyph: shape (from the shared table) + tone; survives forced-colors via currentColor */
+.burrow-dag-glyph {
+  color: var(--tone, var(--idle));
+}
+@media (forced-colors: active) {
+  .burrow-dag-glyph {
+    color: CanvasText;
+  }
+}
+
+.burrow-dag-title {
+  fill: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  pointer-events: visiblePainted;
+}
+.burrow-dag-node[data-compact="true"] .burrow-dag-title {
+  font-size: 12.5px;
+}
+.burrow-dag-node[data-roomy="false"]:not([data-compact="true"]) .burrow-dag-title {
+  font-size: 14.5px;
+}
+.burrow-dag-sub {
+  fill: var(--ink-3);
+  font-size: 14px;
+  pointer-events: visiblePainted;
+}
+.burrow-dag-node[data-compact="true"] .burrow-dag-sub {
+  font-size: 10.5px;
+}
+.burrow-dag-node[data-roomy="false"]:not([data-compact="true"]) .burrow-dag-sub {
+  font-size: 12.5px;
+}
+.burrow-dag-meta {
+  fill: var(--ink-3);
+  font-size: 12.5px;
+  pointer-events: visiblePainted;
+}
+.burrow-dag-node[data-roomy="false"] .burrow-dag-meta {
+  font-size: 10.5px;
+}
+.burrow-dag-metric {
+  fill: var(--ink-2);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.burrow-dag-badge-text {
+  fill: var(--ink-3);
+  font-size: 11px;
+  font-weight: 450;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.burrow-dag-badge {
+  fill: transparent;
+  stroke: none;
+}
+
+/* progress: one row of contiguous segments; the width of each comes from the data */
+.burrow-dag-progress {
+  rx: 3;
+}
+.burrow-dag-progress-track {
+  fill: var(--seam);
+}
+/* Segments are 1 unit wide and grow by transform, so a progress tick never touches layout. */
+.burrow-dag-progress-seg {
+  transform-box: fill-box;
+  transform-origin: 0 0;
+  transition:
+    transform var(--dur-slow) var(--ease-out),
+    fill var(--dur-base) var(--ease-out);
+}
+.burrow-dag-progress-seg[data-tone="ok"] {
+  fill: var(--ok);
+}
+.burrow-dag-progress-seg[data-tone="live"] {
+  fill: var(--live);
+}
+.burrow-dag-progress-seg[data-tone="fail"] {
+  fill: var(--fail);
+}
+.burrow-dag-progress-seg[data-tone="wait"] {
+  fill: var(--wait);
+}
+.burrow-dag-progress-seg[data-tone="idle"] {
+  fill: var(--idle);
+}
+.burrow-dag-progress-seg[data-tone="warn"] {
+  fill: var(--warn);
+}
+.burrow-dag-progress-seg[data-tone="fresh"] {
+  fill: var(--fresh);
+}
+
+.burrow-dag-flash {
+  fill: var(--tone, var(--live));
+  pointer-events: none;
+  opacity: 0;
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-dag-flash[data-flash="true"] {
+  animation: burrow-dag-flash var(--dur-flash) var(--ease-out) 1;
+}
+.burrow-dag-flash[data-flash="true"][data-static="true"] {
+  opacity: 0.22;
+}
+/* Reduced motion / parity drop the animation, so the change cue has to survive as a static tint — without this the
+   "this stage just changed / just failed" signal was invisible exactly where a screenshot needs it to be deterministic. */
+html[data-motion="reduced"] .burrow-dag-flash[data-flash="true"],
+html[data-parity] .burrow-dag-flash[data-flash="true"] {
+  opacity: 0.22;
+}
+
+/* ---------- edges ---------- */
+.burrow-dag-edge-track {
+  fill: none;
+  stroke: var(--seam-strong);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  transition: stroke var(--dur-fast) var(--ease-out);
+}
+.burrow-dag-edge[data-kind="cross-stage"] .burrow-dag-edge-track,
+.burrow-dag-edge[data-kind="sql"] .burrow-dag-edge-track {
+  stroke-width: 1.5;
+}
+.burrow-dag-edge-flow {
+  fill: none;
+  stroke: var(--live);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0;
+}
+.burrow-dag-edge[data-flowing="true"] .burrow-dag-edge-flow {
+  opacity: var(--flow-opacity, 0.9);
+}
+.burrow-dag-edge[data-flowing="true"] .burrow-dag-edge-track {
+  stroke: color-mix(in oklch, var(--live) 45%, var(--seam-strong));
+}
+html:not([data-motion="reduced"]):not([data-parity])
+  .burrow-dag[data-visible="true"]
+  .burrow-dag-edge[data-flowing="true"]
+  .burrow-dag-edge-flow {
+  animation-name: burrow-dag-flow;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--flow-duration, 0.4s);
+}
+.burrow-dag-edge[data-hovered="true"] .burrow-dag-edge-track,
+.burrow-dag-edge[data-selected="true"] .burrow-dag-edge-track {
+  stroke: var(--live);
+  stroke-width: 2.5;
+}
+.burrow-dag-edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  cursor: pointer;
+  pointer-events: stroke;
+}
+.burrow-dag-edge[data-dimmed="true"] {
+  opacity: 0.25;
+}
+.burrow-dag-arrow {
+  fill: var(--seam-strong);
+}
+.burrow-dag-edge[data-flowing="true"] .burrow-dag-arrow {
+  fill: var(--live);
+}
+.burrow-dag-edge[data-hovered="true"] .burrow-dag-arrow,
+.burrow-dag-edge[data-selected="true"] .burrow-dag-arrow {
+  fill: var(--live);
+}
+
+.burrow-dag-edge-label {
+  fill: var(--ink-2);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke;
+  stroke: var(--ground);
+  stroke-width: 3;
+  pointer-events: none;
+}
+
+/* ---------- chrome ---------- */
+.burrow-dag-minimap {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  border: 1px solid var(--seam);
+  border-radius: var(--r-sm);
+  background: color-mix(in oklch, var(--well) 82%, transparent);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+.burrow-dag-minimap-node {
+  fill: var(--ink-4);
+}
+.burrow-dag-minimap-node[data-tone="live"] {
+  fill: var(--live);
+}
+.burrow-dag-minimap-node[data-tone="ok"] {
+  fill: var(--ok);
+}
+.burrow-dag-minimap-node[data-tone="fail"] {
+  fill: var(--fail);
+}
+.burrow-dag-minimap-node[data-tone="wait"] {
+  fill: var(--wait);
+}
+.burrow-dag-minimap-node[data-tone="fresh"] {
+  fill: var(--fresh);
+}
+.burrow-dag-minimap-node[data-tone="warn"] {
+  fill: var(--warn);
+}
+.burrow-dag-minimap-node[data-tone="idle"] {
+  fill: var(--idle);
+}
+.burrow-dag-minimap-view {
+  fill: color-mix(in oklch, var(--live) 10%, transparent);
+  stroke: var(--live);
+  stroke-width: 1;
+}
+
+.burrow-dag-toolbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-bottom: 1px solid var(--seam);
+  background: var(--fabric);
+}
+.burrow-dag-toolbar-summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.burrow-dag-toolbar-extras {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-left: auto;
+}
+.burrow-dag-edge-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.burrow-dag-legend {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 5px 12px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--seam);
+  background: var(--fabric);
+  font-size: var(--text-micro);
+  color: var(--ink-3);
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+.burrow-dag-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.burrow-dag-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in oklch, var(--tone, var(--idle)) 55%, transparent);
+  background: color-mix(in oklch, var(--tone, var(--idle)) 26%, transparent);
+}
+.burrow-dag-legend-note {
+  color: var(--warn);
+}
+.burrow-dag-legend-hatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid var(--seam-strong);
+  background-image: repeating-linear-gradient(45deg, var(--ink-4) 0 1px, transparent 1px 4px);
+}
+.burrow-dag-legend-dash {
+  width: 16px;
+  height: 0;
+  border-top: 2px dashed var(--live);
+}
+
+.burrow-dag-drawer {
+  position: absolute;
+  top: 10px;
+  right: 0.5rem;
+  width: min(360px, calc(100% - 1rem));
+  max-height: 72%;
+  box-sizing: border-box;
+  border: 1px solid var(--seam-strong);
+  border-radius: var(--r-md);
+  background: var(--fabric-2);
+  box-shadow: var(--shadow-overlay);
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Content sets the card height. Long plans scroll inside the bounded card, leaving the graph controls clear. */
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  transition:
+    transform var(--dur-sheet) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out);
+}
+.burrow-dag-drawer[data-open="false"] {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+.burrow-dag-scroll-cue {
+  position: sticky;
+  z-index: 1;
+  bottom: 0;
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-top: 1px solid var(--seam-soft);
+  background: linear-gradient(to bottom, color-mix(in oklch, var(--fabric-2) 78%, transparent), var(--fabric-2) 44%);
+  color: var(--ink-3);
+  font-size: var(--text-micro);
+  pointer-events: none;
+}
+.burrow-dag-scroll-cue[data-visible="false"] {
+  display: none;
+}
+
+.burrow-dag-measure-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.burrow-dag-measure-table tr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  padding: 5px 0;
+}
+.burrow-dag-measure-table tr + tr {
+  border-top: 1px solid var(--seam-soft);
+}
+.burrow-dag-measure-table td {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.burrow-dag-measure-table td:first-child {
+  color: var(--ink-4);
+  font-size: var(--text-micro);
+}
+.burrow-dag-measure-table td:last-child {
+  color: var(--ink-2);
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  white-space: pre-line;
+}
+
+.burrow-dag-warn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  max-width: 46%;
+  border: 1px solid color-mix(in oklch, var(--warn) 45%, transparent);
+  background: color-mix(in oklch, var(--warn) 12%, transparent);
+  color: var(--ink-2);
+  font-size: var(--text-micro);
+  border-radius: var(--r-sm);
+  padding: 4px 8px;
+}
+
+/* The bottom lane keeps provenance and partial-data notes from covering the graph controls. */
+.burrow-dag-hints {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+  pointer-events: none;
+}
+
+.burrow-dag-hint {
+  padding: 3px 10px;
+  border: 1px solid var(--seam);
+  border-radius: 99px;
+  background: color-mix(in oklch, var(--fabric-3) 88%, transparent);
+  color: var(--ink-2);
+  font-size: var(--text-micro);
+  pointer-events: none;
+}
+/* The lane is absolutely positioned, so a hint arriving with a 4px rise reflows nothing. */
+.burrow-dag-hint,
+.burrow-dag-warn {
+  transition:
+    opacity var(--dur-fade) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+@starting-style {
+  .burrow-dag-hint,
+  .burrow-dag-warn {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+html[data-motion="reduced"] .burrow-dag-hint,
+html[data-motion="reduced"] .burrow-dag-warn,
+html[data-parity] .burrow-dag-hint,
+html[data-parity] .burrow-dag-warn {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .burrow-dag-hint,
+  .burrow-dag-warn {
+    transform: none;
+  }
+}
+
+/* The lane is decoration: a drag or a wheel over a text-only hint still belongs to the graph. A hint that owns a control
+   takes the pointer back here rather than through a utility class — this rule is unlayered, so a Tailwind
+   `pointer-events-auto` loses to `.burrow-dag-hint` above and the control would never receive a real click. */
+.burrow-dag-hint[data-interactive="true"] {
+  pointer-events: auto;
+}
+
+/* Phone: a 390 px pane has no room for a centred tip and the minimap side by side — they overlapped by half the tip's
+   width. The lane gets the full width *above* the minimap instead, and the minimap is pinned so that lane has a known
+   height. Give every toolbar button a 44px touch target. */
+@media (max-width: 639px) {
+  .burrow-dag-toolbar-slot {
+    min-height: 54px;
+  }
+
+  .burrow-dag-minimap {
+    width: 140px;
+    height: 92px;
+  }
+  .burrow-dag-hints {
+    left: 10px;
+    right: 10px;
+    bottom: 110px;
+    transform: none;
+    max-width: none;
+    align-items: stretch;
+  }
+  .burrow-dag-hint {
+    text-align: left;
+  }
+  .burrow-dag-toolbar button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .burrow-dag-toolbar {
+    gap: 2px;
+    padding: 4px;
+  }
+  .burrow-dag-focus-stage span,
+  .burrow-dag-edge-count {
+    display: none;
+  }
+}
+
+.burrow-dag-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--ink-3);
+  padding: 24px;
+}
+
+/* Crossfade the stable loading skeleton into the completed layout instead of swapping an empty pane for a full graph. */
+.burrow-dag-loading {
+  pointer-events: none;
+  transition: opacity var(--dur-content) var(--ease-out);
+}
+.burrow-dag[data-dag-layout="ready"] .burrow-dag-svg {
+  opacity: 1;
+}
+.burrow-dag[data-dag-layout="ready"] .burrow-dag-loading {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--dur-content) var(--ease-out),
+    visibility 0s linear var(--dur-content);
+}
+
+.burrow-dag-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+.burrow-dag-tooltip-row > :last-child {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ---------- keyframes ---------- */
+@keyframes burrow-dag-flow {
+  to {
+    stroke-dashoffset: calc(-1 * var(--dash-travel, 20px));
+  }
+}
+@keyframes burrow-dag-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+@keyframes burrow-dag-flash {
+  0% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Dense graphs: keep the values, drop the per-frame tweening of hundreds of shapes. */
+.burrow-dag[data-dense="true"] .burrow-dag-progress-seg,
+.burrow-dag[data-dense="true"] .burrow-dag-node-body,
+.burrow-dag[data-dense="true"] .burrow-dag-node-spine {
+  transition: none;
+}
+
+/* ---------- hard motion gate ----------
+   The tokens already zero `--dur-*`, but an animation whose *name* survives still shows up in
+   `document.getAnimations()`/`animationName`. Under the reduced-motion pref or parity mode the declarations are removed
+   entirely, so every formulation of "is anything animating?" answers no. */
+html[data-motion="reduced"] .burrow-dag-node-shimmer,
+html[data-motion="reduced"] .burrow-dag-edge-flow,
+html[data-motion="reduced"] .burrow-dag-flash,
+html[data-parity] .burrow-dag-node-shimmer,
+html[data-parity] .burrow-dag-edge-flow,
+html[data-parity] .burrow-dag-flash {
+  animation: none !important;
+  transition: none !important;
+}
+html[data-motion="reduced"] .burrow-dag-progress-seg,
+html[data-motion="reduced"] .burrow-dag-node-body,
+html[data-motion="reduced"] .burrow-dag-node-spine,
+html[data-parity] .burrow-dag-progress-seg,
+html[data-parity] .burrow-dag-node-body,
+html[data-parity] .burrow-dag-node-spine {
+  transition: none !important;
+}
+
+/* Keyboard focus ring for the roving tab stop: the node body gets the accent ring, never colour-only. */
+.burrow-dag-node:focus-visible {
+  outline: none;
+}
+.burrow-dag-node:focus-visible .burrow-dag-node-body {
+  stroke: var(--focus);
+  stroke-width: 2.5;
+  stroke-dasharray: none;
+}
+
+@media (forced-colors: active) {
+  .burrow-dag-node-body {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+  .burrow-dag-cluster {
+    fill: none;
+    stroke: CanvasText;
+  }
+  .burrow-dag-edge-track,
+  .burrow-dag-edge-flow {
+    stroke: CanvasText;
+  }
+}

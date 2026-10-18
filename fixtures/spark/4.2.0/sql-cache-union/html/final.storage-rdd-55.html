@@ -1,0 +1,260 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="cec38a5c-c7f5-4721-9187-ecf0fab1248e">setUIRoot('')</script>
+        <script nonce="cec38a5c-c7f5-4721-9187-ecf0fab1248e">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="cec38a5c-c7f5-4721-9187-ecf0fab1248e">setAppBasePath('')</script>
+        
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-sql-cache-union - RDD Storage Info for *(1) Project [(id#0L % 100) AS k#1L, (id#0L * 3) AS v#2L]
++- *(1) Range (0, 50000, step=1, splits=4)
+</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-sql-cache-union" class="text-nowrap">burrow-sql-cache-union</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                RDD Storage Info for *(1) Project [(id#0L % 100) AS k#1L, (id#0L * 3) AS v#2L]
++- *(1) Range (0, 50000, step=1, splits=4)
+
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="row">
+        <div class="col-12">
+          <ul class="list-unstyled">
+            <li>
+              <strong>Storage Level:</strong>
+              Disk Memory Deserialized 1x Replicated
+            </li>
+            <li>
+              <strong>Cached Partitions:</strong>
+              4
+            </li>
+            <li>
+              <strong>Total Partitions:</strong>
+              4
+            </li>
+            <li>
+              <strong>Memory Size:</strong>
+              100.4 KiB
+            </li>
+            <li>
+              <strong>Disk Size:</strong>
+              0.0 B
+            </li>
+          </ul>
+        </div>
+      </div><div class="row">
+        <div class="col-12">
+          <h4>
+            Data Distribution on 1
+            Executors
+          </h4>
+          <div class="table-responsive">
+    <table class="table table-bordered table-hover table-sm table-striped sortable" id="rdd-storage-by-worker-table">
+      <thead><th width="" class="">Host</th><th width="" class="">On Heap Memory Usage</th><th width="" class="">Off Heap Memory Usage</th><th width="" class="">Disk Usage</th></thead>
+      <tbody>
+        <tr>
+      <td>127.0.0.1:46271</td>
+      <td>
+        100.4 KiB
+        (434.0 MiB Remaining)
+      </td>
+      <td>
+        0.0 B
+        (0.0 B Remaining)
+      </td>
+      <td>0.0 B</td>
+    </tr>
+      </tbody>
+    </table>
+    </div>
+        </div>
+      </div><div>
+        <h4 id="blocks-section">
+          4 Partitions
+        </h4>
+        <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-rdd-storage-by-block-table-top-page" method="get" action="/storage/rdd/?id=55&block.sort=Block+Name&block.desc=true" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="block.sort" value="Block Name"/><input type="hidden" name="block.desc" value="true"/><input type="hidden" name="id" value="55"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="block.page" id="form-rdd-storage-by-block-table-top-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-rdd-storage-by-block-table-top-page-size" name="block.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable" id="rdd-storage-by-block-table">
+          <thead>
+      <tr><th>
+            <a href="/storage/rdd/?id=55&block.sort=Block+Name&block.desc=false&block.pageSize=100#block">
+              <span data-bs-toggle="tooltip" title="">
+      Block Name&nbsp;&#x25BE;
+    </span>
+            </a>
+          </th><th>
+              <a href="/storage/rdd/?id=55&block.sort=Storage+Level&block.pageSize=100#block">
+                <span data-bs-toggle="tooltip" title="">
+      Storage Level
+    </span>
+              </a>
+            </th><th>
+              <a href="/storage/rdd/?id=55&block.sort=Size+in+Memory&block.pageSize=100#block">
+                <span data-bs-toggle="tooltip" title="">
+      Size in Memory
+    </span>
+              </a>
+            </th><th>
+              <a href="/storage/rdd/?id=55&block.sort=Size+on+Disk&block.pageSize=100#block">
+                <span data-bs-toggle="tooltip" title="">
+      Size on Disk
+    </span>
+              </a>
+            </th><th>
+              <a href="/storage/rdd/?id=55&block.sort=Executors&block.pageSize=100#block">
+                <span data-bs-toggle="tooltip" title="">
+      Executors
+    </span>
+              </a>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr>
+      <td>rdd_55_3</td>
+      <td>Memory Deserialized 1x Replicated</td>
+      <td>25.1 KiB</td>
+      <td>0.0 B</td>
+      <td>127.0.0.1:46271</td>
+    </tr><tr>
+      <td>rdd_55_2</td>
+      <td>Memory Deserialized 1x Replicated</td>
+      <td>25.1 KiB</td>
+      <td>0.0 B</td>
+      <td>127.0.0.1:46271</td>
+    </tr><tr>
+      <td>rdd_55_1</td>
+      <td>Memory Deserialized 1x Replicated</td>
+      <td>25.1 KiB</td>
+      <td>0.0 B</td>
+      <td>127.0.0.1:46271</td>
+    </tr><tr>
+      <td>rdd_55_0</td>
+      <td>Memory Deserialized 1x Replicated</td>
+      <td>25.1 KiB</td>
+      <td>0.0 B</td>
+      <td>127.0.0.1:46271</td>
+    </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-rdd-storage-by-block-table-bottom-page" method="get" action="/storage/rdd/?id=55&block.sort=Block+Name&block.desc=true" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="block.sort" value="Block Name"/><input type="hidden" name="block.desc" value="true"/><input type="hidden" name="id" value="55"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="block.page" id="form-rdd-storage-by-block-table-bottom-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-rdd-storage-by-block-table-bottom-page-size" name="block.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+      </div><script nonce="cec38a5c-c7f5-4721-9187-ecf0fab1248e">
+        
+$(function() {
+  if (/.*&block.sort=.*$/.test(location.search)) {
+    var topOffset = $("#blocks-section").offset().top;
+    $("html,body").animate({scrollTop: topOffset}, 200);
+  }
+});
+            
+      </script>
+      </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:36:29</span><span id="footer-uptime" data-start-time="1791011189343"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

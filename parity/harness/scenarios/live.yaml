@@ -1,0 +1,57 @@
+# Scenarios the harness runs against a live cluster. `auto` params are derived from the cluster
+# (a representative app/attempt/container/node, plus the facts used to evaluate inventory `when`
+# conditions). Record mode persists the *resolved* scenario next to the fixtures, so replay needs
+# neither Java nor a cluster.
+version: 1
+
+scenarios:
+  - id: live-running
+    description: representative RUNNING application that holds containers (rich app/attempt/container pages) + current cluster state
+    params:
+      appId: auto
+      attemptId: auto
+      containerId: auto
+      nodeId: auto
+      queue: auto
+      # RUNNING when an app is RUNNING, else the pending app's state (an empty facet renders no table rows)
+      state: auto
+    facts:
+      scheduler: capacity
+
+  - id: live-all
+    description: cluster-wide pages with the "All applications" view (state facet not filtered)
+    params:
+      appId: auto
+      attemptId: auto
+      containerId: auto
+      nodeId: auto
+      queue: auto
+      state: ALL
+
+  - id: live-pending
+    description: an ACCEPTED/SUBMITTED application (scheduled attempt, no AM container yet) — the unassigned/pending renderings of the app and attempt pages
+    params:
+      appId: auto:pendingAppId
+      attemptId: auto:pendingAttemptId
+      containerId: null
+      nodeId: auto
+      queue: auto
+      state: auto
+    pages:
+      - legacy.rm.app
+      - legacy.rm.appattempt
+
+  - id: live-finished
+    description: a completed application (FAILED if present, else FINISHED/KILLED) — finished-state renderings
+    params:
+      appId: auto:finishedAppId
+      attemptId: null
+      containerId: null
+      nodeId: auto
+      queue: auto
+      state: FINISHED
+    pages:
+      - legacy.rm.cluster-about
+      - legacy.rm.apps
+      # the shared metrics blocks (scheduler metrics are rendered by our /scheduler route only) must have a crawled route in this scenario
+      - legacy.rm.scheduler.capacity

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- burrow test cluster — rendered by cluster.py setup. -->
+<configuration>
+  <property><name>mapreduce.shuffle.port</name><value>@@SHUFFLE_PORT@@</value></property>
+  <property><name>mapreduce.framework.name</name><value>yarn</value></property>
+  <property><name>mapreduce.jobhistory.address</name><value>127.0.0.1:10020</value></property>
+  <property><name>mapreduce.jobhistory.webapp.address</name><value>127.0.0.1:19888</value></property>
+  <property><name>mapreduce.jobhistory.admin.address</name><value>127.0.0.1:10033</value></property>
+  <property><name>mapreduce.jobhistory.intermediate-done-dir</name><value>@@DATA@@/jhs/intermediate</value></property>
+  <property><name>mapreduce.jobhistory.done-dir</name><value>@@DATA@@/jhs/done</value></property>
+  <property><name>yarn.app.mapreduce.am.staging-dir</name><value>@@DATA@@/mr-staging</value></property>
+  <property><name>mapreduce.jobhistory.move.interval-ms</name><value>5000</value></property>
+  <property><name>yarn.app.mapreduce.am.resource.mb</name><value>512</value></property>
+  <property><name>yarn.app.mapreduce.am.command-opts</name><value>-Xmx384m -XX:+UseSerialGC</value></property>
+  <property><name>mapreduce.map.memory.mb</name><value>256</value></property>
+  <property><name>mapreduce.map.java.opts</name><value>-Xmx192m -XX:+UseSerialGC</value></property>
+  <property><name>mapreduce.reduce.memory.mb</name><value>256</value></property>
+  <property><name>mapreduce.reduce.java.opts</name><value>-Xmx192m -XX:+UseSerialGC</value></property>
+  <property><name>yarn.app.mapreduce.am.env</name><value>HADOOP_MAPRED_HOME=@@HADOOP_HOME@@</value></property>
+  <property><name>mapreduce.map.env</name><value>HADOOP_MAPRED_HOME=@@HADOOP_HOME@@</value></property>
+  <property><name>mapreduce.reduce.env</name><value>HADOOP_MAPRED_HOME=@@HADOOP_HOME@@</value></property>
+  <property><name>mapreduce.application.classpath</name><value>@@HADOOP_HOME@@/share/hadoop/mapreduce/*,@@HADOOP_HOME@@/share/hadoop/mapreduce/lib/*</value></property>
+</configuration>

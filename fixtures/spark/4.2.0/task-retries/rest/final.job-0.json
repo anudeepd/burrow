@@ -1,0 +1,22 @@
+{
+  "jobId" : 0,
+  "name" : "collect at /home/puppyseal/Documents/code_repos/burrow/fixtures/spark/workloads/task_retries.py:18",
+  "description" : "flaky tasks, retried 2x",
+  "submissionTime" : "2026-10-03T07:07:18.235GMT",
+  "completionTime" : "2026-10-03T07:07:19.847GMT",
+  "stageIds" : [ 0, 1 ],
+  "jobTags" : [ ],
+  "status" : "SUCCEEDED",
+  "numTasks" : 6,
+  "numActiveTasks" : 0,
+  "numCompletedTasks" : 6,
+  "numSkippedTasks" : 0,
+  "numFailedTasks" : 4,
+  "numKilledTasks" : 0,
+  "numCompletedIndices" : 6,
+  "numActiveStages" : 0,
+  "numCompletedStages" : 2,
+  "numSkippedStages" : 0,
+  "numFailedStages" : 0,
+  "killedTasksSummary" : { }
+}

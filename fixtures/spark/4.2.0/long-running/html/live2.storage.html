@@ -1,0 +1,132 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/static/webui.css" type="text/css"/><script src="/static/sorttable.js"></script><script src="/static/jquery.min.js"></script><script src="/static/bootstrap.bundle.min.js"></script><script src="/static/initialize-tooltips.js"></script><script src="/static/table.js"></script><script src="/static/log-view.js"></script><script src="/static/webui.js"></script><script src="/static/scroll-button.js" type="module"></script><script nonce="443551f7-55f2-46eb-8bef-7832248859fd">setUIRoot('')</script>
+        <script nonce="443551f7-55f2-46eb-8bef-7832248859fd">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="443551f7-55f2-46eb-8bef-7832248859fd">setAppBasePath('')</script>
+        
+        
+        
+        <link rel="shortcut icon" href="/static/spark-logo.svg"></link>
+        <title>burrow-long-running - Storage</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/">
+                <img class="spark-logo" src="/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item">
+        <a class="nav-link" href="/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/stages/">Stages</a>
+      </li><li class="nav-item active">
+        <a class="nav-link" href="/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="burrow-long-running" class="text-nowrap">burrow-long-running</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Storage
+                
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <span class="collapse-table" data-bs-toggle="collapse" data-bs-target="#aggregated-rdds" aria-expanded="true" aria-controls="aggregated-rdds" data-collapse-name="collapse-aggregated-rdds">
+          <h4>
+            <span class="collapse-table-arrow arrow-open"></span>
+            <a>RDDs (1)</a>
+          </h4>
+        </span>
+        <div class="collapsible-table collapse show" id="aggregated-rdds">
+          <div class="table-responsive">
+    <table class="table table-bordered table-hover table-sm table-striped sortable" id="storage-by-rdd-table">
+      <thead><th width="" class="">ID</th><th width="" class="">
+              <span data-bs-toggle="tooltip" title="Name of the persisted RDD">
+      RDD Name
+    </span>
+            </th><th width="" class="">
+              <span data-bs-toggle="tooltip" title="StorageLevel displays where the persisted RDD is stored, format of the persisted RDD (serialized or de-serialized) and replication factor of the persisted RDD">
+      Storage Level
+    </span>
+            </th><th width="" class="">
+              <span data-bs-toggle="tooltip" title="Number of partitions cached">
+      Cached Partitions
+    </span>
+            </th><th width="" class="">
+              <span data-bs-toggle="tooltip" title="Fraction of total partitions cached">
+      Fraction Cached
+    </span>
+            </th><th width="" class="">
+              <span data-bs-toggle="tooltip" title="Total size of partitions in memory">
+      Size in Memory
+    </span>
+            </th><th width="" class="">
+              <span data-bs-toggle="tooltip" title="Total size of partitions on the disk">
+      Size on Disk
+    </span>
+            </th></thead>
+      <tbody>
+        <tr>
+      <td>1</td>
+      <td>
+        <a href="/storage/rdd/?id=1">
+          slow-source
+        </a>
+      </td>
+      <td>Memory Serialized 1x Replicated
+      </td>
+      <td>6</td>
+      <td>100.00%</td>
+      <td sorttable_customkey="528">528.0 B</td>
+      <td sorttable_customkey="0">0.0 B</td>
+    </tr>
+      </tbody>
+    </table>
+    </div>
+        </div>
+      </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/03 12:39:20</span><span id="footer-uptime" data-start-time="1791011360675"></span>
+          <span>puppyseal</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

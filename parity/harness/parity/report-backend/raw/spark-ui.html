@@ -1,0 +1,2949 @@
+<!DOCTYPE html><html data-bs-theme="light">
+      <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/proxy/application_1791698585485_0014/static/bootstrap.min.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791698585485_0014/static/webui.css" type="text/css"/><script src="/proxy/application_1791698585485_0014/static/sorttable.js"></script><script src="/proxy/application_1791698585485_0014/static/jquery.min.js"></script><script src="/proxy/application_1791698585485_0014/static/bootstrap.bundle.min.js"></script><script src="/proxy/application_1791698585485_0014/static/initialize-tooltips.js"></script><script src="/proxy/application_1791698585485_0014/static/table.js"></script><script src="/proxy/application_1791698585485_0014/static/log-view.js"></script><script src="/proxy/application_1791698585485_0014/static/webui.js"></script><script src="/proxy/application_1791698585485_0014/static/scroll-button.js" type="module"></script><script nonce="ad070445-03ca-40ba-8209-67c79c4d6e91">setUIRoot('/proxy/application_1791698585485_0014')</script>
+        <script nonce="ad070445-03ca-40ba-8209-67c79c4d6e91">document.documentElement.setAttribute('data-bs-theme',localStorage.getItem('spark-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))</script>
+        <script nonce="ad070445-03ca-40ba-8209-67c79c4d6e91">setAppBasePath('')</script>
+        
+        
+        <link rel="stylesheet" href="/proxy/application_1791698585485_0014/static/vis-timeline-graph2d.min.css" type="text/css"/><link rel="stylesheet" href="/proxy/application_1791698585485_0014/static/timeline-view.css" type="text/css"/><script src="/proxy/application_1791698585485_0014/static/vis-timeline-graph2d.min.js"></script><script src="/proxy/application_1791698585485_0014/static/timeline-view.js"></script>
+        <link rel="shortcut icon" href="/proxy/application_1791698585485_0014/static/spark-logo.svg"></link>
+        <title>long_running - Spark Jobs</title>
+      </head>
+      <body class="d-flex flex-column min-vh-100">
+        <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center d-none">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="mt-2">Loading...</h3>
+          </div>
+        </div>
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="navbar-header">
+            <div class="navbar-brand">
+              <a href="/proxy/application_1791698585485_0014/">
+                <img class="spark-logo" src="/proxy/application_1791698585485_0014/static/spark-logo.svg" alt="Spark Logo" height="36"/>
+              </a>
+            </div>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto"><li class="nav-item active">
+        <a class="nav-link" href="/proxy/application_1791698585485_0014/jobs/">Jobs</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/proxy/application_1791698585485_0014/stages/">Stages</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/proxy/application_1791698585485_0014/storage/">Storage</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/proxy/application_1791698585485_0014/environment/">Environment</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/proxy/application_1791698585485_0014/executors/">Executors</a>
+      </li><li class="nav-item">
+        <a class="nav-link" href="/proxy/application_1791698585485_0014/SQL/">SQL / DataFrame</a>
+      </li></ul>
+            <span class="navbar-text navbar-right d-none d-md-block">
+              <strong title="long_running" class="text-nowrap">long_running</strong>
+              <span class="text-nowrap">application UI</span>
+            </span>
+            <button id="theme-toggle" class="btn btn-sm btn-link text-decoration-none fs-5 ms-2 p-0" type="button" title="Toggle dark mode"></button>
+          </div>
+        </nav>
+        <div class="container-fluid flex-fill">
+          <div class="row">
+            <div class="col-12">
+              <h3 class="align-bottom text-nowrap overflow-hidden text-truncate">
+                Spark Jobs
+                <sup>
+      (<a data-bs-toggle="tooltip" title="A job is triggered by an action, like count() or saveAsTextFile(). Click on a job to see information about the stages of tasks inside it.">?</a>)
+    </sup>
+              </h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div>
+        <ul class="list-unstyled">
+          <li>
+            <strong>Scheduling Mode: </strong>
+            FIFO
+          </li>
+          <li>
+                <a href="#active"><strong>Active Jobs:</strong></a>
+                1
+              </li>
+          <li id="completed-summary">
+                <a href="#completed"><strong>Completed Jobs:</strong></a>
+                58
+              </li>
+          
+        </ul>
+      </div><span class="expand-application-timeline">
+      <span class="expand-application-timeline-arrow arrow-closed"></span>
+      <a data-bs-toggle="tooltip" title="Shows when jobs started and ended and when executors joined or left. Drag to scroll.
+       Click Enable Zooming and use mouse wheel to zoom in/out.">
+      Event Timeline
+    </a>
+    </span><div id="application-timeline" class="collapsed">
+      
+      
+      <div class="control-panel">
+        <div id="application-timeline-zoom-lock">
+          <input type="checkbox"></input>
+          <span>Enable zooming</span>
+        </div>
+      </div>
+    </div><script type="text/javascript" nonce="ad070445-03ca-40ba-8209-67c79c4d6e91">
+      drawApplicationTimeline(
+[
+  {
+    'id': 'executors',
+    'content': '<div>Executors</div><div class="legend-area"><svg width="150px" height="55px">      <rect class="executor-added-legend" x="5px" y="5px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="17px">Added</text>      <rect class="executor-removed-legend" x="5px" y="30px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="42px">Removed</text>    </svg></div>',
+  },
+  {
+    'id': 'jobs',
+    'content': '<div>Jobs</div><div class="legend-area"><svg width="150px" height="85px">      <rect class="succeeded-job-legend" x="5px" y="5px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="17px">Succeeded</text>      <rect class="failed-job-legend" x="5px" y="30px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="42px">Failed</text>      <rect class="running-job-legend" x="5px" y="55px" width="20px" height="15px" rx="2px" ry="2px"></rect>      <text x="35px" y="67px">Running</text>    </svg></div>',
+  }
+]
+        ,[
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718487809),
+  'end': new Date(1791718492135),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="count at \/home\/puppyseal\/Documents\/code_repos\/burrow\/.cluster\/state\/data\/nm3-local\/usercache\/alice\/appcache\/application_1791698585485_0014\/container_1791698585485_0014_01_000001\/long_running.py:27 (Job 0)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:04:47' +
+     '<br>Completed: 2026/10/11 17:04:52">' +
+    'count at \/home\/puppyseal\/Documents\/code_repos\/burrow\/.cluster\/state\/data\/nm3-local\/usercache\/alice\/appcache\/application_1791698585485_0014\/container_1791698585485_0014_01_000001\/long_running.py:27 (Job 0)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718496899),
+  'end': new Date(1791718499298),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 1 shape 1 (Job 1)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:04:56' +
+     '<br>Completed: 2026/10/11 17:04:59">' +
+    'round 1 shape 1 (Job 1)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718499698),
+  'end': new Date(1791718500266),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 1 shape 1 (Job 2)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:04:59' +
+     '<br>Completed: 2026/10/11 17:05:00">' +
+    'round 1 shape 1 (Job 2)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718500322),
+  'end': new Date(1791718501007),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 1 shape 1 (Job 3)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:05:00' +
+     '<br>Completed: 2026/10/11 17:05:01">' +
+    'round 1 shape 1 (Job 3)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718501131),
+  'end': new Date(1791718501394),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 1 shape 1 (Job 4)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:05:01' +
+     '<br>Completed: 2026/10/11 17:05:01">' +
+    'round 1 shape 1 (Job 4)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718503505),
+  'end': new Date(1791718503660),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 2 shape 2 (Job 5)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:05:03' +
+     '<br>Completed: 2026/10/11 17:05:03">' +
+    'round 2 shape 2 (Job 5)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718504012),
+  'end': new Date(1791718504652),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 2 shape 2 (Job 6)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:05:04' +
+     '<br>Completed: 2026/10/11 17:05:04">' +
+    'round 2 shape 2 (Job 6)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718504800),
+  'end': new Date(1791718505019),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 2 shape 2 (Job 7)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:05:04' +
+     '<br>Completed: 2026/10/11 17:05:05">' +
+    'round 2 shape 2 (Job 7)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718506154),
+  'end': new Date(1791718569639),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 3 shape 3 (Job 8)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:05:06' +
+     '<br>Completed: 2026/10/11 17:06:09">' +
+    'round 3 shape 3 (Job 8)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718570793),
+  'end': new Date(1791718571446),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 4 shape 4 (Job 9)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:06:10' +
+     '<br>Completed: 2026/10/11 17:06:11">' +
+    'round 4 shape 4 (Job 9)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718572491),
+  'end': new Date(1791718635909),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 5 shape 0 (Job 10)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:06:12' +
+     '<br>Completed: 2026/10/11 17:07:15">' +
+    'round 5 shape 0 (Job 10)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718635983),
+  'end': new Date(1791718636221),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 5 shape 0 (Job 11)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:15' +
+     '<br>Completed: 2026/10/11 17:07:16">' +
+    'round 5 shape 0 (Job 11)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718636311),
+  'end': new Date(1791718636708),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 5 shape 0 (Job 12)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:16' +
+     '<br>Completed: 2026/10/11 17:07:16">' +
+    'round 5 shape 0 (Job 12)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718637938),
+  'end': new Date(1791718638174),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 6 shape 1 (Job 13)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:17' +
+     '<br>Completed: 2026/10/11 17:07:18">' +
+    'round 6 shape 1 (Job 13)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718638247),
+  'end': new Date(1791718638421),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 6 shape 1 (Job 14)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:18' +
+     '<br>Completed: 2026/10/11 17:07:18">' +
+    'round 6 shape 1 (Job 14)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718638428),
+  'end': new Date(1791718638648),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 6 shape 1 (Job 15)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:18' +
+     '<br>Completed: 2026/10/11 17:07:18">' +
+    'round 6 shape 1 (Job 15)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718638693),
+  'end': new Date(1791718638958),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 6 shape 1 (Job 16)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:18' +
+     '<br>Completed: 2026/10/11 17:07:18">' +
+    'round 6 shape 1 (Job 16)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718640227),
+  'end': new Date(1791718640286),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 7 shape 2 (Job 17)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:20' +
+     '<br>Completed: 2026/10/11 17:07:20">' +
+    'round 7 shape 2 (Job 17)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718640360),
+  'end': new Date(1791718640519),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 7 shape 2 (Job 18)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:20' +
+     '<br>Completed: 2026/10/11 17:07:20">' +
+    'round 7 shape 2 (Job 18)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718640571),
+  'end': new Date(1791718640628),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 7 shape 2 (Job 19)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:20' +
+     '<br>Completed: 2026/10/11 17:07:20">' +
+    'round 7 shape 2 (Job 19)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718641706),
+  'end': new Date(1791718704013),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 8 shape 3 (Job 20)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:07:21' +
+     '<br>Completed: 2026/10/11 17:08:24">' +
+    'round 8 shape 3 (Job 20)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718705053),
+  'end': new Date(1791718705493),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 9 shape 4 (Job 21)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:08:25' +
+     '<br>Completed: 2026/10/11 17:08:25">' +
+    'round 9 shape 4 (Job 21)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718706527),
+  'end': new Date(1791718769481),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 10 shape 0 (Job 22)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:08:26' +
+     '<br>Completed: 2026/10/11 17:09:29">' +
+    'round 10 shape 0 (Job 22)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718769507),
+  'end': new Date(1791718769637),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 10 shape 0 (Job 23)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:29' +
+     '<br>Completed: 2026/10/11 17:09:29">' +
+    'round 10 shape 0 (Job 23)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718769663),
+  'end': new Date(1791718770287),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 10 shape 0 (Job 24)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:29' +
+     '<br>Completed: 2026/10/11 17:09:30">' +
+    'round 10 shape 0 (Job 24)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718771356),
+  'end': new Date(1791718771466),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 11 shape 1 (Job 25)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:31' +
+     '<br>Completed: 2026/10/11 17:09:31">' +
+    'round 11 shape 1 (Job 25)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718771495),
+  'end': new Date(1791718771533),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 11 shape 1 (Job 26)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:31' +
+     '<br>Completed: 2026/10/11 17:09:31">' +
+    'round 11 shape 1 (Job 26)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718771536),
+  'end': new Date(1791718771586),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 11 shape 1 (Job 27)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:31' +
+     '<br>Completed: 2026/10/11 17:09:31">' +
+    'round 11 shape 1 (Job 27)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718771614),
+  'end': new Date(1791718771659),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 11 shape 1 (Job 28)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:31' +
+     '<br>Completed: 2026/10/11 17:09:31">' +
+    'round 11 shape 1 (Job 28)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718772776),
+  'end': new Date(1791718772803),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 12 shape 2 (Job 29)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:32' +
+     '<br>Completed: 2026/10/11 17:09:32">' +
+    'round 12 shape 2 (Job 29)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718772849),
+  'end': new Date(1791718772936),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 12 shape 2 (Job 30)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:32' +
+     '<br>Completed: 2026/10/11 17:09:32">' +
+    'round 12 shape 2 (Job 30)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718772956),
+  'end': new Date(1791718773052),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 12 shape 2 (Job 31)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:32' +
+     '<br>Completed: 2026/10/11 17:09:33">' +
+    'round 12 shape 2 (Job 31)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718774115),
+  'end': new Date(1791718837463),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 13 shape 3 (Job 32)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:09:34' +
+     '<br>Completed: 2026/10/11 17:10:37">' +
+    'round 13 shape 3 (Job 32)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718838660),
+  'end': new Date(1791718839257),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 14 shape 4 (Job 33)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:10:38' +
+     '<br>Completed: 2026/10/11 17:10:39">' +
+    'round 14 shape 4 (Job 33)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718840303),
+  'end': new Date(1791718903918),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 15 shape 0 (Job 34)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:10:40' +
+     '<br>Completed: 2026/10/11 17:11:43">' +
+    'round 15 shape 0 (Job 34)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718904013),
+  'end': new Date(1791718904198),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 15 shape 0 (Job 35)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:44' +
+     '<br>Completed: 2026/10/11 17:11:44">' +
+    'round 15 shape 0 (Job 35)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718904241),
+  'end': new Date(1791718904558),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 15 shape 0 (Job 36)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:44' +
+     '<br>Completed: 2026/10/11 17:11:44">' +
+    'round 15 shape 0 (Job 36)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718905662),
+  'end': new Date(1791718905734),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 16 shape 1 (Job 37)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:45' +
+     '<br>Completed: 2026/10/11 17:11:45">' +
+    'round 16 shape 1 (Job 37)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718905792),
+  'end': new Date(1791718905848),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 16 shape 1 (Job 38)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:45' +
+     '<br>Completed: 2026/10/11 17:11:45">' +
+    'round 16 shape 1 (Job 38)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718905851),
+  'end': new Date(1791718905896),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 16 shape 1 (Job 39)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:45' +
+     '<br>Completed: 2026/10/11 17:11:45">' +
+    'round 16 shape 1 (Job 39)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718905915),
+  'end': new Date(1791718905942),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 16 shape 1 (Job 40)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:45' +
+     '<br>Completed: 2026/10/11 17:11:45">' +
+    'round 16 shape 1 (Job 40)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718907075),
+  'end': new Date(1791718907105),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 17 shape 2 (Job 41)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:47' +
+     '<br>Completed: 2026/10/11 17:11:47">' +
+    'round 17 shape 2 (Job 41)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718907140),
+  'end': new Date(1791718907225),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 17 shape 2 (Job 42)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:47' +
+     '<br>Completed: 2026/10/11 17:11:47">' +
+    'round 17 shape 2 (Job 42)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718907246),
+  'end': new Date(1791718907276),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 17 shape 2 (Job 43)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:47' +
+     '<br>Completed: 2026/10/11 17:11:47">' +
+    'round 17 shape 2 (Job 43)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718908310),
+  'end': new Date(1791718970575),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 18 shape 3 (Job 44)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:11:48' +
+     '<br>Completed: 2026/10/11 17:12:50">' +
+    'round 18 shape 3 (Job 44)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718971599),
+  'end': new Date(1791718971955),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 19 shape 4 (Job 45)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:12:51' +
+     '<br>Completed: 2026/10/11 17:12:51">' +
+    'round 19 shape 4 (Job 45)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791718972990),
+  'end': new Date(1791719040949),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 20 shape 0 (Job 46)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:12:52' +
+     '<br>Completed: 2026/10/11 17:14:00">' +
+    'round 20 shape 0 (Job 46)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719041020),
+  'end': new Date(1791719041189),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 20 shape 0 (Job 47)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:01' +
+     '<br>Completed: 2026/10/11 17:14:01">' +
+    'round 20 shape 0 (Job 47)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719041277),
+  'end': new Date(1791719041630),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 20 shape 0 (Job 48)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:01' +
+     '<br>Completed: 2026/10/11 17:14:01">' +
+    'round 20 shape 0 (Job 48)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719042866),
+  'end': new Date(1791719043222),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 21 shape 1 (Job 49)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:02' +
+     '<br>Completed: 2026/10/11 17:14:03">' +
+    'round 21 shape 1 (Job 49)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719043319),
+  'end': new Date(1791719043417),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 21 shape 1 (Job 50)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:03' +
+     '<br>Completed: 2026/10/11 17:14:03">' +
+    'round 21 shape 1 (Job 50)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719043429),
+  'end': new Date(1791719043567),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 21 shape 1 (Job 51)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:03' +
+     '<br>Completed: 2026/10/11 17:14:03">' +
+    'round 21 shape 1 (Job 51)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719043614),
+  'end': new Date(1791719043677),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 21 shape 1 (Job 52)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:03' +
+     '<br>Completed: 2026/10/11 17:14:03">' +
+    'round 21 shape 1 (Job 52)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719044851),
+  'end': new Date(1791719044887),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 22 shape 2 (Job 53)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:04' +
+     '<br>Completed: 2026/10/11 17:14:04">' +
+    'round 22 shape 2 (Job 53)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719044971),
+  'end': new Date(1791719045161),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 22 shape 2 (Job 54)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:04' +
+     '<br>Completed: 2026/10/11 17:14:05">' +
+    'round 22 shape 2 (Job 54)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719045187),
+  'end': new Date(1791719045243),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 22 shape 2 (Job 55)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:05' +
+     '<br>Completed: 2026/10/11 17:14:05">' +
+    'round 22 shape 2 (Job 55)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719046331),
+  'end': new Date(1791719108477),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 23 shape 3 (Job 56)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:14:06' +
+     '<br>Completed: 2026/10/11 17:15:08">' +
+    'round 23 shape 3 (Job 56)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object succeeded',
+  'group': 'jobs',
+  'start': new Date(1791719109514),
+  'end': new Date(1791719109861),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 24 shape 4 (Job 57)<br>' +
+     'Status: SUCCEEDED<br>' +
+     'Submitted: 2026/10/11 17:15:09' +
+     '<br>Completed: 2026/10/11 17:15:09">' +
+    'round 24 shape 4 (Job 57)</div>'
+}
+         ,
+{
+  'className': 'job application-timeline-object running',
+  'group': 'jobs',
+  'start': new Date(1791719110884),
+  'end': new Date(1791719125701),
+  'content': '<div class="application-timeline-content"' +
+     'data-bs-html="true" data-bs-toggle="tooltip"' +
+     'data-bs-title="round 25 shape 0 (Job 58)<br>' +
+     'Status: RUNNING<br>' +
+     'Submitted: 2026/10/11 17:15:10' +
+     '">' +
+    'round 25 shape 0 (Job 58)</div>'
+}
+         ,
+{
+  'className': 'executor added',
+  'group': 'executors',
+  'start': new Date(1791718471877),
+  'content': '<div class="executor-event-content"' +
+    'data-bs-toggle="tooltip"' +
+    'data-bs-title="Executor driver<br>' +
+    'Added at 2026/10/11 17:04:31"' +
+    'data-bs-html="true">Executor driver added</div>'
+}
+         ,
+{
+  'className': 'executor added',
+  'group': 'executors',
+  'start': new Date(1791718481101),
+  'content': '<div class="executor-event-content"' +
+    'data-bs-toggle="tooltip"' +
+    'data-bs-title="Executor 1<br>' +
+    'Added at 2026/10/11 17:04:41"' +
+    'data-bs-html="true">Executor 1 added</div>'
+}
+         ,
+{
+  'className': 'executor added',
+  'group': 'executors',
+  'start': new Date(1791718482310),
+  'content': '<div class="executor-event-content"' +
+    'data-bs-toggle="tooltip"' +
+    'data-bs-title="Executor 2<br>' +
+    'Added at 2026/10/11 17:04:42"' +
+    'data-bs-html="true">Executor 2 added</div>'
+}
+         ], 1791718470057, 330);
+    </script><span id="active" class="collapse-table" data-bs-toggle="collapse" data-bs-target="#aggregated-activeJobs" aria-expanded="true" aria-controls="aggregated-activeJobs" data-collapse-name="collapse-aggregated-activeJobs">
+          <h4>
+            <span class="collapse-table-arrow arrow-open"></span>
+            <a>Active Jobs (1)</a>
+          </h4>
+        </span><div class="collapsible-table collapse show" id="aggregated-activeJobs">
+          <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-activeJob-table-top-page" method="get" action="/proxy/application_1791698585485_0014/jobs/?&activeJob.sort=Job+Id+%28Job+Group%29&activeJob.desc=true#active" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="activeJob.sort" value="Job Id (Job Group)"/><input type="hidden" name="activeJob.desc" value="true"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="activeJob.page" id="form-activeJob-table-top-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-activeJob-table-top-page-size" name="activeJob.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="activeJob-table">
+          <thead>
+      <tr><th>
+            <a href="/proxy/application_1791698585485_0014/jobs/?&activeJob.sort=Job+Id+%28Job+Group%29&activeJob.desc=false&activeJob.pageSize=100#active">
+              <span data-bs-toggle="tooltip" title="">
+      Job Id (Job Group)&nbsp;&#x25BE;
+    </span>
+            </a>
+          </th><th>
+              <a href="/proxy/application_1791698585485_0014/jobs/?&activeJob.sort=Description&activeJob.pageSize=100#active">
+                <span data-bs-toggle="tooltip" title="">
+      Description
+    </span>
+              </a>
+            </th><th>
+              <a href="/proxy/application_1791698585485_0014/jobs/?&activeJob.sort=Submitted&activeJob.pageSize=100#active">
+                <span data-bs-toggle="tooltip" title="">
+      Submitted
+    </span>
+              </a>
+            </th><th>
+              <a href="/proxy/application_1791698585485_0014/jobs/?&activeJob.sort=Duration&activeJob.pageSize=100#active">
+                <span data-bs-toggle="tooltip" title="Elapsed time since the job was submitted until execution completion of all its stages.">
+      Duration
+    </span>
+              </a>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Stages: Succeeded/Total
+    </span>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Tasks (for all stages): Succeeded/Total
+    </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr id="job-58">
+      <td>
+        58 (round-25)
+      </td>
+      <td>
+        <span class="description-input">round 25 shape 0</span> <a href="/proxy/application_1791698585485_0014/jobs/job/kill/?id=58" data-kill-message="Are you sure you want to kill job 58 ?" class="kill-link float-end">(kill)</a>
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=58" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:15:10
+      </td>
+      <td>15 s</td>
+      <td class="stage-progress-cell">
+        0/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="0/10 (2 running)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        0/10 (2 running)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-activeJob-table-bottom-page" method="get" action="/proxy/application_1791698585485_0014/jobs/?&activeJob.sort=Job+Id+%28Job+Group%29&activeJob.desc=true#active" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="activeJob.sort" value="Job Id (Job Group)"/><input type="hidden" name="activeJob.desc" value="true"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="activeJob.page" id="form-activeJob-table-bottom-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-activeJob-table-bottom-page-size" name="activeJob.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+      </div>
+        </div><span id="completed" class="collapse-table" data-bs-toggle="collapse" data-bs-target="#aggregated-completedJobs" aria-expanded="true" aria-controls="aggregated-completedJobs" data-collapse-name="collapse-aggregated-completedJobs">
+          <h4>
+            <span class="collapse-table-arrow arrow-open"></span>
+            <a>Completed Jobs (58)</a>
+          </h4>
+        </span><div class="collapsible-table collapse show" id="aggregated-completedJobs">
+          <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedJob-table-top-page" method="get" action="/proxy/application_1791698585485_0014/jobs/?&completedJob.sort=Job+Id+%28Job+Group%29&completedJob.desc=true#completed" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedJob.sort" value="Job Id (Job Group)"/><input type="hidden" name="completedJob.desc" value="true"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedJob.page" id="form-completedJob-table-top-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedJob-table-top-page-size" name="completedJob.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+        <table class="table table-bordered table-sm table-striped table-head-clickable table-cell-width-limited" id="completedJob-table">
+          <thead>
+      <tr><th>
+            <a href="/proxy/application_1791698585485_0014/jobs/?&completedJob.sort=Job+Id+%28Job+Group%29&completedJob.desc=false&completedJob.pageSize=100#completed">
+              <span data-bs-toggle="tooltip" title="">
+      Job Id (Job Group)&nbsp;&#x25BE;
+    </span>
+            </a>
+          </th><th>
+              <a href="/proxy/application_1791698585485_0014/jobs/?&completedJob.sort=Description&completedJob.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="">
+      Description
+    </span>
+              </a>
+            </th><th>
+              <a href="/proxy/application_1791698585485_0014/jobs/?&completedJob.sort=Submitted&completedJob.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="">
+      Submitted
+    </span>
+              </a>
+            </th><th>
+              <a href="/proxy/application_1791698585485_0014/jobs/?&completedJob.sort=Duration&completedJob.pageSize=100#completed">
+                <span data-bs-toggle="tooltip" title="Elapsed time since the job was submitted until execution completion of all its stages.">
+      Duration
+    </span>
+              </a>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Stages: Succeeded/Total
+    </span>
+            </th><th>
+              <span data-bs-toggle="tooltip" title="">
+      Tasks (for all stages): Succeeded/Total
+    </span>
+            </th></tr>
+    </thead>
+          <tbody>
+            <tr id="job-57">
+      <td>
+        57 (round-24)
+      </td>
+      <td>
+        <span class="description-input">round 24 shape 4</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=57" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:46</a>
+      </td>
+      <td>
+        2026/10/11 17:15:09
+      </td>
+      <td>0.3 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-56">
+      <td>
+        56 (round-23)
+      </td>
+      <td>
+        <span class="description-input">round 23 shape 3</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=56" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:44</a>
+      </td>
+      <td>
+        2026/10/11 17:14:06
+      </td>
+      <td>1.0 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-55">
+      <td>
+        55 (round-22)
+      </td>
+      <td>
+        <span class="description-input">round 22 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=55" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:14:05
+      </td>
+      <td>56 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-54">
+      <td>
+        54 (round-22)
+      </td>
+      <td>
+        <span class="description-input">round 22 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=54" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:14:04
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-53">
+      <td>
+        53 (round-22)
+      </td>
+      <td>
+        <span class="description-input">round 22 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=53" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:14:04
+      </td>
+      <td>36 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-52">
+      <td>
+        52 (round-21)
+      </td>
+      <td>
+        <span class="description-input">round 21 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=52" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:14:03
+      </td>
+      <td>63 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (2 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (5 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (5 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-51">
+      <td>
+        51 (round-21)
+      </td>
+      <td>
+        <span class="description-input">round 21 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=51" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:14:03
+      </td>
+      <td>0.1 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-50">
+      <td>
+        50 (round-21)
+      </td>
+      <td>
+        <span class="description-input">round 21 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=50" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:14:03
+      </td>
+      <td>98 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-49">
+      <td>
+        49 (round-21)
+      </td>
+      <td>
+        <span class="description-input">round 21 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=49" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:14:02
+      </td>
+      <td>0.4 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-48">
+      <td>
+        48 (round-20)
+      </td>
+      <td>
+        <span class="description-input">round 20 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=48" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:14:01
+      </td>
+      <td>0.4 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="8/8 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        8/8 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-47">
+      <td>
+        47 (round-20)
+      </td>
+      <td>
+        <span class="description-input">round 20 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=47" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:14:01
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-46">
+      <td>
+        46 (round-20)
+      </td>
+      <td>
+        <span class="description-input">round 20 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=46" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:12:52
+      </td>
+      <td>1.1 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-45">
+      <td>
+        45 (round-19)
+      </td>
+      <td>
+        <span class="description-input">round 19 shape 4</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=45" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:46</a>
+      </td>
+      <td>
+        2026/10/11 17:12:51
+      </td>
+      <td>0.4 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-44">
+      <td>
+        44 (round-18)
+      </td>
+      <td>
+        <span class="description-input">round 18 shape 3</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=44" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:44</a>
+      </td>
+      <td>
+        2026/10/11 17:11:48
+      </td>
+      <td>1.0 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-43">
+      <td>
+        43 (round-17)
+      </td>
+      <td>
+        <span class="description-input">round 17 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=43" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:11:47
+      </td>
+      <td>30 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-42">
+      <td>
+        42 (round-17)
+      </td>
+      <td>
+        <span class="description-input">round 17 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=42" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:11:47
+      </td>
+      <td>85 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-41">
+      <td>
+        41 (round-17)
+      </td>
+      <td>
+        <span class="description-input">round 17 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=41" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:11:47
+      </td>
+      <td>30 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-40">
+      <td>
+        40 (round-16)
+      </td>
+      <td>
+        <span class="description-input">round 16 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=40" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:11:45
+      </td>
+      <td>27 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (2 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (5 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (5 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-39">
+      <td>
+        39 (round-16)
+      </td>
+      <td>
+        <span class="description-input">round 16 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=39" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:11:45
+      </td>
+      <td>45 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-38">
+      <td>
+        38 (round-16)
+      </td>
+      <td>
+        <span class="description-input">round 16 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=38" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:11:45
+      </td>
+      <td>56 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-37">
+      <td>
+        37 (round-16)
+      </td>
+      <td>
+        <span class="description-input">round 16 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=37" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:11:45
+      </td>
+      <td>72 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-36">
+      <td>
+        36 (round-15)
+      </td>
+      <td>
+        <span class="description-input">round 15 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=36" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:11:44
+      </td>
+      <td>0.3 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="8/8 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        8/8 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-35">
+      <td>
+        35 (round-15)
+      </td>
+      <td>
+        <span class="description-input">round 15 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=35" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:11:44
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-34">
+      <td>
+        34 (round-15)
+      </td>
+      <td>
+        <span class="description-input">round 15 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=34" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:10:40
+      </td>
+      <td>1.1 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-33">
+      <td>
+        33 (round-14)
+      </td>
+      <td>
+        <span class="description-input">round 14 shape 4</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=33" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:46</a>
+      </td>
+      <td>
+        2026/10/11 17:10:38
+      </td>
+      <td>0.6 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-32">
+      <td>
+        32 (round-13)
+      </td>
+      <td>
+        <span class="description-input">round 13 shape 3</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=32" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:44</a>
+      </td>
+      <td>
+        2026/10/11 17:09:34
+      </td>
+      <td>1.1 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-31">
+      <td>
+        31 (round-12)
+      </td>
+      <td>
+        <span class="description-input">round 12 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=31" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:09:32
+      </td>
+      <td>96 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-30">
+      <td>
+        30 (round-12)
+      </td>
+      <td>
+        <span class="description-input">round 12 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=30" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:09:32
+      </td>
+      <td>87 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-29">
+      <td>
+        29 (round-12)
+      </td>
+      <td>
+        <span class="description-input">round 12 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=29" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:09:32
+      </td>
+      <td>27 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-28">
+      <td>
+        28 (round-11)
+      </td>
+      <td>
+        <span class="description-input">round 11 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=28" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:09:31
+      </td>
+      <td>45 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (2 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (5 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (5 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-27">
+      <td>
+        27 (round-11)
+      </td>
+      <td>
+        <span class="description-input">round 11 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=27" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:09:31
+      </td>
+      <td>50 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-26">
+      <td>
+        26 (round-11)
+      </td>
+      <td>
+        <span class="description-input">round 11 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=26" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:09:31
+      </td>
+      <td>38 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-25">
+      <td>
+        25 (round-11)
+      </td>
+      <td>
+        <span class="description-input">round 11 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=25" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:09:31
+      </td>
+      <td>0.1 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-24">
+      <td>
+        24 (round-10)
+      </td>
+      <td>
+        <span class="description-input">round 10 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=24" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:09:29
+      </td>
+      <td>0.6 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="8/8 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        8/8 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-23">
+      <td>
+        23 (round-10)
+      </td>
+      <td>
+        <span class="description-input">round 10 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=23" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:09:29
+      </td>
+      <td>0.1 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-22">
+      <td>
+        22 (round-10)
+      </td>
+      <td>
+        <span class="description-input">round 10 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=22" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:08:26
+      </td>
+      <td>1.0 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-21">
+      <td>
+        21 (round-9)
+      </td>
+      <td>
+        <span class="description-input">round 9 shape 4</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=21" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:46</a>
+      </td>
+      <td>
+        2026/10/11 17:08:25
+      </td>
+      <td>0.4 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-20">
+      <td>
+        20 (round-8)
+      </td>
+      <td>
+        <span class="description-input">round 8 shape 3</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=20" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:44</a>
+      </td>
+      <td>
+        2026/10/11 17:07:21
+      </td>
+      <td>1.0 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-19">
+      <td>
+        19 (round-7)
+      </td>
+      <td>
+        <span class="description-input">round 7 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=19" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:07:20
+      </td>
+      <td>57 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-18">
+      <td>
+        18 (round-7)
+      </td>
+      <td>
+        <span class="description-input">round 7 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=18" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:07:20
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-17">
+      <td>
+        17 (round-7)
+      </td>
+      <td>
+        <span class="description-input">round 7 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=17" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:07:20
+      </td>
+      <td>59 ms</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-16">
+      <td>
+        16 (round-6)
+      </td>
+      <td>
+        <span class="description-input">round 6 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=16" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:07:18
+      </td>
+      <td>0.3 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (2 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (5 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (5 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-15">
+      <td>
+        15 (round-6)
+      </td>
+      <td>
+        <span class="description-input">round 6 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=15" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:07:18
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-14">
+      <td>
+        14 (round-6)
+      </td>
+      <td>
+        <span class="description-input">round 6 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=14" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:07:18
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-13">
+      <td>
+        13 (round-6)
+      </td>
+      <td>
+        <span class="description-input">round 6 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=13" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:07:17
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-12">
+      <td>
+        12 (round-5)
+      </td>
+      <td>
+        <span class="description-input">round 5 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=12" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:07:16
+      </td>
+      <td>0.4 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="8/8 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        8/8 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-11">
+      <td>
+        11 (round-5)
+      </td>
+      <td>
+        <span class="description-input">round 5 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=11" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:07:15
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4 (6 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4 (6 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-10">
+      <td>
+        10 (round-5)
+      </td>
+      <td>
+        <span class="description-input">round 5 shape 0</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=10" class="name-link">sortByKey at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:34</a>
+      </td>
+      <td>
+        2026/10/11 17:06:12
+      </td>
+      <td>1.1 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-9">
+      <td>
+        9 (round-4)
+      </td>
+      <td>
+        <span class="description-input">round 4 shape 4</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=9" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:46</a>
+      </td>
+      <td>
+        2026/10/11 17:06:10
+      </td>
+      <td>0.7 s</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-8">
+      <td>
+        8 (round-3)
+      </td>
+      <td>
+        <span class="description-input">round 3 shape 3</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=8" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:44</a>
+      </td>
+      <td>
+        2026/10/11 17:05:06
+      </td>
+      <td>1.1 min</td>
+      <td class="stage-progress-cell">
+        2/2
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="10/10">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        10/10
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-7">
+      <td>
+        7 (round-2)
+      </td>
+      <td>
+        <span class="description-input">round 2 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=7" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:05:04
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-6">
+      <td>
+        6 (round-2)
+      </td>
+      <td>
+        <span class="description-input">round 2 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=6" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:05:04
+      </td>
+      <td>0.6 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-5">
+      <td>
+        5 (round-2)
+      </td>
+      <td>
+        <span class="description-input">round 2 shape 2</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=5" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:41</a>
+      </td>
+      <td>
+        2026/10/11 17:05:03
+      </td>
+      <td>0.2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-4">
+      <td>
+        4 (round-1)
+      </td>
+      <td>
+        <span class="description-input">round 1 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=4" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:05:01
+      </td>
+      <td>0.3 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (2 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (5 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (5 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-3">
+      <td>
+        3 (round-1)
+      </td>
+      <td>
+        <span class="description-input">round 1 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=3" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:05:00
+      </td>
+      <td>0.7 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-2">
+      <td>
+        2 (round-1)
+      </td>
+      <td>
+        <span class="description-input">round 1 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=2" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:04:59
+      </td>
+      <td>0.6 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        (1 skipped)
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="1/1 (4 skipped)">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        1/1 (4 skipped)
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-1">
+      <td>
+        1 (round-1)
+      </td>
+      <td>
+        <span class="description-input">round 1 shape 1</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=1" class="name-link">collect at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:37</a>
+      </td>
+      <td>
+        2026/10/11 17:04:56
+      </td>
+      <td>2 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="4/4">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        4/4
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr><tr id="job-0">
+      <td>
+        0 
+      </td>
+      <td>
+        <span class="description-input">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:27</span> 
+        <a href="/proxy/application_1791698585485_0014/jobs/job/?id=0" class="name-link">count at /home/puppyseal/Documents/code_repos/burrow/.cluster/state/data/nm3-local/usercache/alice/appcache/application_1791698585485_0014/container_1791698585485_0014_01_000001/long_running.py:27</a>
+      </td>
+      <td>
+        2026/10/11 17:04:47
+      </td>
+      <td>4 s</td>
+      <td class="stage-progress-cell">
+        1/1
+        
+        
+      </td>
+      <td class="progress-cell">
+        <div class="progress-stacked" title="6/6">
+      <span class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center">
+        6/6
+      </span>
+      <div class="progress" role="progressbar" aria-label="Completed" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100.0%">
+        <div class="progress-bar progress-completed"></div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Running" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0%">
+        <div class="progress-bar progress-started"></div>
+      </div>
+    </div>
+      </td>
+    </tr>
+          </tbody>
+        </table>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center">
+        <span class="pe-1">Page: </span>
+        <ul class="pagination mb-0">
+          
+          
+          <li class="page-item disabled"><a href="#" class="page-link">1</a></li>
+          
+          
+        </ul>
+      </div>
+      <div>
+        <form id="form-completedJob-table-bottom-page" method="get" action="/proxy/application_1791698585485_0014/jobs/?&completedJob.sort=Job+Id+%28Job+Group%29&completedJob.desc=true#completed" class="d-flex align-items-center gap-1 mb-0">
+          <input type="hidden" name="completedJob.sort" value="Job Id (Job Group)"/><input type="hidden" name="completedJob.desc" value="true"/>
+          <label class="text-nowrap">1 Pages. Jump to</label>
+          <input type="text" name="completedJob.page" id="form-completedJob-table-bottom-page-no" value="1" class="form-control form-control-sm" style="width: 60px;"/>
+
+          <label class="text-nowrap">. Show </label>
+          <input type="text" id="form-completedJob-table-bottom-page-size" name="completedJob.pageSize" value="100" class="form-control form-control-sm" style="width: 60px;"/>
+          <label class="text-nowrap">items in a page.</label>
+
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Go</button>
+        </form>
+      </div>
+    </div>
+      </div>
+        </div>
+            </div>
+          </div>
+        </div>
+        <footer class="footer mt-auto py-2 bg-body-tertiary border-top">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center small text-body-secondary">
+          <span>4.2.0</span>
+          <span>Started: 2026/10/11 17:04:30</span><span id="footer-uptime" data-start-time="1791718470057"></span>
+          <span>alice</span>
+        </div>
+      </div>
+    </footer>
+      </body>
+    </html>

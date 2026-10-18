@@ -1,0 +1,118 @@
+{
+  "kind": "stage",
+  "granularity": "rdd",
+  "stages": [
+    {
+      "stageId": 10,
+      "attempt": 0,
+      "skipped": false,
+      "label": "Stage 10",
+      "clusters": [
+        {
+          "id": "cluster_spark_plan_536",
+          "name": "MicroBatchScan",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_573",
+          "name": "WholeStageCodegen (1)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_574",
+          "name": "EventTimeWatermark",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_579",
+          "name": "WholeStageCodegen (2)",
+          "parentId": null
+        },
+        {
+          "id": "cluster_spark_plan_580",
+          "name": "Exchange",
+          "parentId": null
+        }
+      ],
+      "nodes": [
+        {
+          "id": 60,
+          "name": "DataSourceRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_536"
+        },
+        {
+          "id": 61,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_536"
+        },
+        {
+          "id": 62,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_573"
+        },
+        {
+          "id": 63,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_574"
+        },
+        {
+          "id": 64,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_579"
+        },
+        {
+          "id": 65,
+          "name": "MapPartitionsRDD",
+          "callsite": "start at NativeMethodAccessorImpl.java:0",
+          "cached": false,
+          "barrier": false,
+          "determinism": "determinate",
+          "clusterId": "cluster_spark_plan_580"
+        }
+      ],
+      "edges": [
+        {
+          "from": 60,
+          "to": 61
+        },
+        {
+          "from": 61,
+          "to": 62
+        },
+        {
+          "from": 62,
+          "to": 63
+        },
+        {
+          "from": 63,
+          "to": 64
+        },
+        {
+          "from": 64,
+          "to": 65
+        }
+      ]
+    }
+  ],
+  "edges": []
+}

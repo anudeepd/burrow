@@ -1,0 +1,149 @@
+{
+ "routeKey": "/scheduler?tab=activities",
+ "url": "http://127.0.0.1:8787/scheduler?tab=activities&parity=1",
+ "error": null,
+ "httpStatus": 200,
+ "datums": [
+  {
+   "entity": "_",
+   "field": "cluster.info.startedOn",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "epoch",
+   "text": "2026-10-13 19:49:56",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.id",
+   "raw": "1791901196446",
+   "yn": false,
+   "fmt": "id",
+   "text": "1791901196446",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.haState",
+   "raw": "ACTIVE",
+   "yn": false,
+   "fmt": "text",
+   "text": "Active",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.info.hadoopVersion",
+   "raw": "3.4.3",
+   "yn": false,
+   "fmt": null,
+   "text": "3.4.3",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.type",
+   "raw": "capacityScheduler",
+   "yn": false,
+   "fmt": null,
+   "text": "Capacity Scheduler",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.queuePath",
+   "raw": "root",
+   "yn": false,
+   "fmt": null,
+   "text": "root",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.utilizedMBPercent",
+   "raw": "210",
+   "yn": false,
+   "fmt": "pct",
+   "text": "210.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.allocatedMB",
+   "raw": "0",
+   "yn": false,
+   "fmt": "mb",
+   "text": "0 B",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.totalMB",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.queueCapacityVectorInfo.configuredCapacityVector",
+   "raw": "[memory-mb=100.0%,vcores=100.0%]",
+   "yn": false,
+   "fmt": null,
+   "text": "memory-mb 100% · vcores 100%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.maximumAllocation.memory",
+   "raw": "3072",
+   "yn": false,
+   "fmt": "mb",
+   "text": "3 GiB",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "scheduler.maximumAllocation.vCores",
+   "raw": "4",
+   "yn": false,
+   "fmt": "int",
+   "text": "4 vCores",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.rmSchedulerBusyPercent",
+   "raw": "0",
+   "yn": false,
+   "fmt": "pct",
+   "text": "0.0%",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.rmEventQueueSize",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  },
+  {
+   "entity": "_",
+   "field": "cluster.metrics.schedulerEventQueueSize",
+   "raw": "0",
+   "yn": false,
+   "fmt": "int",
+   "text": "0",
+   "tag": "span"
+  }
+ ],
+ "entities": [
+  "_"
+ ],
+ "title": "Scheduler · burrow",
+ "hasShell": true,
+ "bodyText": "ys\nburrow\nOverview\n1\nApplications\n1\nScheduler\nNodes\nNode labels\nTOOLS\nConfiguration\nJMX\nStacks\nDaemon logs\nconnected\n3.4.3\n·\nv0.1.0\nos: no motion\nparity\nYARN\nstarted\n2026-10-13 19:49:56\n1791901196446\nActive\nHadoop\n3.4.3\nparity\n3 s\n1s ago\nSearch\nCtrl K\nLocal\nUTC\nScheduler\nRefresh\nTYPE\nCapacity Scheduler\nROOT QUEUE\nroot\nQUEUES\n6\nOVER THEIR SHARE\n0\nCLUSTER MEMORY USED\n210.0%\n0 B\nof\n3 GiB\nSCHEDULING RESOURCE TYPE\nmemory-mb 100% · vcores 100%\nMINIMUM ALLOCATION\n—\nnot in the REST contract\nMAXIMUM ALLOCATION\n3 GiB\n·\n4 vCores\nMAXIMUM CLUSTER APPLICATION PRIORITY\n—\nnot in the REST contract\nSCHEDULER BUSY %\n0.0%\nRM DISPATCHER EVENTQUEUE SIZE\n0\nSCHEDULER DISPATCHER EVENTQUEUE SIZE\n0\nQueues\nActivities\nHealth\nConfiguration\nNodeManager\nlatest (any node)\nDetailed\nGroup by diagnostic\nSort\nColumns\n9/9\nExport\nTime\nContainer Id\nNode Id\nQueue / node\nAllocation state\nFinal allocation state\nPartition\nCount\nDiagnostic\nwaiting for next allocation\n\nThe RM keeps the most recent allocation activity per NodeManager; pick a node or wait for the scheduler's next heartbeat.\n\n0 rows\nshift-click header: multi-sort"
+}
