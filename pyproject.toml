@@ -4,8 +4,8 @@ build-backend = "maturin"
 
 [project]
 name = "yarn-burrow"
-version = "0.1.1"
-description = "A modern UI for Apache Hadoop YARN and Spark-on-YARN — one read-only Rust binary"
+version = "0.1.2"
+description = "A modern UI for Apache Hadoop YARN and Spark-on-YARN"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
