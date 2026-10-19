@@ -20,7 +20,7 @@ Environment: Fedora 44 box (16 cores, ~15 GB RAM), single-host Hadoop 3.4.3 clus
 | Burrow CLI smoke | `cargo run -p burrow -- --help` | **passed** — prints `Usage: burrow [OPTIONS] [COMMAND]` and the `BURROW_*` environment options |
 | Web unit tests | `cd web && bun run test` (Bun 1.4.3; Vitest with Happy DOM and thread workers) | **719 passed / 0 failed** (63 files; includes the motion-contract/policy tests and status-motion guard, §5) |
 | Web typecheck | `cd web && bun run typecheck` | 0 errors |
-| Web lint | `cd web && bunx biome check .` | **clean** — 413 files checked; file-specific exclusions for `.claude-design/lab/index.html` and `.claude-design/design-brief.json` |
+| Web lint | `cd web && bunx biome check .` | **clean** — 413 files checked; two standalone design exploration files were excluded at the time and have since been removed |
 | SPA build | `cd web && bun run build` | **passed** — Vite 8.3.2 transformed 3,181 client and 339 SSR modules; client/server outputs emitted; `/` prerendered. Vite warned about minified chunks larger than 500 kB (worker/ELK). |
 | Bundle budget | `bun run scripts/check-bundle-budget.ts` | see parity/report; initial entry chunk is the budget holder |
 | Wheel build (historical, before the distribution rename) | `maturin build --release --manifest-path crates/burrow/Cargo.toml` | `burrow-0.1.0-py3-none-manylinux_2_39_x86_64.whl`, 10.1 MB; the current distribution name is `yarn-burrow` |
@@ -234,11 +234,8 @@ columns.
     `railCollapsed` pref (a phone showed a 56px icon-only drawer, no labels) and rendered a toggle that flipped the
     *desktop* rail's pref. Now: the collapsed rail's brand row is the logo alone, centred on the icon column; a drawer
     always renders the expanded rail and no toggle at all (the dead `collapsed` prop became `inDrawer`).
-    (b) Checked against the ui-skills registry (`jakubkrehel/better-layout`): *"Give every interactive element a
-    background shape, a border, or a **consistent placement zone**"*, *"Pick alignment edges and stick to them; every
-    stray edge reads as noise"*, and *"Never park a critical action where resizing or scrolling clips it … stable
-    chrome"*. The first fix put the toggle in the brand row when expanded and the footer when collapsed — two zones,
-    exactly the case the skill rules out. The toggle now has **one** zone: the footer's status row, `ml-auto`, so it
+    (b) The control's placement was checked across widths. The first fix put the toggle in the brand row when expanded
+    and the footer when collapsed — two zones. The toggle now has **one** zone: the footer's status row, `ml-auto`, so it
     sits at the rail's trailing corner at the same 8px inset at both widths (measured: 9px inset at 224px and at 56px,
     brand row 0 buttons in both states, logo centred 16..40 in the collapsed rail). Verified in the browser at 1440px
     and 390px (drawer 224px with readable labels, zero buttons in the rail), with geometry tests in
