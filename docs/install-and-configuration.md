@@ -2,7 +2,7 @@
 
 ## Install and start
 
-Once `yarn-burrow` is published on PyPI, install it with:
+Install `yarn-burrow` from PyPI and start Burrow with:
 
 ```bash
 pip install yarn-burrow
