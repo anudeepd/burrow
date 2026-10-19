@@ -13,4 +13,4 @@ Burrow brings YARN cluster operations and Spark-on-YARN tracking into one read-o
 | **Tools** (`/tools/*`) | Searchable configuration with overridden-only filtering and diffs; JMX tree; live thread stacks; daemon logs; corresponding configuration and JMX views for NodeManagers. |
 | **Container logs** (`/apps/$appId/logs`) | Running-container logs from NodeManagers and aggregated logs for finished containers; byte-addressed reads; ANSI handling; level filters; search; live follow over SSE; virtualized rendering, verified with logs of up to one million lines. |
 
-Burrow does not send YARN write actions. See [scope and verification](../README.md#compatibility-and-scope) and the [verification record](verification.md) for exclusions and tested behavior.
+Burrow does not send YARN write actions. See the [limitations](../README.md#limitations) and the [verification record](verification.md) for exclusions and tested behavior.
