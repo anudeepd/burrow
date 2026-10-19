@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "yarn-burrow"
-version = "0.1.0"
+version = "0.1.1"
 description = "A modern UI for Apache Hadoop YARN and Spark-on-YARN — one read-only Rust binary"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -33,4 +33,7 @@ manifest-path = "crates/burrow/Cargo.toml"
 strip = true
 # `web/dist/client` is embedded into the binary by the crate's build script, so the wheel needs no
 # data files; `sdist`-from-source users need a Rust toolchain (and, for the web UI, `bun run build`).
-include = [{ path = "README.md", format = "sdist" }, { path = "LICENSE", format = "sdist" }]
+include = [
+  { path = "README.md", format = "sdist" },
+  { path = "LICENSE", format = "sdist" },
+]
