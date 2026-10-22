@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Boxes, CornerDownLeft, Moon, Pause, Play, Search, Sun, SunMoon } from "lucide-react";
-import { type ReactNode, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { q } from "~/api/queries";
 import { cn } from "~/lib/cn";
 import { setPrefs, usePref } from "~/state/prefs";
@@ -60,6 +60,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo<Item[]>(() => {
     const go = (item: NavItem): Item => ({
@@ -132,6 +133,11 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const activeIdx = Math.min(active, Math.max(0, shown.length - 1));
   const activeItem = shown[activeIdx];
 
+  useEffect(() => {
+    if (!open) return;
+    resultsRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+  }, [activeItem?.id, open, query]);
+
   const runItem = (item: Item | undefined) => {
     if (!item) return;
     onOpenChange(false);
@@ -197,7 +203,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           />
         )}
 
-        <div id="palette-results" role="listbox" aria-label="Results" className="mt-2 max-h-[50vh] overflow-auto">
+        <div ref={resultsRef} id="palette-results" role="listbox" aria-label="Results" className="mt-2 max-h-[50vh] overflow-auto">
           {shown.length === 0 && <p className="px-2 py-6 text-center text-small text-ink-3">No matches.</p>}
           {shown.map((item, i) => (
             <div key={item.id}>

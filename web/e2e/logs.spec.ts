@@ -49,6 +49,39 @@ test.describe("container logs", () => {
     await expect(page).toHaveURL(/file=stdout/);
     await expect(page.locator('[data-yf="log.fileSize"][data-yv="8612"]')).toBeVisible();
   });
+  test("locks application navigation while the selected log pane uses the available height", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(logUrl(FAILED, "&file=stderr"));
+    await expect(pane(page)).toBeVisible({ timeout: 30_000 });
+    await expect(followState(page)).toHaveAttribute("data-burrow-log-follow", "off");
+
+    const appScroller = page.locator(".burrow-app-scroll");
+    await expect.poll(() => appScroller.evaluate((el) => el.scrollHeight - el.clientHeight)).toBe(0);
+    const header = page.locator('[data-burrow-app-header="yarn"]');
+    const headerTop = (await header.boundingBox())!.y;
+    const tabs = page.getByRole("navigation", { name: "Application sections" });
+    const tabsBox = (await tabs.boundingBox())!;
+    await page.mouse.move(tabsBox.x + tabsBox.width / 2, tabsBox.y + tabsBox.height / 2);
+    await page.mouse.wheel(0, 120);
+
+    await expect.poll(() => appScroller.evaluate((el) => el.scrollTop)).toBe(0);
+    expect((await header.boundingBox())!.y).toBe(headerTop);
+    await expect(page.getByRole("link", { name: "YARN application page" })).toBeInViewport();
+  });
+  test("keeps selected logs scrollable on short viewports at desktop breakpoints", async ({ page }) => {
+    for (const width of [768, 1024]) {
+      await page.setViewportSize({ width, height: 400 });
+      await page.goto(logUrl(FAILED, "&file=stderr"));
+      await expect(pane(page)).toBeVisible({ timeout: 30_000 });
+
+      const appScroller = page.locator(".burrow-app-scroll");
+      await expect.poll(() => appScroller.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeGreaterThan(0);
+      const panel = page.locator("[data-burrow-log-panel]");
+      await panel.evaluate((el) => el.scrollIntoView({ block: "start" }));
+      await expect(page.getByRole("button", { name: "Download" })).toBeInViewport();
+      await expect.poll(() => pane(page).evaluate((el) => el.clientHeight)).toBeGreaterThan(0);
+    }
+  });
 
   test("scrolls horizontally through long unwrapped lines", async ({ page }) => {
     await page.goto(logUrl(FAILED, "&file=stderr"));
@@ -302,6 +335,8 @@ test.describe("phone log toolbar", () => {
   test("tooltip-wrapped search toggles remain operable by touch", async ({ page }) => {
     await page.goto(logUrl(FAILED, "&file=stderr"));
     await expect(pane(page)).toBeVisible({ timeout: 30_000 });
+    const appScroller = page.locator(".burrow-app-scroll");
+    await expect.poll(() => appScroller.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeGreaterThan(0);
 
     const regex = page.getByRole("button", { name: "Regular expression search" });
     await regex.tap();

@@ -260,8 +260,12 @@ export function LogsView() {
       : null;
 
   return (
-    // App sections scroll as a document. The log needs its own bounded scrollport for virtualization and jump actions.
-    <Entity id={containerId} className="flex h-[64dvh] min-h-112 shrink-0 flex-col overflow-hidden rounded-lg border border-seam bg-fabric">
+    // Larger screens keep application navigation fixed; narrow screens retain page scrolling so the log pane stays usable.
+    <Entity
+      id={containerId}
+      data-burrow-log-panel="1"
+      className="flex h-[64dvh] min-h-112 shrink-0 flex-col overflow-hidden rounded-lg border border-seam bg-fabric"
+    >
       <LogToolbar
         containerId={containerId}
         file={file}

@@ -104,7 +104,7 @@ export function AppsPage({
       : (appsQuery.error as { message?: string; hint?: string | null } | null);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div className="burrow-scroll burrow-page-scroll burrow-apps-page flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-seam pb-3">
         <div className="min-w-0">
           <h1 className="text-h1 font-semibold text-ink text-balance">Applications</h1>
