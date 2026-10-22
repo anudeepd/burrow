@@ -31,11 +31,11 @@ export interface LogStatusBarProps {
 }
 
 const MODE_LABEL: Record<FollowMode, string> = {
-  off: "Follow off",
-  connecting: "Connecting…",
-  streaming: "Streaming",
+  off: "Not following",
+  connecting: "Connecting to log stream…",
+  streaming: "Following new output",
   reconnecting: "Reconnecting…",
-  polling: "Polling",
+  polling: "Following by polling",
   ended: "Stream ended",
   error: "Stream error",
 };

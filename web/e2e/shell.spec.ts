@@ -258,6 +258,33 @@ test.describe("app shell", () => {
     await expect(page).toHaveURL(new RegExp(`/apps/${appId}`));
   });
 
+  test("command palette keeps the active keyboard result in view", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 500 });
+    await freezeLive(page);
+    await gotoReady(page, "/apps");
+    await page.getByTestId("palette-trigger").click();
+
+    const palette = page.getByTestId("command-palette");
+    const input = palette.getByRole("combobox");
+    const results = palette.getByRole("listbox");
+    await input.fill("a");
+    await expect.poll(() => results.getByRole("option").count()).toBeGreaterThan(12);
+
+    for (let i = 0; i < 12; i++) await input.press("ArrowDown");
+    await expect
+      .poll(() =>
+        results.evaluate((list) => {
+          const id = document.querySelector('[data-testid="command-palette"] [role="combobox"]')?.getAttribute("aria-activedescendant");
+          const active = id ? document.getElementById(id) : null;
+          if (!active) return false;
+          const itemRect = active.getBoundingClientRect();
+          const listRect = list.getBoundingClientRect();
+          return itemRect.top >= listRect.top && itemRect.bottom <= listRect.bottom && list.scrollTop > 0;
+        }),
+      )
+      .toBe(true);
+  });
+
   test("the palette trigger, `/` and `?` work without a mouse", async ({ page }) => {
     await freezeLive(page);
     await gotoReady(page, "/apps");

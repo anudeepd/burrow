@@ -151,6 +151,19 @@ test.describe("interaction", () => {
     await expect(nodes).toHaveCount(6);
     await expectNodesWithinCanvas(canvas, nodes);
   });
+  test("wheel over the right shell gutter scrolls the Spark page", async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await gotoFixture(page, GOLDEN.medium, "running");
+
+    const appScroller = page.locator(".burrow-app-scroll");
+    await expect.poll(() => appScroller.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeGreaterThan(0);
+    await appScroller.evaluate((el) => {
+      el.scrollTop = 0;
+    });
+    await page.mouse.move(1910, 900);
+    await page.mouse.wheel(0, 240);
+    await expect.poll(() => appScroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  });
 
   test("opens a medium-wide DAG at readable running-stage focus", async ({ page }) => {
     await gotoFixture(page, GOLDEN.medium, "running");

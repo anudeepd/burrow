@@ -1,10 +1,8 @@
 /**
- * The "Spark UI" affordance on the overview tab.
+ * The external Spark UI link on the application header.
  *
- * Two destinations, never conflated:
- *  - the native Spark tabs inside Burrow (`/apps/$appId/spark/jobs`) when the FE-Spark slice is part of the build;
- *  - the unmodified Spark UI, resolved by the backend (`/api/spark/{appId}/source`): RM web proxy while the app runs,
- *    Spark History Server once it is finished.
+ * In-Burrow Spark navigation already lives in the section tab, so this component only exposes the separate YARN-proxied
+ * Spark UI or History Server URL.
  * When the backend cannot resolve a source we say so and why (reason/hint from the API); no guessed URLs.
  */
 import { useQuery } from "@tanstack/react-query";
@@ -13,25 +11,9 @@ import { cn } from "~/lib/cn";
 import { ACTION_LINK_CLASS, Button } from "~/ui/button";
 import { Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { appSparkSource } from "../queries";
-import { appTabs } from "../tabs";
-import { HelpTip } from "~/ui/tooltip";
 
 export function SparkAffordance({ appId, className, insideSpark = false }: { appId: string; className?: string; insideSpark?: boolean }) {
   const source = useQuery(appSparkSource(appId));
-  const nativeTab = appTabs(appId).find((t) => t.value === "spark");
-
-  const native = insideSpark ? null : nativeTab?.available ? (
-    // plain anchor: the Spark routes are contributed by another slice and are not in this build's typed route tree
-    <a href={nativeTab.href} className={cn(ACTION_LINK_CLASS, "text-live")}>
-      <Sparkles className="size-3.5" aria-hidden="true" />
-      Open in Burrow
-    </a>
-  ) : (
-    <span className="inline-flex items-center gap-1">
-      <span className="text-small text-ink-4">Native Spark tabs: not in this build</span>
-      {nativeTab?.hint && <HelpTip label="Native Spark tabs">{nativeTab.hint}</HelpTip>}
-    </span>
-  );
 
   let external: React.ReactNode;
   if (source.isPending) {
@@ -101,11 +83,10 @@ export function SparkAffordance({ appId, className, insideSpark = false }: { app
     );
   }
 
-  if (!native && !external) return null;
+  if (!external) return null;
 
   return (
     <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-1", className)} data-burrow="spark-affordance">
-      {native}
       {external}
     </div>
   );

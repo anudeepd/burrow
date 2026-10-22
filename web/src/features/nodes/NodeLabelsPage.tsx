@@ -83,7 +83,7 @@ export function NodeLabelsPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-col gap-4">
+    <div className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto pb-6 [&>*]:shrink-0">
       <PageHead
         title="Node labels"
         description="Browse YARN partitions and see which nodes belong to each label."

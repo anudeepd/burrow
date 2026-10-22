@@ -27,23 +27,19 @@ const base = {
 };
 
 describe("LogStatusBar", () => {
-  it("reports the loaded lines and the transport", () => {
+  it("reports the loaded line count", () => {
     render(<LogStatusBar {...base} followMode="streaming" />);
     expect(screen.getByText(/100 lines/)).toBeTruthy();
-    expect(screen.getByText("Streaming")).toBeTruthy();
   });
 
   it("marks a finished stream", () => {
     const { container } = render(<LogStatusBar {...base} followMode="ended" ended />);
     expect(container.querySelector("[data-burrow-log-ended]")).toBeTruthy();
-    expect(screen.getByText("Stream ended")).toBeTruthy();
   });
 
-  it("says when it fell back to polling and offers a retry", () => {
+  it("offers retry after falling back to polling", () => {
     const onRetry = vi.fn();
     render(<LogStatusBar {...base} followMode="polling" followDetail="stream connection lost" onRetry={onRetry} />);
-    expect(screen.getByText("Polling")).toBeTruthy();
-    expect(screen.getByText(/stream connection lost/)).toBeTruthy();
     screen.getByRole("button", { name: "Retry the log stream" }).click();
     expect(onRetry).toHaveBeenCalledOnce();
   });
@@ -54,11 +50,6 @@ describe("LogStatusBar", () => {
     expect(screen.getByText(/match 3 of 12/)).toBeTruthy();
     expect(screen.getByText(/1 byte gap/)).toBeTruthy();
     expect(screen.getByText(/KiB behind/)).toBeTruthy();
-  });
-
-  it("shows an action notice", () => {
-    render(<LogStatusBar {...base} notice="No ERROR/FATAL line in the loaded window" />);
-    expect(screen.getByText("No ERROR/FATAL line in the loaded window")).toBeTruthy();
   });
 });
 

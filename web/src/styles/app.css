@@ -197,12 +197,11 @@ html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-footer-meta,
 }
 
 /* The prototype's page frame: broad outer gutters, a calm max-width reading measure, and a clear active rail marker. */
-.burrow-main { padding: var(--page-gutter-y) var(--page-gutter-x); }
-.burrow-page { width: 100%; max-width: 1560px; min-width: 0; margin-inline: auto; }
-.burrow-app-scroll {
-  margin-right: calc(var(--page-gutter-x) * -1);
-  padding-right: var(--page-gutter-x);
+.burrow-main {
+  container-type: inline-size;
+  padding: var(--page-gutter-y) var(--page-gutter-x);
 }
+.burrow-page { width: 100%; max-width: 1560px; min-width: 0; margin-inline: auto; }
 .burrow-rail-active-selection {
   position: absolute;
   top: 0;
@@ -247,7 +246,6 @@ html[data-motion="reduced"] .burrow-rail-active-selection { transition: none; }
 
 @media (max-width: 639px) {
   .burrow-main { padding-inline: 12px; }
-  .burrow-app-scroll { margin-right: -12px; padding-right: 12px; }
 }
 
 /* ---------- motion gating ----------
@@ -560,9 +558,34 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
   scrollbar-gutter: auto;
   scrollbar-width: none;
   overscroll-behavior: contain;
+  /* Extend the scroll hitbox through the main gutter and any space introduced by the centered max-width page. */
+  margin-right: min(calc(0px - var(--page-gutter-x)), calc(780px - 50cqi - var(--page-gutter-x)));
+  padding-right: max(var(--page-gutter-x), calc(50cqi - 780px + var(--page-gutter-x)));
 }
 .burrow-page-scroll--stable { overflow-anchor: none; }
 .burrow-page-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+/* A selected log viewer only locks application navigation when the viewport leaves room for its toolbar and line pane.
+   Short desktop windows keep the outer page scrollable instead of flexing the viewer down to zero height. */
+@media (min-width: 48rem) and (min-height: 50rem) {
+  .burrow-app-scroll--logs { overflow: hidden; }
+  .burrow-app-scroll--logs .burrow-app-log-layout {
+    min-height: 0;
+    flex: 1 1 0%;
+  }
+  .burrow-app-scroll--logs [data-burrow-log-panel] {
+    height: auto;
+    min-height: 0;
+    flex: 1 1 0%;
+  }
+}
+/* On short windows the filters can consume the apps page's height before the table gets a row.
+   Let the page scroll and preserve a modest table viewport instead of collapsing it to zero. */
+@media (max-height: 44rem) {
+  .burrow-apps-page { overflow-y: auto; }
+  .burrow-apps-page [data-burrow-table-root="apps"] { min-height: 20rem; }
+}
+
+
 
 .burrow-switch[data-checked] .burrow-switch-track {
   border-color: transparent;

@@ -85,7 +85,7 @@ export function AppHeader({
     <header className={cn("flex flex-col gap-4", className)} data-burrow-app-header={insideSpark ? "spark" : "yarn"}>
       <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-2 xl:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
-          {!insideSpark && <p className="mb-1 text-caption font-semibold tracking-[0.1em] text-live uppercase">YARN application</p>}
+          <p className="mb-1 text-caption font-semibold tracking-[0.1em] text-live uppercase">YARN application</p>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-h1 font-semibold text-ink">
               <Datum field="app.name" raw={app.name} as="span" />
