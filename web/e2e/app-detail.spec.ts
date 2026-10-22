@@ -20,6 +20,7 @@ const FIXTURES = new URL("../../fixtures/rm/app/", import.meta.url);
 const RUNNING_APP = "application_1791010984040_0001";
 const FINISHED_APP = "application_1791010984040_0002";
 const MULTI_ATTEMPT_APP = "application_1791010984040_0004";
+const SPARK_APP = "application_1791010000001_0001";
 
 function fixture<T>(scenario: string, file: string): T {
   return JSON.parse(readFileSync(fileURLToPath(new URL(`${scenario}/${file}`, FIXTURES)), "utf8")) as T;
@@ -264,6 +265,14 @@ test.describe("honest states", () => {
     await page.locator("main section").first().hover();
     await page.mouse.wheel(0, 240);
     await expect.poll(async () => pageScroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(before);
+  });
+  test("keeps Spark in the YARN context without a redundant in-Burrow action", async ({ page }) => {
+    await page.goto(`/apps/${RUNNING_APP}?parity=1`);
+    await expect(page.locator('[data-burrow-app-header="yarn"]')).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open in Burrow" })).toHaveCount(0);
+
+    await page.goto(`/apps/${SPARK_APP}/spark/jobs`);
+    await expect(page.locator('[data-burrow-app-header="spark"]').getByText("YARN application", { exact: true })).toBeVisible();
   });
 
   test("log source and Spark source render 'unavailable' when the backend says so", async ({ page }) => {

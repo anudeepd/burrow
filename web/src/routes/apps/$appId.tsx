@@ -7,7 +7,7 @@
  */
 import { useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, Outlet, createFileRoute, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useRouterState, useSearch } from "@tanstack/react-router";
 import { q } from "~/api/queries";
 import { selectAppAttempts } from "~/api/schemas";
 import { cn } from "~/lib/cn";
@@ -26,6 +26,9 @@ function AppLayout() {
   const { appId } = Route.useParams();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isSparkRoute = pathname.startsWith(`/apps/${appId}/spark/`);
+  const routeSearch = useSearch({ strict: false }) as Record<string, unknown>;
+  const logsViewerActive =
+    pathname.replace(/\/$/, "") === `/apps/${appId}/logs` && typeof routeSearch.container === "string" && routeSearch.container.length > 0;
   const app = useQuery(q.app(appId));
   const attempts = useQuery(q.appAttempts(appId));
   const now = useNow(!!app.data && !isAppFinal(app.data.state));
@@ -61,11 +64,14 @@ function AppLayout() {
     );
   }
 
-  // Include the shell's right padding in the scrollport so wheel gestures beside the panels still scroll the page.
+  // Page scrollports extend through the shell gutter and the centered max-width slack, so wheel gestures beside content still scroll.
   return (
     <Entity
       id={appId}
-      className="burrow-scroll burrow-page-scroll burrow-app-scroll flex min-h-0 flex-1 flex-col overflow-y-auto pb-6 [&>*]:shrink-0"
+      className={cn(
+        "burrow-scroll burrow-page-scroll burrow-app-scroll flex min-h-0 flex-1 flex-col pb-6",
+        logsViewerActive ? "burrow-app-scroll--logs overflow-y-auto" : "overflow-y-auto [&>*]:shrink-0",
+      )}
     >
       {app.error && (
         <StaleErrorBanner
@@ -91,13 +97,13 @@ function AppLayout() {
             onRetry={() => void attempts.refetch()}
           />
         ))}
-      <div className="pb-3">
+      <div className="shrink-0 pb-3">
         <AppHeader app={app.data} attempts={selectAppAttempts(attempts.data ?? {})} now={now} insideSpark={isSparkRoute} />
       </div>
 
       <ApplicationSectionNav tabs={tabs} current={current} />
 
-      <div className="flex flex-col pt-3">
+      <div className={cn("flex flex-col pt-3", logsViewerActive && "shrink-0 burrow-app-log-layout")}>
         <Outlet />
       </div>
     </Entity>
@@ -108,7 +114,7 @@ function ApplicationSectionNav({ tabs, current }: { tabs: ReturnType<typeof appT
   const listRef = useRef<HTMLUListElement>(null);
   const cues = useHorizontalScrollCues(listRef, true, tabs);
   return (
-    <nav aria-label="Application sections" className="relative border-b border-seam">
+    <nav aria-label="Application sections" className="relative shrink-0 border-b border-seam">
       {/* Keep the underline inside the strip so it cannot add a vertical scroll range. */}
       <ul ref={listRef} onScroll={cues.onScroll} className="burrow-scroll burrow-scroll-hidden flex items-center gap-0.5 overflow-x-auto">
         {tabs.map((tab) => {

@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      refresh_linux_snapshots:
+        description: Regenerate Linux Playwright screenshots and upload them as an artifact
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -47,7 +52,15 @@ jobs:
         working-directory: web
         env:
           PW_SNAPSHOT_DIR: e2e/__screenshots__/linux
-        run: bun run e2e --project=firefox
+        run: bun run e2e --project=firefox ${{ inputs.refresh_linux_snapshots && '--update-snapshots' || '' }}
+      - name: Upload refreshed Linux screenshots
+        if: ${{ always() && inputs.refresh_linux_snapshots }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-snapshots
+          path: web/e2e/__screenshots__/linux
+          if-no-files-found: error
+          retention-days: 7
       - name: bundle budget
         working-directory: web
         run: bun run scripts/check-bundle-budget.ts
