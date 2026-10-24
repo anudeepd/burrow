@@ -1002,10 +1002,10 @@ export function DagView({
             onPointerCancel={onPointerUp}
             onPointerLeave={() => setHoveredNodeId(null)}
           >
-            {!layoutError ? (
+            {!layoutError && !empty ? (
               <DagLoadingPanel detail={`${graph.nodes.length} nodes · ${graph.edges.length} edges`} hidden={Boolean(layout)} />
             ) : null}
-            {layoutError ? (
+            {layoutError && !empty ? (
               <DagStatePanel
                 title="Could not lay out this DAG"
                 detail={`${layoutError} — the graph structure is still available in the drawer/list views.`}
@@ -1023,9 +1023,7 @@ export function DagView({
                 }
               />
             ) : null}
-            {empty && layout ? (
-              <DagStatePanel title="This DAG has no nodes" detail="Spark reported an empty graph for this job or stage." />
-            ) : null}
+            {empty ? <DagStatePanel title="This DAG has no nodes" detail="Spark reported an empty graph for this job or stage." /> : null}
 
             <svg
               ref={svgRef}

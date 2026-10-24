@@ -9,7 +9,7 @@ on:
         type: boolean
         default: false
       refresh_linux_snapshots:
-        description: Regenerate Linux Playwright screenshots and upload them as an artifact
+        description: Regenerate Linux Playwright screenshots for review (release runs do this automatically)
         required: false
         type: boolean
         default: false
@@ -27,6 +27,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+      - name: Validate release branch before refreshing baselines
+        if: ${{ inputs.publish }}
+        run: |
+          if [[ "$GITHUB_REF_TYPE" != "branch" || "$GITHUB_REF_NAME" != "master" ]]; then
+            echo "Dispatch this workflow from master to publish and refresh Linux screenshots." >&2
+            exit 1
+          fi
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.3"
@@ -48,13 +55,19 @@ jobs:
       - name: install Chromium and Firefox for browser regressions
         working-directory: web
         run: bunx playwright install --with-deps chromium firefox
-      - name: browser regressions (Chromium, DAG frame budget, Firefox)
+      - name: Refresh Linux screenshots for a release or review
+        if: ${{ inputs.publish || inputs.refresh_linux_snapshots }}
         working-directory: web
         env:
           PW_SNAPSHOT_DIR: e2e/__screenshots__/linux
-        run: bun run e2e --project=firefox ${{ inputs.refresh_linux_snapshots && '--update-snapshots' || '' }}
+        run: bun run e2e --project=firefox --update-snapshots
+      - name: Verify browser regressions against refreshed Linux baselines
+        working-directory: web
+        env:
+          PW_SNAPSHOT_DIR: e2e/__screenshots__/linux
+        run: bun run e2e --project=firefox
       - name: Upload refreshed Linux screenshots
-        if: ${{ always() && inputs.refresh_linux_snapshots }}
+        if: ${{ always() && (inputs.refresh_linux_snapshots || inputs.publish) }}
         uses: actions/upload-artifact@v7
         with:
           name: linux-snapshots
@@ -69,12 +82,55 @@ jobs:
           name: web-dist
           path: web/dist/client
 
+  # Release runs commit the Ubuntu-generated baselines before platform builds and release tags are produced.
+  # GITHUB_TOKEN pushes do not start another push workflow, so downstream jobs check this source SHA directly.
+  linux-snapshot-baselines:
+    if: ${{ inputs.publish }}
+    needs: web
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      source_sha: ${{ steps.commit.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: linux-snapshots
+          path: web/e2e/__screenshots__/linux
+      - name: Commit refreshed Linux screenshot baselines
+        id: commit
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != "branch" || "$GITHUB_REF_NAME" != "master" ]]; then
+            echo "Refusing to commit Linux screenshots outside master." >&2
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/e2e/__screenshots__/linux
+          if git diff --cached --quiet; then
+            source_sha="$GITHUB_SHA"
+            echo "Linux screenshots already match the current baseline."
+          else
+            git commit -m "test: refresh Linux Playwright baselines"
+            git push origin "HEAD:refs/heads/master"
+            source_sha="$(git rev-parse HEAD)"
+          fi
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+
   # -------------------------------------------------------------- rust checks
   rust:
-    needs: web
+    needs: [web, linux-snapshot-baselines]
+    if: ${{ always() && needs.web.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -90,7 +146,8 @@ jobs:
 
   # ------------------------------------------------------------------- wheels
   wheel:
-    needs: [web, rust]
+    needs: [web, rust, linux-snapshot-baselines]
+    if: ${{ always() && needs.web.result == 'success' && needs.rust.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:
@@ -110,6 +167,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
       - uses: actions/download-artifact@v8
         with:
           name: web-dist
@@ -140,10 +199,13 @@ jobs:
   # The differential parity proof (PLAN §8) runs from recorded fixtures, so CI
   # needs no Hadoop cluster: P1 REST-key coverage, P2 legacy-vs-ours, P3 wire.
   parity-replay:
-    needs: web
+    needs: [web, linux-snapshot-baselines]
+    if: ${{ always() && needs.web.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.3"
@@ -165,14 +227,16 @@ jobs:
   # ------------------------------------------------------------ release files
   prepare-release:
     if: ${{ inputs.publish }}
-    needs: [wheel, parity-replay]
+    needs: [wheel, parity-replay, linux-snapshot-baselines]
     runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.release.outputs.tag }}
+      source_sha: ${{ steps.release.outputs.source_sha }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
       - name: Validate release version and package name
         id: release
         run: |
@@ -205,6 +269,7 @@ jobs:
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Download wheels built by this workflow
         uses: actions/download-artifact@v8
         with:
@@ -258,7 +323,7 @@ jobs:
         run: |
           gh release create "$TAG" dist/*.whl \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
+            --target "${{ needs.prepare-release.outputs.source_sha }}" \
             --title "Burrow $TAG" \
             --generate-notes
 

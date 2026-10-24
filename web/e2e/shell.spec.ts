@@ -516,6 +516,7 @@ test.describe("app shell", () => {
     await freezeLive(page);
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Overview", exact: true, level: 1 })).toBeVisible();
+    await expect(page.getByTestId("cluster-metrics")).toBeVisible();
     const timing = await page.evaluate(() => {
       const title = document.querySelector(".burrow-page-scroll h1");
       const scroll = document.querySelector<HTMLElement>(".burrow-page-scroll");
@@ -532,8 +533,8 @@ test.describe("app shell", () => {
     expect(timing).toEqual({
       titleAnimation: "none",
       sectionAnimations: ["burrow-page-content-in", "burrow-page-content-in", "burrow-page-content-in"],
-      sectionDelays: ["0.024s", "0.048s", "0.072s"],
-      cardDelays: ["0s", "0.024s", "0.048s", "0.072s"],
+      sectionDelays: ["0s", "0.024s", "0.048s"],
+      cardDelays: ["0s", "0.024s"],
     });
   });
 

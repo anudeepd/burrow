@@ -278,6 +278,9 @@ export function ClusterMetricsSection({
 
         <div className="burrow-overview-metric-group burrow-overview-metric-group--resources">
           <h3 className="m-0 text-small font-semibold text-ink-2">YARN resource allocation</h3>
+          <p className="m-0 -mt-1 text-micro text-ink-3">
+            {cross ? "Scheduler capacity summed across partitions" : "ResourceManager cluster-wide counters"}
+          </p>
           <div className="burrow-overview-card-grid burrow-overview-card-grid--resources">
             <CompositeMetric
               layout="row"
@@ -348,9 +351,7 @@ export function ClusterMetricsSection({
       </div>
 
       <div className="burrow-overview-utilization-grid">
-        {/* the row stretches both cards to the chart's height; `justify-evenly` spreads the leftover as equal padding
-            above, between and below instead of dumping it into one gap under the rings */}
-        <div className="flex flex-col justify-evenly gap-4 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]">
+        <div className="flex flex-col gap-6 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]">
           <div className="flex flex-col gap-2">
             <h3 className="m-0 text-caption font-semibold tracking-wide text-ink-2 uppercase">YARN allocation</h3>
             <div className="flex flex-wrap items-start justify-center gap-x-8 gap-y-4">
@@ -445,7 +446,8 @@ export function ClusterMetricsSection({
               <dt className="flex min-w-0 items-center gap-1 text-caption tracking-wide text-ink-3 uppercase">
                 <span>RM memory utilization</span>
                 <HelpTip label="ResourceManager memory utilization">
-                  This is the ResourceManager aggregate counter. It differs from the per-node average and can exceed 100%.
+                  This ResourceManager aggregate can differ from the average across {fmtInt(averageMemory.reportingNodes)} reporting
+                  NodeManagers and can exceed 100%.
                 </HelpTip>
               </dt>
               <dd className="m-0 justify-self-end text-lead font-semibold tnum">
@@ -457,9 +459,6 @@ export function ClusterMetricsSection({
                 />
               </dd>
             </dl>
-            <p className="m-0 text-caption text-ink-3">
-              NodeManager average uses {fmtInt(averageMemory.reportingNodes)} reporting nodes; the RM aggregate can exceed 100%.
-            </p>
           </div>
         </div>
 
@@ -598,6 +597,11 @@ export function ResourceManagerMetricsSection() {
           error={metrics.error}
           onRetry={() => void metrics.refetch()}
         />
+      )}
+      {m.crossPartitionMetricsAvailable === true && (
+        <p className="m-0 text-caption text-ink-3" data-testid="rm-capacity-basis-note">
+          <span className="font-medium text-ink-2">Cluster-wide totals.</span>
+        </p>
       )}
       <div className="burrow-overview-rm-groups">
         <div className="burrow-overview-metric-group burrow-overview-metric-group--rm">

@@ -7,6 +7,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { useMounted } from "~/lib/use-mounted";
 import type { HistoryWindow } from "~/features/overview/overview-page";
+import { OverviewLoading } from "~/features/overview/overview-loading";
 import { HISTORY_WINDOWS } from "~/features/overview/derive";
 
 const OverviewPage = lazy(() => import("~/features/overview/overview-page").then((module) => ({ default: module.OverviewPage })));
@@ -28,10 +29,11 @@ function OverviewRoute() {
   const mounted = useMounted();
   const { window: historyWindow } = Route.useSearch();
   const navigate = Route.useNavigate();
-  // The prerendered shell leaves the route outlet empty; retain its Suspense boundary until hydration finishes.
+  // The prerendered route outlet is empty; keep the first client render empty too, then let Suspense show the skeleton
+  // while the lazy Overview bundle finishes loading after hydration.
   if (!mounted) return <Suspense fallback={null} />;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<OverviewLoading />}>
       <OverviewPage
         window={historyWindow}
         onHistoryWindow={(next) => {

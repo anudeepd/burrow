@@ -239,7 +239,29 @@ test.describe("overview", () => {
     await expect(average).toBeAttached();
     await expect(average).toHaveAttribute("data-yv", /\d/);
     await expect(page.locator('[data-yf="cluster.metrics.utilizedMBPercent"]')).toBeAttached();
-    await expect(page.getByText(/NodeManager average uses \d+ reporting nodes; the RM aggregate can exceed 100%/)).toBeAttached();
+    await page.getByRole("button", { name: "About ResourceManager memory utilization" }).click();
+    await expect(page.getByRole("dialog")).toContainText(/average across \d+ reporting NodeManagers and can exceed 100%/);
+  });
+
+  test("keeps the allocation and history panels level on wide screens", async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await page.goto("/?parity=1");
+
+    const layout = await page.locator(".burrow-overview-utilization-grid").evaluate((grid) => {
+      const [allocation, history] = Array.from(grid.children);
+      if (!allocation || !history) throw new Error("Expected allocation and history panels");
+      const allocationRect = allocation.getBoundingClientRect();
+      const historyRect = history.getBoundingClientRect();
+      const chart = history.querySelector(".burrow-overview-history-chart");
+      return {
+        allocationBottom: allocationRect.bottom,
+        historyBottom: historyRect.bottom,
+        chartHeight: chart?.getBoundingClientRect().height ?? 0,
+      };
+    });
+
+    expect(Math.abs(layout.allocationBottom - layout.historyBottom)).toBeLessThanOrEqual(1);
+    expect(layout.chartHeight).toBeLessThanOrEqual(256);
   });
 
   test("renders active applications as rows rather than a card grid", async ({ page }) => {
@@ -278,9 +300,7 @@ test.describe("overview", () => {
       lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
       whiteSpace: getComputedStyle(element).whiteSpace,
       textOverflow: getComputedStyle(element).textOverflow,
-      rowDisplay: getComputedStyle(element.closest("a")!).display,
     }));
-    expect(layout.rowDisplay).toBe("grid");
     expect(layout.clientWidth).toBeGreaterThan(200);
     expect(layout.whiteSpace).not.toBe("nowrap");
     expect(layout.textOverflow).not.toBe("ellipsis");
@@ -302,10 +322,13 @@ test.describe("overview", () => {
 
   test("overview sections use the shared page-entry cascade", async ({ page }) => {
     await page.goto("/");
-    const sections = page.getByTestId("overview").locator("section");
-    await expect(sections).toHaveCount(7);
-    await expect(sections.first()).toHaveCSS("animation-name", "burrow-page-content-in");
-    await expect(sections.first()).toHaveCSS("animation-duration", "0.24s");
+    const groups = page.getByTestId("overview").locator(".burrow-overview-group");
+    const panels = page.getByTestId("overview").locator("[data-page-motion='cards'] > section");
+    await expect(groups).toHaveCount(3);
+    await expect(panels).toHaveCount(7);
+    await expect(groups.first()).toHaveCSS("animation-name", "burrow-page-content-in");
+    await expect(groups.first()).toHaveCSS("animation-duration", "0.24s");
+    await expect(panels.first()).toHaveCSS("animation-name", "burrow-page-content-in");
   });
 
   test("changing the history window fades each affected chart", async ({ page }) => {

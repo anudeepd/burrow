@@ -61,25 +61,38 @@ export function Panel({
 }
 
 export function Section({
+  id,
   title,
+  headingLevel = 2,
   hint,
   help,
   actions,
   children,
   className,
 }: {
+  id?: string;
   title: string;
+  headingLevel?: 2 | 3;
   hint?: ReactNode;
   help?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
+  const Heading = headingLevel === 3 ? "h3" : "h2";
   return (
-    <section className={cn("flex flex-col gap-2.5", className)}>
+    <section
+      id={id}
+      tabIndex={id ? -1 : undefined}
+      className={cn(
+        "flex flex-col gap-2.5",
+        id && "scroll-mt-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-live",
+        className,
+      )}
+    >
       <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <div className="flex items-center gap-1.5">
-          <h2 className="text-h3">{title}</h2>
+          <Heading className="text-h3">{title}</Heading>
           {help && <HelpTip label={title}>{help}</HelpTip>}
         </div>
         {hint && <p className="text-caption text-ink-3">{hint}</p>}

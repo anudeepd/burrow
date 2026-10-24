@@ -212,7 +212,7 @@ export function Topbar({
           </div>
         </Tooltip>
         <span data-testid="ha-pill" className="shrink-0">
-          <StatusPill domain="rm.haState" state={info?.haState} field="cluster.info.haState" size="sm" />
+          <StatusPill domain="rm.haState" state={info?.haState} field="cluster.info.haState" size="md" />
         </span>
         <span className="hidden shrink-0 items-center gap-1 text-small text-ink-3 md:flex">
           <span aria-hidden="true" className="text-ink-4">
