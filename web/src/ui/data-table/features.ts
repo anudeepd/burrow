@@ -27,6 +27,8 @@ export interface ColMeta {
   exportValue?: (row: never) => unknown;
   /** header tooltip / chooser description */
   hint?: ReactNode;
+  /** allow long headers to wrap on compact tables instead of ellipsizing the label */
+  wrapHeader?: boolean;
   /** cannot be hidden (e.g. the identifier column) */
   pinned?: boolean;
 }

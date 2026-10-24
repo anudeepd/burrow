@@ -332,6 +332,17 @@ html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page
 html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(n + 4) {
   animation-delay: var(--delay-cascade-3);
 }
+/* Overview inserts an optional attention banner before its three groups, so cascade those groups by type rather than
+   their position among the heading and banner siblings. */
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page .burrow-overview-content > .burrow-overview-group:nth-of-type(1) {
+  animation-delay: 0ms;
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page .burrow-overview-content > .burrow-overview-group:nth-of-type(2) {
+  animation-delay: var(--delay-cascade-1);
+}
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page .burrow-overview-content > .burrow-overview-group:nth-of-type(3) {
+  animation-delay: var(--delay-cascade-2);
+}
 
 /* Section reveals are tied to native scroll progress; no JS wheel interception or row-level motion. */
 @keyframes burrow-scroll-reveal {
@@ -631,20 +642,32 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
 
 /* Overview composition follows the content column, which is narrower than the viewport beside the desktop rail. */
 .burrow-overview-page { container: overview-page / inline-size; }
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page { scroll-behavior: auto; }
+}
 .burrow-overview-content { min-width: 0; }
-.burrow-overview-board {
+.burrow-overview-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.burrow-overview-group-title {
+  border-bottom: 1px solid var(--seam-soft);
+  padding-bottom: 0.5rem;
+}
+.burrow-overview-group-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 1rem;
   min-width: 0;
 }
-.burrow-active-app-scroll-cue { background: linear-gradient(180deg, transparent, var(--fabric)); }
-@container overview-page (min-width: 48rem) {
-  .burrow-active-app-scroll { max-height: min(70dvh, 32rem); }
-}
-html[data-parity] .burrow-active-app-scroll { max-height: none; }
 .burrow-overview-panel { min-width: 0; }
+@container overview-page (min-width: 68rem) {
+  .burrow-overview-panel--active { grid-column: 1 / -1; }
+}
 
 /* Metric rows avoid tiny repeated cards. Each group has its own container so the rows adapt to their allocated track. */
 .burrow-overview-metrics-container { container: overview-metrics / inline-size; min-width: 0; }
@@ -741,6 +764,8 @@ html[data-parity] .burrow-active-app-scroll { max-height: none; }
   .burrow-overview-history-panel {
     display: flex;
     min-height: 0;
+    /* A wide chart should not make this row taller than its allocation summary. */
+    max-height: 16rem;
     flex: 1 1 auto;
     flex-direction: column;
   }
@@ -960,7 +985,7 @@ html[data-parity] .burrow-active-app-scroll { max-height: none; }
 
 /* Active-application links use a deliberate grid on narrow/coarse-pointer layouts to keep their name above progress and facts. */
 @media (max-width: 639px), (pointer: coarse) {
-  main .burrow-active-app-link {
+  main .burrow-active-app-row {
     display: grid;
     align-items: stretch;
   }

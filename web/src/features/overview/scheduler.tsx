@@ -21,15 +21,20 @@ import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { ProgressBar } from "~/ui/progress-bar";
 import { StatusPill } from "~/ui/status";
 import { Tooltip } from "~/ui/tooltip";
+import { useParity } from "~/state/parity";
 import { pressureTone } from "~/lib/progress-tone";
 import type { SchedulerInfo, SchedulerResponse } from "~/api/schemas";
 import {
+  confValue,
+  customResources,
   maxAllocationText,
   maximumClusterPriority,
   minAllocationText,
   queueTeasers,
   resourceInfoText,
+  resourceSummaryText,
   schedulerDisplayName,
+  schedulerMaxAllocation,
   schedulingResourceTypesFromInfo,
   schedulingResourceTypesText,
   type QueueTeaser,
@@ -55,7 +60,7 @@ const QUEUE_COLUMNS: ColDef<QueueTeaser>[] = [
   {
     id: "queue",
     accessorFn: (queue) => queue.path,
-    size: 150,
+    size: 180,
     meta: { label: "Queue", pinned: true, hint: "Full scheduler queue path. Open a queue to inspect its limits, users and applications." },
     cell: ({ row }) => (
       <Datum field="queue.queuePath" raw={row.original.path} fmt="text" className="block min-w-0 truncate font-mono text-small">
@@ -206,6 +211,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
   const overview = useQuery(ov.schedulerOverview());
   const sched = useQuery(ov.scheduler());
   const stale = useStale();
+  const parity = useParity();
   const [queueSorting, setQueueSorting] = useState<SortingState>([]);
   const [queueVisibility, setQueueVisibility] = useState<ColumnVisibilityState>(QUEUE_DEFAULT_VISIBILITY);
 
@@ -222,6 +228,17 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
     maxAllocationText(info) ?? (so ? resourceInfoText(Number(so.maximumAllocation.memory), Number(so.maximumAllocation.vCores)) : null);
   const minText =
     minAllocationText(conf) ?? (so ? resourceInfoText(Number(so.minimumAllocation.memory), Number(so.minimumAllocation.vCores)) : null);
+  const maxResource = schedulerMaxAllocation(info) ?? so?.maximumAllocation;
+  const minMemory = confValue(conf, "yarn.scheduler.minimum-allocation-mb") ?? so?.minimumAllocation.memory;
+  const minVCores = confValue(conf, "yarn.scheduler.minimum-allocation-vcores") ?? so?.minimumAllocation.vCores;
+  const maxDisplayText =
+    maxText == null || parity || maxResource == null
+      ? maxText
+      : resourceSummaryText(Number(maxResource.memory), Number(maxResource.vCores), customResources(maxResource));
+  const minDisplayText =
+    minText == null || parity || minMemory == null || minVCores == null
+      ? minText
+      : resourceSummaryText(Number(minMemory), Number(minVCores));
   const priority = maximumClusterPriority(conf) ?? so?.applicationPriority ?? null;
 
   const queueTable = (
@@ -393,20 +410,20 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
           )}
         </Cell>
 
-        <Cell label="Minimum Allocation">
+        <Cell label={parity ? "Minimum Allocation" : "Min per container"}>
           {minText ? (
-            <Datum field="scheduler.derived.minAllocationText" raw={minText} fmt="text" className="mono">
-              {minText}
+            <Datum field="scheduler.derived.minAllocationText" raw={minText} fmt="text" className={parity ? "mono" : "tnum"}>
+              {minDisplayText}
             </Datum>
           ) : (
             <Unavailable variant="info" reason="Minimum allocation was not reported." />
           )}
         </Cell>
 
-        <Cell label="Maximum Allocation">
+        <Cell label={parity ? "Maximum Allocation" : "Max per container"}>
           {maxText ? (
-            <Datum field="scheduler.derived.maxAllocationText" raw={maxText} fmt="text" className="mono">
-              {maxText}
+            <Datum field="scheduler.derived.maxAllocationText" raw={maxText} fmt="text" className={parity ? "mono" : "tnum"}>
+              {maxDisplayText}
             </Datum>
           ) : (
             <Unavailable variant="info" reason="Maximum allocation was not reported." />

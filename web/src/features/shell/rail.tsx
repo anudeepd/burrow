@@ -118,7 +118,7 @@ function SectionLabel({ children }: { children: string }) {
   return (
     <div className="relative flex h-7 shrink-0 items-end px-2 pb-1">
       <div className="burrow-rail-section-rule pointer-events-none absolute inset-x-2 top-1/2 h-px bg-seam" aria-hidden="true" />
-      <div className="burrow-rail-collapsible relative text-micro font-semibold tracking-[0.08em] text-ink-4 uppercase">{children}</div>
+      <div className="burrow-rail-collapsible relative text-small font-semibold tracking-[0.08em] text-ink-3 uppercase">{children}</div>
     </div>
   );
 }
@@ -271,7 +271,7 @@ export function Rail({ inDrawer = false, className, onNavigate }: { inDrawer?: b
 
       {/* Keep the collapse/expand control in the footer. It sits at the trailing edge when expanded and on the rail's
           centerline when collapsed. The drawer has no toggle at all — a drawer is closed, not collapsed. */}
-      <div className="shrink-0 border-t border-seam p-2 text-micro text-ink-4">
+      <div className="shrink-0 border-t border-seam p-2 text-caption text-ink-3">
         <div className="burrow-rail-footer-row relative flex items-center gap-2">
           <span
             className={cn("burrow-rail-footer-status size-1.5 shrink-0 rounded-full", consecutiveFailures > 0 ? "bg-fail" : "bg-ok")}

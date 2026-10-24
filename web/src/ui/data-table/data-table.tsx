@@ -46,7 +46,7 @@ import { MenuCheckboxItem, MenuContent, MenuItem, MenuRoot, MenuSeparator, MenuT
 import { PopoverClose, PopoverContent, PopoverRoot, PopoverTrigger } from "../popover";
 import { Select } from "../select";
 import { HelpTip, Tooltip } from "../tooltip";
-import { type ColDef, type TableFeatureSet, tableFeatureSet } from "./features";
+import { type ColDef, type ColMeta, type TableFeatureSet, tableFeatureSet } from "./features";
 import { useElementWidth } from "~/lib/size";
 import { download, toCsv, toJson, type ExportColumn } from "./export";
 import type { Row } from "@tanstack/react-table";
@@ -683,7 +683,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                     </div>
                   )}
                   {hg.headers.map((h) => {
-                    const meta = h.column.columnDef.meta as { label?: string; align?: string; hint?: ReactNode } | undefined;
+                    const meta = h.column.columnDef.meta as ColMeta | undefined;
                     const label = meta?.label ?? h.column.id;
                     const sort = h.column.getIsSorted();
                     const canSort = h.column.getCanSort();
@@ -727,7 +727,9 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                               sort && "text-ink",
                             )}
                           >
-                            <span className="truncate">{label}</span>
+                            <span className={cn("min-w-0", meta?.wrapHeader ? "flex-1 whitespace-normal leading-tight" : "truncate")}>
+                              {label}
+                            </span>
                             {sort && (
                               // one glyph that rotates: a swap between two mounts could not be transitioned at all
                               <ArrowUp

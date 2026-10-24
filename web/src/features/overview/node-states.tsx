@@ -44,7 +44,7 @@ const NODE_COLUMNS: ColDef<Node>[] = [
   {
     id: "name",
     accessorFn: (node) => node.nodeHostName,
-    size: 128,
+    size: 184,
     meta: { label: "Name", pinned: true, hint: "Registered NodeManager host. Open it to inspect resources, applications and containers." },
     cell: ({ row }) => (
       <Datum field="node.nodeHostName" raw={row.original.nodeHostName} fmt="text" className="min-w-0 truncate font-mono text-small">
@@ -64,7 +64,7 @@ const NODE_COLUMNS: ColDef<Node>[] = [
   {
     id: "labels",
     accessorFn: (node) => [node.rack, ...(node.nodeLabels ?? [])].join(", "),
-    size: 132,
+    size: 106,
     meta: {
       label: "Labels",
       hint: "Rack followed by node labels. Labels partition the resources available to queues.",
@@ -90,14 +90,14 @@ const NODE_COLUMNS: ColDef<Node>[] = [
   {
     id: "containers",
     accessorFn: (node) => node.numContainers,
-    size: 82,
+    size: 108,
     meta: { label: "Containers", align: "end", hint: "Containers currently allocated on this node." },
     cell: ({ row }) => <Datum field="node.numContainers" raw={row.original.numContainers} fmt="int" className="tnum" />,
   },
   {
     id: "memory",
     accessorFn: (node) => node.usedMemoryMB,
-    size: 122,
+    size: 118,
     meta: {
       label: "Memory",
       hint: "YARN memory allocated to containers and remaining capacity; this differs from physical process memory.",
@@ -119,7 +119,7 @@ const NODE_COLUMNS: ColDef<Node>[] = [
   {
     id: "health",
     accessorFn: (node) => healthOf(node),
-    size: 130,
+    size: 104,
     meta: {
       label: "Health",
       hint: "Health derived from the ResourceManager's node state, with the time of the last health report. A report containing text can still be healthy.",
@@ -129,7 +129,7 @@ const NODE_COLUMNS: ColDef<Node>[] = [
   {
     id: "vcores",
     accessorFn: (node) => node.usedVirtualCores,
-    size: 112,
+    size: 108,
     meta: {
       label: "vCores",
       hint: "Virtual cores allocated to YARN containers and remaining capacity.",
@@ -154,22 +154,23 @@ const NODE_COLUMNS: ColDef<Node>[] = [
   {
     id: "physicalMemory",
     accessorFn: (node) => node.memUtilization,
-    size: 140,
+    size: 124,
     meta: {
       label: "Physical memory",
+      wrapHeader: true,
       hint: "Physical memory utilization reported by the NodeManager, as a percentage. Missing measurements are shown as a dash.",
       exportValue: (node: Node) => node.memUtilization,
     },
     cell: ({ row }) => {
       const percent = row.original.memUtilization;
       return (
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 items-center gap-1.5">
           <ProgressBar
             percent={percent ?? 0}
             tone={utilizationTone(percent)}
             label={`Physical memory utilization on ${row.original.nodeHostName}`}
             datum={datumAttrs("node.memUtilization", percent, "pct")}
-            className="w-16 shrink-0 sm:w-20"
+            className="w-12 shrink-0 sm:w-14"
           />
           <Datum field="node.memUtilization" raw={percent} fmt="pct" className="burrow-progress-value text-micro text-ink-2 tnum">
             {percent == null ? "—" : fmtPct(percent)}

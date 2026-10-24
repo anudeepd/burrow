@@ -48,6 +48,7 @@ export function MenuItem({
   wrap = false,
   className,
   ariaLabel,
+  href,
   title,
 }: {
   children: ReactNode;
@@ -58,10 +59,12 @@ export function MenuItem({
   wrap?: boolean;
   className?: string;
   ariaLabel?: string;
+  href?: string;
   title?: string;
 }) {
   const item = (
     <BMenu.Item
+      render={href ? <a href={href}>{children}</a> : undefined}
       className={cn(itemCls, wrap && "h-auto min-h-7 items-start py-1.5", className)}
       onClick={onClick}
       disabled={disabled}

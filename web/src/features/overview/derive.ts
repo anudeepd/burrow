@@ -89,6 +89,15 @@ export function resourceText(memMB: number, vCores: number, customs: CustomResou
   return `<memory:${byteDesc(memMB * 1024 * 1024)}, vCores:${vCores}${tail(customs)}>`;
 }
 
+/** Readable resource-pair summary using the same memory units as the Overview's Used Resources metric. */
+export function resourceSummaryText(memMB: number, vCores: number, customs: CustomResource[] = []): string {
+  return [
+    `Memory ${byteDesc(memMB * 1024 * 1024)}`,
+    `${vCores} ${vCores === 1 ? "vCore" : "vCores"}`,
+    ...customs.map((resource) => `${resource.name}: ${resource.value}${resource.units ? ` ${resource.units}` : ""}`),
+  ].join(" · ");
+}
+
 /** `ResourceInfo.toString()` = `Resource.toString()` — `<memory:256, vCores:1>` (raw MB/vcores, no unit). */
 export function resourceInfoText(memMB: number, vCores: number, customs: CustomResource[] = []): string {
   return `<memory:${memMB}, vCores:${vCores}${tail(customs)}>`;
