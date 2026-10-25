@@ -9,7 +9,7 @@ import { PopoverContent, PopoverRoot, PopoverTrigger } from "~/ui/popover";
 import { Select } from "~/ui/select";
 import { Tooltip } from "~/ui/tooltip";
 import type { Facets } from "./view";
-import { finalStatusLabel, type AppsSearch } from "./search";
+import { filterCount, finalStatusLabel, type AppsSearch } from "./search";
 
 export type Patch = (patch: Partial<AppsSearch>) => void;
 
@@ -82,7 +82,7 @@ function RangeFilter({
   now,
 }: {
   label: string;
-  field: "started" | "finished";
+  field: "start time" | "finish time";
   from: number | undefined;
   to: number | undefined;
   onFrom: (v: number | undefined) => void;
@@ -163,15 +163,18 @@ export function AppFilters({
   facets,
   patch,
   now,
+  compact,
   showLegacyFinishedLabel = false,
 }: {
   search: AppsSearch;
   facets: Facets;
   patch: Patch;
   now: number;
+  compact: boolean;
   showLegacyFinishedLabel?: boolean;
 }) {
   const [draft, setDraft] = useState(search.name ?? "");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [debounced] = useDebouncedValue(draft, { wait: 250 });
   const pushed = useRef(search.name ?? "");
   const filterBarRef = useRef<HTMLDivElement>(null);
@@ -199,10 +202,11 @@ export function AppFilters({
       : null,
     search.user ? { key: "user", label: `User: ${search.user}`, clear: () => patch({ user: undefined }) } : null,
     search.queue ? { key: "queue", label: `Queue: ${search.queue}`, clear: () => patch({ queue: undefined }) } : null,
-    search.type ? { key: "type", label: `Type: ${search.type}`, clear: () => patch({ type: undefined }) } : null,
+    search.type ? { key: "type", label: `Application type: ${search.type}`, clear: () => patch({ type: undefined }) } : null,
     search.tag ? { key: "tag", label: `Tag: ${search.tag}`, clear: () => patch({ tag: undefined }) } : null,
     search.name ? { key: "name", label: `Name: ${search.name}`, clear: () => patch({ name: undefined }) } : null,
   ].filter((x): x is { key: string; label: string; clear: () => void } => x !== null);
+  const activeFilterCount = filterCount(search) - (search.states === undefined ? 0 : 1);
 
   useIsomorphicLayoutEffect(() => {
     const root = filterBarRef.current;
@@ -299,32 +303,8 @@ export function AppFilters({
     [],
   );
 
-  return (
-    <div ref={filterBarRef} data-testid="apps-filters" className="relative flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-      <div className="burrow-apps-name-filter flex h-(--ctl-h) items-center gap-1.5 rounded-md border border-seam-strong bg-well px-2">
-        <Search className="size-3.5 shrink-0 text-ink-3" aria-hidden="true" />
-        <input
-          data-testid="apps-name-filter"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder="Name or application id…"
-          aria-label="Filter by name or application id"
-          className="burrow-apps-name-filter-input h-full w-[13rem] min-w-0 bg-transparent text-small text-ink outline-none placeholder:text-ink-4"
-        />
-        {draft && (
-          <Tooltip label="Clear name filter">
-            <button
-              type="button"
-              aria-label="Clear name filter"
-              className="burrow-control burrow-control--icon text-ink-4 hover:text-ink"
-              onClick={() => setDraft("")}
-            >
-              <X className="size-3.5" aria-hidden="true" />
-            </button>
-          </Tooltip>
-        )}
-      </div>
-
+  const filterFields = (
+    <>
       <FacetSelect
         label="User"
         anyLabel="Any user"
@@ -341,9 +321,9 @@ export function AppFilters({
       />
       <FacetSelect
         label="Application type"
-        anyLabel="Any type"
+        anyLabel="Any application type"
         value={search.type}
-        options={facetOptions(facets.types, "Any type")}
+        options={facetOptions(facets.types, "Any application type")}
         onSelect={(v) => patch({ type: v })}
       />
       <FacetSelect
@@ -355,8 +335,8 @@ export function AppFilters({
       />
 
       <RangeFilter
-        label="Started"
-        field="started"
+        label="Start time"
+        field="start time"
         now={now}
         from={search.startedAfter}
         to={search.startedBefore}
@@ -364,8 +344,8 @@ export function AppFilters({
         onTo={(v) => patch({ startedBefore: v })}
       />
       <RangeFilter
-        label="Finished"
-        field="finished"
+        label="Finish time"
+        field="finish time"
         now={now}
         from={search.finishedAfter}
         to={search.finishedBefore}
@@ -373,51 +353,114 @@ export function AppFilters({
         onTo={(v) => patch({ finishedBefore: v })}
       />
       {showLegacyFinishedLabel && <span className="text-micro text-ink-4">URL-synced</span>}
-
-      {active.length > 0 && (
-        <>
-          <span data-filter-motion-key="summary" className="burrow-enter flex items-center gap-1 text-micro text-ink-4">
-            <Filter className="size-3" aria-hidden="true" />
-            {active.length} active
-          </span>
-          {active.map((a) => (
-            <button
-              key={a.key}
-              data-filter-motion-key={a.key}
-              type="button"
-              onClick={a.clear}
-              // chips mount as facets are picked and can be cleared a dozen times in a row: a transition (not a
-              // keyframe) so a re-trigger retargets instead of restarting
-              className="burrow-control burrow-enter-pop inline-flex items-center gap-1 rounded-full border border-seam-strong bg-fabric-2 px-2 py-0.5 text-micro text-ink-2 transition-colors duration-(--dur-fast) ease-(--ease-out) hover:border-live hover:text-ink"
-            >
-              {a.label}
-              <X className="size-3" aria-hidden="true" />
-            </button>
-          ))}
-          <Button
-            data-filter-motion-key="clear"
-            className="burrow-enter"
-            size="sm"
-            variant="ghost"
-            onClick={() =>
-              patch({
-                final: undefined,
-                user: undefined,
-                queue: undefined,
-                type: undefined,
-                tag: undefined,
-                name: undefined,
-                startedAfter: undefined,
-                startedBefore: undefined,
-                finishedAfter: undefined,
-                finishedBefore: undefined,
-              })
-            }
+    </>
+  );
+  const activeControls =
+    activeFilterCount > 0 ? (
+      <>
+        <span
+          data-filter-motion-key="summary"
+          className={cn("burrow-enter flex items-center gap-1 text-micro text-ink-3", compact && "hidden")}
+        >
+          <Filter className="size-3" aria-hidden="true" />
+          {activeFilterCount === 1 ? "1 active filter" : `${activeFilterCount} active filters`}
+        </span>
+        {active.map((a) => (
+          <button
+            key={a.key}
+            data-filter-motion-key={a.key}
+            type="button"
+            onClick={a.clear}
+            className="burrow-control burrow-enter-pop inline-flex items-center gap-1 rounded-full border border-seam-strong bg-fabric-2 px-2 py-0.5 text-micro text-ink-2 transition-colors duration-(--dur-fast) ease-(--ease-out) hover:border-live hover:text-ink"
           >
-            Clear filters
-          </Button>
-        </>
+            {a.label}
+            <X className="size-3" aria-hidden="true" />
+          </button>
+        ))}
+        <Button
+          data-filter-motion-key="clear"
+          className="burrow-enter"
+          size="sm"
+          variant="ghost"
+          onClick={() =>
+            patch({
+              final: undefined,
+              user: undefined,
+              queue: undefined,
+              type: undefined,
+              tag: undefined,
+              name: undefined,
+              startedAfter: undefined,
+              startedBefore: undefined,
+              finishedAfter: undefined,
+              finishedBefore: undefined,
+            })
+          }
+        >
+          Clear filters
+        </Button>
+      </>
+    ) : null;
+  return (
+    <div
+      ref={filterBarRef}
+      data-testid="apps-filters"
+      role="group"
+      aria-label="Application filters"
+      className="relative flex min-w-0 flex-1 flex-wrap items-center gap-1.5"
+    >
+      <div className="burrow-apps-name-filter flex h-(--ctl-h) items-center gap-1.5 rounded-md border border-seam-strong bg-well px-2">
+        <Search className="size-3.5 shrink-0 text-ink-3" aria-hidden="true" />
+        <input
+          data-testid="apps-name-filter"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Name or application ID…"
+          aria-label="Filter by name or application ID"
+          className="burrow-apps-name-filter-input h-full w-[13rem] min-w-0 bg-transparent text-small text-ink outline-none placeholder:text-ink-3"
+        />
+        {draft && (
+          <Tooltip label="Clear name filter">
+            <button
+              type="button"
+              aria-label="Clear name filter"
+              className="burrow-control burrow-control--icon text-ink-4 hover:text-ink"
+              onClick={() => setDraft("")}
+            >
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+          </Tooltip>
+        )}
+      </div>
+      {compact && (
+        <Button
+          data-testid="apps-filter-toggle"
+          size="sm"
+          variant={activeFilterCount > 0 ? "default" : "quiet"}
+          aria-expanded={filtersOpen}
+          aria-controls="apps-filter-options"
+          onClick={() => setFiltersOpen((open) => !open)}
+          className="min-h-11 gap-1.5"
+        >
+          <Filter className="size-3.5" aria-hidden="true" />
+          <span>Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="rounded-full bg-fabric-3 px-1.5 text-micro leading-[1.6] text-ink-2 tnum">{activeFilterCount}</span>
+          )}
+        </Button>
       )}
+      {compact ? (
+        filtersOpen ? (
+          <div id="apps-filter-options" className="flex basis-full min-w-0 flex-wrap items-center gap-1.5 border-t border-seam-soft pt-2">
+            {filterFields}
+          </div>
+        ) : null
+      ) : (
+        filterFields
+      )}
+      {compact
+        ? activeControls && <div className="flex basis-full min-w-0 flex-wrap items-center gap-1.5">{activeControls}</div>
+        : activeControls}
       <div ref={filterExitLayerRef} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-visible" />
     </div>
   );

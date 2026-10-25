@@ -82,6 +82,8 @@ function compactFeedback(content: ReactNode): ReactNode {
 
 /** shared empty default so the `defaultSorting` fallback keeps a stable identity */
 const NO_SORTING: SortingState = [];
+/** shared empty order keeps declaration order without allocating on each table render */
+const NO_COLUMN_ORDER: string[] = [];
 interface VisibleRowSnapshot {
   top: number;
   width: number;
@@ -93,6 +95,8 @@ interface VisibleRowSnapshot {
 export interface DataTableProps<T extends RowData> {
   data: readonly T[];
   columns: ColDef<T>[];
+  /** Optional fixed view order; omitted means the columns' declaration order. */
+  columnOrder?: string[];
   getRowId: (row: T) => string;
   /** `data-ye` key for the row; defaults to the row id. */
   entityKey?: (row: T) => string;
@@ -146,6 +150,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const {
     data,
     columns,
+    columnOrder = NO_COLUMN_ORDER,
     getRowId,
     entityKey,
     label,
@@ -189,7 +194,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     columns,
     data: data as T[],
     getRowId: (row) => getRowId(row as T),
-    state: { sorting, columnVisibility: effectiveVisibility, columnSizing, rowSelection },
+    state: { sorting, columnOrder, columnVisibility: effectiveVisibility, columnSizing, rowSelection },
     onSortingChange: (u) => onSortingChange(typeof u === "function" ? u(sorting) : u),
     onColumnVisibilityChange: (u) => onColumnVisibilityChange(typeof u === "function" ? u(columnVisibility ?? resetVisibility) : u),
     onColumnSizingChange: setColumnSizing,
@@ -521,7 +526,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
           {/* the buttons move as one unit: the group either shares the row with the toolbar or wraps under it whole; on a
             phone the buttons wrap *within* the group (`flex-wrap`, no `shrink-0` — a content-sized box that cannot
             shrink would push the page sideways instead) */}
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2" data-burrow-table-actions>
             {/* Same button bar as Columns/Export: always present, highlighted while a sort is active (the facets' pattern).
               Bounded by design — the trigger names the primary sort plus the count, never a row of chips that grows. */}
             <PopoverRoot>
@@ -823,7 +828,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                   <span className="hidden sm:inline">Scroll for more columns</span>
                 </span>
               )}
-              <span className="hidden text-ink-4 md:inline">{selectable && <>Space select · </>}shift-click header: multi-sort</span>
+              <span className="hidden text-ink-3 md:inline">{selectable && <>Space select · </>}shift-click header: multi-sort</span>
             </span>
           )}
         </div>

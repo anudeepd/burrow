@@ -226,7 +226,7 @@ test("phone and tablet content controls meet the 44px hit-area minimum", async (
   await expectTouchHitArea(appIdLink, "Application ID list link");
   const appRow = appIdLink.locator('xpath=ancestor::*[@role="row"]');
   expect((await appRow.boundingBox())?.height ?? 0, "Application row should make room for its link target").toBeGreaterThanOrEqual(44);
-  await expectTouchHitArea(page.getByRole("tab", { name: /All/ }).first(), "Application state tab");
+  await expectTouchHitArea(page.getByRole("combobox", { name: "Lifecycle state" }), "Application lifecycle selector");
   await expectTouchHitArea(page.getByTestId("apps-name-filter"), "Application name filter");
   await expectTouchHitArea(page.getByRole("button", { name: /Filter by final status/ }).first(), "Final status filter");
   await expectTouchHitArea(page.getByRole("button", { name: /Sort order:/ }), "Table sort control");
@@ -279,7 +279,7 @@ test("phone and tablet content controls meet the 44px hit-area minimum", async (
     (await tabletAppRow.boundingBox())?.height ?? 0,
     "Tablet application row should make room for its link target",
   ).toBeGreaterThanOrEqual(44);
-  await expectTouchHitArea(page.getByRole("tab", { name: /All/ }).first(), "Tablet application state tab");
+  await expectTouchHitArea(page.getByRole("combobox", { name: "Lifecycle state" }), "Tablet application lifecycle selector");
   await expectTouchHitArea(page.locator('[data-burrow-table="apps"] [role="columnheader"] button').first(), "Tablet table heading control");
 
   await page.goto(`/apps/${APP}`);
@@ -441,28 +441,6 @@ test("phone scheduler, node, and Spark row controls expose touch-sized targets",
   await page.goto(`/apps/${SPARK_DAG}/spark/jobs/2`);
   const stages = page.getByRole("table", { name: "Stages of job 2" });
   await expectTouchHitArea(stages.getByRole("link").first(), "Spark stage ID link");
-});
-
-test("phone application-state tabs show a directional cue when more tabs are available", async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto("/apps");
-
-  const strip = page.getByRole("tablist", { name: "Application state" });
-  const cues = strip.locator("..");
-  const leftCue = cues.locator('[data-scroll-cue="left"]');
-  const rightCue = cues.locator('[data-scroll-cue="right"]');
-  const { client, scroll } = await strip.evaluate((element) => ({ client: element.clientWidth, scroll: element.scrollWidth }));
-  expect(scroll, "Application state tabs should overflow on a phone").toBeGreaterThan(client);
-  await expect(rightCue).toHaveCSS("opacity", "1");
-  await expect(rightCue.locator("svg")).toBeVisible();
-
-  await strip.evaluate((element) => {
-    element.scrollLeft = element.scrollWidth;
-    element.dispatchEvent(new Event("scroll"));
-  });
-  await expect(leftCue).toHaveCSS("opacity", "1");
-  await expect(leftCue.locator("svg")).toBeVisible();
-  await expect(rightCue).toHaveCSS("opacity", "0");
 });
 
 test("phone Spark failures keep raw diagnostics wrapped and collapsed", async ({ page }) => {

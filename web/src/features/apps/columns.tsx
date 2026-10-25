@@ -154,7 +154,9 @@ export const APPS_COLUMNS: ColDef<App>[] = [
     sortFn: "text",
     size: 220,
     meta: { label: "Name", hint: "Application name" },
-    cell: ({ row }) => <Datum field="app.name" raw={row.original.name} className="truncate" title={row.original.name} />,
+    cell: ({ row }) => (
+      <Datum field="app.name" raw={row.original.name} className="truncate font-medium text-ink" title={row.original.name} />
+    ),
   },
   {
     id: "type",

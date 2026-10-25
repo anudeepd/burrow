@@ -1,24 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Clock3, RotateCw } from "lucide-react";
+import { Boxes, RotateCw } from "lucide-react";
 import { useMemo } from "react";
 import { q } from "~/api/queries";
 import type { App } from "~/api/schemas";
 import { useConnection } from "~/api/connection";
+import { useElementWidth } from "~/lib/size";
 import { cn } from "~/lib/cn";
-import { fmtRelative } from "~/lib/format";
 import { useParity } from "~/state/parity";
 import { Button } from "~/ui/button";
 import { DataTable } from "~/ui/data-table/data-table";
 import { EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { Tab, TabContent, TabsList, TabsRoot } from "~/ui/tabs";
 import { Toggle } from "~/ui/toggles";
-import { Tooltip } from "~/ui/tooltip";
+import { Select } from "~/ui/select";
+import { HelpTip, Tooltip } from "~/ui/tooltip";
 import { APPS_COLUMNS, APPS_COLUMN_IDS } from "./columns";
 import { AppFilters, type Patch } from "./filters";
 import {
   APP_TABS,
+  DEFAULT_SORT,
   DEFAULT_SORTING,
   colsToParam,
+  filterCount,
   finalStatusLabel,
   hiddenFromParam,
   sortFromParam,
@@ -35,6 +38,9 @@ const EMPTY_APPS: App[] = [];
 const DEFAULT_VISIBLE_IDS = new Set(["id", "name", "state", "user", "queue", "starttime", "progress"]);
 const DEFAULT_VISIBILITY: Record<string, boolean> = Object.fromEntries(APPS_COLUMN_IDS.map((id) => [id, DEFAULT_VISIBLE_IDS.has(id)]));
 const DEFAULT_HIDDEN = new Set(APPS_COLUMN_IDS.filter((id) => !DEFAULT_VISIBLE_IDS.has(id)));
+const APPS_SCAN_ORDER = ["id", "name", "state", "finalstatus"];
+const LEGACY_COLUMN_ORDER: string[] = [];
+const APPS_COMPACT_CONTENT_WIDTH = 900;
 
 function columnsParam(visibility: Record<string, boolean>): string | undefined {
   const matchesDefault = APPS_COLUMN_IDS.every((id) => (visibility[id] ?? true) === DEFAULT_VISIBILITY[id]);
@@ -69,6 +75,8 @@ export function AppsPage({
   previewApps?: App[];
 }) {
   const parity = useParity();
+  const [pageRef, pageWidth] = useElementWidth<HTMLDivElement>(0);
+  const compact = pageWidth > 0 && pageWidth <= APPS_COMPACT_CONTENT_WIDTH;
   const now = useNow(15_000);
   const inReview = renderVersion !== undefined;
   const appsQuery = useQuery({ ...q.apps(), enabled: !inReview });
@@ -86,6 +94,7 @@ export function AppsPage({
   const hidden = useMemo(() => (search.cols === undefined ? DEFAULT_HIDDEN : hiddenFromParam(search.cols)), [search.cols]);
   const visibility = useMemo(() => visibilityOf(APPS_COLUMN_IDS, hidden), [hidden]);
   const tab = tabOf(search.states);
+  const hasCustomView = filterCount(search) > 0 || (search.sort !== undefined && search.sort !== DEFAULT_SORT) || search.cols !== undefined;
   const stale = !inReview && hasData && (appsQuery.isError || lastCache === "stale");
 
   const counts = useMemo(() => {
@@ -93,6 +102,14 @@ export function AppsPage({
     for (const t of APP_TABS) map.set(t.id, t.states ? t.states.reduce((sum, s) => sum + (facets.byState[s] ?? 0), 0) : facets.total);
     return map;
   }, [facets]);
+  const stateOptions = useMemo(
+    () =>
+      APP_TABS.map((t) => ({
+        value: t.id,
+        label: hasData ? `${t.label} · ${(counts.get(t.id) ?? 0).toLocaleString("en-US")}` : t.label,
+      })),
+    [counts, hasData],
+  );
 
   const error = reviewUnavailable
     ? {
@@ -104,24 +121,41 @@ export function AppsPage({
       : (appsQuery.error as { message?: string; hint?: string | null } | null);
 
   return (
-    <div className="burrow-scroll burrow-page-scroll burrow-apps-page flex min-h-0 flex-1 flex-col gap-3">
+    <div ref={pageRef} className="burrow-scroll burrow-page-scroll burrow-apps-page flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-seam pb-3">
         <div className="min-w-0">
           <h1 className="text-h1 font-semibold text-ink text-balance">Applications</h1>
           <p className="mt-1 max-w-3xl text-pretty text-body text-ink-3">
-            Browse YARN applications, filter by state, and open their diagnostics.
+            YARN state tracks the application lifecycle; final status is a separate outcome.
           </p>
         </div>
-        {hasData ? (
-          <p className="text-small text-ink-3">
-            <span className="tnum">{rows.length.toLocaleString("en-US")}</span>
-            {rows.length !== apps.length && <span className="tnum"> of {apps.length.toLocaleString("en-US")}</span>} shown
-          </p>
-        ) : (
-          initialLoading && <Skeleton className="h-3 w-20" />
-        )}
-        {(stale || (inReview && initialLoading && renderVersion === "pre") || hasData) && (
-          <div className="ml-auto inline-flex min-h-7 shrink-0 flex-wrap items-center justify-end gap-x-2 gap-y-1 rounded-md border border-seam-soft bg-fabric-2 px-2.5 py-1 text-small text-ink-3">
+        {(hasCustomView || stale || (inReview && (hasData || (initialLoading && renderVersion === "pre")))) && (
+          <div className="ml-auto inline-flex min-h-7 shrink-0 flex-wrap items-center justify-end gap-x-2 gap-y-1 text-small text-ink-3">
+            {hasCustomView && (
+              <Button
+                size="sm"
+                variant="quiet"
+                onClick={() =>
+                  patch({
+                    states: undefined,
+                    final: undefined,
+                    user: undefined,
+                    queue: undefined,
+                    type: undefined,
+                    tag: undefined,
+                    name: undefined,
+                    startedAfter: undefined,
+                    startedBefore: undefined,
+                    finishedAfter: undefined,
+                    finishedBefore: undefined,
+                    sort: undefined,
+                    cols: undefined,
+                  })
+                }
+              >
+                Reset view
+              </Button>
+            )}
             {stale && (
               <Tooltip label="The ResourceManager did not answer; these rows are the last data Burrow received">
                 <span className="inline-flex items-center gap-1 rounded-full border border-[color-mix(in_oklch,var(--warn)_45%,transparent)] bg-[color-mix(in_oklch,var(--warn)_12%,transparent)] px-2 text-micro text-warn">
@@ -130,42 +164,48 @@ export function AppsPage({
                 </span>
               </Tooltip>
             )}
-            {inReview && hasData && <span className="text-ink-4">Sample data</span>}
-            {inReview && initialLoading && renderVersion === "pre" ? (
-              <span>Loading…</span>
-            ) : inReview && hasData ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Clock3 className="size-3.5" aria-hidden="true" />
-                Updated just now
-              </span>
-            ) : !inReview && appsQuery.dataUpdatedAt > 0 ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Clock3 className="size-3.5" aria-hidden="true" />
-                Updated {fmtRelative(appsQuery.dataUpdatedAt, now)}
-              </span>
-            ) : null}
+            {inReview && hasData && <span className="text-ink-3">Sample data</span>}
+            {inReview && initialLoading && renderVersion === "pre" && <span>Loading…</span>}
           </div>
         )}
       </div>
 
-      <TabsRoot value={tab} onValueChange={(v) => patch({ states: statesParam(v as AppTabId) })}>
-        <TabsList label="Application state" overflowFade>
-          {APP_TABS.map((t) => (
-            <Tab
-              key={t.id}
-              value={t.id}
-              badge={hasData ? (counts.get(t.id) ?? 0).toLocaleString("en-US") : undefined}
-              field={`app.tab.${t.id}`}
-            >
-              {t.label}
-            </Tab>
-          ))}
-        </TabsList>
-      </TabsRoot>
+      {compact ? (
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 text-small font-medium text-ink-2">Lifecycle state</span>
+          <Select
+            label="Lifecycle state"
+            value={tab}
+            options={stateOptions}
+            onValueChange={(value) => {
+              if (value !== null) patch({ states: statesParam(value) });
+            }}
+            className="min-w-0 flex-1"
+          />
+        </div>
+      ) : (
+        <TabsRoot value={tab} onValueChange={(v) => patch({ states: statesParam(v as AppTabId) })}>
+          <TabsList label="Lifecycle state" overflowFade>
+            {APP_TABS.map((t) => (
+              <Tab
+                key={t.id}
+                value={t.id}
+                badge={hasData ? (counts.get(t.id) ?? 0).toLocaleString("en-US") : undefined}
+                field={`app.tab.${t.id}`}
+              >
+                {t.label}
+              </Tab>
+            ))}
+          </TabsList>
+        </TabsRoot>
+      )}
 
       {(initialLoading || (hasData && apps.length > 0)) && (
         <div className="flex min-h-6 flex-wrap items-center gap-1.5 max-sm:min-h-12" aria-busy={initialLoading || undefined}>
-          <span className="mr-1 text-small font-medium text-ink-2">{renderVersion === "pre" ? "FINALSTATUS" : "Final status"}</span>
+          <span className="mr-1 inline-flex items-center gap-1 text-small font-medium text-ink-2">
+            Final outcome
+            <HelpTip label="Final outcome">The ApplicationMaster reports final status. Not set means no outcome has been reported.</HelpTip>
+          </span>
           {initialLoading ? (
             <Skeleton className="h-6 w-64 max-w-full" />
           ) : (
@@ -181,7 +221,7 @@ export function AppsPage({
                   label={`Filter by final status: ${label}`}
                   className={cn("h-6 px-2 text-micro", search.final === status && "border-seam bg-fabric-3 text-ink")}
                 >
-                  {label} <span className="text-ink-4 tnum">{count.toLocaleString("en-US")}</span>
+                  {label} <span className="text-ink-3 tnum">{count.toLocaleString("en-US")}</span>
                 </Toggle>
               );
             })
@@ -204,7 +244,17 @@ export function AppsPage({
         <DataTable
           data={rows}
           columns={APPS_COLUMNS}
-          toolbar={<AppFilters search={search} facets={facets} patch={patch} now={now} showLegacyFinishedLabel={renderVersion === "pre"} />}
+          columnOrder={parity || search.cols === "all" ? LEGACY_COLUMN_ORDER : APPS_SCAN_ORDER}
+          toolbar={
+            <AppFilters
+              search={search}
+              facets={facets}
+              patch={patch}
+              now={now}
+              compact={compact}
+              showLegacyFinishedLabel={renderVersion === "pre"}
+            />
+          }
           getRowId={(app) => app.id}
           entityKey={(app) => app.id}
           label="Applications"

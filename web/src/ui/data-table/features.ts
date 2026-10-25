@@ -1,6 +1,7 @@
 import {
   type ColumnDef,
   type RowData,
+  columnOrderingFeature,
   columnResizingFeature,
   columnSizingFeature,
   columnVisibilityFeature,
@@ -33,11 +34,12 @@ export interface ColMeta {
   pinned?: boolean;
 }
 
-/** One feature set for every Burrow table: sorting, visibility, sizing + resizing, selection. */
+/** One feature set for every Burrow table: ordering, sorting, visibility, sizing + resizing, and selection. */
 export const tableFeatureSet = tableFeatures({
   rowSortingFeature,
   sortedRowModel: createSortedRowModel(),
   sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text, datetime: sortFn_datetime, basic: sortFn_basic },
+  columnOrderingFeature,
   columnVisibilityFeature,
   columnSizingFeature,
   columnResizingFeature,

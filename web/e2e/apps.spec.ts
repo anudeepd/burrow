@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import APPS_SAMPLE from "../src/api/schemas/samples/apps.json" with { type: "json" };
+import METRICS_SAMPLE from "../src/api/schemas/samples/cluster-metrics.json" with { type: "json" };
 
 /**
  * `/apps` e2e — the reference feature. Verifies the legacy column contract, the category tabs with live counts, every
@@ -7,6 +8,78 @@ import APPS_SAMPLE from "../src/api/schemas/samples/apps.json" with { type: "jso
  * DOM attributes (`data-yf`/`data-yv`/`data-yfmt`) for every column.
  */
 const PREFS_KEY = "burrow.prefs.v1";
+
+const SCREENSHOT_STATES = ["RUNNING", "ACCEPTED", "SUBMITTED", "NEW", "FINISHED", "FAILED", "KILLED"] as const;
+const SCREENSHOT_APPS = Array.from({ length: 42 }, (_, index) => {
+  const template = APPS_SAMPLE.apps.app[index % APPS_SAMPLE.apps.app.length]!;
+  const sequence = String(index + 1).padStart(4, "0");
+  const id = `application_1767225600000_${sequence}`;
+  const state = SCREENSHOT_STATES[index % SCREENSHOT_STATES.length]!;
+  const running = state === "RUNNING";
+  const terminal = state === "FINISHED" || state === "FAILED" || state === "KILLED";
+  const startedTime = 1767225700000 + index * 60_000;
+  const finalStatus = state === "FINISHED" ? "SUCCEEDED" : state === "FAILED" || state === "KILLED" ? state : "UNDEFINED";
+  return {
+    ...template,
+    id,
+    name: `${template.name} ${sequence}`,
+    state,
+    finalStatus,
+    progress: running ? 15 + ((index * 17) % 80) : finalStatus === "SUCCEEDED" ? 100 : 0,
+    trackingUI: running ? "ApplicationMaster" : terminal ? "History" : "UNASSIGNED",
+    trackingUrl: running ? `http://rm:8088/proxy/${id}/` : terminal ? `http://jhs:19888/jobhistory/job/job_1767225600000_${sequence}` : "",
+    startedTime,
+    launchTime: running || terminal ? startedTime + 1_000 : 0,
+    finishedTime: terminal ? startedTime + 60_000 : 0,
+    elapsedTime: running || terminal ? 60_000 : 0,
+    allocatedMB: running ? 2048 : 0,
+    allocatedVCores: running ? 2 : 0,
+    reservedMB: 0,
+    reservedVCores: 0,
+    runningContainers: running ? 2 : 0,
+    queueUsagePercentage: running ? 25 : 0,
+    clusterUsagePercentage: running ? 25 : 0,
+  };
+});
+const SCREENSHOT_APPS_RESPONSE = { ...APPS_SAMPLE, apps: { ...APPS_SAMPLE.apps, app: SCREENSHOT_APPS } };
+const SCREENSHOT_METRICS_RESPONSE = {
+  ...METRICS_SAMPLE,
+  clusterMetrics: {
+    ...METRICS_SAMPLE.clusterMetrics,
+    appsSubmitted: 42,
+    appsCompleted: 6,
+    appsPending: 18,
+    appsRunning: 6,
+    appsFailed: 6,
+    appsKilled: 6,
+  },
+};
+
+async function seedScreenshotData(page: Page) {
+  const headers = { "x-burrow-api": "1", "x-burrow-cache": "miss" };
+  await page.route(
+    (url) => url.pathname === "/api/yarn/apps",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers,
+        json: SCREENSHOT_APPS_RESPONSE,
+      });
+    },
+  );
+  await page.route(
+    (url) => url.pathname === "/api/yarn/metrics",
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers,
+        json: SCREENSHOT_METRICS_RESPONSE,
+      });
+    },
+  );
+}
 
 const LEGACY_HEADERS = [
   "ID",
@@ -98,9 +171,31 @@ test.describe("/apps", () => {
     await expect(page.getByRole("button", { name: "Choose columns" })).toContainText("24/24");
   });
 
+  test("anchors the default row scan on application name and state", async ({ page }) => {
+    await freezeLive(page);
+    await page.goto("/apps");
+    await expect(table(page)).toBeVisible();
+    await expect(headers(page)).toHaveText(["ID", "Name", "State", "User", "Queue", "Start time", "Progress"]);
+  });
+
+  test("resets URL-backed view state in one action", async ({ page }) => {
+    await freezeLive(page);
+    await page.goto("/apps?states=RUNNING&final=FAILED&user=alice&sort=name&cols=all&startedAfter=1767000000000");
+
+    const reset = page.getByRole("button", { name: "Reset view" });
+    await expect(reset).toBeVisible();
+    await reset.click();
+
+    await expect(page).toHaveURL(/\/apps$/);
+    await expect(headers(page)).toHaveText(["ID", "Name", "State", "User", "Queue", "Start time", "Progress"]);
+    await expect(page.getByRole("combobox", { name: "User" })).toContainText("Any user");
+    await expect(page.getByRole("button", { name: "Reset view" })).toHaveCount(0);
+  });
+
   test("category tabs carry live counts and filter by state", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/apps");
+    await expect(page.locator('[data-yf="app.id"]').first()).toBeVisible();
     // tabs are addressed by their stable `data-yt` field id: `New` and `New saving` share a text prefix
     const all = page.locator('[data-yt="app.tab.all"]');
     await expect(all).toBeVisible();
@@ -114,9 +209,67 @@ test.describe("/apps", () => {
     await page.locator('[data-yt="app.tab.RUNNING"]').click();
     await expect(page).toHaveURL(/states=RUNNING/);
     await expect(page.locator('[data-yt="app.tab.RUNNING"]')).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator('[data-yf="app.state"]').first()).toHaveText("Running");
     const states = await rowStates(page);
     expect(states.length).toBeGreaterThan(0);
     expect(new Set(states)).toEqual(new Set(["Running"]));
+  });
+
+  test("explains lifecycle state and final outcome separately", async ({ page }) => {
+    await freezeLive(page);
+    await page.goto("/apps");
+    await expect(page.getByText("YARN state tracks the application lifecycle; final status is a separate outcome.")).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Lifecycle state" })).toBeVisible();
+    await expect(page.getByText("Final outcome", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "About Final outcome" }).click();
+    await expect(page.getByText("Not set means no outcome has been reported.")).toBeVisible();
+  });
+
+  test("mobile keeps every application state and filter reachable", async ({ page }) => {
+    await freezeLive(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/apps");
+    await expect(page.locator('[data-yf="app.id"]').first()).toBeVisible();
+    await expect(page.locator('[data-burrow-table-root="apps"]')).toContainText(/[\d,]+ rows/);
+
+    const state = page.getByRole("combobox", { name: "Lifecycle state" });
+    await expect(state).toBeVisible();
+    await state.click();
+    const options = page.getByRole("option");
+    await expect(options).toHaveCount(12);
+    const running = page.getByRole("option", { name: /^Running · \d/ });
+    await expect(running).toBeVisible();
+    await running.click();
+    await expect(page).toHaveURL(/states=RUNNING/);
+    expect(new Set(await rowStates(page))).toEqual(new Set(["Running"]));
+
+    const filterButton = page.getByTestId("apps-filter-toggle");
+    await filterButton.click();
+    const filterPanel = page.locator("#apps-filter-options");
+    await expect(filterPanel.getByRole("combobox", { name: "User" })).toBeVisible();
+    await expect(filterPanel.getByRole("button", { name: "Start time range" })).toBeVisible();
+    await expect(filterPanel.getByRole("button", { name: "Finish time range" })).toBeVisible();
+    await filterPanel.getByRole("combobox", { name: "User" }).click();
+    await page.getByRole("option", { name: /^alice/ }).click();
+    await expect(page).toHaveURL(/user=alice/);
+    await expect(filterButton).toContainText("1");
+    await page.getByTestId("apps-filters").getByRole("button", { name: "Clear filters" }).click();
+    await expect(page).not.toHaveURL(/user=alice/);
+    await expect(page).toHaveURL(/states=RUNNING/);
+  });
+
+  test("adapts application controls to the available tablet content width", async ({ page }) => {
+    await freezeLive(page);
+    await page.setViewportSize({ width: 768, height: 900 });
+    await page.goto("/apps");
+    await expect(page.locator('[data-yf="app.id"]').first()).toBeVisible();
+
+    await expect(page.getByRole("combobox", { name: "Lifecycle state" })).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Lifecycle state" })).toHaveCount(0);
+    const filters = page.getByTestId("apps-filter-toggle");
+    await expect(filters).toBeVisible();
+    await filters.click();
+    await expect(page.locator("#apps-filter-options").getByRole("combobox", { name: "User" })).toBeVisible();
   });
 
   test("category changes fade filtered data over the content transition duration", async ({ page }) => {
@@ -286,7 +439,10 @@ test.describe("/apps", () => {
     await page.getByRole("button", { name: "Sort order: none" }).click();
     // add: pick a column from the panel's own chooser
     await page.getByRole("combobox", { name: "Add sort column" }).click();
-    await page.getByRole("option", { name: "Name" }).click();
+    const nameOption = page.getByRole("option", { name: "Name" });
+    await nameOption.focus();
+    await expect(nameOption).toBeFocused();
+    await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/sort=name$/);
     await expect(table(page).locator('[data-col="name"]')).toHaveAttribute("aria-sort", "ascending");
     // flip direction in place
@@ -330,14 +486,15 @@ test.describe("/apps", () => {
     await expect(page.locator('[data-yt="app.tab.KILLED"]')).toHaveAttribute("aria-selected", "true");
   });
 
-  test("empty and error states are honest", async ({ page }) => {
+  test("returns to the full list when an empty result is cleared", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/apps?name=no-such-application-anywhere");
-    await expect(page.getByText("No applications match these filters")).toBeVisible();
-    // the page carries a Clear filters button in the empty state and another in the filter bar
-    await expect(page.getByRole("button", { name: "Clear filters" }).first()).toBeVisible();
-    await page.getByRole("button", { name: "Clear filters" }).first().click();
-    await expect(page.locator("[data-burrow-rows]")).not.toHaveAttribute("data-burrow-rows", "0");
+    const rows = page.locator("[data-burrow-rows]");
+    await expect(rows).toHaveAttribute("data-burrow-rows", "0");
+    const clear = page.getByRole("button", { name: "Clear filters" }).first();
+    await expect(clear).toBeVisible();
+    await clear.click();
+    await expect(rows).not.toHaveAttribute("data-burrow-rows", "0");
   });
 
   test("rows show progress bars, tracking-URL buttons and open the application page", async ({ page }) => {
@@ -565,6 +722,7 @@ test.describe("/apps", () => {
   test("screenshots: applications page in dark and light", async ({ page }) => {
     await setPrefs(page, { theme: "dark" });
     await freezeLive(page);
+    await seedScreenshotData(page);
     await page.goto("/apps?states=RUNNING,ACCEPTED,SUBMITTED,NEW");
     await expect(table(page)).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -578,9 +736,12 @@ test.describe("/apps", () => {
     // parity view: every column, frozen data
     const parityPage = await page.context().newPage();
     await setPrefs(parityPage, { theme: "light", livePaused: true });
+    await seedScreenshotData(parityPage);
     await parityPage.goto("/apps?parity=1&states=RUNNING");
     await expect(table(parityPage)).toBeVisible();
     await expect(parityPage.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(headers(parityPage)).toHaveText(LEGACY_HEADERS);
+    await expect(parityPage.getByRole("button", { name: "Reset view" })).toBeVisible();
     await expect(parityPage).toHaveScreenshot("apps-parity-light.png");
     await parityPage.close();
   });

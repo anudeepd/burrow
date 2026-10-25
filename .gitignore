@@ -21,3 +21,18 @@ __pycache__/
 *.py[cod]
 /.pnpm-store/
 *.profraw
+# Local design-session state
+**/.impeccable/
+
+# Local Impeccable Live state and injected frontend helpers
+/web/.impeccable-live.json
+/web/.impeccable-live/
+/web/app/.impeccable-live/
+/web/src/.impeccable-live/
+/web/src/lib/impeccable/ImpeccableLiveRoot.svelte
+/web/src/lib/impeccable/__runtime.js
+/web/src/lib/impeccable/[0-9a-f]*/
+/web/plugins/impeccable-live.client.ts
+/web/app/plugins/impeccable-live.client.ts
+/web/src/plugins/impeccable-live.client.ts
+/web/src/impeccable/ImpeccableLiveRoot.tsx
