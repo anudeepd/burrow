@@ -804,7 +804,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
             {loading ? (
               <TableSkeleton rows={10} cols={Math.min(8, leafCols.length)} />
             ) : (
-              <div className="grid min-h-full place-items-center">{compactFeedback(error ?? empty)}</div>
+              <div className="grid h-full min-h-0 place-items-center">{compactFeedback(error ?? empty)}</div>
             )}
           </div>
         )}

@@ -67,7 +67,7 @@ export function NodeContainers({
                 Containers will appear here when YARN schedules work.
               </EmptyState>
             }
-            className="min-h-[10rem]"
+            className="min-h-[15rem] sm:min-h-[13rem]"
           />
         </>
       )}
