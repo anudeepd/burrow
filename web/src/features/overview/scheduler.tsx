@@ -12,8 +12,9 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnVisibilityState, SortingState } from "@tanstack/react-table";
 import { useState } from "react";
+import { ApiError } from "~/api/client";
 import { tq } from "~/api/queries/tools";
-import { isSourceUnavailable, ov } from "~/api/queries/overview";
+import { errorReason, isSourceUnavailable, ov } from "~/api/queries/overview";
 import { Datum, Entity, SINGLETON } from "~/ui/datum";
 import { DataTable, defaultVisibilityOf } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
@@ -218,6 +219,10 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
   const response = sched.data as SchedulerResponse | undefined;
   const info: SchedulerInfo | undefined = response?.scheduler?.schedulerInfo;
   const so = overview.data;
+  const overviewUnavailableReason =
+    overview.error && !so && isSourceUnavailable(overview.error)
+      ? `HTTP ${overview.error instanceof ApiError ? overview.error.status : "unknown"}: ${errorReason(overview.error)}`
+      : null;
   const teasers = queueTeasers(info);
   const confQ = useQuery(tq.conf());
   const conf = confQ.data;
@@ -330,6 +335,12 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
           error={overview.error}
           onRetry={() => void overview.refetch()}
         />
+      )}
+      {overviewUnavailableReason && (
+        <div role="status" className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Unavailable reason={overviewUnavailableReason} />
+          <span className="text-micro text-ink-3">Showing scheduler and configuration data where available.</span>
+        </div>
       )}
       {overview.error && !so && !isSourceUnavailable(overview.error) && (
         <ErrorState

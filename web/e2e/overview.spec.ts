@@ -239,6 +239,10 @@ test.describe("overview", () => {
     const scheduler = page.getByTestId("scheduler");
     await expect(scheduler).toBeVisible();
     await expect(scheduler.getByRole("heading", { name: "Scheduler overview could not be read" })).toHaveCount(0);
+    const unavailable = scheduler.getByRole("status").filter({ hasText: "HTTP 404" });
+    await expect(unavailable).toBeVisible();
+    await expect(unavailable).toContainText("endpoint is not exposed by this ResourceManager");
+    await expect(unavailable).toContainText("Showing scheduler and configuration data where available.");
     await expect(scheduler).toContainText("Detailed scheduler information is unavailable on this cluster.");
     await expect(scheduler.locator('[data-yf="scheduler.derived.schedulerName"]')).toHaveAttribute("data-yv", "Capacity Scheduler");
     await expect(scheduler.getByRole("heading", { name: "Queue headroom" })).toBeVisible();
