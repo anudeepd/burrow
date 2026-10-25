@@ -57,7 +57,7 @@ function Badge({ kind, value, collapsed }: { kind: NavBadge; value: number; coll
           kind === "warnNodes"
             ? "bg-[color-mix(in_oklch,var(--warn)_18%,transparent)] text-warn"
             : kind === "running"
-              ? "bg-[color-mix(in_oklch,var(--live)_18%,transparent)] text-live"
+              ? "bg-[color-mix(in_oklch,var(--live)_18%,transparent)] text-ink-2"
               : "bg-fabric-3 text-ink-2",
         )}
       >

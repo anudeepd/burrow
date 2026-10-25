@@ -4,10 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: Publish built wheels to GitHub Releases and PyPI
+        description: Run all checks, apply the selected version bump, and publish to GitHub Releases and PyPI
         required: true
         type: boolean
         default: false
+      bump:
+        description: Version increment to apply when publishing
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
       refresh_linux_snapshots:
         description: Regenerate Linux Playwright screenshots for review (release runs do this automatically)
         required: false
@@ -16,6 +25,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: burrow-ci-release
+  cancel-in-progress: false
 
 env:
   CARGO_TERM_COLOR: always
@@ -144,10 +157,54 @@ jobs:
       # offline tests only: live-cluster tests are gated on BURROW_LIVE=1
       - run: cargo test --workspace
 
+  # ----------------------------------------------------------- release version
+  release-version:
+    name: Calculate release version
+    needs: [web, rust, parity-replay, linux-snapshot-baselines]
+    if: ${{ always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Calculate release version
+        id: version
+        env:
+          PUBLISH: ${{ inputs.publish }}
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          if [[ "$PUBLISH" == "true" ]]; then
+            version="$(python scripts/release_version.py next --bump "$BUMP")"
+            tag="v$version"
+            set +e
+            git ls-remote --exit-code --refs origin "refs/tags/$tag" >/dev/null
+            status=$?
+            set -e
+            if [[ "$status" -eq 0 ]]; then
+              echo "::error::Release tag $tag already exists."
+              exit 1
+            elif [[ "$status" -ne 2 ]]; then
+              exit "$status"
+            fi
+          else
+            version="$(python scripts/release_version.py current)"
+            tag="v$version"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   # ------------------------------------------------------------------- wheels
   wheel:
-    needs: [web, rust, linux-snapshot-baselines]
-    if: ${{ always() && needs.web.result == 'success' && needs.rust.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    needs: [web, rust, linux-snapshot-baselines, parity-replay, release-version]
+    if: ${{ always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && needs.release-version.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:
@@ -169,10 +226,18 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
       - uses: actions/download-artifact@v8
         with:
           name: web-dist
           path: crates/burrow/assets
+      - name: Set release version in wheel build
+        env:
+          RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
+        shell: bash
+        run: python scripts/release_version.py set "$RELEASE_VERSION"
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
@@ -181,9 +246,13 @@ jobs:
           args: --release --manifest-path crates/burrow/Cargo.toml --out dist --compatibility ${{ startsWith(matrix.target, 'x86_64-unknown-linux-musl') && 'musllinux_1_2' || '' }}
       - name: install smoke (x86_64 glibc Linux only)
         if: matrix.target == 'x86_64-unknown-linux-gnu'
+        env:
+          RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
         run: |
           python -m venv /tmp/smoke && /tmp/smoke/bin/pip install dist/*.whl
-          /tmp/smoke/bin/burrow --version
+          version_output=$(/tmp/smoke/bin/burrow --version)
+          echo "$version_output"
+          [[ "$version_output" == *"$RELEASE_VERSION"* ]]
           /tmp/smoke/bin/burrow --help >/dev/null
           # serves the embedded SPA and answers /api/healthz without any cluster
           setsid /tmp/smoke/bin/burrow --no-open --port 8899 --rm http://127.0.0.1:1 &
@@ -227,49 +296,20 @@ jobs:
   # ------------------------------------------------------------ release files
   prepare-release:
     if: ${{ inputs.publish }}
-    needs: [wheel, parity-replay, linux-snapshot-baselines]
+    name: Commit version and prepare release files
+    needs: [wheel, parity-replay, linux-snapshot-baselines, release-version]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     outputs:
-      tag: ${{ steps.release.outputs.tag }}
-      source_sha: ${{ steps.release.outputs.source_sha }}
+      version: ${{ needs.release-version.outputs.version }}
+      tag: ${{ needs.release-version.outputs.tag }}
+      source_sha: ${{ steps.commit.outputs.source_sha }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
-      - name: Validate release version and package name
-        id: release
-        run: |
-          set -euo pipefail
-          if [[ "$GITHUB_REF_TYPE" != "branch" || "$GITHUB_REF_NAME" != "master" ]]; then
-            echo "Dispatch this workflow from the master branch to publish." >&2
-            exit 1
-          fi
-          VERSION="$(python3 - <<'PYCODE'
-          import re
-          import tomllib
-          from pathlib import Path
-
-          project = tomllib.loads(Path("pyproject.toml").read_text())["project"]
-          workspace = tomllib.loads(Path("Cargo.toml").read_text())["workspace"]["package"]
-          if project["name"] != "yarn-burrow":
-              raise SystemExit(f"Expected Python distribution yarn-burrow, got {project['name']!r}")
-          if project["version"] != workspace["version"]:
-              raise SystemExit("pyproject.toml and Cargo.toml workspace versions do not match")
-          version = project["version"]
-          if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[a-zA-Z0-9.+-]+)?", version):
-              raise SystemExit(f"Invalid release version in project manifests: {version!r}")
-          print(version)
-          PYCODE
-          )"
-          TAG="v${VERSION}"
-          if git show-ref --verify --quiet "refs/tags/${TAG}"; then
-            echo "Tag ${TAG} already exists; use a new version for a release." >&2
-            exit 1
-          fi
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Download wheels built by this workflow
         uses: actions/download-artifact@v8
         with:
@@ -278,7 +318,7 @@ jobs:
           merge-multiple: true
       - name: Verify wheel set
         env:
-          VERSION: ${{ steps.release.outputs.version }}
+          VERSION: ${{ needs.release-version.outputs.version }}
         run: |
           python3 - <<'PYCODE'
           from pathlib import Path
@@ -302,6 +342,33 @@ jobs:
           path: dist/*.whl
           if-no-files-found: error
           retention-days: 30
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Commit synchronized version bump to master
+        id: commit
+        env:
+          RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
+          RELEASE_TAG: ${{ needs.release-version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != "branch" || "$GITHUB_REF_NAME" != "master" ]]; then
+            echo "Refusing to commit a release version outside master." >&2
+            exit 1
+          fi
+          python scripts/release_version.py set "$RELEASE_VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pyproject.toml Cargo.toml Cargo.lock crates/burrow/Cargo.toml
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "::error::The release version did not change any manifests."
+            exit 1
+          fi
+          git commit -m "chore(release): $RELEASE_TAG"
+          git push origin HEAD:refs/heads/master
+          source_sha="$(git rev-parse HEAD)"
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
 
   github-release:
     if: ${{ inputs.publish }}
@@ -346,3 +413,30 @@ jobs:
           path: dist
       - name: Publish yarn-burrow to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  cleanup-previous-runs:
+    name: Remove older Burrow CI and Release runs
+    needs: [web, rust, parity-replay, wheel, prepare-release, github-release, pypi-publish]
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    steps:
+      - name: Delete older completed runs of this workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          old_run_ids="$(gh api --paginate \
+            --jq '.workflow_runs[] | select(.status == "completed" and .id != (env.RUN_ID | tonumber)) | .id' \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?per_page=100")"
+          if [[ -z "$old_run_ids" ]]; then
+            echo "No older completed Burrow CI and Release runs to delete."
+            exit 0
+          fi
+          while IFS= read -r run_id; do
+            [[ -n "$run_id" ]] || continue
+            echo "Deleting workflow run $run_id and its attached artifacts."
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/runs/$run_id"
+          done <<< "$old_run_ids"

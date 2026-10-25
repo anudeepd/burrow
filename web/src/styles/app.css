@@ -595,6 +595,13 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
   .burrow-apps-page { overflow-y: auto; }
   .burrow-apps-page [data-burrow-table-root="apps"] { min-height: 20rem; }
 }
+@media (min-width: 80rem) {
+  .burrow-apps-page [data-burrow-table-actions] {
+    border-inline-start: 1px solid var(--seam-soft);
+    padding-inline-start: 0.5rem;
+  }
+}
+
 
 
 
