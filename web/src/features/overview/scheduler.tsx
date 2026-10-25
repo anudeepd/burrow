@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { ColumnVisibilityState, SortingState } from "@tanstack/react-table";
 import { useState } from "react";
 import { tq } from "~/api/queries/tools";
-import { ov } from "~/api/queries/overview";
+import { isSourceUnavailable, ov } from "~/api/queries/overview";
 import { Datum, Entity, SINGLETON } from "~/ui/datum";
 import { DataTable, defaultVisibilityOf } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
@@ -324,21 +324,21 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
 
   return (
     <div className="burrow-overview-metrics-container flex flex-col gap-[var(--gap-card)]" data-testid="scheduler">
-      {overview.error &&
-        (so ? (
-          <StaleErrorBanner
-            title="Scheduler overview refresh failed; showing the last loaded values"
-            error={overview.error}
-            onRetry={() => void overview.refetch()}
-          />
-        ) : (
-          <ErrorState
-            compact
-            title="Scheduler overview could not be read"
-            message={overview.error instanceof Error ? overview.error.message : String(overview.error)}
-            onRetry={() => void overview.refetch()}
-          />
-        ))}
+      {overview.error && so && (
+        <StaleErrorBanner
+          title="Scheduler overview refresh failed; showing the last loaded values"
+          error={overview.error}
+          onRetry={() => void overview.refetch()}
+        />
+      )}
+      {overview.error && !so && !isSourceUnavailable(overview.error) && (
+        <ErrorState
+          compact
+          title="Scheduler overview could not be read"
+          message={overview.error instanceof Error ? overview.error.message : String(overview.error)}
+          onRetry={() => void overview.refetch()}
+        />
+      )}
       {sched.error && sched.data && (
         <StaleErrorBanner
           title="Scheduler refresh failed; showing the last loaded values"

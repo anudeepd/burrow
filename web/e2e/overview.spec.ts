@@ -218,6 +218,48 @@ test.describe("overview", () => {
       .evaluateAll((els) => els.filter((el) => el.closest("[data-ye]") === null).map((el) => el.getAttribute("data-yf")));
     expect(orphans).toEqual([]);
   });
+  test("uses scheduler REST data when the optional scheduler overview endpoint is unavailable", async ({ page }) => {
+    await page.route(
+      (url) => url.pathname === "/api/yarn/scheduler-overview",
+      (route) =>
+        route.fulfill({
+          status: 404,
+          contentType: "application/json",
+          headers: { "x-burrow-api": "1", "x-burrow-cache": "miss" },
+          json: {
+            error: {
+              code: "upstream_status",
+              message: "Sorry, got error 404: /v1/cluster/scheduler-overview controller for v1 not found",
+              upstream: { url: "http://rm.example:8088/ws/v1/cluster/scheduler-overview", status: 404 },
+            },
+          },
+        }),
+    );
+    await page.goto("/");
+    const scheduler = page.getByTestId("scheduler");
+    await expect(scheduler).toBeVisible();
+    await expect(scheduler.getByRole("heading", { name: "Scheduler overview could not be read" })).toHaveCount(0);
+    await expect(scheduler).toContainText("Detailed scheduler information is unavailable on this cluster.");
+    await expect(scheduler.locator('[data-yf="scheduler.derived.schedulerName"]')).toHaveAttribute("data-yv", "Capacity Scheduler");
+    await expect(scheduler.getByRole("heading", { name: "Queue headroom" })).toBeVisible();
+  });
+
+  test("keeps unexpected scheduler overview failures visible", async ({ page }) => {
+    await page.route(
+      (url) => url.pathname === "/api/yarn/scheduler-overview",
+      (route) =>
+        route.fulfill({
+          status: 500,
+          contentType: "application/json",
+          headers: { "x-burrow-api": "1", "x-burrow-cache": "miss" },
+          json: { error: { code: "internal", message: "scheduler overview test failure" } },
+        }),
+    );
+    await page.goto("/");
+    const scheduler = page.getByTestId("scheduler");
+    await expect(scheduler.getByRole("heading", { name: "Scheduler overview could not be read" })).toBeVisible();
+    await expect(scheduler).toContainText("scheduler overview test failure");
+  });
 
   test("the composite resource cells reproduce the RM's legacy text", async ({ page }) => {
     await page.goto("/");
