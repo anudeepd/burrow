@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Boxes, RotateCw } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { q } from "~/api/queries";
 import type { App } from "~/api/schemas";
 import { useConnection } from "~/api/connection";
@@ -61,7 +61,7 @@ export type AppsPreviewState = "loaded" | "loading" | "unavailable";
 
 export function AppsPage({
   search,
-  patch,
+  patch: patchSearch,
   onOpenApp,
   renderVersion,
   previewState = "loaded",
@@ -75,6 +75,12 @@ export function AppsPage({
   previewApps?: App[];
 }) {
   const parity = useParity();
+  // A clear must cancel a pending name edit even when the URL's name was already absent.
+  const [nameResetVersion, setNameResetVersion] = useState(0);
+  const patch: Patch = (update) => {
+    if ("name" in update && update.name === undefined) setNameResetVersion((version) => version + 1);
+    patchSearch(update);
+  };
   const [pageRef, pageWidth] = useElementWidth<HTMLDivElement>(0);
   const compact = pageWidth > 0 && pageWidth <= APPS_COMPACT_CONTENT_WIDTH;
   const now = useNow(15_000);
@@ -251,6 +257,7 @@ export function AppsPage({
               facets={facets}
               patch={patch}
               now={now}
+              nameResetVersion={nameResetVersion}
               compact={compact}
               showLegacyFinishedLabel={renderVersion === "pre"}
             />

@@ -327,7 +327,7 @@ if (import.meta.main) {
     console.log("[mock] starting vite dev on :5173");
     vite = Bun.spawn(["bunx", "vite", "dev", "--port", "5173", "--strictPort"], {
       cwd: new URL("..", import.meta.url).pathname,
-      env: { ...process.env, VITE_API_TARGET: `http://127.0.0.1:${port}` },
+      env: { ...process.env, BURROW_DEV_MOCK: "1", VITE_API_TARGET: `http://127.0.0.1:${port}` },
       stdout: "inherit",
       stderr: "inherit",
     });

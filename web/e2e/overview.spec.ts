@@ -277,6 +277,32 @@ test.describe("overview", () => {
     await expect(page.getByTestId("metric-reserved-resources")).toBeVisible();
   });
 
+  test("preserves reported resources while displaying allocation net of reservations", async ({ page }) => {
+    await page.route(
+      (url) => url.pathname === "/api/yarn/metrics",
+      async (route) => {
+        const response = await route.fetch();
+        const payload = await response.json();
+        Object.assign(payload.clusterMetrics, {
+          crossPartitionMetricsAvailable: true,
+          totalUsedResourcesAcrossPartition: { memory: 3072, vCores: 9 },
+          totalReservedResourcesAcrossPartition: { memory: 1024, vCores: 2 },
+          totalClusterResourcesAcrossPartition: { memory: 8192, vCores: 16 },
+        });
+        await route.fulfill({ response, json: payload });
+      },
+    );
+    await page.goto("/?parity=1");
+    const used = page.getByTestId("metric-used-resources");
+    await expect(used).toContainText(/Memory\s+2 GB\s+·\s+7 vCores/);
+    await expect(used.locator('[data-yf="cluster.metrics.totalUsedResourcesAcrossPartition.memory"]')).toHaveAttribute("data-yv", "3072");
+    await expect(used.locator('[data-yf="cluster.metrics.totalUsedResourcesAcrossPartition.vCores"]')).toHaveAttribute("data-yv", "9");
+    await expect(used.locator('[data-yf="cluster.metrics.derived.usedResourcesText"]')).toHaveAttribute(
+      "data-yv",
+      "<memory:2 GB, vCores:7>",
+    );
+  });
+
   test("separates average physical node memory from the RM aggregate counter", async ({ page }) => {
     await page.goto("/?parity=1");
 

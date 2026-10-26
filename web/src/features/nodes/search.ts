@@ -48,6 +48,10 @@ export const nodeLabelsSearchSchema = z.object({
   view: z.enum(["labels", "mapping"]).optional().catch(undefined),
   /** label whose node list is expanded */
   open: optStr,
+  sort: optStr,
+  hide: optStr,
+  mappingSort: optStr,
+  mappingHide: optStr,
 });
 export type NodeLabelsSearch = z.infer<typeof nodeLabelsSearchSchema>;
 

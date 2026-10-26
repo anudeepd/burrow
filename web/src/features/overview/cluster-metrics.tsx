@@ -66,11 +66,11 @@ function MetricsGridSkeleton() {
   );
 }
 
-/** The memory half of a legacy resource string: visible text exactly as Hadoop renders it, raw value in MB. */
-function MemDatum({ field, mb }: { field: string; mb: number | null | undefined }) {
+/** Keep the reported MB in parity attributes even when the legacy cell displays used minus reserved. */
+function MemDatum({ field, mb, displayMB = mb }: { field: string; mb: number | null | undefined; displayMB?: number | null }) {
   return (
     <Datum field={field} raw={mb ?? null} fmt="mb">
-      {mb == null || !Number.isFinite(mb) ? "—" : byteDesc(mb * 1024 * 1024)}
+      {displayMB == null || !Number.isFinite(displayMB) ? "—" : byteDesc(displayMB * 1024 * 1024)}
     </Datum>
   );
 }
@@ -292,10 +292,23 @@ export function ClusterMetricsSection({
               hrefHint="The applications holding these resources"
               testId="metric-used-resources"
               parts={
-                cross ? (
+                cross && m.totalUsedResourcesAcrossPartition ? (
                   <>
-                    Memory <MemDatum field="cluster.metrics.totalUsedResourcesAcrossPartition.memory" mb={used.memory} /> ·{" "}
-                    <Datum field="cluster.metrics.totalUsedResourcesAcrossPartition.vCores" raw={used.vCores} fmt="int" /> vCores
+                    Memory{" "}
+                    <MemDatum
+                      field="cluster.metrics.totalUsedResourcesAcrossPartition.memory"
+                      mb={m.totalUsedResourcesAcrossPartition.memory}
+                      displayMB={used.memory}
+                    />{" "}
+                    ·{" "}
+                    <Datum
+                      field="cluster.metrics.totalUsedResourcesAcrossPartition.vCores"
+                      raw={m.totalUsedResourcesAcrossPartition.vCores}
+                      fmt="int"
+                    >
+                      {fmtInt(used.vCores)}
+                    </Datum>{" "}
+                    vCores
                   </>
                 ) : (
                   <>
@@ -312,7 +325,7 @@ export function ClusterMetricsSection({
               derivedValue={resourceText(total.memory, total.vCores, total.customs)}
               testId="metric-total-resources"
               parts={
-                cross ? (
+                cross && m.totalClusterResourcesAcrossPartition ? (
                   <>
                     Memory <MemDatum field="cluster.metrics.totalClusterResourcesAcrossPartition.memory" mb={total.memory} /> ·{" "}
                     <Datum field="cluster.metrics.totalClusterResourcesAcrossPartition.vCores" raw={total.vCores} fmt="int" /> vCores
@@ -333,7 +346,7 @@ export function ClusterMetricsSection({
               tone={reserved.memory > 0 ? "wait" : undefined}
               testId="metric-reserved-resources"
               parts={
-                cross ? (
+                cross && m.totalReservedResourcesAcrossPartition ? (
                   <>
                     Memory <MemDatum field="cluster.metrics.totalReservedResourcesAcrossPartition.memory" mb={reserved.memory} /> ·{" "}
                     <Datum field="cluster.metrics.totalReservedResourcesAcrossPartition.vCores" raw={reserved.vCores} fmt="int" /> vCores

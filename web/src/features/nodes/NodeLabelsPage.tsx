@@ -27,6 +27,7 @@ import { TabContent } from "~/ui/tabs";
 import { Segmented } from "~/ui/toggles";
 import { Tooltip } from "~/ui/tooltip";
 import { buildLabelRows, DEFAULT_LABEL, labelNameText, labelTypeText, type LabelRow, resourceText } from "./domain";
+import { hideFromVisibility, parseSorting, serializeSorting, visibilityFromHide } from "~/features/scheduler/search";
 import { PageHead, SearchField, Section } from "./page";
 
 const route = getRouteApi("/node-labels");
@@ -46,7 +47,7 @@ export function NodeLabelsPage() {
 
   const filtered = useMemo(() => {
     const q = search.q?.trim().toLowerCase();
-    return q ? rows.filter((r) => `${r.label.name || "default"} ${r.label.exclusivity}`.toLowerCase().includes(q)) : rows;
+    return q ? rows.filter((r) => `${r.label.name || "default"} ${labelTypeText(r.label.exclusivity)}`.toLowerCase().includes(q)) : rows;
   }, [rows, search.q]);
 
   const open = search.open;
@@ -139,10 +140,12 @@ export function NodeLabelsPage() {
                 entityKey={(r) => r.label.name}
                 label="Node labels"
                 storageKey="burrow.node-labels"
-                sorting={[]}
-                onSortingChange={() => undefined}
-                columnVisibility={{}}
-                onColumnVisibilityChange={() => undefined}
+                sorting={parseSorting(search.sort)}
+                onSortingChange={(sort) => navigate({ search: (prev) => ({ ...prev, sort: serializeSorting(sort) }), replace: true })}
+                columnVisibility={visibilityFromHide(search.hide, {})}
+                onColumnVisibilityChange={(visibility) =>
+                  navigate({ search: (prev) => ({ ...prev, hide: hideFromVisibility(visibility) }), replace: true })
+                }
                 defaultVisibility={{ name: true, type: true, activeNMs: true, resource: true, nodes: true }}
                 onRowActivate={(r) =>
                   navigate({ search: (prev) => ({ ...prev, open: prev.open === r.label.name ? undefined : r.label.name }), replace: true })
@@ -334,6 +337,8 @@ function MappingView({
   onSearch: (q: string) => void;
 }) {
   const q = search.trim().toLowerCase();
+  const searchState = route.useSearch();
+  const navigate = route.useNavigate();
   const rows = useMemo(
     () => (q ? nodes.filter((n) => `${n.id} ${n.rack} ${(n.nodeLabels ?? []).join(" ")}`.toLowerCase().includes(q)) : nodes),
     [nodes, q],
@@ -369,7 +374,7 @@ function MappingView({
     return [
       ...base,
       ...names.map<ColDef<Node>>((name) => ({
-        id: `label:${name}`,
+        id: `label-${name}`,
         accessorFn: (n) => (n.nodeLabels ?? []).includes(name),
         size: 110,
         meta: { label: name },
@@ -405,10 +410,12 @@ function MappingView({
         entityKey={(n) => n.id}
         label="Node to label mapping"
         storageKey="burrow.node-labels.mapping"
-        sorting={[]}
-        onSortingChange={() => undefined}
-        columnVisibility={{}}
-        onColumnVisibilityChange={() => undefined}
+        sorting={parseSorting(searchState.mappingSort)}
+        onSortingChange={(sort) => navigate({ search: (prev) => ({ ...prev, mappingSort: serializeSorting(sort) }), replace: true })}
+        columnVisibility={visibilityFromHide(searchState.mappingHide, {})}
+        onColumnVisibilityChange={(visibility) =>
+          navigate({ search: (prev) => ({ ...prev, mappingHide: hideFromVisibility(visibility) }), replace: true })
+        }
         defaultVisibility={{}}
         exportName="node-label-mapping"
         totalCount={nodes.length}

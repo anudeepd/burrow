@@ -30,6 +30,24 @@ const LEGACY_COLUMNS = [
 ];
 
 test.describe("nodes", () => {
+  test("column selection survives reload and can hide the final visible column", async ({ page }) => {
+    await page.goto("/nodes?cols=id,rack");
+    const table = page.locator('[data-burrow-table="burrow.nodes"]');
+    await expect(table.getByRole("columnheader")).toHaveCount(2);
+    await page.getByRole("button", { name: "Choose columns" }).click();
+    await page.getByRole("menuitemcheckbox", { name: "Rack", exact: true }).click();
+    await page.keyboard.press("Escape");
+    await expect(table.getByRole("columnheader")).toHaveCount(1);
+    await page.reload();
+    await expect(table.getByRole("columnheader")).toHaveCount(1);
+    await page.getByRole("button", { name: "Choose columns" }).click();
+    await page.getByRole("menuitemcheckbox", { name: "Node Address", exact: true }).click();
+    await page.keyboard.press("Escape");
+    await expect(table.getByRole("columnheader")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Choose columns" })).toContainText("0/16");
+  });
+
   test("top consumer rows explain the ranking and resource values on hover", async ({ page }) => {
     await page.goto("/nodes?parity=1");
     const consumer = page.getByTestId("top-consumer-row").first();

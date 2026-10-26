@@ -258,6 +258,31 @@ test.describe("/apps", () => {
     await expect(page).toHaveURL(/states=RUNNING/);
   });
 
+  test("expanded mobile filters keep the table and empty-result recovery reachable", async ({ page }) => {
+    await freezeLive(page);
+    await setPrefs(page, { motion: "reduced" });
+    await seedScreenshotData(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/apps?user=alice&queue=root.dev.alice&type=SPARK&tag=etl&name=spark");
+    await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", "0");
+    await page.getByTestId("apps-filter-toggle").click();
+    await expect(page.locator("#apps-filter-options")).toBeVisible();
+
+    await table(page).scrollIntoViewIfNeeded();
+    const bounds = await table(page).boundingBox();
+    if (!bounds) throw new Error("Applications table must have layout bounds");
+    expect(bounds.height).toBeGreaterThanOrEqual(100);
+    expect(bounds.y).toBeGreaterThanOrEqual(0);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(844);
+
+    const clearEmptyResult = page.getByRole("button", { name: "Clear filters", exact: true }).last();
+    await clearEmptyResult.scrollIntoViewIfNeeded();
+    await expect(clearEmptyResult).toBeInViewport();
+    await clearEmptyResult.click();
+    await expect(page).toHaveURL(/\/apps$/);
+    await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", "42");
+  });
+
   test("adapts application controls to the available tablet content width", async ({ page }) => {
     await freezeLive(page);
     await page.setViewportSize({ width: 768, height: 900 });
@@ -358,6 +383,52 @@ test.describe("/apps", () => {
     await page.getByRole("button", { name: "Clear name filter" }).click();
     await expect(page).not.toHaveURL(/name=/);
   });
+
+  for (const action of ["Reset view", "Clear filters"] as const) {
+    test(`${action} cancels a name edit that has not reached the URL`, async ({ page }) => {
+      await freezeLive(page);
+      await setPrefs(page, { motion: "reduced" });
+      await seedScreenshotData(page);
+      await page.goto("/apps?user=alice");
+      await expect(page.locator('[data-yf="app.id"]').first()).toBeVisible();
+      await page.clock.install();
+      await page.clock.pauseAt(new Date(Date.now() + 1000));
+
+      await page.getByTestId("apps-name-filter").fill("spark");
+      const controls = action === "Clear filters" ? page.getByTestId("apps-filters") : page;
+      await controls.getByRole("button", { name: action, exact: true }).click();
+      await page.clock.runFor(1000);
+
+      await expect(page).toHaveURL(/\/apps$/);
+      await expect(page.getByTestId("apps-name-filter")).toHaveValue("");
+      await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", "42");
+    });
+  }
+
+  for (const range of [
+    { label: "Start time", after: "startedAfter", before: "startedBefore", field: "start time" },
+    { label: "Finish time", after: "finishedAfter", before: "finishedBefore", field: "finish time" },
+  ]) {
+    test(`${range.label} presets replace an earlier upper bound and the range clears together`, async ({ page }) => {
+      const now = 1767230000000;
+      await freezeLive(page);
+      await seedScreenshotData(page);
+      await page.clock.setFixedTime(now);
+      await page.goto(`/apps?states=FINISHED&${range.after}=1767225600000&${range.before}=1767225700000`);
+      await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", "0");
+      await page.getByRole("button", { name: `${range.label} range`, exact: true }).click();
+      await page.getByRole("button", { name: "Last hour", exact: true }).click();
+
+      await expect.poll(() => new URL(page.url()).searchParams.get(range.after)).toBe(String(now - 3600_000));
+      expect(new URL(page.url()).searchParams.get(range.before)).toBeNull();
+      await expect(page.locator("[data-burrow-rows]")).not.toHaveAttribute("data-burrow-rows", "0");
+      expect(new Set(await rowStates(page))).toEqual(new Set(["Finished"]));
+
+      await page.getByRole("button", { name: `Clear ${range.field} range`, exact: true }).click();
+      await expect(page).toHaveURL(/\/apps\?states=FINISHED$/);
+      await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", "6");
+    });
+  }
 
   test("an id pasted into the name filter finds exactly that application", async ({ page }) => {
     await freezeLive(page);

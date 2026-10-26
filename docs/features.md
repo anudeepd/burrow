@@ -14,4 +14,18 @@ Burrow brings YARN cluster operations and Spark-on-YARN tracking into one read-o
 | **Tools** (`/tools/*`) | Searchable configuration with overridden-only filtering and diffs; JMX tree; live thread stacks; daemon logs; corresponding configuration and JMX views for NodeManagers. |
 | **Container logs** (`/apps/$appId/logs`) | Running-container logs from NodeManagers and aggregated logs for finished containers; byte-addressed reads; ANSI handling; level filters; search; live follow over SSE with explicit following/transport status; tall desktop viewports keep the application header fixed around an independently scrolling, virtualized log pane, while narrow or short viewports retain page scrolling to keep the toolbar and pane usable; verified with logs of up to one million lines. |
 
+## Overview and application filter behavior
+
+- Overview's **Used Resources** display subtracts reservations from cross-partition usage, while its raw DOM values retain the ResourceManager's reported totals. When an optional cross-partition resource block is absent, its values use the corresponding ResourceManager counters.
+- **Reset view** and **Clear filters** cancel pending name-search edits; an unfinished debounced search cannot reapply itself after a reset.
+- Start-time and finish-time presets replace the whole range, clearing a previous upper bound. Clearing a range removes both bounds without changing the lifecycle filter.
+- Expanded application filters keep a scrollable results area on phones, including the recovery action when no applications match.
+
+## Cluster table behavior
+
+- Nodes restores the exact URL-selected columns (`?cols=…`) after reload, including an explicit empty selection.
+- The node-label catalogue and node-to-label mapping keep independent sort and column state in the URL, so switching views or reloading preserves each table's configuration.
+- Scheduler and queue pages treat numeric-looking search values as strings or flags instead of failing the route; a hand-typed `?queueHide=0` still renders the queue tree.
+- The shared column chooser is capped to the space available in short viewports so every column remains reachable.
+
 Burrow does not send YARN write actions. See the [limitations](../README.md#limitations) and the [verification record](verification.md) for exclusions and tested behavior.

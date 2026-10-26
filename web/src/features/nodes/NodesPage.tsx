@@ -51,7 +51,12 @@ export function NodesPage() {
 
   const setSearch = (patch: Partial<typeof search>) => navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
   const sorting = useMemo(() => parseSort(search.sort), [search.sort]);
-  const visibility = useMemo(() => parseCols(search.cols) ?? defaultVisibility(nodes ?? []), [search.cols, nodes]);
+  const visibility = useMemo(() => {
+    const defaults = defaultVisibility(nodes ?? []);
+    if (search.cols === undefined) return defaults;
+    const selected = parseCols(search.cols) ?? {};
+    return Object.fromEntries(Object.keys(defaults).map((id) => [id, selected[id] === true]));
+  }, [search.cols, nodes]);
   // Key by the type names (not the nodes array, which changes every poll) so the column defs stay referentially stable.
   const customTypeKey = customResourceNames(nodes ?? []).join("\n");
   const cols = useMemo(() => nodeColumns(customTypeKey ? customTypeKey.split("\n") : []), [customTypeKey]);
@@ -168,7 +173,7 @@ export function NodesPage() {
                     sorting={sorting}
                     onSortingChange={(s) => setSearch({ sort: formatSort(s) })}
                     columnVisibility={visibility}
-                    onColumnVisibilityChange={(v) => setSearch({ cols: formatCols(v) })}
+                    onColumnVisibilityChange={(v) => setSearch({ cols: formatCols(v) ?? "" })}
                     defaultVisibility={defaultVisibility(nodes ?? [])}
                     rowVersion={nodeRowVersion}
                     onRowActivate={(n) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: n.id } })}

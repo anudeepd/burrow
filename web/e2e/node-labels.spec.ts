@@ -5,6 +5,40 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("node labels", () => {
+  test("catalogue sorting and column visibility persist independently from the mapping view", async ({ page }) => {
+    await page.goto("/node-labels");
+    const catalogue = page.locator('[data-burrow-table="burrow.node-labels"]');
+    await catalogue.getByRole("button", { name: "Label Name", exact: true }).click();
+    await catalogue.getByRole("button", { name: "Label Name", exact: true }).click();
+    await expect(catalogue.locator('[role="row"][data-ye]').first()).toHaveAttribute("data-ye", "highmem");
+    await page.getByRole("button", { name: "Choose columns" }).click();
+    await page.getByRole("menuitemcheckbox", { name: "Label Type", exact: true }).click();
+    await page.keyboard.press("Escape");
+    await expect(catalogue.getByRole("columnheader")).toHaveCount(4);
+
+    await page.getByRole("button", { name: "Node to label mapping", exact: true }).click();
+    const mapping = page.locator('[data-burrow-table="burrow.node-labels.mapping"]');
+    await mapping.getByRole("button", { name: "Node", exact: true }).click();
+    await mapping.getByRole("button", { name: "Node", exact: true }).click();
+    await expect(mapping.locator('[role="row"][data-ye]').first()).toHaveAttribute("data-ye", "node-r2-03.mock.local:45454");
+    await page.getByRole("button", { name: "Choose columns" }).click();
+    await page.getByRole("menuitemcheckbox", { name: "Rack", exact: true }).click();
+    await page.keyboard.press("Escape");
+    await page.reload();
+    await expect(mapping.locator('[role="columnheader"][data-col="rack"]')).toHaveCount(0);
+    await expect(mapping.locator('[role="row"][data-ye]').first()).toHaveAttribute("data-ye", "node-r2-03.mock.local:45454");
+    await page.getByRole("button", { name: "Label catalogue", exact: true }).click();
+    await expect(catalogue.getByRole("columnheader")).toHaveCount(4);
+    await expect(catalogue.locator('[role="row"][data-ye]').first()).toHaveAttribute("data-ye", "highmem");
+  });
+
+  test("label search matches the partition type users read", async ({ page }) => {
+    await page.goto("/node-labels?q=Non%20Exclusive");
+    const catalogue = page.locator('[data-burrow-table="burrow.node-labels"]');
+    await expect(catalogue.locator('[role="row"][data-ye]')).toHaveCount(1);
+    await expect(catalogue.locator('[role="row"][data-ye]').first()).toHaveAttribute("data-ye", "highmem");
+  });
+
   test("catalogue mirrors the legacy page and stamps labels for parity", async ({ page }) => {
     const labelsResponsePromise = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/yarn/get-node-labels");
     await page.goto("/node-labels?parity=1");
