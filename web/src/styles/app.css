@@ -592,8 +592,7 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
 /* Expanded compact filters can outgrow even a tall phone. Keep their results reachable by native page scrolling. */
 .burrow-apps-page { overflow-y: auto; }
 .burrow-apps-page:has(#apps-filter-options) [data-burrow-table-root="apps"] {
-  flex-shrink: 0;
-  min-height: min-content;
+  min-height: 20rem;
 }
 .burrow-apps-page:has(#apps-filter-options) [data-burrow-table-root="apps"] > div:last-child {
   min-height: 12rem;
