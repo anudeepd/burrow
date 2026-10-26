@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
       host: "127.0.0.1",
       port: 5173,
       strictPort: true,
+      // The dev-mock proxy cannot forward WebSocket upgrades. Point HMR at Vite's own port so the client connects
+      // directly; otherwise Vite's reconnect ping succeeds against the proxy and reloads the page in a loop.
+      ws: process.env.BURROW_DEV_MOCK ? { clientPort: 5173 } : undefined,
       proxy: {
         "/api": { target: apiTarget, changeOrigin: false, ws: false },
       },

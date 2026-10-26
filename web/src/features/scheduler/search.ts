@@ -12,43 +12,44 @@
 import type { ColumnVisibilityState, SortingState } from "@tanstack/react-table";
 import { z } from "zod";
 
+import { optFlag, optStr } from "~/features/nodes/search";
 /** `/scheduler` search params. */
 export const schedulerSearchSchema = z.object({
   /** expanded tree nodes; absent = every queue expanded (a freeness overview wants the whole tree open) */
-  openQueues: z.string().optional(),
+  openQueues: optStr,
   sort: z.enum(["name", "used", "free", "apps"]).optional().catch(undefined),
   /** selected node-label partition ("" = default partition) */
-  partition: z.string().optional(),
+  partition: optStr,
   basis: z.enum(["used", "capacity"]).optional().catch(undefined),
   tab: z.enum(["queues", "activities", "health", "conf"]).optional().catch(undefined),
-  usersSort: z.string().optional(),
-  usersHide: z.string().optional(),
+  usersSort: optStr,
+  usersHide: optStr,
   /** activities: NodeManager id (host:port) — empty = the RM's latest activity */
-  nodeId: z.string().optional(),
+  nodeId: optStr,
   groupBy: z.enum(["DIAGNOSTIC"]).optional().catch(undefined),
-  queueHide: z.string().optional(),
-  actSort: z.string().optional(),
-  actHide: z.string().optional(),
-  confSort: z.string().optional(),
-  confHide: z.string().optional(),
+  queueHide: optStr,
+  actSort: optStr,
+  actHide: optStr,
+  confSort: optStr,
+  confHide: optStr,
 });
 export type SchedulerSearch = z.infer<typeof schedulerSearchSchema>;
 
 /** `/scheduler/$queue` search params. */
 export const queueSearchSchema = z.object({
   tab: z.enum(["users", "apps", "partitions", "activities", "conf"]).optional().catch(undefined),
-  usersSort: z.string().optional(),
-  usersHide: z.string().optional(),
-  appsSort: z.string().optional(),
-  appsHide: z.string().optional(),
-  partSort: z.string().optional(),
-  partHide: z.string().optional(),
-  actSort: z.string().optional(),
-  actHide: z.string().optional(),
-  confSort: z.string().optional(),
-  confHide: z.string().optional(),
-  confAll: z.coerce.boolean().optional(),
-  nodeId: z.string().optional(),
+  usersSort: optStr,
+  usersHide: optStr,
+  appsSort: optStr,
+  appsHide: optStr,
+  partSort: optStr,
+  partHide: optStr,
+  actSort: optStr,
+  actHide: optStr,
+  confSort: optStr,
+  confHide: optStr,
+  confAll: optFlag,
+  nodeId: optStr,
   groupBy: z.enum(["DIAGNOSTIC"]).optional().catch(undefined),
 });
 export type QueueSearch = z.infer<typeof queueSearchSchema>;

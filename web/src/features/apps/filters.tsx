@@ -1,4 +1,4 @@
-import { useDebouncedValue } from "@tanstack/react-pacer";
+import { useDebouncer } from "@tanstack/react-pacer";
 import { CalendarRange, Filter, Search, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "~/lib/cn";
@@ -77,16 +77,14 @@ function RangeFilter({
   field,
   from,
   to,
-  onFrom,
-  onTo,
+  onRangeChange,
   now,
 }: {
   label: string;
   field: "start time" | "finish time";
   from: number | undefined;
   to: number | undefined;
-  onFrom: (v: number | undefined) => void;
-  onTo: (v: number | undefined) => void;
+  onRangeChange: (from: number | undefined, to: number | undefined) => void;
   now: number;
 }) {
   const active = from !== undefined || to !== undefined;
@@ -113,7 +111,7 @@ function RangeFilter({
             <input
               type="datetime-local"
               value={from !== undefined ? toLocalInput(from) : ""}
-              onChange={(e) => onFrom(fromLocalInput(e.target.value))}
+              onChange={(e) => onRangeChange(fromLocalInput(e.target.value), to)}
               aria-label={`${label} from`}
               className="h-(--ctl-h) rounded-md border border-seam-strong bg-well px-2 text-body text-ink"
             />
@@ -123,28 +121,20 @@ function RangeFilter({
             <input
               type="datetime-local"
               value={to !== undefined ? toLocalInput(to) : ""}
-              onChange={(e) => onTo(fromLocalInput(e.target.value))}
+              onChange={(e) => onRangeChange(from, fromLocalInput(e.target.value))}
               aria-label={`${label} to`}
               className="h-(--ctl-h) rounded-md border border-seam-strong bg-well px-2 text-body text-ink"
             />
           </label>
           <div className="flex flex-wrap gap-1 pt-1">
             {PRESETS.map((p) => (
-              <Button key={p.label} size="sm" variant="quiet" onClick={() => onFrom(now - p.ms)}>
+              <Button key={p.label} size="sm" variant="quiet" onClick={() => onRangeChange(now - p.ms, undefined)}>
                 {p.label}
               </Button>
             ))}
           </div>
           {active && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="self-start"
-              onClick={() => {
-                onFrom(undefined);
-                onTo(undefined);
-              }}
-            >
+            <Button size="sm" variant="ghost" className="self-start" onClick={() => onRangeChange(undefined, undefined)}>
               Clear {field} range
             </Button>
           )}
@@ -164,6 +154,7 @@ export function AppFilters({
   patch,
   now,
   compact,
+  nameResetVersion = 0,
   showLegacyFinishedLabel = false,
 }: {
   search: AppsSearch;
@@ -171,30 +162,26 @@ export function AppFilters({
   patch: Patch;
   now: number;
   compact: boolean;
+  nameResetVersion?: number;
   showLegacyFinishedLabel?: boolean;
 }) {
   const [draft, setDraft] = useState(search.name ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [debounced] = useDebouncedValue(draft, { wait: 250 });
-  const pushed = useRef(search.name ?? "");
+  const nameDebouncer = useDebouncer((value: string) => patch({ name: value.trim() || undefined }), { wait: 250 });
   const filterBarRef = useRef<HTMLDivElement>(null);
   const filterExitLayerRef = useRef<HTMLDivElement>(null);
   const previousFilterChips = useRef(new Map<string, FilterChipSnapshot>());
   const filterAnimations = useRef<Animation[]>([]);
 
   useEffect(() => {
-    if (debounced === pushed.current) return;
-    pushed.current = debounced;
-    patch({ name: debounced.trim() || undefined });
-  }, [debounced, patch]);
+    nameDebouncer.cancel();
+    setDraft(search.name ?? "");
+  }, [search.name, nameResetVersion, nameDebouncer]);
 
-  useEffect(() => {
-    const current = search.name ?? "";
-    if (current !== pushed.current) {
-      pushed.current = current;
-      setDraft(current);
-    }
-  }, [search.name]);
+  const updateDraft = (value: string) => {
+    setDraft(value);
+    nameDebouncer.maybeExecute(value);
+  };
 
   const active = [
     search.final
@@ -340,8 +327,7 @@ export function AppFilters({
         now={now}
         from={search.startedAfter}
         to={search.startedBefore}
-        onFrom={(v) => patch({ startedAfter: v })}
-        onTo={(v) => patch({ startedBefore: v })}
+        onRangeChange={(startedAfter, startedBefore) => patch({ startedAfter, startedBefore })}
       />
       <RangeFilter
         label="Finish time"
@@ -349,8 +335,7 @@ export function AppFilters({
         now={now}
         from={search.finishedAfter}
         to={search.finishedBefore}
-        onFrom={(v) => patch({ finishedAfter: v })}
-        onTo={(v) => patch({ finishedBefore: v })}
+        onRangeChange={(finishedAfter, finishedBefore) => patch({ finishedAfter, finishedBefore })}
       />
       {showLegacyFinishedLabel && <span className="text-micro text-ink-4">URL-synced</span>}
     </>
@@ -414,7 +399,7 @@ export function AppFilters({
         <input
           data-testid="apps-name-filter"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => updateDraft(e.target.value)}
           placeholder="Name or application ID…"
           aria-label="Filter by name or application ID"
           className="burrow-apps-name-filter-input h-full w-[13rem] min-w-0 bg-transparent text-small text-ink outline-none placeholder:text-ink-3"
@@ -425,7 +410,7 @@ export function AppFilters({
               type="button"
               aria-label="Clear name filter"
               className="burrow-control burrow-control--icon text-ink-4 hover:text-ink"
-              onClick={() => setDraft("")}
+              onClick={() => updateDraft("")}
             >
               <X className="size-3.5" aria-hidden="true" />
             </button>

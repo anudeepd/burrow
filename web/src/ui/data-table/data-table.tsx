@@ -982,7 +982,7 @@ function ColumnChooser<T extends RowData>({ table, onReset }: { table: ReactTabl
           {visible}/{all.length}
         </span>
       </MenuTrigger>
-      <MenuContent className="max-h-[70dvh] overflow-auto">
+      <MenuContent className="max-h-[min(70dvh,var(--available-height))] overflow-auto">
         {all.map((c) => {
           const meta = c.columnDef.meta as { label?: string } | undefined;
           return (

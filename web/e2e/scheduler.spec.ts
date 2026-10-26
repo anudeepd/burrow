@@ -67,6 +67,13 @@ const yv = async (page: Page, field: string) => {
 };
 
 test.describe("scheduler", () => {
+  test("numeric-looking URL values do not replace the scheduler with a route error", async ({ page }) => {
+    await page.goto("/scheduler?queueHide=0");
+    const tree = page.locator('[data-burrow-table="scheduler-capacity-tree"]');
+    await expect(tree.locator('[role="row"][data-ye="root.default"]')).toBeVisible();
+    await expect(tree.getByRole("columnheader").first()).toBeVisible();
+  });
+
   test("shows the queue workspace in the first phone viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/scheduler?parity=1");
