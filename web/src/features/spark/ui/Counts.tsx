@@ -5,9 +5,10 @@
  */
 import { Datum } from "~/ui/datum";
 import { ProgressBar, type Segment } from "~/ui/progress-bar";
-import { HelpTip } from "~/ui/tooltip";
+import { HelpTip, Tooltip } from "~/ui/tooltip";
 import { stageTaskShares } from "../data/format";
 import { cn } from "~/lib/cn";
+import { fmtBytes, fmtInt } from "~/lib/format";
 
 export interface CountSpec {
   /** REST key relative to the entity (e.g. `numCompletedStages`). */
@@ -34,12 +35,15 @@ export function ByteRecCell({
   className?: string;
 }) {
   if (bytes == null && records == null) return <span className="text-ink-4">—</span>;
+  const fullValue = `${fmtBytes(bytes)} / ${recordsUnit === "bytes" ? fmtBytes(records) : fmtInt(records)}`;
   return (
-    <span className={cn("flex items-center gap-1 tnum", className)}>
-      <Datum field={bytesField} raw={bytes} fmt="bytes" />
-      <span className="text-ink-4">/</span>
-      <Datum field={recordsField} raw={records} fmt={recordsUnit === "bytes" ? "bytes" : "int"} className="text-ink-3" />
-    </span>
+    <Tooltip label={fullValue}>
+      <span className={cn("flex min-w-0 max-w-full items-center gap-1 whitespace-nowrap tnum", className)}>
+        <Datum field={bytesField} raw={bytes} fmt="bytes" className="min-w-0 truncate" />
+        <span className="shrink-0 text-ink-4">/</span>
+        <Datum field={recordsField} raw={records} fmt={recordsUnit === "bytes" ? "bytes" : "int"} className="min-w-0 truncate text-ink-3" />
+      </span>
+    </Tooltip>
   );
 }
 
