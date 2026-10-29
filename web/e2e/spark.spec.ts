@@ -276,6 +276,30 @@ test.describe("spark version + retry deltas", () => {
     await grid.focus();
     await expect(grid).toBeFocused();
   });
+  test("long stage metric values stay on one line and remain available on hover", async ({ page }) => {
+    await page.route(`**/api/spark/${APPS.dfJoinAqe}/stages*`, async (route) => {
+      const response = await route.fetch();
+      const stages = (await response.json()) as Record<string, unknown>[];
+      if (!stages[0]) throw new Error("Expected captured stages");
+      stages[0] = { ...stages[0], inputBytes: 1610612736, inputRecords: 1234567890 };
+      await route.fulfill({ response, json: stages });
+    });
+
+    await open(page, sparkPath(APPS.dfJoinAqe, "stages"), "dark");
+    const bytes = page.locator('[data-yf="spark.stage.inputBytes"][data-yv="1610612736"]').first();
+    await expect(bytes).toHaveText("1.5 GiB");
+    const cell = bytes.locator("xpath=ancestor::*[@role='cell']");
+    const layout = await cell.evaluate((element) => ({
+      cellHeight: element.clientHeight,
+      cellScrollHeight: element.scrollHeight,
+      contentHeight: element.firstElementChild?.getBoundingClientRect().height ?? 0,
+    }));
+    expect(layout.contentHeight).toBeLessThanOrEqual(layout.cellHeight);
+    expect(layout.cellScrollHeight).toBeLessThanOrEqual(layout.cellHeight);
+
+    await cell.hover();
+    await expect(page.getByRole("tooltip")).toHaveText("1.5 GiB / 1,234,567,890");
+  });
 });
 
 test.describe("honest failure + empty states", () => {
