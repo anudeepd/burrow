@@ -837,13 +837,22 @@ mod tests {
         assert!(html.contains("<script nonce=\"old\">keep()</script>"));
         assert!(html.contains("<meta property=\"csp-nonce\" content=\"nonce-value\">"));
 
-        let existing = inject_nonce("<head><meta property=\"csp-nonce\" content=\"old\"></head>", "new");
+        let existing = inject_nonce(
+            "<head><meta property=\"csp-nonce\" content=\"old\"></head>",
+            "new",
+        );
         assert_eq!(existing.matches("property=\"csp-nonce\"").count(), 1);
         let no_head = inject_nonce("<main>app</main>", "nonce-value");
-        assert!(no_head.starts_with("<meta property=\"csp-nonce\" content=\"nonce-value\">") );
+        assert!(no_head.starts_with("<meta property=\"csp-nonce\" content=\"nonce-value\">"));
         let malformed = inject_nonce("<script __BURROW_CSP_NONCE__", "nonce-value");
         assert_eq!(malformed, "<script nonce-value");
-        assert_eq!(csp_with_nonce("nonce-value").to_str().unwrap().contains("nonce-nonce-value"), true);
+        assert_eq!(
+            csp_with_nonce("nonce-value")
+                .to_str()
+                .unwrap()
+                .contains("nonce-nonce-value"),
+            true
+        );
         assert_eq!(fresh_nonce().len(), 32);
     }
 
@@ -852,7 +861,16 @@ mod tests {
         let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
         cfg.allowed_hosts = vec!["dashboard.example".into(), "other.example:9443".into()];
         let guard = HostGuard::new(&cfg);
-        for host in [None, Some(""), Some("localhost"), Some("localhost:8787"), Some("127.0.0.1:8787"), Some("dashboard.example"), Some("dashboard.example:9000"), Some("other.example:9443")] {
+        for host in [
+            None,
+            Some(""),
+            Some("localhost"),
+            Some("localhost:8787"),
+            Some("127.0.0.1:8787"),
+            Some("dashboard.example"),
+            Some("dashboard.example:9000"),
+            Some("other.example:9443"),
+        ] {
             assert!(guard.allows(host), "expected host {host:?} to be allowed");
         }
         assert!(!guard.allows(Some("attacker.example")));
@@ -869,7 +887,10 @@ mod tests {
         let cfg = Config::for_rm("http://rm.example:8088").unwrap();
         let core = Core::new(cfg).unwrap();
         let state = AppState::new(core, Assets::embedded());
-        assert!(matches!(state.route("/api/healthz"), Some(Route::Api("healthz"))));
+        assert!(matches!(
+            state.route("/api/healthz"),
+            Some(Route::Api("healthz"))
+        ));
         assert!(matches!(state.route("/api"), Some(Route::Api(""))));
         assert!(matches!(state.route("/apps"), Some(Route::Static("apps"))));
         assert_eq!(state.strip_base("/apps"), Some("apps"));
@@ -880,8 +901,14 @@ mod tests {
         let state = AppState::new(core, Assets::embedded());
         assert_eq!(state.strip_base("/burrow"), Some(""));
         assert_eq!(state.strip_base("/burrow/"), Some(""));
-        assert!(matches!(state.route("/burrow/api/meta"), Some(Route::Api("meta"))));
-        assert!(matches!(state.route("/burrow/apps"), Some(Route::Static("apps"))));
+        assert!(matches!(
+            state.route("/burrow/api/meta"),
+            Some(Route::Api("meta"))
+        ));
+        assert!(matches!(
+            state.route("/burrow/apps"),
+            Some(Route::Static("apps"))
+        ));
         assert!(state.route("/outside/apps").is_none());
     }
 
@@ -889,21 +916,47 @@ mod tests {
     fn cache_and_asset_helpers_cover_protocol_variants() {
         let mut headers = HeaderMap::new();
         assert!(!wants_no_cache(&headers));
-        headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("max-age=0, No-Cache"));
+        headers.insert(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("max-age=0, No-Cache"),
+        );
         assert!(wants_no_cache(&headers));
         headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
         assert!(wants_no_cache(&headers));
         headers.remove(header::CACHE_CONTROL);
 
-        assert!(compressible(StatusCode::OK, axum::http::Version::HTTP_11, &headers, &Default::default()));
-        headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("Text/Event-Stream; charset=utf-8"));
-        assert!(!compressible(StatusCode::OK, axum::http::Version::HTTP_11, &headers, &Default::default()));
+        assert!(compressible(
+            StatusCode::OK,
+            axum::http::Version::HTTP_11,
+            &headers,
+            &Default::default()
+        ));
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("Text/Event-Stream; charset=utf-8"),
+        );
+        assert!(!compressible(
+            StatusCode::OK,
+            axum::http::Version::HTTP_11,
+            &headers,
+            &Default::default()
+        ));
 
-        for path in ["assets/app.js", "app.MJS", "theme.CSS", "data.json", "font.woff2", "movie.webm"] {
+        for path in [
+            "assets/app.js",
+            "app.MJS",
+            "theme.CSS",
+            "data.json",
+            "font.woff2",
+            "movie.webm",
+        ] {
             assert!(looks_like_static_file(path), "expected {path} to be a file");
         }
         for path in ["apps/42", "nested/no-extension", "app.jsx"] {
-            assert!(!looks_like_static_file(path), "expected {path} to be a route");
+            assert!(
+                !looks_like_static_file(path),
+                "expected {path} to be a route"
+            );
         }
     }
 
@@ -914,7 +967,9 @@ mod tests {
         reply.upstream = Some("rm.example:8088".into());
         reply.age_ms = Some(17);
         reply.etag = Some("W/\"abc\"".into());
-        reply.extra.insert("x-extra", HeaderValue::from_static("value"));
+        reply
+            .extra
+            .insert("x-extra", HeaderValue::from_static("value"));
 
         let response = api_response(reply, Some("W/\"abc\""));
         assert_eq!(response.status(), StatusCode::NOT_MODIFIED);
