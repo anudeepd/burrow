@@ -67,7 +67,9 @@ jobs:
           tool: cargo-llvm-cov
 
       - name: Run Rust tests with LCOV coverage
-        run: cargo llvm-cov --workspace --lcov --output-path coverage/rust.lcov
+        run: |
+          mkdir -p coverage
+          cargo llvm-cov --workspace --lcov --output-path coverage/rust.lcov
 
       - name: SonarQube Cloud scan
         uses: SonarSource/sonarqube-scan-action@v7
