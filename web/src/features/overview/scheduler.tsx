@@ -1,11 +1,7 @@
 /**
- * (d) Scheduler snapshot — the legacy `#schedulermetricsoverview` block (`MetricsOverviewTable.java:206-240`).
- *
- * Source: `GET /api/yarn/scheduler-overview` (RMWebServices `SCHEDULER_OVERVIEW`, dao `SchedulerOverviewInfo`), which
- * carries exactly the legacy cells — including the two the scheduler REST API does not otherwise expose
- * (minimum allocation, maximum cluster application priority). When that resource is missing (older RM, or a backend
- * allowlist without the route) the block degrades to what `/api/yarn/scheduler` can answer and says so per cell
- * rather than printing a zero.
+ * Scheduler snapshot shared with `/scheduler`: scheduler REST and RM configuration supply scheduler facts, while
+ * ClusterMetrics supplies busy percentage and dispatcher queue sizes. The optional scheduler-overview response fills
+ * facts that the primary sources omit; its absence does not block the rest of the section.
  *
  * The queue teaser below reads `/api/yarn/scheduler` and is the Overview's door into `/scheduler`.
  */
@@ -24,6 +20,7 @@ import { StatusPill } from "~/ui/status";
 import { Tooltip } from "~/ui/tooltip";
 import { useParity } from "~/state/parity";
 import { pressureTone } from "~/lib/progress-tone";
+import { fmtInt, fmtPct } from "~/lib/format";
 import type { SchedulerInfo, SchedulerResponse } from "~/api/schemas";
 import {
   confValue,
@@ -33,13 +30,14 @@ import {
   minAllocationText,
   queueTeasers,
   resourceInfoText,
-  resourceSummaryText,
+  schedulerBusyPercent,
   schedulerDisplayName,
   schedulerMaxAllocation,
   schedulingResourceTypesFromInfo,
   schedulingResourceTypesText,
   type QueueTeaser,
 } from "./derive";
+import { resourceText, resourceValueText } from "~/features/scheduler/format";
 import { CrossLink, Unavailable, useStale } from "./ui";
 
 function Cell({ label, children }: { label: string; children: React.ReactNode }) {
@@ -202,15 +200,14 @@ const QUEUE_COLUMNS: ColDef<QueueTeaser>[] = [
 const QUEUE_DEFAULT_VISIBILITY = defaultVisibilityOf(QUEUE_COLUMNS);
 
 /**
- * Derivation sources (parity: `legacy.rm.shared.metrics.scheduler.*`): name/types/max allocation come from the
- * scheduler REST JSON (`schedulerInfo.type`, `maximumAllocation`); minimum allocation and max cluster priority are not
- * in that JSON for Capacity, so they come from the effective RM conf (`yarn.scheduler.minimum-allocation-{mb,vcores}`,
- * `yarn.cluster.max-application-priority`; the dump includes yarn-default.xml). `/scheduler-overview` is the fallback
- * for any cell the primary source cannot answer.
+ * Shared scheduler facts: name, resource types, and maximum allocation come from scheduler REST, with the optional
+ * scheduler-overview response as fallback. Minimum allocation and maximum priority use effective RM configuration
+ * first, then scheduler-overview. Busy percentage and event queue sizes come from ClusterMetrics, matching `/scheduler`.
  */
 export function SchedulerSection({ collapseQueueTable = false }: { collapseQueueTable?: boolean }) {
   const overview = useQuery(ov.schedulerOverview());
   const sched = useQuery(ov.scheduler());
+  const metricsQ = useQuery(ov.metrics());
   const stale = useStale();
   const parity = useParity();
   const [queueSorting, setQueueSorting] = useState<SortingState>([]);
@@ -230,22 +227,25 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
   const nameText = info?.type ? schedulerDisplayName(info.type) : (so?.schedulerType ?? null);
   const typesText = schedulingResourceTypesFromInfo(info) ?? schedulingResourceTypesText(so?.schedulingResourceType);
   const maxText =
-    maxAllocationText(info) ?? (so ? resourceInfoText(Number(so.maximumAllocation.memory), Number(so.maximumAllocation.vCores)) : null);
+    maxAllocationText(info) ??
+    (so
+      ? resourceInfoText(Number(so.maximumAllocation.memory), Number(so.maximumAllocation.vCores), customResources(so.maximumAllocation))
+      : null);
+  const configuredMinText = minAllocationText(conf);
   const minText =
-    minAllocationText(conf) ?? (so ? resourceInfoText(Number(so.minimumAllocation.memory), Number(so.minimumAllocation.vCores)) : null);
+    configuredMinText ?? (so ? resourceInfoText(Number(so.minimumAllocation.memory), Number(so.minimumAllocation.vCores)) : null);
   const maxResource = schedulerMaxAllocation(info) ?? so?.maximumAllocation;
-  const minMemory = confValue(conf, "yarn.scheduler.minimum-allocation-mb") ?? so?.minimumAllocation.memory;
-  const minVCores = confValue(conf, "yarn.scheduler.minimum-allocation-vcores") ?? so?.minimumAllocation.vCores;
-  const maxDisplayText =
-    maxText == null || parity || maxResource == null
-      ? maxText
-      : resourceSummaryText(Number(maxResource.memory), Number(maxResource.vCores), customResources(maxResource));
+  const minMemory = configuredMinText ? confValue(conf, "yarn.scheduler.minimum-allocation-mb") : so?.minimumAllocation.memory;
+  const minVCores = configuredMinText ? confValue(conf, "yarn.scheduler.minimum-allocation-vcores") : so?.minimumAllocation.vCores;
+  const maxDisplayText = maxText == null || parity || maxResource == null ? maxText : resourceText(maxResource);
   const minDisplayText =
-    minText == null || parity || minMemory == null || minVCores == null
-      ? minText
-      : resourceSummaryText(Number(minMemory), Number(minVCores));
+    minText == null || parity || minMemory == null || minVCores == null ? minText : resourceValueText(Number(minMemory), Number(minVCores));
   const priority = maximumClusterPriority(conf) ?? so?.applicationPriority ?? null;
-
+  const metrics = metricsQ.data;
+  const busy = metrics == null ? null : schedulerBusyPercent(metrics);
+  const rmQueue = metrics?.rmEventQueueSize ?? null;
+  const schedulerQueue = metrics?.schedulerEventQueueSize ?? null;
+  const metricsUnavailableReason = metricsQ.error ? `Cluster metrics unavailable: ${errorReason(metricsQ.error)}` : null;
   const queueTable = (
     <DataTable
       data={teasers}
@@ -421,61 +421,56 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
           )}
         </Cell>
 
-        <Cell label={parity ? "Minimum Allocation" : "Min per container"}>
-          {minText ? (
-            <Datum field="scheduler.derived.minAllocationText" raw={minText} fmt="text" className={parity ? "mono" : "tnum"}>
-              {minDisplayText}
-            </Datum>
-          ) : (
-            <Unavailable variant="info" reason="Minimum allocation was not reported." />
-          )}
+        <Cell label="Minimum Allocation">
+          <Datum field="scheduler.derived.minAllocationText" raw={minText} fmt="text" className={parity ? "mono" : "tnum"}>
+            {minText == null ? <Unavailable variant="info" reason="Minimum allocation was not reported." /> : (minDisplayText ?? minText)}
+          </Datum>
         </Cell>
 
-        <Cell label={parity ? "Maximum Allocation" : "Max per container"}>
-          {maxText ? (
-            <Datum field="scheduler.derived.maxAllocationText" raw={maxText} fmt="text" className={parity ? "mono" : "tnum"}>
-              {maxDisplayText}
-            </Datum>
-          ) : (
-            <Unavailable variant="info" reason="Maximum allocation was not reported." />
-          )}
+        <Cell label="Maximum Allocation">
+          <Datum field="scheduler.derived.maxAllocationText" raw={maxText} fmt="text" className={parity ? "mono" : "tnum"}>
+            {maxText == null ? <Unavailable variant="info" reason="Maximum allocation was not reported." /> : (maxDisplayText ?? maxText)}
+          </Datum>
         </Cell>
 
         <Cell label="Maximum Cluster Application Priority">
           {priority != null ? (
             <Datum field="scheduler.derived.maximumClusterPriority" raw={priority} fmt="int" className="mono" />
           ) : (
-            <Unavailable variant="info" reason="Application priority was not reported." />
+            <Datum field="scheduler.derived.maximumClusterPriority" raw={null} fmt="int" className="mono">
+              <Unavailable variant="info" reason="Application priority was not reported." />
+            </Datum>
           )}
         </Cell>
 
         <Cell label="Scheduler Busy %">
-          {so ? (
-            <Datum field="scheduler.schedulerBusy" raw={so.schedulerBusy} fmt="int" className="mono" />
-          ) : (
-            <Unavailable variant="info" reason="Scheduler load was not reported." />
-          )}
+          <Datum field="cluster.metrics.rmSchedulerBusyPercent" raw={busy} fmt="pct" className="mono">
+            {busy == null ? (
+              <Unavailable variant="info" reason={metricsUnavailableReason ?? "Scheduler load was not reported."} />
+            ) : (
+              fmtPct(busy)
+            )}
+          </Datum>
         </Cell>
 
         <Cell label="RM Dispatcher EventQueue Size">
-          {so ? (
-            <Datum field="scheduler.rmDispatcherEventQueueSize" raw={so.rmDispatcherEventQueueSize} fmt="int" className="mono" />
-          ) : (
-            <Unavailable variant="info" reason="Queue activity was not reported." />
-          )}
+          <Datum field="cluster.metrics.rmEventQueueSize" raw={rmQueue} fmt="int" className="mono">
+            {rmQueue == null ? (
+              <Unavailable variant="info" reason={metricsUnavailableReason ?? "Queue activity was not reported."} />
+            ) : (
+              fmtInt(rmQueue)
+            )}
+          </Datum>
         </Cell>
 
         <Cell label="Scheduler Dispatcher EventQueue Size">
-          {so ? (
-            <Datum
-              field="scheduler.schedulerDispatcherEventQueueSize"
-              raw={so.schedulerDispatcherEventQueueSize}
-              fmt="int"
-              className="mono"
-            />
-          ) : (
-            <Unavailable variant="info" reason="Queue activity was not reported." />
-          )}
+          <Datum field="cluster.metrics.schedulerEventQueueSize" raw={schedulerQueue} fmt="int" className="mono">
+            {schedulerQueue == null ? (
+              <Unavailable variant="info" reason={metricsUnavailableReason ?? "Queue activity was not reported."} />
+            ) : (
+              fmtInt(schedulerQueue)
+            )}
+          </Datum>
         </Cell>
 
         {missing && (

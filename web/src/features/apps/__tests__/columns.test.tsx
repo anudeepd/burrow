@@ -4,6 +4,7 @@ import { Outlet, RouterProvider, createMemoryHistory, createRootRoute, createRou
 import type { q as queryFactories } from "~/api/queries";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { App, AppAttempt } from "~/api/schemas";
+import type { Meta } from "~/api/schemas/meta";
 
 // vitest does not expose globals, so Testing Library's automatic cleanup is not registered — do it explicitly.
 afterEach(cleanup);
@@ -26,6 +27,28 @@ let APPS_COLUMNS: typeof import("~/features/apps/columns").APPS_COLUMNS;
 let APPS_FIELD_IDS: typeof import("~/features/apps/columns").APPS_FIELD_IDS;
 let APPS_COLUMN_IDS: typeof import("~/features/apps/columns").APPS_COLUMN_IDS;
 let q: typeof queryFactories;
+
+const TEST_META: Meta = {
+  name: "test",
+  version: "test",
+  now: 0,
+  readOnly: true,
+  rm: { urls: [], active: null, reachable: false },
+  services: {
+    sparkHistory: { configured: false },
+    jobHistory: { configured: false },
+    timeline: { configured: false },
+  },
+  features: {
+    sparkLive: false,
+    sparkHistory: false,
+    aggregatedLogs: false,
+    nodeLogs: false,
+    events: false,
+    kerberos: false,
+  },
+  yarn: { logServerUrl: null, httpPolicy: "HTTP_ONLY", scheduler: null },
+};
 
 beforeAll(async () => {
   ({ DataTable } = await import("~/ui/data-table/data-table"));
@@ -94,16 +117,15 @@ function TestTable({ apps }: { apps: App[] }) {
 }
 
 /**
- * Every row's "Blacklisted Nodes" cell reads `/apps/{id}/appattempts` through the query cache. The cache is pre-seeded
- * (parity mode = infinite staleTime), so no request is ever made: `attempts` maps an app id to its attempt list;
- * unlisted apps get an empty list (= no attempt yet).
+ * The real table reads attempt data and configured daemon bases through React Query. Seed both cache entries so these
+ * render tests never make real `/api` requests; `attempts` maps app ids to attempt lists, with missing ids meaning none.
  */
-function renderTable(apps: App[], attempts: Record<string, AppAttempt[]> = {}, meta: unknown = null) {
+function renderTable(apps: App[], attempts: Record<string, AppAttempt[]> = {}, meta: Meta = TEST_META) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   for (const app of apps) {
     client.setQueryData(q.appAttempts(app.id).queryKey, { appAttempts: { appAttempt: attempts[app.id] ?? [] } });
   }
-  if (meta) client.setQueryData(["meta"], meta);
+  client.setQueryData(q.meta().queryKey, meta);
   const rootRoute = createRootRoute({ component: () => <Outlet /> });
   const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: () => <TestTable apps={apps} /> });
   // the ID column links to the app page; the test router only needs the path to exist
@@ -275,7 +297,14 @@ describe("apps table column contract", () => {
     // Live: the REST list withholds `trackingUrl` for an ACCEPTED app and its `trackingUI` says UNASSIGNED, but the
     // legacy page labels it ApplicationMaster and links its own proxy URL.
     const accepted = makeApp({ id: "application_1767000000000_0004", state: "ACCEPTED", trackingUI: "UNASSIGNED", trackingUrl: undefined });
-    renderTable([running, finished, pending, accepted], {}, { rm: { active: "http://127.0.0.1:8088" } });
+    renderTable(
+      [running, finished, pending, accepted],
+      {},
+      {
+        ...TEST_META,
+        rm: { ...TEST_META.rm, active: "http://127.0.0.1:8088" },
+      },
+    );
     await screen.findByRole("table");
     const cell = (app: App, field: string) => document.querySelector(`[data-ye="${app.id}"] [data-yf="${field}"]`);
     expect(cell(running, "app.derived.trackingUiText")?.textContent).toBe("ApplicationMaster");

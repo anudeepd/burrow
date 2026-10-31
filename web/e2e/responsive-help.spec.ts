@@ -7,7 +7,10 @@ test.beforeEach(async ({ page }) => {
 
 test("desktop column definitions work on hover and from the keyboard without sorting", async ({ page }) => {
   await page.goto("/apps");
-  const header = page.locator('[data-burrow-table="apps"] [data-col="id"]').first();
+  const table = page.locator('[data-burrow-table="apps"]');
+  const header = table.locator('[data-col="id"]').first();
+  const sortHeader = table.locator('[data-col="starttime"]').first();
+  const sortBefore = await sortHeader.getAttribute("aria-sort");
   const help = header.getByRole("button", { name: "About ID", exact: true });
   await help.hover();
   await expect(page.getByRole("tooltip")).toContainText("Application id");
@@ -16,7 +19,7 @@ test("desktop column definitions work on hover and from the keyboard without sor
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog").filter({ hasText: "Application id" });
   await expect(dialog).toBeVisible();
-  await expect(header).toHaveAttribute("aria-sort", "descending");
+  expect(await sortHeader.getAttribute("aria-sort")).toBe(sortBefore);
   await expect(page).not.toHaveURL(/sort=/);
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
@@ -39,7 +42,7 @@ test.describe("phone", () => {
     await expect(page.getByRole("heading", { name: "Nodes", exact: true, level: 1 })).toBeVisible();
   });
 
-  test("a column definition opens on tap, fits the viewport, and does not change the sort", async ({ page }) => {
+  test("a column definition opens on tap, fits the viewport, and does not change the sort", { tag: "@snapshot" }, async ({ page }) => {
     await page.goto("/apps");
     const help = page.getByRole("button", { name: "About ID", exact: true });
     await help.tap();

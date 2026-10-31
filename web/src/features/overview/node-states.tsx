@@ -241,6 +241,7 @@ export function NodeStatesSection({
           </EmptyState>
         }
         exportName="overview-nodes"
+        stableViewport
         className="min-h-[13rem] w-full flex-none"
       />
     </div>

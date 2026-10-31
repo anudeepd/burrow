@@ -117,7 +117,7 @@ test.describe("node labels", () => {
     await expect(page.getByText(/Read-only/i).first()).toBeVisible();
   });
 
-  test("screenshots: catalogue and mapping (dark + light)", async ({ page }) => {
+  test("screenshots: catalogue and mapping (dark + light)", { tag: "@snapshot" }, async ({ page }) => {
     for (const scheme of ["dark", "light"] as const) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/node-labels?open=gpu");

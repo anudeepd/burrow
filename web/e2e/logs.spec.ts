@@ -312,7 +312,7 @@ test.describe("container logs", () => {
     await expect(page).toHaveURL(/container=(%22)?container_1791010984040_0001_01_000001/);
   });
 
-  test("dark", async ({ page }) => {
+  test("dark", { tag: "@snapshot" }, async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto(logUrl(FAILED, "&file=stderr&parity=1"));
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -320,7 +320,7 @@ test.describe("container logs", () => {
     await shoot(page, "logs-dark.png");
   });
 
-  test("light", async ({ page }) => {
+  test("light", { tag: "@snapshot" }, async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto(logUrl(FAILED, "&file=stderr&parity=1"));
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");

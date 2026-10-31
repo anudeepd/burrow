@@ -3,6 +3,11 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { fadeIn } from "~/lib/motion";
 import { cn } from "~/lib/cn";
 import { HorizontalScrollCues, useHorizontalScrollCues } from "./horizontal-scroll-cues";
+const TAB_BASE_CLASS =
+  "burrow-tab relative inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 text-body font-medium text-ink-3 outline-offset-[-2px] transition-colors duration-(--dur-fast) ease-(--ease-out) hover:text-ink-2";
+export const TAB_STRIP_CLASS =
+  "burrow-scroll burrow-scroll-hidden relative flex min-w-0 items-center gap-0.5 overflow-x-auto border-b border-seam";
+export const TAB_LINK_CLASS = `${TAB_BASE_CLASS} aria-[current=page]:text-ink`;
 
 export const TabsRoot = BTabs.Root;
 export const TabsPanel = BTabs.Panel;
@@ -27,15 +32,7 @@ export function TabsList({
 
   return (
     <div className="relative min-w-0">
-      <BTabs.List
-        ref={listRef}
-        aria-label={label}
-        onScroll={cues.onScroll}
-        className={cn(
-          "burrow-scroll burrow-scroll-hidden relative flex items-center gap-0.5 overflow-x-auto border-b border-seam",
-          className,
-        )}
-      >
+      <BTabs.List ref={listRef} aria-label={label} onScroll={cues.onScroll} className={cn(TAB_STRIP_CLASS, className)}>
         {children}
         {/* The bar is one absolutely-positioned 2px element, so its `width` tween re-lays out nothing — the sanctioned
             exception to "transform and opacity only" (DESIGN §5.5). On-screen movement uses `--ease-in-out`, and the
@@ -49,11 +46,7 @@ export function TabsList({
 
 export function Tab({ value, children, badge, field }: { value: string; children: ReactNode; badge?: ReactNode; field?: string }) {
   return (
-    <BTabs.Tab
-      value={value}
-      data-yt={field}
-      className="burrow-tab relative inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 text-body font-medium text-ink-3 outline-offset-[-2px] transition-colors duration-(--dur-fast) ease-(--ease-out) hover:text-ink-2 data-active:text-ink"
-    >
+    <BTabs.Tab value={value} data-yt={field} className={cn(TAB_BASE_CLASS, "data-active:text-ink")}>
       {children}
       {badge != null && <span className="rounded-full bg-fabric-3 px-1.5 text-micro leading-[1.6] text-ink-2 tnum">{badge}</span>}
     </BTabs.Tab>

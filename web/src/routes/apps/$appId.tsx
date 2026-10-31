@@ -18,6 +18,7 @@ import { AppHeader } from "~/features/app/components/AppHeader";
 import { isAppFinal } from "~/features/app/model";
 import { activeTab, appTabs } from "~/features/app/tabs";
 import { useNow } from "~/features/app/use-now";
+import { TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
 import { HelpTip } from "~/ui/tooltip";
 
 export const Route = createFileRoute("/apps/$appId")({ component: AppLayout });
@@ -114,21 +115,23 @@ function ApplicationSectionNav({ tabs, current }: { tabs: ReturnType<typeof appT
   const listRef = useRef<HTMLUListElement>(null);
   const cues = useHorizontalScrollCues(listRef, true, tabs);
   return (
-    <nav aria-label="Application sections" className="relative shrink-0 border-b border-seam">
+    <nav aria-label="Application sections" className="relative min-w-0 shrink-0">
       {/* Keep the underline inside the strip so it cannot add a vertical scroll range. */}
-      <ul ref={listRef} onScroll={cues.onScroll} className="burrow-scroll burrow-scroll-hidden flex items-center gap-0.5 overflow-x-auto">
+      <ul ref={listRef} onScroll={cues.onScroll} className={cn(TAB_STRIP_CLASS, "list-none")}>
         {tabs.map((tab) => {
           const isCurrent = tab.value === current;
-          const cls = cn(
-            "relative inline-flex h-10 shrink-0 items-center gap-1.5 rounded-t-sm whitespace-nowrap px-4 text-body font-medium",
-            isCurrent ? "bg-fabric-2 text-ink" : "text-ink-3 hover:bg-fabric-2 hover:text-ink-2",
-            !tab.available && "cursor-not-allowed opacity-55",
-          );
+          const cls = cn(TAB_LINK_CLASS, !tab.available && "cursor-not-allowed opacity-55");
           const indicator = isCurrent && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-live" />;
           return (
             <li key={tab.value}>
               {tab.available ? (
-                <Link to={tab.href} className={cls} aria-current={isCurrent ? "page" : undefined} data-yt={tab.value}>
+                <Link
+                  to={tab.href}
+                  activeOptions={{ exact: true }}
+                  className={cls}
+                  aria-current={isCurrent ? "page" : undefined}
+                  data-yt={tab.value}
+                >
                   {tab.label}
                   {indicator}
                 </Link>

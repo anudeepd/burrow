@@ -34,9 +34,9 @@ export const PREF_DEFAULTS: Prefs = {
 const DEFAULTS = PREF_DEFAULTS;
 
 function load(): Prefs {
-  if (typeof localStorage === "undefined") return DEFAULTS;
+  if (typeof window === "undefined") return DEFAULTS;
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) ?? "{}") as Partial<Prefs> & { density?: unknown };
+    const raw = JSON.parse(window.localStorage.getItem(KEY) ?? "{}") as Partial<Prefs> & { density?: unknown };
     delete raw.density;
     return { ...DEFAULTS, ...raw };
   } catch {
@@ -98,7 +98,7 @@ if (typeof window !== "undefined") {
   prefsStore.subscribe((p) => {
     applyPrefsToDom(p);
     try {
-      localStorage.setItem(KEY, JSON.stringify(p));
+      window.localStorage.setItem(KEY, JSON.stringify(p));
     } catch {
       /* storage unavailable (private mode): prefs stay session-local */
     }

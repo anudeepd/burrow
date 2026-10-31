@@ -79,13 +79,15 @@ describe("apps search codec", () => {
   });
 
   it("round-trips sort", () => {
-    expect(sortFromParam(undefined)).toEqual([{ id: "id", desc: true }]);
-    expect(sortFromParam(DEFAULT_SORT)).toEqual([{ id: "id", desc: true }]);
-    expect(sortFromParam("startedTime")).toEqual([{ id: "startedTime", desc: false }]);
-    expect(sortFromParam("-allocatedMB")).toEqual([{ id: "allocatedMB", desc: true }]);
-    expect(sortToParam([{ id: "id", desc: true }])).toBeUndefined();
-    expect(sortToParam([{ id: "startedTime", desc: false }])).toBe("startedTime");
-    expect(sortToParam([{ id: "allocatedMB", desc: true }])).toBe("-allocatedMB");
+    expect(sortFromParam(undefined)).toEqual([{ id: "starttime", desc: true }]);
+    expect(sortFromParam(DEFAULT_SORT)).toEqual([{ id: "starttime", desc: true }]);
+    expect(sortFromParam("starttime")).toEqual([{ id: "starttime", desc: false }]);
+    expect(sortFromParam("-id")).toEqual([{ id: "id", desc: true }]);
+    expect(sortFromParam("-allocatedMemory")).toEqual([{ id: "allocatedMemory", desc: true }]);
+    expect(sortToParam([{ id: "starttime", desc: true }])).toBeUndefined();
+    expect(sortToParam([{ id: "id", desc: true }])).toBe("-id");
+    expect(sortToParam([{ id: "starttime", desc: false }])).toBe("starttime");
+    expect(sortToParam([{ id: "allocatedMemory", desc: true }])).toBe("-allocatedMemory");
     expect(sortToParam([])).toBeUndefined();
   });
 
@@ -93,11 +95,11 @@ describe("apps search codec", () => {
     const multi = [
       { id: "name", desc: false },
       { id: "user", desc: true },
-      { id: "startedTime", desc: false },
+      { id: "starttime", desc: false },
     ];
-    expect(sortToParam(multi)).toBe("name,-user,startedTime");
-    expect(sortFromParam("name,-user,startedTime")).toEqual(multi);
-    // the default stays absent from the URL, whether it is the only sort or the first of several
+    expect(sortToParam(multi)).toBe("name,-user,starttime");
+    expect(sortFromParam("name,-user,starttime")).toEqual(multi);
+    // An explicit ID sort remains meaningful as the primary key when a secondary sort follows.
     expect(sortFromParam("-id,user")).toEqual([
       { id: "id", desc: true },
       { id: "user", desc: false },

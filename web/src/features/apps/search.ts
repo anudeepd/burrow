@@ -30,16 +30,16 @@ export const appsSearchSchema = z.object({
   startedBefore: optionalEpoch,
   finishedAfter: optionalEpoch,
   finishedBefore: optionalEpoch,
-  /** `<columnId>` ascending, `-<columnId>` descending; default `-id` */
+  /** `<columnId>` ascending, `-<columnId>` descending; default `-starttime` */
   sort: optionalString,
   /** comma-joined hidden column ids or `all` (absent = compact default; `all` reveals every column) */
   cols: optionalString,
 });
 export type AppsSearch = z.infer<typeof appsSearchSchema>;
 
-export const DEFAULT_SORT = "-id";
+export const DEFAULT_SORT = "-starttime";
 /** The legacy default the table shows when the URL carries no `sort` — and what "clear sort" returns to. */
-export const DEFAULT_SORTING: { id: string; desc: boolean }[] = [{ id: "id", desc: true }];
+export const DEFAULT_SORTING: { id: string; desc: boolean }[] = [{ id: "starttime", desc: true }];
 
 /** Category tabs: legacy `YarnApplicationState` order, plus dashboard roll-ups and All. */
 export type AppTabId = "all" | "pending" | "active" | "completed" | AppState;

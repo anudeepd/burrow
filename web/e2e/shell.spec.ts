@@ -687,7 +687,7 @@ test.describe("app shell", () => {
     await checkPress(page.getByRole("button", { name: "Theme: light" }));
   });
 
-  test("screenshots: shell in dark and light", async ({ page }) => {
+  test("screenshots: shell in dark and light", { tag: "@snapshot" }, async ({ page }) => {
     await setPrefs(page, { theme: "dark" });
     await freezeLive(page);
     await page.goto("/apps");

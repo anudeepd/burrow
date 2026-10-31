@@ -7,36 +7,29 @@ import { type ClusterMetrics, isCapacityScheduler, isFairScheduler, type Schedul
 import { useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ov } from "~/api/queries/overview";
+import { tq } from "~/api/queries/tools";
 import { selectNodes } from "~/api/schemas";
 import { averageNodeMemoryUtilization } from "~/features/nodes/domain";
+import {
+  confValue,
+  customResources,
+  maxAllocationText,
+  maximumClusterPriority,
+  minAllocationText,
+  resourceInfoText,
+  schedulerBusyPercent,
+  schedulerDisplayName,
+  schedulerMaxAllocation,
+  schedulingResourceTypesFromInfo,
+  schedulingResourceTypesText,
+} from "~/features/overview/derive";
 import { cn } from "~/lib/cn";
 import { Datum, Entity } from "~/ui/datum";
 import { fmtPct, fmtInt, fmtMB } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Tile, TileLabel, Unavailable } from "./Chrome";
 import { Tooltip } from "~/ui/tooltip";
-import { pctText } from "./format";
-
-const SCHEDULER_NAMES: Record<string, string> = {
-  capacityScheduler: "Capacity Scheduler",
-  fairScheduler: "Fair Scheduler",
-  fifoScheduler: "Fifo Scheduler",
-};
-
-/** `[memory-mb=100.0%, vcores=100.0%]` → `memory-mb 100% · vcores 100%`; anything unexpected is shown as-is. */
-function formatCapacityVector(raw: string): string {
-  const body = raw.trim().replace(/^\[|\]$/g, "");
-  if (!body) return raw;
-  return body
-    .split(",")
-    .map((part) => {
-      const [key, value] = part.split("=");
-      if (!key || value === undefined) return part.trim();
-      const n = Number.parseFloat(value);
-      return `${key.trim()} ${Number.isFinite(n) ? `${n}%` : value.trim()}`;
-    })
-    .join(" · ");
-}
+import { pctText, resourceText, resourceValueText } from "./format";
 
 function Metric({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   const tile = (
@@ -69,27 +62,56 @@ export function SchedulerMetrics({
   const averageMemory = averageNodeMemoryUtilization(nodesQuery.data ? selectNodes(nodesQuery.data) : []);
   const additionalMetricsId = useId();
   const capacity = isCapacityScheduler(info) ? info : null;
-  const vector = capacity?.queueCapacityVectorInfo;
-  const maxAlloc = capacity?.maximumAllocation;
+  const overviewQuery = useQuery(ov.schedulerOverview());
+  const confQuery = useQuery(tq.conf());
+  const schedulerOverview = overviewQuery.data;
+  const conf = confQuery.data;
+  const nameText = schedulerDisplayName(info.type);
+  const typesText = schedulingResourceTypesFromInfo(info) ?? schedulingResourceTypesText(schedulerOverview?.schedulingResourceType);
+  const maxAlloc = schedulerMaxAllocation(info) ?? schedulerOverview?.maximumAllocation;
+  const maxRawText =
+    maxAllocationText(info) ??
+    (schedulerOverview
+      ? resourceInfoText(
+          Number(schedulerOverview.maximumAllocation.memory),
+          Number(schedulerOverview.maximumAllocation.vCores),
+          customResources(schedulerOverview.maximumAllocation),
+        )
+      : null);
+  const configuredMinText = minAllocationText(conf);
+  const minRawText =
+    configuredMinText ??
+    (schedulerOverview
+      ? resourceInfoText(Number(schedulerOverview.minimumAllocation.memory), Number(schedulerOverview.minimumAllocation.vCores))
+      : null);
+  const minMemory = configuredMinText
+    ? confValue(conf, "yarn.scheduler.minimum-allocation-mb")
+    : schedulerOverview?.minimumAllocation.memory;
+  const minVCores = configuredMinText
+    ? confValue(conf, "yarn.scheduler.minimum-allocation-vcores")
+    : schedulerOverview?.minimumAllocation.vCores;
+  const minDisplayText =
+    minRawText == null || minMemory == null || minVCores == null ? null : resourceValueText(Number(minMemory), Number(minVCores));
+  const priority = maximumClusterPriority(conf) ?? schedulerOverview?.applicationPriority ?? null;
   const rootQueue = isCapacityScheduler(info)
     ? { raw: info.queuePath, label: info.queuePath ?? "root" }
     : isFairScheduler(info)
       ? { raw: info.rootQueue.queueName, label: info.rootQueue.queueName }
       : { raw: undefined, label: "—" };
   const allocationPct = metrics && metrics.totalMB > 0 ? (metrics.allocatedMB / metrics.totalMB) * 100 : null;
-  const busy = metrics?.rmSchedulerBusyPercent ?? null;
+  const busy = metrics == null ? null : schedulerBusyPercent(metrics);
   const rmQueue = metrics?.rmEventQueueSize ?? null;
   const schedQueue = metrics?.schedulerEventQueueSize ?? null;
-
   return (
     <Entity id="_" className={className} data-page-motion="metric-group">
       <div className="burrow-scheduler-metrics" data-expanded={expanded}>
         <div className="burrow-scheduler-metrics-primary grid gap-2">
           <Tile className="flex min-h-[4.5rem] flex-col justify-center gap-1">
-            <TileLabel>Type</TileLabel>
+            <TileLabel>Scheduler Type</TileLabel>
             <div className="text-body font-semibold text-ink-2">
-              <Datum field="scheduler.type" raw={info.type}>
-                {SCHEDULER_NAMES[info.type] ?? info.type}
+              <Datum field="scheduler.derived.schedulerName" raw={nameText} fmt="text">
+                <Datum field="scheduler.type" raw={info.type} fmt="text" bare />
+                {nameText}
               </Datum>
             </div>
           </Tile>
@@ -142,69 +164,85 @@ export function SchedulerMetrics({
             </div>
             <div className="text-caption text-ink-3">{fmtInt(averageMemory.reportingNodes)} NodeManagers reporting</div>
           </Tile>
-          <Metric label="Scheduling Resource Type" hint="configuredCapacityVector — the resources the scheduler allocates">
-            {vector ? (
-              <Datum
-                field="scheduler.queueCapacityVectorInfo.configuredCapacityVector"
-                raw={vector.configuredCapacityVector}
-                className="font-mono text-small"
-              >
-                {vector.configuredCapacityVector ? formatCapacityVector(vector.configuredCapacityVector) : "—"}
+          <Metric label="Scheduling Resource Type" hint="Resource types reported for the active scheduler">
+            {typesText ? (
+              <Datum field="scheduler.derived.schedulingResourceTypes" raw={typesText} fmt="text" className="font-mono text-small">
+                {typesText}
               </Datum>
             ) : (
-              <Unavailable reason="The ResourceManager did not return this setting." hint="Check the active scheduler's configuration." />
+              <Tooltip label="Resource types were not reported.">
+                <Datum field="scheduler.derived.schedulingResourceTypes" raw={null} fmt="text" className="font-mono text-small text-ink-3">
+                  n/a
+                </Datum>
+              </Tooltip>
             )}
           </Metric>
-          <Metric label="Minimum Allocation" hint="scheduler.getMinimumResourceCapability() on the legacy page">
-            <Unavailable reason="The ResourceManager did not return this setting." hint="Check the active scheduler's configuration." />
+          <Metric label="Minimum Allocation" hint="Effective RM configuration, with scheduler-overview fallback">
+            {minRawText == null ? (
+              <Datum field="scheduler.derived.minAllocationText" raw={null} fmt="text">
+                <Unavailable reason="Minimum allocation was not reported." hint="Check the active scheduler's configuration." />
+              </Datum>
+            ) : (
+              <Datum field="scheduler.derived.minAllocationText" raw={minRawText} fmt="text" className="tnum">
+                {minDisplayText ?? minRawText}
+              </Datum>
+            )}
           </Metric>
           <Metric label="Maximum Allocation" hint="maximumAllocation — the largest container the scheduler will grant">
-            {maxAlloc ? (
-              <span className="inline-flex items-baseline gap-1 tnum">
-                <Datum field="scheduler.maximumAllocation.memory" raw={maxAlloc.memory} fmt="mb" className="text-ink-2">
-                  {fmtMB(maxAlloc.memory)}
-                </Datum>
-                <span className="text-ink-4">·</span>
-                <Datum field="scheduler.maximumAllocation.vCores" raw={maxAlloc.vCores} fmt="int" className="text-ink-2">
-                  {fmtInt(maxAlloc.vCores)} vCores
-                </Datum>
-              </span>
+            {maxAlloc && maxRawText ? (
+              <Datum field="scheduler.derived.maxAllocationText" raw={maxRawText} fmt="text" className="tnum">
+                <span className="text-ink-2">
+                  <Datum field="scheduler.maximumAllocation.memory" raw={maxAlloc.memory} fmt="mb" bare />
+                  <Datum field="scheduler.maximumAllocation.vCores" raw={maxAlloc.vCores} fmt="int" bare />
+                  {resourceText(maxAlloc)}
+                </span>
+              </Datum>
             ) : (
-              <Unavailable reason="This scheduler did not provide a maximum allocation." />
+              <Datum field="scheduler.derived.maxAllocationText" raw={null} fmt="text">
+                <Unavailable reason="Maximum allocation was not reported." />
+              </Datum>
             )}
           </Metric>
-          <Metric label="Maximum Cluster Application Priority" hint="scheduler.getMaxClusterLevelAppPriority() on the legacy page">
-            <Unavailable
-              reason="The ResourceManager did not return a priority limit."
-              hint="Check whether the active scheduler supports application priority."
-            />
+          <Metric label="Maximum Cluster Application Priority" hint="Effective RM configuration, with scheduler-overview fallback">
+            {priority == null ? (
+              <Datum field="scheduler.derived.maximumClusterPriority" raw={null} fmt="int">
+                <Unavailable
+                  reason="Application priority was not reported."
+                  hint="Check whether the active scheduler supports application priority."
+                />
+              </Datum>
+            ) : (
+              <Datum field="scheduler.derived.maximumClusterPriority" raw={priority} fmt="int" className="tnum">
+                {fmtInt(priority)}
+              </Datum>
+            )}
           </Metric>
           <Metric label="Scheduler Busy %" hint="cluster metrics: rmSchedulerBusyPercent">
-            {busy == null ? (
-              <Unavailable reason={metricsError ? `cluster metrics unavailable: ${metricsError}` : "not reported"} />
-            ) : (
-              <Datum field="cluster.metrics.rmSchedulerBusyPercent" raw={metrics?.rmSchedulerBusyPercent} fmt="pct" className="tnum">
-                {fmtPct(busy)}
-              </Datum>
-            )}
+            <Datum field="cluster.metrics.rmSchedulerBusyPercent" raw={busy} fmt="pct" className="tnum">
+              {busy == null ? (
+                <Unavailable reason={metricsError ? `cluster metrics unavailable: ${metricsError}` : "Scheduler load was not reported."} />
+              ) : (
+                fmtPct(busy)
+              )}
+            </Datum>
           </Metric>
           <Metric label="RM Dispatcher EventQueue Size" hint="cluster metrics: rmEventQueueSize">
-            {rmQueue == null ? (
-              <Unavailable reason={metricsError ? `cluster metrics unavailable: ${metricsError}` : "not reported"} />
-            ) : (
-              <Datum field="cluster.metrics.rmEventQueueSize" raw={metrics?.rmEventQueueSize} fmt="int" className="tnum">
-                {fmtInt(rmQueue)}
-              </Datum>
-            )}
+            <Datum field="cluster.metrics.rmEventQueueSize" raw={rmQueue} fmt="int" className="tnum">
+              {rmQueue == null ? (
+                <Unavailable reason={metricsError ? `cluster metrics unavailable: ${metricsError}` : "Queue activity was not reported."} />
+              ) : (
+                fmtInt(rmQueue)
+              )}
+            </Datum>
           </Metric>
           <Metric label="Scheduler Dispatcher EventQueue Size" hint="cluster metrics: schedulerEventQueueSize">
-            {schedQueue == null ? (
-              <Unavailable reason={metricsError ? `cluster metrics unavailable: ${metricsError}` : "not reported"} />
-            ) : (
-              <Datum field="cluster.metrics.schedulerEventQueueSize" raw={metrics?.schedulerEventQueueSize} fmt="int" className="tnum">
-                {fmtInt(schedQueue)}
-              </Datum>
-            )}
+            <Datum field="cluster.metrics.schedulerEventQueueSize" raw={schedQueue} fmt="int" className="tnum">
+              {schedQueue == null ? (
+                <Unavailable reason={metricsError ? `cluster metrics unavailable: ${metricsError}` : "Queue activity was not reported."} />
+              ) : (
+                fmtInt(schedQueue)
+              )}
+            </Datum>
           </Metric>
         </div>
         <Button

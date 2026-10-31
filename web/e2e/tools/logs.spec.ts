@@ -128,7 +128,7 @@ test.describe("local logs", () => {
     await expect(page.locator(".burrow-skeleton")).toHaveCount(0);
   });
 
-  test("dark", async ({ page }) => {
+  test("dark", { tag: "@snapshot" }, async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/tools/logs");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -136,7 +136,7 @@ test.describe("local logs", () => {
     await shoot(page, "logs-dark.png");
   });
 
-  test("light", async ({ page }) => {
+  test("light", { tag: "@snapshot" }, async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("/tools/logs");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");

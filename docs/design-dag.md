@@ -198,9 +198,10 @@ freezes the travel (`animationSeconds = 0`), so liveness is still encoded static
   barrier). Exactly one item is tabbable at a time (roving `tabindex`).
 * Compound scopes are nested `role="group"` elements mirroring the layout hierarchy (root → stage container →
   operation scope), so a screen reader can walk the structure.
-* Edges cannot be tree children, so dependencies are also exposed as a real list of focusable, fully labelled buttons
-  behind the toolbar's **Edges (N)** toggle — the SVG's own hit paths are mouse-only and marked `aria-hidden` from the
-  tree.
+* Edges cannot be tree children, so dependencies are exposed as fully labelled menu items under the toolbar's **Edges
+  (N)** control. Its chevron and expanded state show when the list is open; the SVG's own hit paths remain mouse-only
+  and `aria-hidden` from the tree.
+* Gesture guidance is attached only to the zoom readout; hovering the graph surface does not summon it.
 * An `aria-live="polite"` region announces stage completions and failures; a hidden summary line carries node/edge/task
   counts.
 * Tooltips are supplementary: every tooltip value is also in the drawer or the aria-label.
@@ -243,10 +244,10 @@ and nothing is invented. Column-independent ids: `spark.stage.derived.durationTe
   stream …` — it reports nodes, flowing edges, strategy, layout ms and p50/p95/max frame time. The stream is driven at
   10 Hz (2.5× a realistic poll) so the number is a stress bound, not a best case.
 * **Viewport culling**: on the unchanged 338-node, 10 Hz production-build frame gate, three Chromium runs measured p95 **24.0–24.7 ms** and long-frame share **0.41–1.21%**. Existing limits remain p50 < 20 ms, p95 ≤ 34 ms and long-frame share < 10%; no threshold or update-rate reduction.
-* **Bundle**: the DAG engine is a lazy chunk — **22.5 KB gz** (67.7 KB raw) for renderer/model/adapters, with ELK in the
-  worker chunk (**437 KB gz**, fetched once when a layout is requested) and a main-thread fallback copy fetched only if
-  worker messaging fails. No DAG code in the initial bundle. ELK lives in the worker bundle,
-  and the main-thread fallback loads it dynamically, so opening a DAG page costs the worker copy only.
+* **Bundle**: the DAG renderer/model remains lazy (22.5 KB gz for the renderer/model/adapters). ELK's algorithm file is
+  a standalone asset fetched on first layout, not duplicated into the layout worker and fallback JS chunks. The worker
+  stays small, loads ELK's inline adapter in its own thread, and transfers compact geometry. No DAG code in the initial
+  bundle.
 
 ---
 

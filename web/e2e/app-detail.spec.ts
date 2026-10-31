@@ -143,7 +143,7 @@ async function setTheme(page: Page, theme: "dark" | "light") {
 
 for (const theme of ["dark", "light"] as const) {
   test.describe(`app detail · ${theme}`, () => {
-    test("RUNNING app: overview fields, attempt + container routes", async ({ page }) => {
+    test("RUNNING app: overview fields, attempt + container routes", { tag: "@snapshot" }, async ({ page }) => {
       const app = fixture<AppFixture>("running", "app.json").app;
       const attempts = fixture<AttemptsFixture>("running", "appattempts.json").appAttempts.appAttempt;
       const attemptId = attempts[0]!.appAttemptId;
@@ -187,7 +187,7 @@ for (const theme of ["dark", "light"] as const) {
       await shoot(page, `running-container-${theme}`);
     });
 
-    test("FAILED multi-attempt app: three attempts, per-attempt containers, diagnostics", async ({ page }) => {
+    test("FAILED multi-attempt app: three attempts, per-attempt containers, diagnostics", { tag: "@snapshot" }, async ({ page }) => {
       const attempts = fixture<AttemptsFixture>("multi-attempt", "appattempts.json").appAttempts.appAttempt;
       const last = attempts[attempts.length - 1]!;
       const lastContainers = containerIds("multi-attempt", last.appAttemptId);
@@ -223,7 +223,7 @@ for (const theme of ["dark", "light"] as const) {
       await shoot(page, `multi-attempt-attempt-detail-${theme}`);
     });
 
-    test("finished app: containers dropped by the RM render the honest empty state", async ({ page }) => {
+    test("finished app: containers dropped by the RM render the honest empty state", { tag: "@snapshot" }, async ({ page }) => {
       const attempts = fixture<AttemptsFixture>("finished", "appattempts.json").appAttempts.appAttempt;
       const attemptId = attempts[0]!.appAttemptId;
 
@@ -266,6 +266,43 @@ test.describe("honest states", () => {
     await page.mouse.wheel(0, 240);
     await expect.poll(async () => pageScroller.evaluate((el) => el.scrollTop)).toBeGreaterThan(before);
   });
+  test("matches scheduler tab styling on application and Spark routes", async ({ page }) => {
+    const visualStyle = async (selector: string) =>
+      page.locator(selector).evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          height: element.getBoundingClientRect().height,
+          paddingInline: style.paddingInline,
+          gap: style.gap,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          color: style.color,
+          backgroundColor: style.backgroundColor,
+        };
+      });
+
+    await page.goto("/scheduler");
+    const schedulerStyle = await visualStyle('[role="tablist"][aria-label="Scheduler sections"] [role="tab"][aria-selected="true"]');
+
+    await page.goto(`/apps/${RUNNING_APP}`);
+    const applicationNav = page.getByRole("navigation", { name: "Application sections" });
+    const activeApplicationTab = applicationNav.locator('[aria-current="page"]');
+    await expect(applicationNav).toBeVisible();
+    await expect(activeApplicationTab).toHaveCount(1);
+    expect(await visualStyle('nav[aria-label="Application sections"] a[aria-current="page"]')).toEqual(schedulerStyle);
+
+    await applicationNav.getByRole("link", { name: "Attempts", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/apps/${RUNNING_APP}/attempts$`));
+    await expect(activeApplicationTab).toHaveCount(1);
+    await expect(activeApplicationTab).toHaveText("Attempts");
+    expect(await visualStyle('nav[aria-label="Application sections"] a[aria-current="page"]')).toEqual(schedulerStyle);
+
+    await page.goto(`/apps/${SPARK_APP}/spark/jobs`);
+    const sparkNav = page.getByRole("navigation", { name: "Spark pages" });
+    await expect(sparkNav).toBeVisible();
+    await expect(sparkNav.locator('[aria-current="page"]')).toHaveCount(1);
+    expect(await visualStyle('nav[aria-label="Spark pages"] a[aria-current="page"]')).toEqual(schedulerStyle);
+  });
   test("keeps Spark in the YARN context without a redundant in-Burrow action", async ({ page }) => {
     await page.goto(`/apps/${RUNNING_APP}?parity=1`);
     await expect(page.locator('[data-burrow-app-header="yarn"]')).toBeVisible();
@@ -275,7 +312,7 @@ test.describe("honest states", () => {
     await expect(page.locator('[data-burrow-app-header="spark"]').getByText("YARN application", { exact: true })).toBeVisible();
   });
 
-  test("log source and Spark source render 'unavailable' when the backend says so", async ({ page }) => {
+  test("log source and Spark source render 'unavailable' when the backend says so", { tag: "@snapshot" }, async ({ page }) => {
     await page.route("**/api/meta", async (route) => {
       const res = await route.fetch();
       const json = (await res.json()) as { features?: Record<string, boolean> };

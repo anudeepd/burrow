@@ -25,7 +25,7 @@ async function openStacks(page: Page, path: string) {
 
 test.describe("/tools/stacks", () => {
   for (const scheme of ["dark", "light"] as const) {
-    test(`renders the thread dump (${scheme})`, async ({ page }) => {
+    test(`renders the thread dump (${scheme})`, { tag: "@snapshot" }, async ({ page }) => {
       await page.clock.setFixedTime(new Date("2026-10-03T12:04:09.000Z"));
       await page.emulateMedia({ colorScheme: scheme });
       await openStacks(page, "/tools/stacks");

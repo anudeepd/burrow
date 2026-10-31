@@ -10,6 +10,7 @@
  *  4. screenshots in dark and light (committed under `e2e/__screenshots__/`).
  */
 import { expect, test, type Page } from "@playwright/test";
+import { ClusterMetricsResponseSchema } from "../src/api/schemas";
 
 /** Required field ids per section. These are the sections' reason to exist — a missing one fails the run. */
 const REQUIRED_FIELDS = {
@@ -62,9 +63,9 @@ const REQUIRED_FIELDS = {
     "scheduler.derived.minAllocationText",
     "scheduler.derived.maxAllocationText",
     "scheduler.derived.maximumClusterPriority",
-    "scheduler.schedulerBusy",
-    "scheduler.rmDispatcherEventQueueSize",
-    "scheduler.schedulerDispatcherEventQueueSize",
+    "cluster.metrics.rmSchedulerBusyPercent",
+    "cluster.metrics.rmEventQueueSize",
+    "cluster.metrics.schedulerEventQueueSize",
   ],
   activeApp: ["app.state", "app.name", "app.user", "app.queue", "app.progress", "app.elapsedTime", "app.startedTime", "app.allocatedMB"],
 } as const;
@@ -188,6 +189,32 @@ test.describe("overview", () => {
     await expect(grid).toHaveCSS("column-gap", "20px");
   });
 
+  test("keeps a large node inventory in its own scrollport on Overview", async ({ page }) => {
+    await page.route("**/api/yarn/nodes", async (route) => {
+      const response = await route.fetch();
+      const payload = await response.json();
+      const sourceNodes = payload.nodes.node;
+      payload.nodes.node = Array.from({ length: 100 }, (_, index) => ({
+        ...sourceNodes[index % sourceNodes.length],
+        id: `node-${String(index + 1).padStart(3, "0")}.mock.local:45454`,
+        nodeHostName: `node-${String(index + 1).padStart(3, "0")}.mock.local`,
+      }));
+      await route.fulfill({ response, body: JSON.stringify(payload) });
+    });
+    await page.goto("/");
+
+    const scrollport = page.locator('[data-burrow-table="burrow.overview.nodes"]');
+    const root = page.locator('[data-burrow-table-root="burrow.overview.nodes"]');
+    await expect(scrollport).toHaveAttribute("data-burrow-rows", "100");
+    await expect.poll(() => scrollport.evaluate((element) => element.scrollHeight - element.clientHeight)).toBeGreaterThan(0);
+    expect(await root.evaluate((element) => element.getBoundingClientRect().height)).toBeLessThanOrEqual(360);
+
+    await scrollport.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    await expect.poll(() => scrollport.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  });
+
   test("renders every section from the real captured payloads", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByTestId("overview")).toBeVisible();
@@ -218,6 +245,61 @@ test.describe("overview", () => {
       .evaluateAll((els) => els.filter((el) => el.closest("[data-ye]") === null).map((el) => el.getAttribute("data-yf")));
     expect(orphans).toEqual([]);
   });
+  test("shares scheduler facts and units with /scheduler", async ({ page }) => {
+    await page.route(
+      (url) => url.pathname === "/api/yarn/metrics",
+      async (route) => {
+        const response = await route.fetch();
+        const body = ClusterMetricsResponseSchema.parse(await response.json());
+        body.clusterMetrics.rmSchedulerBusyPercent = 37;
+        body.clusterMetrics.rmEventQueueSize = 5;
+        body.clusterMetrics.schedulerEventQueueSize = 11;
+        await route.fulfill({ response, json: body });
+      },
+    );
+    const fields = [
+      "scheduler.derived.schedulerName",
+      "scheduler.derived.schedulingResourceTypes",
+      "scheduler.derived.minAllocationText",
+      "scheduler.derived.maxAllocationText",
+      "scheduler.derived.maximumClusterPriority",
+      "cluster.metrics.rmSchedulerBusyPercent",
+      "cluster.metrics.rmEventQueueSize",
+      "cluster.metrics.schedulerEventQueueSize",
+    ];
+
+    await page.goto("/");
+    const overview = page.getByTestId("scheduler");
+    const overviewMax = overview.locator('[data-yf="scheduler.derived.maxAllocationText"]');
+    const overviewMin = overview.locator('[data-yf="scheduler.derived.minAllocationText"]');
+    const overviewBusy = overview.locator('[data-yf="cluster.metrics.rmSchedulerBusyPercent"]');
+    await expect(overviewMin).toHaveText("256 MiB · 1 vCore");
+    await expect(overviewMax).toHaveText("16 GiB · 8 vCores");
+    await expect(overviewBusy).toHaveText("37.0%");
+    await expect(overviewBusy).toHaveAttribute("data-yfmt", "pct");
+
+    const overviewValues: string[] = [];
+    for (const field of fields) {
+      const value = await overview.locator(`[data-yf="${field}"]`).first().getAttribute("data-yv");
+      if (value == null) throw new Error(`${field} is missing from the Overview scheduler facts`);
+      overviewValues.push(value);
+    }
+
+    await page.goto("/scheduler");
+    await expect(page.getByRole("heading", { name: "Scheduler", level: 1 })).toBeVisible();
+    await expect(page.locator('[data-yf="scheduler.derived.minAllocationText"]')).toHaveText("256 MiB · 1 vCore");
+    await expect(page.locator('[data-yf="scheduler.derived.maxAllocationText"]')).toHaveText("16 GiB · 8 vCores");
+    const schedulerBusy = page.locator('[data-yf="cluster.metrics.rmSchedulerBusyPercent"]');
+    await expect(schedulerBusy).toHaveText("37.0%");
+    await expect(schedulerBusy).toHaveAttribute("data-yfmt", "pct");
+
+    for (const [index, field] of fields.entries()) {
+      const value = overviewValues[index];
+      if (value == null) throw new Error(`${field} is missing from the Overview scheduler facts`);
+      await expect(page.locator(`[data-yf="${field}"]`).first()).toHaveAttribute("data-yv", value);
+    }
+  });
+
   test("uses scheduler REST data when the optional scheduler overview endpoint is unavailable", async ({ page }) => {
     await page.route(
       (url) => url.pathname === "/api/yarn/scheduler-overview",
@@ -455,7 +537,7 @@ test.describe("overview", () => {
   });
 
   for (const theme of ["dark", "light"] as const) {
-    test(`screenshot · ${theme}`, async ({ page }) => {
+    test(`screenshot · ${theme}`, { tag: "@snapshot" }, async ({ page }) => {
       // "system" + emulateMedia: the pre-paint bootstrap (public/theme-init.js) resolves the OS scheme, so both themes
       // come from the same code path a real user hits.
       await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });

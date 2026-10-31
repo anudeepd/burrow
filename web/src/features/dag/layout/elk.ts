@@ -1,12 +1,15 @@
 /**
- * ELK layered layout. This is the only module that touches the engine, so it is loaded exactly twice in the product:
- * inside the layout Worker (the normal path) and, if that ever fails, by `client.ts`'s dynamic import.
+ * ELK layered layout. The main path runs inside `worker.ts`; the small-graph fallback and test/SSR API run on their
+ * caller. Browser builds load the large algorithm file as a standalone asset; tests/SSR use the package's inline
+ * worker export.
  *
  * Determinism: ELK is deterministic for identical input + options, so the same DAG always lays out identically (the
  * cache depends on it). See `wire.ts` for why the model-order options are absent — they crash ELK on hierarchical
  * graphs, measured against every golden in the corpus.
  */
 import ELK, { type ELK as ElkEngine } from "elkjs/lib/elk-api.js";
+import type { Worker as ElkWorker } from "elkjs/lib/elk-worker.min.js";
+import elkWorkerUrl from "elkjs/lib/elk-worker.min.js?url";
 import type { LayoutRequest, LayoutWire } from "../types";
 import { LAYOUT_LADDER, clusterPaddingOption } from "./wire";
 
@@ -15,16 +18,26 @@ export { LAYOUT_LADDER, LAYOUT_OPTIONS, clusterPaddingOption, decodeWire, layout
 /** One ELK instance per thread: constructing it registers the algorithms, which is the expensive part. */
 let elkPromise: Promise<ElkEngine> | null = null;
 
-/**
- * elk-worker.min.js exports its inline Worker class on the main thread, but detects a real Worker global and installs
- * itself as a worker entry point instead. Our layout worker needs the inline class, so temporarily provide the DOM
- * marker that selects the module-export path while the UMD module is evaluated.
- */
-async function loadInlineWorker(): Promise<typeof import("elkjs/lib/elk-worker.min.js").Worker> {
+type ElkWorkerConstructor = new (url?: string) => ElkWorker;
+interface ElkWorkerExports {
+  Worker?: ElkWorkerConstructor;
+}
+interface ElkWorkerModule {
+  exports: ElkWorkerExports;
+}
+
+function restoreGlobal(scope: object, name: string, descriptor: PropertyDescriptor | undefined): void {
+  if (descriptor) Object.defineProperty(scope, name, descriptor);
+  else Reflect.deleteProperty(scope, name);
+}
+
+/** SSR has no browser asset loader; only there, import ELK's CommonJS worker export directly. */
+async function loadInlineWorkerModule(): Promise<ElkWorkerConstructor> {
   const scope = globalThis as typeof globalThis & { document?: unknown };
   const documentDescriptor = Object.getOwnPropertyDescriptor(scope, "document");
   if (!documentDescriptor) Object.defineProperty(scope, "document", { configurable: true, value: {} });
   try {
+    // SSR needs the CommonJS module; browser builds load the same file as an asset to avoid a huge JS chunk.
     const { Worker } = await import("elkjs/lib/elk-worker.min.js");
     return Worker;
   } finally {
@@ -32,13 +45,63 @@ async function loadInlineWorker(): Promise<typeof import("elkjs/lib/elk-worker.m
   }
 }
 
+/**
+ * Load ELK's UMD worker as a script asset and provide the CommonJS globals it expects to expose its inline Worker.
+ * `importScripts` is available in the classic layout worker; the small-graph fallback uses a script element on window.
+ */
+async function loadInlineWorkerAsset(): Promise<ElkWorkerConstructor> {
+  const scope = globalThis as unknown as Record<string, unknown>;
+  const documentDescriptor = Object.getOwnPropertyDescriptor(scope, "document");
+  const moduleDescriptor = Object.getOwnPropertyDescriptor(scope, "module");
+  const exportsDescriptor = Object.getOwnPropertyDescriptor(scope, "exports");
+  const module: ElkWorkerModule = { exports: {} };
+
+  if (!documentDescriptor) Object.defineProperty(scope, "document", { configurable: true, value: {} });
+  Object.defineProperty(scope, "module", { configurable: true, value: module });
+  Object.defineProperty(scope, "exports", { configurable: true, value: module.exports });
+  try {
+    const assetUrl = new URL(elkWorkerUrl, `${globalThis.location.origin}/`).href;
+    const importScripts = scope.importScripts;
+    if (typeof importScripts === "function") {
+      Reflect.apply(importScripts, scope, [assetUrl]);
+    } else if (typeof document !== "undefined") {
+      const script = document.createElement("script");
+      script.src = assetUrl;
+      const { promise, resolve, reject } = Promise.withResolvers<void>();
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load ELK worker asset"));
+      document.head.append(script);
+      try {
+        await promise;
+      } finally {
+        script.remove();
+      }
+    } else {
+      throw new Error("No script loader is available for the ELK worker asset");
+    }
+
+    const Worker = module.exports.Worker;
+    if (!Worker) throw new Error("ELK worker asset did not expose its inline Worker");
+    return Worker;
+  } finally {
+    restoreGlobal(scope, "exports", exportsDescriptor);
+    restoreGlobal(scope, "module", moduleDescriptor);
+    if (!documentDescriptor) restoreGlobal(scope, "document", undefined);
+  }
+}
+
+async function loadInlineWorker(): Promise<ElkWorkerConstructor> {
+  if (import.meta.env.SSR) return await loadInlineWorkerModule();
+  return await loadInlineWorkerAsset();
+}
+
 export function getElk(): Promise<ElkEngine> {
   if (!elkPromise) {
     const pending = (async () => {
       const ElkFakeWorker = await loadInlineWorker();
       return new ELK({
-        // The bundled build's default factory spawns a *nested* Worker resolved from `document.currentScript`, which
-        // does not exist inside our own worker. The inline fake worker runs the same algorithms on this thread.
+        // The standalone asset exposes ELK's inline adapter. It runs the algorithm on this worker thread rather than
+        // creating a nested Worker; the main thread sees only the compact, transferable layout result.
         workerFactory: () => new ElkFakeWorker() as unknown as Worker,
         defaultLayoutOptions: LAYOUT_LADDER[0]!.options,
       });

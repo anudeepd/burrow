@@ -129,7 +129,7 @@ const PAGES: PageCase[] = [
 
 for (const pageCase of PAGES) {
   test.describe(`spark ${pageCase.name}`, () => {
-    test("renders headings, field ids, entity keys and both theme snapshots", async ({ page }) => {
+    test("renders headings, field ids, entity keys and both theme snapshots", { tag: "@snapshot" }, async ({ page }) => {
       await open(page, pageCase.url, "dark");
       // Every Spark page opens with a PageHeader <h2> (the shell's h1 is the application name).
       await expect(page.locator("h2").first()).toBeVisible();

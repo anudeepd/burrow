@@ -24,7 +24,10 @@ vi.mock("~/api/connection", () => ({
     select({ consecutiveFailures: 0, lastCache: null }),
 }));
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, ...rest }: { children?: ReactNode } & Record<string, unknown>) => createElement("a", rest, children),
+  Link: ({ children, ...props }: { children?: ReactNode } & Record<string, unknown>) => {
+    delete props.activeOptions;
+    return createElement("a", props, children);
+  },
   useLocation: () => ({ pathname: "/" }),
 }));
 

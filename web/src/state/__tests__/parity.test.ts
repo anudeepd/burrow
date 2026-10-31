@@ -52,7 +52,7 @@ describe("preferences", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
     expect(document.documentElement.getAttribute("data-density")).toBeNull();
     expect(document.documentElement.getAttribute("data-tz")).toBe("utc");
-    const stored = JSON.parse(localStorage.getItem("burrow.prefs.v1") ?? "{}");
+    const stored = JSON.parse(window.localStorage.getItem("burrow.prefs.v1") ?? "{}");
     expect(stored).toMatchObject({ theme: "light", tz: "utc" });
     expect(stored).not.toHaveProperty("density");
     setPrefs({ theme: "system", tz: "local" });

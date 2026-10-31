@@ -32,6 +32,8 @@ const CAPACITY = {
   "yarn/scheduler": fixture("capacity/scheduler.json"),
   "yarn/scheduler/activities": fixture("capacity/scheduler-activities.json"),
   "yarn/scheduler-conf": fixture("capacity/scheduler-conf.json"),
+  "yarn/scheduler-overview": other("overview/scheduler-overview.json"),
+  "rm/conf": other("tools/conf.json"),
   "rm/jmx": fixture("capacity/jmx-queuemetrics-root.json"),
   "yarn/nodes": other("nodes/nodes.json"),
   "yarn/metrics": other("overview/metrics.json"),
@@ -107,6 +109,19 @@ describe("SchedulerPage over captured payloads", () => {
     // the KPI strip's three cluster-metric rows carry real values from the captured metrics payload
     expect(container.querySelector('[data-yf="cluster.metrics.rmSchedulerBusyPercent"]')).toBeTruthy();
     expect(container.querySelector('[data-yf="scheduler.maximumAllocation.memory"]')).toBeTruthy();
+    expect(container.querySelector('[data-yf="scheduler.derived.schedulerName"][data-yv="Capacity Scheduler"]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-yf="scheduler.derived.schedulingResourceTypes"][data-yv="[memory-mb (unit=Mi), vcores]"]'),
+    ).toBeTruthy();
+    await waitFor(() => {
+      expect(container.querySelector('[data-yf="scheduler.derived.minAllocationText"]')?.textContent?.replace(/\s+/g, " ").trim()).toBe(
+        "256 MiB · 1 vCore",
+      );
+      expect(container.querySelector('[data-yf="scheduler.derived.maxAllocationText"]')?.textContent?.replace(/\s+/g, " ").trim()).toBe(
+        "3 GiB · 4 vCores",
+      );
+      expect(container.querySelector('[data-yf="scheduler.derived.maximumClusterPriority"][data-yv="10"]')).toBeTruthy();
+    });
 
     // the tree renders every queue of the real payload, each keyed by its path
     const rowIds = [...container.querySelectorAll('[data-burrow-table="scheduler-capacity-tree"] [role="row"][data-ye]')].map(
