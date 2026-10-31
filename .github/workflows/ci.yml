@@ -272,6 +272,10 @@ jobs:
         shell: bash
         run: python scripts/release_version.py set "$RELEASE_VERSION"
       - uses: PyO3/maturin-action@v1
+        env:
+          # This is a Cargo workspace, so its target directory is at the repo root.
+          # Supplying it avoids maturin-action's extra cargo metadata probe.
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target
         with:
           target: ${{ matrix.target }}
           manylinux: auto
