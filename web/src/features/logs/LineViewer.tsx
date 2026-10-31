@@ -158,7 +158,7 @@ export function LineViewer(props: LineViewerProps) {
         onScroll={onScroll}
         role="log"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: the pane scrolls, so keyboard users need it focusable (axe scrollable-region-focusable).
-        tabIndex={0}
+        tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
         aria-label="Container log"
         data-yf="log.content"
         className="burrow-scroll h-full overflow-auto bg-well font-mono text-small leading-5"

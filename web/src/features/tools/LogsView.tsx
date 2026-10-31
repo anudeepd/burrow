@@ -507,7 +507,7 @@ export function LogsView() {
                     ref={scrollRef}
                     role="log"
                     // biome-ignore lint/a11y/noNoninteractiveTabindex: the pane scrolls, so keyboard users need it focusable (axe scrollable-region-focusable).
-                    tabIndex={0}
+                    tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
                     aria-live="off"
                     aria-label={`${selected.name}, ${chunk.data ? byteRangeLabel(chunk.data) : "loading"}`}
                     aria-busy={chunk.isFetching || undefined}
