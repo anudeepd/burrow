@@ -233,10 +233,10 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu # manylinux
             runner: ubuntu-24.04
-            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 --env=PIP_ROOT_USER_ACTION=ignore
+            docker_options: --env=PIP_ROOT_USER_ACTION=ignore
           - target: aarch64-unknown-linux-gnu
             runner: ubuntu-24.04-arm
-            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 --env=PIP_ROOT_USER_ACTION=ignore
+            docker_options: --env=PIP_ROOT_USER_ACTION=ignore
           - target: x86_64-unknown-linux-musl # musllinux (alpine images)
             runner: ubuntu-24.04
             docker_options: --env=PIP_ROOT_USER_ACTION=ignore
