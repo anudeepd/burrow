@@ -67,9 +67,6 @@ jobs:
       - name: unit tests
         working-directory: web
         run: bun run test
-      - name: build (SPA)
-        working-directory: web
-        run: bun run build
       - name: install Chromium and Firefox for browser regressions
         working-directory: web
         run: bunx playwright install --with-deps chromium firefox
@@ -83,6 +80,7 @@ jobs:
         working-directory: web
         env:
           PW_SNAPSHOT_DIR: e2e/__screenshots__/linux
+          PW_WEB_DIR: dist
         run: bun run e2e --project=firefox
       - name: Upload refreshed Linux screenshots
         if: ${{ always() && (inputs.refresh_linux_snapshots || inputs.publish) }}
@@ -95,6 +93,22 @@ jobs:
       - name: bundle budget
         working-directory: web
         run: bun run scripts/check-bundle-budget.ts
+
+  # Build the SPA artifact separately so Rust checks can run while the longer
+  # browser regression suite is still executing in the web job.
+  web-assets:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.3"
+      - name: install
+        working-directory: web
+        run: bun install --frozen-lockfile
+      - name: build (SPA)
+        working-directory: web
+        run: bun run build
       - uses: actions/upload-artifact@v7
         with:
           name: web-dist
@@ -144,8 +158,8 @@ jobs:
 
   # -------------------------------------------------------------- rust checks
   rust:
-    needs: [web, linux-snapshot-baselines]
-    if: ${{ always() && needs.web.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    needs: [web-assets, linux-snapshot-baselines]
+    if: ${{ always() && needs.web-assets.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -222,10 +236,10 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu # manylinux
             runner: ubuntu-24.04
-            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ecdhe_ecdsa_aes_128_gcm_sha_256:ecdhe_rsa_aes_128_gcm_sha_256:ecdhe_ecdsa_aes_256_gcm_sha_384:ecdhe_rsa_aes_256_gcm_sha_384 --env=PIP_ROOT_USER_ACTION=ignore
+            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 --env=PIP_ROOT_USER_ACTION=ignore
           - target: aarch64-unknown-linux-gnu
             runner: ubuntu-24.04-arm
-            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ecdhe_ecdsa_aes_128_gcm_sha_256:ecdhe_rsa_aes_128_gcm_sha_256:ecdhe_ecdsa_aes_256_gcm_sha_384:ecdhe_rsa_aes_256_gcm_sha_384 --env=PIP_ROOT_USER_ACTION=ignore
+            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384 --env=PIP_ROOT_USER_ACTION=ignore
           - target: x86_64-unknown-linux-musl # musllinux (alpine images)
             runner: ubuntu-24.04
             docker_options: --env=PIP_ROOT_USER_ACTION=ignore
@@ -294,8 +308,6 @@ jobs:
   # The differential parity proof (PLAN §8) runs from recorded fixtures, so CI
   # needs no Hadoop cluster: P1 REST-key coverage, P2 legacy-vs-ours, P3 wire.
   parity-replay:
-    needs: [web, linux-snapshot-baselines]
-    if: ${{ always() && needs.web.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
