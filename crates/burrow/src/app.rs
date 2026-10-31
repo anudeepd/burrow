@@ -846,12 +846,11 @@ mod tests {
         assert!(no_head.starts_with("<meta property=\"csp-nonce\" content=\"nonce-value\">"));
         let malformed = inject_nonce("<script __BURROW_CSP_NONCE__", "nonce-value");
         assert_eq!(malformed, "<script nonce-value");
-        assert_eq!(
+        assert!(
             csp_with_nonce("nonce-value")
                 .to_str()
                 .unwrap()
-                .contains("nonce-nonce-value"),
-            true
+                .contains("nonce-nonce-value")
         );
         assert_eq!(fresh_nonce().len(), 32);
     }
