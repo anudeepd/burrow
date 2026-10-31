@@ -5,7 +5,7 @@
 <h1 align="center">Burrow</h1>
 
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-orange)](https://github.com/anudeepd/burrow/blob/master/pyproject.toml)
-[![Version: 0.1.4](https://img.shields.io/badge/version-0.1.4-blue)](https://github.com/anudeepd/burrow/blob/master/Cargo.toml)
+[![GitHub release version](https://img.shields.io/github/v/release/anudeepd/burrow?label=version&color=blue)](https://github.com/anudeepd/burrow/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-007EC6.svg)](https://github.com/anudeepd/burrow/blob/master/LICENSE)
 
 **A local, read-only browser UI for Apache Hadoop YARN and Spark-on-YARN.**
