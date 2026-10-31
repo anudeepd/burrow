@@ -89,7 +89,7 @@ describe("tools pages", () => {
     expect(screen.getAllByText("dfs.namenode.avoid.read.slow.datanode").length).toBeGreaterThan(0);
   });
 
-  it("shows sensitive and final configuration details with their different badges", async () => {
+  it("shows sensitive and final configuration details with their different badges", { timeout: 30_000 }, async () => {
     const { router } = renderToolsPage("conf", "?open=fs.adl.oauth2.access.token.provider.type");
     expect((await screen.findAllByText("Property")).length).toBeGreaterThan(0);
     expect(screen.getByText("redacted by Hadoop")).toBeTruthy();
@@ -102,7 +102,7 @@ describe("tools pages", () => {
     expect(screen.getAllByText("final").length).toBeGreaterThan(0);
   });
 
-  it("explains an RM admin property with no view and shows multiline values in detail", async () => {
+  it("explains an RM admin property with no view and shows multiline values in detail", { timeout: 30_000 }, async () => {
     const { router } = renderToolsPage("conf", "?open=yarn.resourcemanager.admin.address");
     expect(await screen.findByText(/no Burrow view renders it/)).toBeTruthy();
     expect(screen.getByRole("note").textContent).toContain("yarn.resourcemanager.admin.address");

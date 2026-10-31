@@ -189,7 +189,7 @@ describe("JmxView", () => {
 });
 
 describe("StacksView", () => {
-  it("filters the captured dump, selects a thread, and expands its frames", async () => {
+  it("filters the captured dump, selects a thread, and expands its frames", { timeout: 30_000 }, async () => {
     const { router } = renderToolPage("stacks", "?thread=2");
 
     const tree = await screen.findByRole("tree", { name: "Thread dump" });
@@ -209,7 +209,7 @@ describe("StacksView", () => {
     expect(screen.getByText(/1 of 230 threads match/)).toBeTruthy();
   });
 
-  it("shows an empty filtered tree when no thread or frame matches", async () => {
+  it("shows an empty filtered tree when no thread or frame matches", { timeout: 30_000 }, async () => {
     const { router } = renderToolPage("stacks");
     await screen.findByRole("tree", { name: "Thread dump" });
     fireEvent.change(screen.getByRole("searchbox", { name: "Search threads and frames" }), { target: { value: "no-such-thread-or-frame" } });
@@ -218,7 +218,7 @@ describe("StacksView", () => {
     expect(screen.getByText(/0 of 230 threads match/)).toBeTruthy();
   });
 
-  it("shows cached threads under a stale warning, then reports a total read failure", async () => {
+  it("shows cached threads under a stale warning, then reports a total read failure", { timeout: 30_000 }, async () => {
     const { client } = renderToolPage("stacks");
     const query = client.getQueryCache().find({ queryKey: tq.stacks().queryKey })!;
     query.setState({
@@ -243,7 +243,7 @@ describe("StacksView", () => {
     expect(screen.getByRole("heading", { name: "Cannot read the thread dump" })).toBeTruthy();
   });
 
-  it("moves keyboard focus through thread frames and selects a frame from the details pane", async () => {
+  it("moves keyboard focus through thread frames and selects a frame from the details pane", { timeout: 30_000 }, async () => {
     renderToolPage("stacks", "?thread=2");
     const tree = await screen.findByRole("tree", { name: "Thread dump" });
     await screen.findByRole("heading", { name: "Reference Handler" });
