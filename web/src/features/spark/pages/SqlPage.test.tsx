@@ -15,12 +15,17 @@ const { render, cleanup, screen, waitFor } = await import("@testing-library/reac
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { SqlPage } = await import("./SqlPage");
+const { SqlDetailPage } = await import("./SqlDetailPage");
 const { SparkProvider } = await import("../ui/context");
+const { sp } = await import("../data/queries");
+const { sparkSearch } = await import("../data/search");
 
 const APP_ID = "application_1791010000001_0009";
 
 /** `sql-cache-union`'s final capture: eight executions, ids 0..7 in REST (ascending) order. Paths resolve from the web root. */
 const SQL = JSON.parse(readFileSync("../fixtures/spark/4.2.0/sql-cache-union/rest/final.sql.json", "utf8")) as unknown;
+const SQL_DETAIL = JSON.parse(readFileSync("../fixtures/spark/4.2.0/window-sql/rest/final.sql-1.json", "utf8")) as unknown;
+const SQL_JOBS = JSON.parse(readFileSync("../fixtures/spark/4.2.0/window-sql/rest/final.jobs.json", "utf8")) as unknown;
 
 function stubApi(routes: Record<string, unknown>) {
   vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
@@ -72,6 +77,34 @@ function renderSqlTab(application: { id: string; attempts: { appSparkVersion: st
     </QueryClientProvider>,
   );
   return { ...view, router };
+}
+
+function renderSqlDetail() {
+  const root = createRootRoute();
+  const appRoute = createRoute({ getParentRoute: () => root, path: "/apps/$appId" });
+  const sparkRoute = createRoute({ getParentRoute: () => appRoute, path: "spark" });
+  const sqlRoute = createRoute({ getParentRoute: () => sparkRoute, path: "sql/", component: () => null });
+  const detailRoute = createRoute({
+    getParentRoute: () => sparkRoute,
+    path: "sql/$executionId",
+    validateSearch: sparkSearch,
+    component: () => <SqlDetailPage />,
+  });
+  const jobRoute = createRoute({ getParentRoute: () => sparkRoute, path: "jobs/$jobId", component: () => null });
+  const router = createRouter({
+    routeTree: root.addChildren([appRoute.addChildren([sparkRoute.addChildren([sqlRoute, detailRoute, jobRoute])])]),
+    history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/sql/1`] }),
+  });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
+  client.setQueryData(sp.sqlExecution(APP_ID, 1, { kind: "static", attempt: null }).queryKey, SQL_DETAIL as never);
+  client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, SQL_JOBS as never);
+  return render(
+    <QueryClientProvider client={client}>
+      <SparkProvider value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}>
+        <RouterProvider router={router} />
+      </SparkProvider>
+    </QueryClientProvider>,
+  );
 }
 
 afterEach(() => {
@@ -133,5 +166,15 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     renderSqlTab({ id: APP_ID, attempts: [{ appSparkVersion: "3.3.2" }] });
 
     expect(await screen.findByRole("heading", { name: "Not found in the Spark source" })).toBeTruthy();
+  });
+
+  it("renders an SQL execution's physical plan, job links, and derived stage links", async () => {
+    renderSqlDetail();
+    expect(await screen.findByRole("heading", { name: /SQL execution 1/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "All SQL executions" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Plan DAG of SQL execution 1" })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Raw plan of SQL execution 1" })).toBeTruthy();
+    expect(screen.getByText("Raw plan tree")).toBeTruthy();
+    expect(screen.getByText("Succeeded")).toBeTruthy();
   });
 });

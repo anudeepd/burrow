@@ -14,16 +14,22 @@ import {
   capacityMetrics,
   fairMetrics,
   findQueue,
+  healthOperations,
   headroomOf,
   leafNodes,
   metricsOf,
+  num,
   overShareCount,
   partitionNames,
   partitionOf,
+  pressurePctOf,
   rowsForQueue,
   schedKindOf,
+  usedOfFairPct,
+  usedOfMinPct,
   walkTree,
 } from "./model";
+import type { QueueNode } from "./model";
 import { treemapItems } from "./TreemapSection";
 import { squarify } from "./Treemap";
 
@@ -158,6 +164,100 @@ describe("captured scheduler payloads", () => {
   it("activities: an empty snapshot still parses (waiting for next allocation)", () => {
     const act = SchedulerActivitiesSchema.parse({ activities: { diagnostic: "waiting for next allocation" } }).activities;
     expect(activityRows(act)).toHaveLength(0);
+  });
+
+  it("preserves allocation fallback rows and node identity across empty and nested snapshots", () => {
+    const rows = activityRows({
+      timestamp: 1_791_015_558_000,
+      nodeId: "nm:8042",
+      diagnostic: "no root payload",
+      allocations: [
+        { updatedContainerId: "container_1", partition: "gpu", finalAllocationState: "SKIPPED" },
+        {
+          root: {
+            name: "",
+            nodeIds: [],
+            children: [
+              { name: "root.child", nodeIds: ["node-list:8041"], children: [] },
+              { name: "root.specific", nodeId: "node-field:8041", nodeIds: ["ignored"], children: [] },
+            ],
+          },
+        },
+      ],
+    });
+    expect(rows).toMatchObject([
+      {
+        time: 1_791_015_558_000,
+        containerId: "container_1",
+        nodeId: "nm:8042",
+        queue: "no root payload",
+        state: null,
+        diagnostic: "no root payload",
+        partition: "gpu",
+        finalState: "SKIPPED",
+        depth: 0,
+      },
+      { queue: "", nodeId: "nm:8042", depth: 0 },
+      { queue: "root.child", nodeId: "node-list:8041", depth: 1 },
+      { queue: "root.specific", nodeId: "node-field:8041", depth: 1 },
+    ]);
+    expect(rowsForQueue(rows, "root")).toHaveLength(2);
+    expect(activityRows({ allocations: [] })).toEqual([]);
+    expect(activityRows(undefined)).toEqual([]);
+  });
+
+  it("handles missing capacity and fair metrics without inventing percentages", () => {
+    expect(num("42")).toBe(42);
+    expect(num("Infinity")).toBeNull();
+    expect(num(Number.NaN)).toBeNull();
+    expect(num(true)).toBeNull();
+
+    const capacity = buildCapacityTree({ type: "capacityScheduler", queueName: "root", capacity: 100, usedCapacity: 0, maxCapacity: 100 });
+    const fair: QueueNode = {
+      id: "root",
+      name: "root",
+      depth: 0,
+      role: "root",
+      children: [],
+      fair: {} as NonNullable<QueueNode["fair"]>,
+    };
+    expect(partitionOf({ id: "empty", name: "empty", depth: 0, role: "leaf", children: [] }, "gpu")).toEqual({
+      cap: undefined,
+      res: undefined,
+    });
+    expect(partitionNames(capacity)).toEqual([]);
+    expect(metricsOf({ id: "empty", name: "empty", depth: 0, role: "leaf", children: [] }).usedMb).toBeNull();
+    expect(pressurePctOf(capacity, { ...metricsOf(capacity), usedPct: null, absUsedPct: 25, absCapPct: 50 })).toBe(50);
+    expect(pressurePctOf(capacity, { ...metricsOf(capacity), usedPct: null, absUsedPct: null, absCapPct: 50 })).toBeNull();
+    expect(pressurePctOf(capacity, { ...metricsOf(capacity), absCapPct: 0, absUsedPct: 1 })).toBe(Number.POSITIVE_INFINITY);
+    expect(pressurePctOf(fair, { ...metricsOf(fair), fairMb: 0, usedMb: 1 })).toBe(Number.POSITIVE_INFINITY);
+    expect(pressurePctOf(fair, { ...metricsOf(fair), fairMb: 25, usedMb: 10 })).toBe(40);
+    expect(pressurePctOf(fair, { ...metricsOf(fair), fairMb: 0, usedMb: null })).toBeNull();
+    expect(usedOfFairPct(fair)).toBeNull();
+    expect(usedOfMinPct(fair)).toBeNull();
+  });
+
+  it("maps scheduler health operations and preserves unknown operations", () => {
+    expect(healthOperations(undefined)).toEqual([]);
+    expect(
+      healthOperations({
+        lastrun: 0,
+        lastRunDetails: [],
+        operationsInfo: [
+          { operation: "last-allocation", nodeId: "n1", containerId: "c1", queue: "root" },
+          { operation: "last-release" },
+          { operation: "last-preemption" },
+          { operation: "last-reservation" },
+          { operation: "future-operation" },
+        ],
+      }),
+    ).toEqual([
+      { operation: "last-allocation", kind: "Allocation", nodeId: "n1", containerId: "c1", queue: "root" },
+      { operation: "last-release", kind: "Release", nodeId: null, containerId: null, queue: null },
+      { operation: "last-preemption", kind: "Preemption", nodeId: null, containerId: null, queue: null },
+      { operation: "last-reservation", kind: "Reservation", nodeId: null, containerId: null, queue: null },
+      { operation: "future-operation", kind: "Other", nodeId: null, containerId: null, queue: null },
+    ]);
   });
 
   it("conf: the captured scheduler configuration parses into property rows", () => {

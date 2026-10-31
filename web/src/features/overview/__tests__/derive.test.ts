@@ -15,6 +15,7 @@ import {
   appPhase,
   byteDesc,
   containersRunning,
+  confValue,
   customResources,
   maxAllocationText,
   maximumClusterPriority,
@@ -31,6 +32,7 @@ import {
   totalResources,
   trackingHref,
   trackingUiText,
+  utilisation,
   usedResources,
   withinWindow,
 } from "../derive";
@@ -154,6 +156,24 @@ describe("legacy #metricsoverview cells from the captured ClusterMetrics", () =>
 
   it("passes the RM's own utilisation percentages through untouched (it can exceed 100)", () => {
     expect(metrics.utilizedMBPercent).toBeGreaterThan(0);
+    expect(utilisation({ ...metrics, utilizedMBPercent: Number.NaN, utilizedVirtualCoresPercent: -1 } as ClusterMetrics)).toEqual({
+      memPct: null,
+      vcorePct: null,
+    });
+  });
+
+  it("uses zero-safe fallbacks when cross-partition counters are incomplete", () => {
+    expect(containersRunning({ crossPartitionMetricsAvailable: true, containersAllocated: undefined } as unknown as ClusterMetrics)).toBe(0);
+    expect(containersRunning({ crossPartitionMetricsAvailable: false } as unknown as ClusterMetrics)).toBe(0);
+    expect(usedResources({} as unknown as ClusterMetrics)).toEqual({ memory: 0, vCores: 0, customs: [] });
+    expect(totalResources({ crossPartitionMetricsAvailable: true } as unknown as ClusterMetrics)).toEqual({ memory: 0, vCores: 0, customs: [] });
+    expect(reservedResources({ crossPartitionMetricsAvailable: true } as unknown as ClusterMetrics)).toEqual({ memory: 0, vCores: 0, customs: [] });
+    expect(
+      usedResources({
+        crossPartitionMetricsAvailable: true,
+        totalUsedResourcesAcrossPartition: { memory: 4, vCores: 2 },
+      } as ClusterMetrics),
+    ).toEqual({ memory: 4, vCores: 2, customs: [] });
   });
 });
 
@@ -168,6 +188,9 @@ describe("scheduler block", () => {
     expect(schedulerDisplayName("fairScheduler")).toBe("Fair Scheduler");
     expect(schedulerDisplayName("fifoScheduler")).toBe("Fifo Scheduler");
     expect(schedulerDisplayName("quantumScheduler")).toBe("quantumScheduler");
+    expect(schedulerDisplayName(undefined)).toBe("unknown");
+    expect(schedulerDisplayName(null)).toBe("unknown");
+    expect(schedulerDisplayName("")).toBe("unknown");
   });
 
   it("derives the scheduling resource types, max allocation (with extra resources) from schedulerInfo", () => {
@@ -206,6 +229,10 @@ describe("scheduler block", () => {
     expect(minAllocationText([])).toBeNull();
     expect(maximumClusterPriority(undefined)).toBeNull();
     expect(maximumClusterPriority([{ key: "yarn.cluster.max-application-priority", value: "x" }])).toBeNull();
+    expect(confValue([{ key: "nil", value: null }], "nil")).toBeNull();
+    expect(minAllocationText([{ key: "yarn.scheduler.minimum-allocation-mb", value: "bad" }, { key: "yarn.scheduler.minimum-allocation-vcores", value: "1" }])).toBeNull();
+    expect(minAllocationText([{ key: "yarn.scheduler.minimum-allocation-mb", value: "256" }])).toBeNull();
+    expect(maximumClusterPriority([{ key: "yarn.cluster.max-application-priority", value: "   " }])).toBeNull();
   });
 
   it("reads the captured capacity queue tree, with the raw field ids the view stamps", () => {
@@ -221,6 +248,46 @@ describe("scheduler block", () => {
   it("has no queue tree for a scheduler that is not a tree", () => {
     expect(queueTeasers({ type: "fifoScheduler" } as SchedulerInfo)).toEqual([]);
     expect(queueTeasers(null)).toEqual([]);
+  });
+
+  it("clamps capacity queue bars and calculates pressure from the best reported percentage", () => {
+    const fixturePath = resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler.json");
+    const payload = JSON.parse(readFileSync(fixturePath, "utf8")) as {
+      scheduler: { schedulerInfo: { type: string; queues: { queue: Record<string, unknown>[] } } };
+    };
+    const queues = payload.scheduler.schedulerInfo.queues.queue;
+    queues[0] = { ...queues[0], absoluteCapacity: 0, absoluteUsedCapacity: 2, usedCapacity: 5 };
+    queues[1] = { ...queues[1], absoluteCapacity: 25, absoluteUsedCapacity: 50, usedCapacity: 150 };
+    queues[2] = { ...queues[2], absoluteCapacity: 25, absoluteUsedCapacity: 2, usedCapacity: -1 };
+    const teasers = queueTeasers(payload.scheduler.schedulerInfo as unknown as SchedulerInfo);
+    expect(teasers[0]).toMatchObject({ pressurePct: Number.POSITIVE_INFINITY, barPct: 100 });
+    expect(teasers[1]).toMatchObject({ pressurePct: 150, barPct: 100 });
+    expect(teasers[2]).toMatchObject({ pressurePct: -1, barPct: 0 });
+  });
+
+  it("normalizes FairScheduler resource queues and zero-share pressure", () => {
+    const fixturePath = resolve(process.cwd(), "../fixtures/rm/scheduler/fair/scheduler.json");
+    const payload = JSON.parse(readFileSync(fixturePath, "utf8")) as {
+      scheduler: { schedulerInfo: { type: string; rootQueue: { childQueues: { queue: Record<string, unknown>[] } } } };
+    };
+    const queue = payload.scheduler.schedulerInfo.rootQueue.childQueues.queue[0]!;
+    const used = queue.usedResources as Record<string, unknown>;
+    const min = queue.minResources as Record<string, unknown>;
+    const max = queue.maxResources as Record<string, unknown>;
+    queue.usedResources = { ...used, memory: 5 };
+    queue.minResources = { ...min, memory: 0 };
+    queue.maxResources = { ...max, memory: 0 };
+    const rows = queueTeasers(payload.scheduler.schedulerInfo as unknown as SchedulerInfo);
+    expect(rows[0]).toMatchObject({ state: null, pressurePct: Number.POSITIVE_INFINITY, barPct: 100 });
+
+    queue.usedResources = { ...used, memory: 0 };
+    queue.minResources = { ...min, memory: 0 };
+    queue.maxResources = { ...max, memory: 0 };
+    expect(queueTeasers(payload.scheduler.schedulerInfo as unknown as SchedulerInfo)[0]).toMatchObject({
+      pressurePct: null,
+      barPct: 0,
+      used: { raw: 0 },
+    });
   });
 });
 

@@ -546,7 +546,10 @@ async fn bind(cfg: &Config) -> anyhow::Result<(TcpListener, u16, bool)> {
             break;
         };
         match TcpListener::bind((cfg.bind, port)).await {
-            Ok(listener) => return Ok((listener, port, offset > 0)),
+            Ok(listener) => {
+                let actual_port = listener.local_addr()?.port();
+                return Ok((listener, actual_port, offset > 0));
+            }
             Err(e) if e.kind() == ErrorKind::AddrInUse => tried.push(port),
             Err(e) => {
                 return Err(
@@ -814,4 +817,188 @@ pub async fn serve_ephemeral(
         }
     });
     Ok((port, handle))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use burrow_core::cache::CacheSource;
+    use futures_util::stream;
+    use std::time::Duration;
+
+    #[test]
+    fn nonce_injection_handles_inline_external_existing_and_malformed_scripts() {
+        let html = inject_nonce(
+            "<head><script>boot()</script><script src=\"app.js\"></script><script nonce=\"old\">keep()</script></head>",
+            "nonce-value",
+        );
+        assert!(html.contains("<script nonce=\"nonce-value\">boot()</script>"));
+        assert!(html.contains("<script src=\"app.js\"></script>"));
+        assert!(html.contains("<script nonce=\"old\">keep()</script>"));
+        assert!(html.contains("<meta property=\"csp-nonce\" content=\"nonce-value\">"));
+
+        let existing = inject_nonce("<head><meta property=\"csp-nonce\" content=\"old\"></head>", "new");
+        assert_eq!(existing.matches("property=\"csp-nonce\"").count(), 1);
+        let no_head = inject_nonce("<main>app</main>", "nonce-value");
+        assert!(no_head.starts_with("<meta property=\"csp-nonce\" content=\"nonce-value\">") );
+        let malformed = inject_nonce("<script __BURROW_CSP_NONCE__", "nonce-value");
+        assert_eq!(malformed, "<script nonce-value");
+        assert_eq!(csp_with_nonce("nonce-value").to_str().unwrap().contains("nonce-nonce-value"), true);
+        assert_eq!(fresh_nonce().len(), 32);
+    }
+
+    #[test]
+    fn host_guard_accepts_local_and_allowlisted_authorities() {
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.allowed_hosts = vec!["dashboard.example".into(), "other.example:9443".into()];
+        let guard = HostGuard::new(&cfg);
+        for host in [None, Some(""), Some("localhost"), Some("localhost:8787"), Some("127.0.0.1:8787"), Some("dashboard.example"), Some("dashboard.example:9000"), Some("other.example:9443")] {
+            assert!(guard.allows(host), "expected host {host:?} to be allowed");
+        }
+        assert!(!guard.allows(Some("attacker.example")));
+        assert_eq!(host_only("[::1]:8787"), "::1");
+        assert_eq!(host_only("rm.example:8088"), "rm.example");
+        assert_eq!(host_only("rm.example:not-a-port"), "rm.example:not-a-port");
+
+        cfg.allowed_hosts = vec!["*".into()];
+        assert!(HostGuard::new(&cfg).allows(Some("anything.example")));
+    }
+
+    #[test]
+    fn app_state_routes_api_and_static_paths_under_an_optional_base_path() {
+        let cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        let core = Core::new(cfg).unwrap();
+        let state = AppState::new(core, Assets::embedded());
+        assert!(matches!(state.route("/api/healthz"), Some(Route::Api("healthz"))));
+        assert!(matches!(state.route("/api"), Some(Route::Api(""))));
+        assert!(matches!(state.route("/apps"), Some(Route::Static("apps"))));
+        assert_eq!(state.strip_base("/apps"), Some("apps"));
+
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.base_path = "/burrow".into();
+        let core = Core::new(cfg).unwrap();
+        let state = AppState::new(core, Assets::embedded());
+        assert_eq!(state.strip_base("/burrow"), Some(""));
+        assert_eq!(state.strip_base("/burrow/"), Some(""));
+        assert!(matches!(state.route("/burrow/api/meta"), Some(Route::Api("meta"))));
+        assert!(matches!(state.route("/burrow/apps"), Some(Route::Static("apps"))));
+        assert!(state.route("/outside/apps").is_none());
+    }
+
+    #[test]
+    fn cache_and_asset_helpers_cover_protocol_variants() {
+        let mut headers = HeaderMap::new();
+        assert!(!wants_no_cache(&headers));
+        headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("max-age=0, No-Cache"));
+        assert!(wants_no_cache(&headers));
+        headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+        assert!(wants_no_cache(&headers));
+        headers.remove(header::CACHE_CONTROL);
+
+        assert!(compressible(StatusCode::OK, axum::http::Version::HTTP_11, &headers, &Default::default()));
+        headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("Text/Event-Stream; charset=utf-8"));
+        assert!(!compressible(StatusCode::OK, axum::http::Version::HTTP_11, &headers, &Default::default()));
+
+        for path in ["assets/app.js", "app.MJS", "theme.CSS", "data.json", "font.woff2", "movie.webm"] {
+            assert!(looks_like_static_file(path), "expected {path} to be a file");
+        }
+        for path in ["apps/42", "nested/no-extension", "app.jsx"] {
+            assert!(!looks_like_static_file(path), "expected {path} to be a route");
+        }
+    }
+
+    #[test]
+    fn api_response_stamps_headers_and_preserves_conditional_304_metadata() {
+        let mut reply = Reply::synthesized(StatusCode::OK, "application/json", b"{}".to_vec());
+        reply.cache = Some(CacheSource::Hit);
+        reply.upstream = Some("rm.example:8088".into());
+        reply.age_ms = Some(17);
+        reply.etag = Some("W/\"abc\"".into());
+        reply.extra.insert("x-extra", HeaderValue::from_static("value"));
+
+        let response = api_response(reply, Some("W/\"abc\""));
+        assert_eq!(response.status(), StatusCode::NOT_MODIFIED);
+        assert_eq!(response.headers()["x-burrow-api"], "1");
+        assert_eq!(response.headers()["x-burrow-cache"], "hit");
+        assert_eq!(response.headers()["x-burrow-upstream"], "rm.example:8088");
+        assert_eq!(response.headers()["x-burrow-age"], "17");
+        assert_eq!(response.headers()[header::ETAG], "W/\"abc\"");
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-cache");
+        assert!(response.headers().get("x-extra").is_none());
+
+        let error = api_error(ApiError::forbidden("not allowed"));
+        assert_eq!(error.status(), StatusCode::FORBIDDEN);
+        assert_eq!(error.headers()["x-burrow-cache"], "bypass");
+    }
+
+    #[tokio::test]
+    async fn body_of_chains_a_stream_prefix_with_its_remaining_chunks() {
+        let rest = stream::iter([
+            Ok::<Bytes, std::io::Error>(Bytes::from_static(b"tail")),
+            Ok(Bytes::from_static(b"!")),
+        ])
+        .boxed();
+        let body = body_of(ReplyBody::Stream {
+            prefix: Bytes::from_static(b"head"),
+            rest,
+        });
+        let bytes = axum::body::to_bytes(body, usize::MAX).await.unwrap();
+        assert_eq!(bytes, "headtail!");
+    }
+
+    #[test]
+    fn display_url_formats_wildcard_and_ipv6_binds() {
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.base_path = "/burrow".into();
+        cfg.bind = "0.0.0.0".parse().unwrap();
+        assert_eq!(display_url(&cfg, 8787), "http://127.0.0.1:8787/burrow");
+        cfg.bind = "::".parse().unwrap();
+        assert_eq!(display_url(&cfg, 8787), "http://[::1]:8787/burrow");
+        cfg.bind = "2001:db8::1".parse().unwrap();
+        assert_eq!(display_url(&cfg, 8787), "http://[2001:db8::1]:8787/burrow");
+    }
+
+    #[tokio::test]
+    async fn bind_uses_ephemeral_ports_and_reports_explicit_port_conflicts() {
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.bind = "127.0.0.1".parse().unwrap();
+        cfg.port = 0;
+        cfg.port_explicit = true;
+        let (listener, port, moved) = match bind(&cfg).await {
+            Ok(bound) => bound,
+            Err(error)
+                if error
+                    .downcast_ref::<std::io::Error>()
+                    .is_some_and(|e| e.kind() == ErrorKind::PermissionDenied) =>
+            {
+                // Some sandboxed runners prohibit opening loopback sockets entirely.
+                return;
+            }
+            Err(error) => panic!("unexpected bind failure: {error:#}"),
+        };
+        assert_ne!(port, 0);
+        assert!(!moved);
+        drop(listener);
+
+        let occupied = TcpListener::bind((cfg.bind, 0)).await.unwrap();
+        cfg.port = occupied.local_addr().unwrap().port();
+        assert!(bind(&cfg).await.is_err());
+        cfg.port_explicit = false;
+        let (fallback, fallback_port, moved) = bind(&cfg).await.unwrap();
+        assert!(moved);
+        assert!(fallback_port > cfg.port);
+        drop(fallback);
+        drop(occupied);
+    }
+
+    #[tokio::test]
+    async fn cluster_summary_describes_an_unreachable_resource_manager() {
+        let mut cfg = Config::for_rm("http://127.0.0.1:0").unwrap();
+        cfg.tuning.connect_timeout = Duration::from_millis(1);
+        cfg.tuning.request_timeout = Duration::from_millis(5);
+        let core = Core::new(cfg).unwrap();
+        let summary = cluster_summary(&core).await;
+        assert!(summary.contains("ResourceManager http://127.0.0.1:0 UNREACHABLE"));
+        assert!(summary.contains("services: "));
+    }
 }

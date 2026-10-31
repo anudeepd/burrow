@@ -6,10 +6,12 @@
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { DagView } from "./DagView";
+import { DagMinimap } from "./chrome";
 import { toRenderGraph } from "../layout";
+import { layoutClient } from "../layout/client";
 import { createSimulator, syntheticDag } from "../simulate";
 import { stageMetricsFromRest } from "../metrics";
 import type { Dag, DagInput, SqlPlanExecution, SqlPlanMetric } from "../types";
@@ -187,6 +189,53 @@ describe("keyboard navigation", () => {
     await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(zoomed));
   });
 
+  it("handles both arrow aliases, shifted panning, zoom-out aliases, and unknown keys", async () => {
+    await mount(wordcountStage());
+    const canvas = screen.getByTestId("dag-canvas");
+    const tabbable = () => screen.getAllByRole("treeitem").find((item) => item.getAttribute("tabindex") === "0");
+    const first = tabbable();
+    fireEvent.keyDown(canvas, { key: "ArrowRight" });
+    expect(tabbable()).not.toBe(first);
+    const afterRight = tabbable();
+    fireEvent.keyDown(canvas, { key: "ArrowLeft" });
+    expect(tabbable()).toBe(first);
+    fireEvent.keyDown(canvas, { key: "ArrowDown", shiftKey: true });
+    fireEvent.keyDown(canvas, { key: "ArrowUp", shiftKey: true });
+    const before = screen.getByTestId("dag-zoom").textContent;
+    fireEvent.keyDown(canvas, { key: "=" });
+    await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(before));
+    const zoomed = screen.getByTestId("dag-zoom").textContent;
+    fireEvent.keyDown(canvas, { key: "_" });
+    await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(zoomed));
+    fireEvent.keyDown(canvas, { key: "x" });
+    expect(tabbable()).toBeTruthy();
+    expect(afterRight).toBeTruthy();
+  });
+
+  it("scrolls its page on Shift-wheel and ignores a zero wheel delta", async () => {
+    const dag = wordcountStage();
+    const view = render(
+      <div className="burrow-page-scroll" style={{ overflowY: "auto" }}>
+        <DagView dag={dag} height={400} />
+      </div>,
+    );
+    await waitFor(() => expect(screen.queryAllByRole("treeitem").length).toBeGreaterThan(0), { timeout: 10_000 });
+    const scroller = view.container.firstElementChild as HTMLElement;
+    Object.defineProperties(scroller, {
+      scrollHeight: { configurable: true, value: 1000 },
+      clientHeight: { configurable: true, value: 400 },
+      scrollTop: { configurable: true, writable: true, value: 100 },
+    });
+    const stage = screen.getByTestId("dag-stage");
+    const zoom = screen.getByTestId("dag-zoom").textContent;
+    fireEvent.wheel(stage, { deltaY: 0 });
+    expect(screen.getByTestId("dag-zoom").textContent).toBe(zoom);
+    const shiftWheel = new WheelEvent("wheel", { deltaY: 20, bubbles: true, cancelable: true });
+    Object.defineProperty(shiftWheel, "shiftKey", { value: true });
+    stage.dispatchEvent(shiftWheel);
+    expect(scroller.scrollTop).toBe(120);
+  });
+
   it("opens the drawer with Enter and closes it with Escape", async () => {
     await mount(wordcountStage());
     const first = screen.getAllByRole("treeitem")[0]!;
@@ -199,6 +248,72 @@ describe("keyboard navigation", () => {
 });
 
 describe("interaction", () => {
+  it("uses toolbar zoom, fit, stage focus, and the accessible edge menu", async () => {
+    const selected: unknown[] = [];
+    await mount(barrierJob(), {
+      expandStages: true,
+      onSelectEdge: (edge: unknown) => selected.push(edge),
+    });
+    const zoom = screen.getByTestId("dag-zoom");
+    const before = zoom.textContent;
+    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    await waitFor(() => expect(zoom.textContent).not.toBe(before));
+    fireEvent.click(screen.getByRole("button", { name: "Zoom out" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fit graph to view" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Focus stage/ }));
+
+    fireEvent.click(screen.getByRole("button", { name: /^Edges \(/ }));
+    const edgeItem = within(screen.getByTestId("dag-edge-list")).getAllByRole("menuitem")[0]!;
+    fireEvent.click(edgeItem);
+    expect(selected).toHaveLength(1);
+    expect(selected[0]).toEqual(expect.objectContaining({ from: expect.any(Number), to: expect.any(Number) }));
+    expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("true");
+  });
+
+  it("shows a layout failure and retries it", async () => {
+    const client = layoutClient();
+    const layout = vi.spyOn(client, "layout").mockRejectedValueOnce("worker unavailable");
+    try {
+      render(<DagView dag={wordcountStage()} height={400} />);
+      expect(await screen.findByText(/worker unavailable/)).toBeTruthy();
+      expect(screen.getByTestId("dag-canvas").getAttribute("data-dag-layout")).toBe("error");
+      fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+      await waitFor(() => expect(screen.getAllByRole("treeitem").length).toBeGreaterThan(0), { timeout: 10_000 });
+      expect(screen.getByTestId("dag-canvas").getAttribute("data-dag-layout")).toBe("ready");
+    } finally {
+      layout.mockRestore();
+    }
+  });
+
+  it("zooms at the pointer and focuses the selected stage", async () => {
+    await mount(wordcountStage(), { selectedStageId: 0 });
+    const canvas = screen.getByTestId("dag-canvas");
+    const stage = screen.getByTestId("dag-stage");
+    const beforeWheel = screen.getByTestId("dag-zoom").textContent;
+    const wheel = new WheelEvent("wheel", {
+      deltaY: -120,
+      bubbles: true,
+      cancelable: true,
+    });
+    Object.defineProperty(wheel, "clientX", { value: 320 });
+    Object.defineProperty(wheel, "clientY", { value: 180 });
+    stage.dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).toBe(true);
+    await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(beforeWheel));
+
+    fireEvent.click(screen.getByRole("button", { name: "Focus stage 0" }));
+    expect(canvas.getAttribute("data-dag-layout")).toBe("ready");
+  });
+
+  it("expands provenance notes on a REST fallback graph", async () => {
+    await mount(fallbackJob(), { expandStages: true });
+    const note = screen.getByRole("button", { name: /provenance note/ });
+    expect(note.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(note);
+    expect(note.getAttribute("aria-expanded")).toBe("true");
+    expect(note.textContent).toContain("no RDD detail");
+  });
+
   it("selects a node on click and reports the stage to the host", async () => {
     const seen: number[] = [];
     await mount(wordcountStage(), { onSelectStage: (stageId: number) => seen.push(stageId) });
@@ -223,6 +338,20 @@ describe("interaction", () => {
     fireEvent.pointerDown(svg, { button: 0, pointerId: 1, clientX: 10, clientY: 10 });
     fireEvent.pointerUp(svg, { button: 0, pointerId: 1, clientX: 10, clientY: 10 });
     await waitFor(() => expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("false"));
+  });
+
+  it("pans after the drag threshold and suppresses the click that follows a drag", async () => {
+    await mount(wordcountStage());
+    const stage = screen.getByTestId("dag-stage");
+    const node = screen.getAllByRole("treeitem")[0]!;
+    fireEvent.pointerDown(node, { button: 0, pointerId: 9, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(stage, { pointerId: 9, clientX: 12, clientY: 10 });
+    expect(screen.getByTestId("dag-canvas").getAttribute("data-panning")).toBe("false");
+    fireEvent.pointerMove(stage, { pointerId: 9, clientX: 22, clientY: 20 });
+    expect(screen.getByTestId("dag-canvas").getAttribute("data-panning")).toBe("true");
+    fireEvent.pointerUp(stage, { pointerId: 9, clientX: 22, clientY: 20 });
+    fireEvent.click(node);
+    expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("false");
   });
 
   it("selects an edge from the hover target", async () => {
@@ -253,6 +382,45 @@ describe("interaction", () => {
     const nested = groups.filter((g) => (g.getAttribute("aria-label") ?? "").endsWith("(scope)"));
     expect(nested.length).toBeGreaterThan(0);
     expect(stageGroups.some((s) => s.querySelector("[data-cluster]") !== null)).toBe(true);
+  });
+});
+
+describe("DagMinimap", () => {
+  it("picks points on pointer down and drag, and ends panning on pointer up", () => {
+    const picked: Array<[number, number]> = [];
+    const started = vi.fn();
+    const ended = vi.fn();
+    const { container } = render(
+      <DagMinimap
+        nodes={[]}
+        width={168}
+        height={112}
+        contentWidth={336}
+        contentHeight={224}
+        projection={{ scale: 0.5, offsetX: 0, offsetY: 0 }}
+        viewRect={{ x: 0, y: 0, width: 100, height: 100 }}
+        onPick={(x, y) => picked.push([x, y])}
+        onDragStart={started}
+        onDragEnd={ended}
+      />,
+    );
+    const minimap = container.querySelector("svg")!;
+    Object.defineProperty(minimap, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, top: 0, left: 0, right: 168, bottom: 112, width: 168, height: 112, toJSON: () => ({}) }),
+    });
+    Object.defineProperty(minimap, "setPointerCapture", { configurable: true, value: () => {} });
+    Object.defineProperty(minimap, "releasePointerCapture", { configurable: true, value: () => {} });
+    fireEvent.pointerDown(minimap, { pointerId: 4, clientX: 30, clientY: 25 });
+    fireEvent.pointerMove(minimap, { pointerId: 4, clientX: 45, clientY: 35, buttons: 1 });
+    fireEvent.pointerMove(minimap, { pointerId: 4, clientX: 50, clientY: 40, buttons: 0 });
+    fireEvent.pointerUp(minimap, { pointerId: 4 });
+    expect(started).toHaveBeenCalledOnce();
+    expect(ended).toHaveBeenCalledOnce();
+    expect(picked).toEqual([
+      [60, 50],
+      [90, 70],
+    ]);
   });
 });
 

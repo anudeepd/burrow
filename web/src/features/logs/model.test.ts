@@ -27,6 +27,7 @@ import {
   stripAnsi,
   utf8Len,
 } from "./model";
+import type { TimestampReference } from "./model";
 
 describe("utf8Len", () => {
   it("counts ASCII, 2-, 3- and 4-byte code points", () => {
@@ -51,6 +52,11 @@ describe("sliceBytes", () => {
     // "😀" is 4 bytes; asking for 2 must yield "" rather than a lone surrogate
     expect(sliceBytes("😀x", 0, 2)).toBe("");
     expect(sliceBytes("😀x", 0, 4)).toBe("😀");
+  });
+
+  it("supports a finite byte window and empty overlap", () => {
+    expect(sliceBytes("aé😀z", 1, 6)).toBe("é😀");
+    expect(sliceBytes("abc", 3)).toBe("");
   });
 });
 
@@ -123,6 +129,7 @@ describe("timestamps", () => {
     expect(relativeMs(1000, 23 * 3600 * 1000)).toBe(1000 - 23 * 3600 * 1000 + 24 * 3600 * 1000);
     expect(relativeMs(5000, 4000)).toBe(1000);
     expect(relativeMs(5000, null)).toBeNull();
+    expect(relativeMs(23 * 3600 * 1000, 1000)).toBe(-3600 * 1000 - 1000);
   });
   it("computes elapsed time for full date stamps and clock-only stamps", () => {
     const dated = detectTimestamp("2026-10-03 12:00:00.000 INFO x")!;
@@ -132,6 +139,8 @@ describe("timestamps", () => {
     expect(relativeTimestampMs(clock, "clock:86399000")).toBe(2_000);
     expect(relativeTimestampMs(dated, "clock:10500")).toBeNull();
     expect(relativeTimestampMs(dated, null)).toBeNull();
+    expect(relativeTimestampMs(dated, "epoch:not-a-number" as TimestampReference)).toBeNull();
+    expect(relativeTimestampMs(clock, "epoch:0")).toBeNull();
   });
 });
 
@@ -147,6 +156,9 @@ describe("search", () => {
   it("flags a bad regex instead of silently matching nothing", () => {
     expect(isBadRegex({ query: "(", regex: true, caseSensitive: false })).toBe(true);
     expect(compileSearch({ query: "(", regex: true, caseSensitive: false })).toBeNull();
+    expect(isBadRegex({ query: "hit", regex: true, caseSensitive: false })).toBe(false);
+    expect(isBadRegex({ query: "", regex: true, caseSensitive: false })).toBe(false);
+    expect(isBadRegex({ query: "(", regex: false, caseSensitive: false })).toBe(false);
   });
   it("matches in the visible (ANSI-stripped) coordinate space", () => {
     const m = findMatches(["\u001b[31mERROR\u001b[0m boom"], { query: "boom", regex: false, caseSensitive: false });
@@ -159,6 +171,7 @@ describe("search", () => {
   it("caps the result set", () => {
     const lines = Array.from({ length: 100 }, () => "x");
     expect(findMatches(lines, { query: "x", regex: false, caseSensitive: false }, 10)).toHaveLength(10);
+    expect(findMatches(["", "hit"], { query: "hit", regex: false, caseSensitive: false })).toEqual([{ line: 1, start: 0, end: 3 }]);
   });
   it("groups by line and steps with wrap-around", () => {
     const matches = findMatches(["a a", "b a"], { query: "a", regex: false, caseSensitive: false });
@@ -191,6 +204,18 @@ describe("search", () => {
     const cancelled = scanMatchesAsync(lines, { query: "hit", regex: false, caseSensitive: false }, { batch: 10_000 });
     cancelled.cancel();
     await expect(cancelled.promise).resolves.toHaveLength(0);
+  });
+
+  it("stops at its async cap and reports the final partial batch", async () => {
+    const progress: Array<[number, number]> = [];
+    const scan = scanMatchesAsync(["xx", "x", "x"], { query: "x", regex: false, caseSensitive: false }, {
+      cap: 2,
+      batch: 10,
+      onProgress: (found, scanned) => progress.push([found, scanned]),
+    });
+    await expect(scan.promise).resolves.toHaveLength(2);
+    expect(progress).toEqual([[2, 1]]);
+    await expect(scanMatchesAsync(["x"], { query: "", regex: false, caseSensitive: false }).promise).resolves.toEqual([]);
   });
 });
 
@@ -273,6 +298,37 @@ describe("LineBuffer offset math", () => {
     // late chunks after EOF are ignored
     b.append("more\n", b.resumeOffset);
     expect(b.length).toBe(2);
+    b.markEnded(); // EOF is idempotent
+  });
+
+  it("replaces its window when a head-aligned chunk arrives", () => {
+    const b = new LineBuffer();
+    b.setWindow("old\n", 0);
+    const generation = b.generation;
+    b.append("new\n", 100, { headAligned: true });
+    expect(b.generation).toBe(generation + 1);
+    expect(b.toLines()).toEqual(["new"]);
+    expect(b.firstByte).toBe(100);
+  });
+
+  it("flushes a partial line before a gap and ignores a fully overlapped chunk", () => {
+    const b = new LineBuffer();
+    b.setWindow("one\npart", 0);
+    const before = b.version;
+    b.append("old", 0); // all bytes are older than the current watermark
+    expect(b.version).toBeGreaterThan(before);
+    expect(b.line(0)).toBe("one");
+    b.append("next\n", 20);
+    expect(b.line(1)).toBe("part");
+    expect(b.line(2)).toBe("next");
+    expect(b.gaps).toEqual([{ from: 8, to: 20 }]);
+  });
+
+  it("drops the synthetic empty prefix when a byte window begins at a line-ending newline", () => {
+    const b = new LineBuffer();
+    b.setWindow("\nreal\n\n", 10);
+    expect(b.toLines()).toEqual(["real", ""]);
+    expect(b.headPartial).toBe(true);
   });
 
   it("trims to the ring-buffer cap and keeps accessors relative", () => {
@@ -285,6 +341,19 @@ describe("LineBuffer offset math", () => {
     // retained starts remain monotonic and consistent
     for (let i = 1; i < b.length; i++) expect(b.start(i)).toBeGreaterThan(b.start(i - 1));
     expect(b.totalBytes).toBe(b.end(b.length - 1) + 1);
+  });
+
+  it("compacts old ring-buffer storage and copies text within a byte budget", () => {
+    const b = new LineBuffer(10);
+    for (let i = 0; i < 120; i++) b.append(`line-${i}\n`, b.resumeOffset);
+    expect(b.length).toBeLessThanOrEqual(10);
+    expect(b.toLines()).toEqual(Array.from({ length: b.length }, (_, i) => `line-${110 + i}`));
+    expect(b.fullText(8)).toContain("line-");
+
+    const bytes = new LineBuffer();
+    bytes.setWindow("é\nb\nc\n", 0);
+    expect(bytes.fullText()).toBe("é\nb\nc");
+    expect(bytes.fullText(2)).toBe("é");
   });
 
   it("bumps the version on every mutation", () => {
@@ -319,13 +388,18 @@ describe("window headers and labels", () => {
     expect(parseWindowHeaders(h, { offset: 0, length: 50 }, 0)).toEqual({ size: 1000, start: 100, end: 200, source: "nm" });
     const bare = new Headers();
     expect(parseWindowHeaders(bare, { offset: 10, length: 40 }, 99)).toEqual({ size: 99, start: 10, end: 50, source: null });
+    const invalid = new Headers({ "x-burrow-log-size": "NaN", "x-burrow-log-start": "Infinity" });
+    expect(parseWindowHeaders(invalid, { offset: 4, length: 8 }, 100)).toEqual({ size: 100, start: 4, end: 12, source: null });
   });
   it("labels the source", () => {
     expect(sourceLabel("nm")).toBe("NodeManager");
     expect(sourceLabel("jhs")).toBe("JobHistory");
+    expect(sourceLabel("ats")).toBe("ATS");
     expect(sourceLabel(null)).toBe("unknown");
   });
   it("prints an inclusive byte range", () => {
     expect(byteRangeLabel(0, 131072, 222179)).toContain("bytes 0–131,071 of 222,179");
+    expect(byteRangeLabel(4, 4, 4)).toContain("bytes 4–4 of 4 · 0 B");
+    expect(byteRangeLabel(0, 1_572_864, 2_000_000)).toContain("1.5 MiB");
   });
 });
