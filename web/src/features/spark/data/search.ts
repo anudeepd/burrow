@@ -42,7 +42,7 @@ export function serializeColumns(v: ColumnVisibilityState): { cols?: string } {
     if (on === false) parts.push(`-${id}`);
     else if (on === true) parts.push(id);
   }
-  parts.sort();
+  parts.sort((a, b) => a.localeCompare(b));
   return { cols: parts.length ? parts.join(",") : undefined };
 }
 

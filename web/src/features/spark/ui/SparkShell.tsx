@@ -153,7 +153,7 @@ function SparkHeader({
   const selected = attempts.find((a, i) => attemptValue(a, i) === selectedAttempt) ?? first;
 
   const setAttempt = (v: string | null) => {
-    const url = new URL(location.href, "http://x");
+    const url = new URL(location.href, window.location.origin);
     if (v) url.searchParams.set("attempt", v);
     else url.searchParams.delete("attempt");
     router.history.push(`${url.pathname}${url.search}`);

@@ -22,7 +22,8 @@ import { Button } from "~/ui/button";
 import { ROW_HEIGHT } from "~/ui/data-table/data-table";
 import { CenteredPageState, EmptyState, ErrorState, StaleErrorBanner, TableSkeleton } from "~/ui/feedback";
 import { ScrollBottomFade, useHasMoreBelow } from "~/ui/scroll-bottom-fade";
-import { highlightJmxText } from "./jmx";
+import { HighlightedText } from "./highlighted-text";
+import { handleTreeNavigationKey } from "./tree-navigation";
 import { type DumpThread, frameText, parseThreadDump, searchThreads, stateHistogram, THREAD_STATE_TONE, threadToText } from "./stacks";
 import { OptionalTooltip } from "~/ui/tooltip";
 
@@ -152,17 +153,13 @@ export function StacksView() {
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget) return;
-    const row = rows[activeIndex];
     const page = Math.max(1, Math.floor((scrollRef.current?.clientHeight ?? 400) / rowH) - 2);
+    if (handleTreeNavigationKey(e.key, activeIndex, rows.length, page, move)) {
+      e.preventDefault();
+      return;
+    }
+    const row = rows[activeIndex];
     switch (e.key) {
-      case "ArrowDown":
-      case "j":
-        move(activeIndex + 1);
-        break;
-      case "ArrowUp":
-      case "k":
-        move(activeIndex - 1);
-        break;
       case "ArrowRight": {
         const open = row ? isThreadOpen(rows, activeIndex) : false;
         if (row && row.kind === "thread" && !open) toggle(row.thread.id);
@@ -171,18 +168,6 @@ export function StacksView() {
       }
       case "ArrowLeft":
         if (row && isThreadOpen(rows, activeIndex) && !parity) toggle(row.thread.id);
-        break;
-      case "PageDown":
-        move(activeIndex + page);
-        break;
-      case "PageUp":
-        move(activeIndex - page);
-        break;
-      case "Home":
-        move(0);
-        break;
-      case "End":
-        move(rows.length - 1);
         break;
       case " ":
         if (row?.kind === "thread") toggle(row.thread.id);
@@ -410,6 +395,7 @@ function StackRow({ row, index, height, offset, query, open, selected, active, d
     <div
       role="treeitem"
       id={domId}
+      tabIndex={-1}
       aria-level={row.kind === "thread" ? 1 : 2}
       aria-expanded={row.kind === "thread" ? open : undefined}
       aria-selected={selected}
@@ -457,7 +443,7 @@ function ThreadRowBody({ row, query, open, onToggle }: { row: Row; query: string
       <span className="shrink-0 text-micro text-ink-4 tnum">#{row.thread.id}</span>
       <OptionalTooltip label={row.thread.name}>
         <span className="min-w-0 flex-1 truncate font-medium text-ink">
-          <Highlighted text={row.thread.name} query={query} />
+          <HighlightedText text={row.thread.name} query={query} />
         </span>
       </OptionalTooltip>
       {row.thread.waitingOn && (
@@ -486,32 +472,15 @@ function FrameRowBody({ row, query }: { row: Row; query: string }) {
       </span>
       <OptionalTooltip label={frameText(frame)}>
         <span className="min-w-0 flex-1 truncate font-mono text-small text-ink-2">
-          <Highlighted text={frame.className} query={query} />
+          <HighlightedText text={frame.className} query={query} />
           <span className="text-ink-4">.</span>
-          <Highlighted text={frame.method} query={query} />
+          <HighlightedText text={frame.method} query={query} />
           <span className="text-ink-4">
             {frame.native ? "(Native Method)" : frame.line != null ? `(${frame.file}:${frame.line})` : frame.file ? `(${frame.file})` : ""}
           </span>
         </span>
       </OptionalTooltip>
       {frame.module && <span className="hidden shrink-0 font-mono text-micro text-ink-4 md:inline">{frame.module}</span>}
-    </>
-  );
-}
-
-function Highlighted({ text, query }: { text: string; query: string }) {
-  const parts = highlightJmxText(text, query);
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.hit ? (
-          <mark key={i} className="rounded-xs bg-live/25 px-0.5 text-ink">
-            {part.text}
-          </mark>
-        ) : (
-          <span key={i}>{part.text}</span>
-        ),
-      )}
     </>
   );
 }

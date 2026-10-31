@@ -112,7 +112,7 @@ export function StreamingPage() {
   const statuses = useMemo(() => {
     const set = new Set<string>();
     for (const b of windowed) if (b.status) set.add(b.status);
-    return [...set].sort();
+    return [...set].sort((a, b) => a.localeCompare(b));
   }, [windowed]);
 
   const batches = useMemo(() => (statusFilter ? windowed.filter((b) => b.status === statusFilter) : windowed), [windowed, statusFilter]);

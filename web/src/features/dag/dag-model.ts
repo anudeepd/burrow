@@ -371,9 +371,7 @@ export function stageFlags(stage: DagStage, label = stage.label): StageFlags {
   const skipped = stage.skipped || /\bskipped\b/i.test(rest);
   const attemptMatch = /\(attempt (\d+)\)/i.exec(rest);
   rest = rest
-    .replace(/\s*\(attempt \d+\)/gi, "")
-    .replace(/\s*\(skipped\)/gi, "")
-    .replace(/\s*\(barrier mode\)/gi, "")
+    .replace(/\((?:attempt \d+|skipped|barrier mode)\)/gi, "")
     .replace(/\s+/g, " ")
     .trim();
   return { label: rest || `Stage ${stage.stageId}`, barrier, skipped, attempt: attemptMatch?.[1] ? Number(attemptMatch[1]) : null };

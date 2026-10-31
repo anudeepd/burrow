@@ -38,8 +38,8 @@ export function visibilityToParam(visibility: ColumnVisibilityState, defaults: C
   const isVisible = (id: string) => visibility[id] ?? defaults[id] ?? true;
   if (ids.every((id) => !isVisible(id))) return "none";
   if (ids.every(isVisible)) return ids.every((id) => defaults[id] ?? true) ? undefined : "all";
-  const shown = ids.filter(isVisible).sort();
-  const defaultShown = ids.filter((id) => defaults[id] ?? true).sort();
+  const shown = ids.filter(isVisible).sort((a, b) => a.localeCompare(b));
+  const defaultShown = ids.filter((id) => defaults[id] ?? true).sort((a, b) => a.localeCompare(b));
   if (shown.join(",") === defaultShown.join(",")) return undefined;
   return shown.join(",");
 }

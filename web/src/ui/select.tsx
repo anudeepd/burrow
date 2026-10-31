@@ -1,6 +1,6 @@
 import { Select as BSelect } from "@base-ui/react/select";
 import { Check, ChevronDown } from "lucide-react";
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 import { cn } from "~/lib/cn";
 
 export interface SelectOption<T extends string> {
@@ -15,6 +15,7 @@ export function Select<T extends string>({
   label,
   className,
   placeholder,
+  onClick,
 }: {
   value: T | null;
   onValueChange: (v: T | null) => void;
@@ -23,12 +24,14 @@ export function Select<T extends string>({
   label: string;
   className?: string;
   placeholder?: ReactNode;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 }) {
   const items = options.map((o) => ({ value: o.value, label: o.label }));
   return (
     <BSelect.Root value={value} onValueChange={(v) => onValueChange(v as T | null)} items={items}>
       <BSelect.Trigger
         aria-label={label}
+        onClick={onClick}
         className={cn(
           "burrow-control group inline-flex h-(--ctl-h) items-center justify-between gap-2 rounded-md border border-seam-strong bg-well px-2.5 text-body text-ink",
           "hover:bg-fabric-3 data-popup-open:bg-fabric-3",

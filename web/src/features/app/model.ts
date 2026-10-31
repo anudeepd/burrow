@@ -461,7 +461,10 @@ export function nodeHostPort(c: {
 }): string | null {
   const candidate = c.nodeHttpAddress ?? c.assignedNodeId ?? c.nodeId ?? null;
   if (!candidate) return null;
-  const stripped = candidate.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  const prefix = candidate.slice(0, 8).toLowerCase() === "https://" ? 8 : candidate.slice(0, 7).toLowerCase() === "http://" ? 7 : 0;
+  let end = candidate.length;
+  while (end > prefix && candidate[end - 1] === "/") end -= 1;
+  const stripped = candidate.slice(prefix, end);
   return stripped.length > 0 ? stripped : null;
 }
 

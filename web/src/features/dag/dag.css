@@ -357,7 +357,7 @@ html[data-parity] .burrow-dag-node[data-running="true"] .burrow-dag-node-hatch {
 
 /* progress: one row of contiguous segments; the width of each comes from the data */
 .burrow-dag-progress {
-  rx: 3;
+  rx: 3px;
 }
 .burrow-dag-progress-track {
   fill: var(--seam);

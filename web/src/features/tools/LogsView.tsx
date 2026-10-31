@@ -118,7 +118,9 @@ export function LogsView() {
   const [sortKey, setSortKey] = useState<LogSortKey>("lastModified");
   const [sortDesc, setSortDesc] = useState(true);
 
-  const setSearch = (patch: Partial<typeof search>) => navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  const setSearch = (patch: Partial<typeof search>) => {
+    void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  };
 
   // The listing is the file table; in tail mode it must refresh at the live cadence too, because it is what makes the
   // window follow a growing file.
@@ -135,7 +137,7 @@ export function LogsView() {
   useEffect(() => {
     if (search.file || files.length === 0) return;
     const first = files.find((f) => !f.isDir) ?? files[0];
-    if (first) navigate({ search: (prev) => ({ ...prev, file: first.name, offset: undefined }), replace: true });
+    if (first) void navigate({ search: (prev) => ({ ...prev, file: first.name, offset: undefined }), replace: true });
   }, [search.file, files, navigate]);
 
   const size = selected?.size ?? 0;

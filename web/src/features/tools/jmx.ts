@@ -262,7 +262,7 @@ function buildValue(bean: string, parent: JmxNode, key: string, path: string[], 
     };
     if (kind === "object") {
       const rec = value as Record<string, unknown>;
-      for (const childKey of Object.keys(rec).sort())
+      for (const childKey of Object.keys(rec).sort((a, b) => a.localeCompare(b)))
         node.children.push(buildValue(bean, node, childKey, [...path, childKey], rec[childKey]));
     } else {
       const arr = value as unknown[];
@@ -321,7 +321,7 @@ export function buildJmxTree(beans: JmxBean[]): JmxTree {
       leaves: 0,
     };
     register(beanNode);
-    for (const key of Object.keys(bean).sort()) {
+    for (const key of Object.keys(bean).sort((a, b) => a.localeCompare(b))) {
       if (key === "name") continue; // the MBean name is the entity key, rendered as the row label / details heading
       const child = buildValue(bean.name, beanNode, key, [key], (bean as Record<string, unknown>)[key]);
       beanNode.children.push(child);

@@ -17,7 +17,7 @@ import type { ColDef } from "~/ui/data-table/features";
 import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { ProgressBar } from "~/ui/progress-bar";
 import { StatusPill } from "~/ui/status";
-import { Tooltip } from "~/ui/tooltip";
+import { HelpTip, Tooltip } from "~/ui/tooltip";
 import { useParity } from "~/state/parity";
 import { pressureTone } from "~/lib/progress-tone";
 import { fmtInt, fmtPct } from "~/lib/format";
@@ -377,23 +377,13 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
           {nameText ? (
             <span className="flex min-w-0 items-center">
               {info?.type && <Datum field="scheduler.type" raw={info.type} fmt="text" className="sr-only" aria-hidden="true" />}
+              <Datum field="scheduler.derived.schedulerName" raw={nameText} fmt="text" className="font-medium">
+                {nameText}
+              </Datum>
               {info?.type && (
-                <Tooltip label={`YARN API type: ${info.type}`}>
-                  <span
-                    className="font-medium"
-                    // biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard users need to focus the tooltip trigger.
-                    tabIndex={0}
-                  >
-                    <Datum field="scheduler.derived.schedulerName" raw={nameText} fmt="text">
-                      {nameText}
-                    </Datum>
-                  </span>
-                </Tooltip>
-              )}
-              {!info?.type && (
-                <Datum field="scheduler.derived.schedulerName" raw={nameText} fmt="text" className="font-medium">
-                  {nameText}
-                </Datum>
+                <HelpTip label="YARN API type" className="ml-1 size-4">
+                  {info.type}
+                </HelpTip>
               )}
             </span>
           ) : (
