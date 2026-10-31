@@ -158,16 +158,13 @@ jobs:
 
   # -------------------------------------------------------------- rust checks
   rust:
-    needs: [web-assets, linux-snapshot-baselines]
-    if: ${{ always() && needs.web-assets.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    needs: [web-assets]
     runs-on: ubuntu-24.04
     permissions:
       actions: read
       contents: read
     steps:
       - uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
