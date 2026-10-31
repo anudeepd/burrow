@@ -22,5 +22,17 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     restoreMocks: true,
     reporters: ["default"],
+    coverage: {
+      provider: "istanbul",
+      reporter: ["lcov", "text"],
+      reportsDirectory: "coverage",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.{test,spec}.{ts,tsx}",
+        "src/**/__tests__/**",
+        "src/**/*.d.ts",
+        "src/**/*.gen.ts",
+      ],
+    },
   },
 });
