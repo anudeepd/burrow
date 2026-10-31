@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      build_wheels:
+        description: Build and smoke-test all platform wheels without publishing a release
+        required: false
+        type: boolean
+        default: false
       bump:
         description: Version increment to apply when publishing
         required: true
@@ -163,11 +168,11 @@ jobs:
       # offline tests only: live-cluster tests are gated on BURROW_LIVE=1
       - run: cargo test --workspace
 
-  # ----------------------------------------------------------- release version
+  # ------------------------------------------------------------- build version
   release-version:
-    name: Calculate release version
+    name: Calculate build version
     needs: [web, rust, parity-replay, linux-snapshot-baselines]
-    if: ${{ inputs.publish && always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    if: ${{ (inputs.publish || inputs.build_wheels) && always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -180,23 +185,29 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Calculate release version
+      - name: Calculate wheel version
         id: version
         env:
+          PUBLISH: ${{ inputs.publish }}
           BUMP: ${{ inputs.bump }}
         run: |
           set -euo pipefail
-          version="$(python scripts/release_version.py next --bump "$BUMP")"
-          tag="v$version"
-          set +e
-          git ls-remote --exit-code --refs origin "refs/tags/$tag" >/dev/null
-          status=$?
-          set -e
-          if [[ "$status" -eq 0 ]]; then
-            echo "::error::Release tag $tag already exists."
-            exit 1
-          elif [[ "$status" -ne 2 ]]; then
-            exit "$status"
+          if [[ "$PUBLISH" == "true" ]]; then
+            version="$(python scripts/release_version.py next --bump "$BUMP")"
+            tag="v$version"
+            set +e
+            git ls-remote --exit-code --refs origin "refs/tags/$tag" >/dev/null
+            status=$?
+            set -e
+            if [[ "$status" -eq 0 ]]; then
+              echo "::error::Release tag $tag already exists."
+              exit 1
+            elif [[ "$status" -ne 2 ]]; then
+              exit "$status"
+            fi
+          else
+            version="$(python scripts/release_version.py current)"
+            tag=""
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
@@ -204,7 +215,7 @@ jobs:
   # ------------------------------------------------------------------- wheels
   wheel:
     needs: [web, rust, linux-snapshot-baselines, parity-replay, release-version]
-    if: ${{ inputs.publish && always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && needs.release-version.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    if: ${{ (inputs.publish || inputs.build_wheels) && always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && needs.release-version.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:
