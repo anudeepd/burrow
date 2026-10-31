@@ -91,7 +91,7 @@ async function loadInlineWorkerAsset(): Promise<ElkWorkerConstructor> {
 }
 
 async function loadInlineWorker(): Promise<ElkWorkerConstructor> {
-  if (import.meta.env.SSR) return await loadInlineWorkerModule();
+  if (import.meta.env.SSR || import.meta.env.MODE === "test") return await loadInlineWorkerModule();
   return await loadInlineWorkerAsset();
 }
 
