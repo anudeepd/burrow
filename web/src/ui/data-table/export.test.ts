@@ -21,7 +21,14 @@ describe("table export formats", () => {
   });
 
   it("exports raw JSON values and turns absent values into null", () => {
-    expect(JSON.parse(toJson(columns, [{ name: "row", count: 0 }, { name: "other", metadata: null }]))).toEqual([
+    expect(
+      JSON.parse(
+        toJson(columns, [
+          { name: "row", count: 0 },
+          { name: "other", metadata: null },
+        ]),
+      ),
+    ).toEqual([
       { name: "row", count: 0, metadata: null },
       { name: "other", count: null, metadata: null },
     ]);

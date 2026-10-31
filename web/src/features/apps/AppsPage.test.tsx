@@ -26,7 +26,9 @@ describe("AppsPage", () => {
     const patch = vi.fn();
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ apps: { app: apps } }), { status: 200, headers: { "content-type": "application/json" } })),
+      vi.fn(
+        async () => new Response(JSON.stringify({ apps: { app: apps } }), { status: 200, headers: { "content-type": "application/json" } }),
+      ),
     );
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
     client.setQueryData(q.apps().queryKey, { apps: { app: apps } });
@@ -140,15 +142,17 @@ describe("AppsPage", () => {
   });
 });
 
-function renderAppsPage(options: {
-  search?: Record<string, unknown>;
-  renderVersion?: "pre" | "post";
-  previewState?: "loaded" | "loading" | "unavailable";
-  previewApps?: App[];
-  live?: boolean;
-  queryError?: Error;
-  queryHasData?: boolean;
-} = {}) {
+function renderAppsPage(
+  options: {
+    search?: Record<string, unknown>;
+    renderVersion?: "pre" | "post";
+    previewState?: "loaded" | "loading" | "unavailable";
+    previewApps?: App[];
+    live?: boolean;
+    queryError?: Error;
+    queryHasData?: boolean;
+  } = {},
+) {
   const patch = vi.fn();
   const onOpenApp = vi.fn();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });

@@ -70,7 +70,9 @@ afterEach(() => {
 
 describe("SSE topics and lifecycle", () => {
   it("selects only active live topics, sorts them, and caps the set at 64", () => {
-    const topics: { topic: string; kind?: string }[] = Array.from({ length: 70 }, (_, i) => ({ topic: `topic-${String(i).padStart(2, "0")}` }));
+    const topics: { topic: string; kind?: string }[] = Array.from({ length: 70 }, (_, i) => ({
+      topic: `topic-${String(i).padStart(2, "0")}`,
+    }));
     topics.push({ topic: "slow-topic", kind: "slow" });
     const client = makeClient(topics);
     const active = topicsInUse(client);

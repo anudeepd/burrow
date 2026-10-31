@@ -23,7 +23,13 @@ const meta = {
   version: "1.2.3",
   now: 1_791_011_000_000,
   readOnly: true,
-  rm: { urls: ["http://rm-a:8088", "http://rm-b:8088"], active: "http://rm-a:8088", haState: "ACTIVE", hadoopVersion: "3.4.3", reachable: true },
+  rm: {
+    urls: ["http://rm-a:8088", "http://rm-b:8088"],
+    active: "http://rm-a:8088",
+    haState: "ACTIVE",
+    hadoopVersion: "3.4.3",
+    reachable: true,
+  },
   services: {
     sparkHistory: {
       configured: true,

@@ -45,7 +45,11 @@ function renderShell(search = "", mode: "live-proxy" | "history" | "none" = "liv
       getParentRoute: () => spark,
       path,
       validateSearch: sparkSearch,
-      component: () => <SparkShell appId={APP_ID}><p>Page content</p></SparkShell>,
+      component: () => (
+        <SparkShell appId={APP_ID}>
+          <p>Page content</p>
+        </SparkShell>
+      ),
     });
   const pages = ["jobs", "stages", "executors", "storage", "environment", "sql", "streaming", "timeline"].map(page);
   const router = createRouter({
@@ -130,5 +134,4 @@ describe("SparkShell", () => {
     fireEvent.click(screen.getByRole("link", { name: "Stages" }));
     await waitFor(() => expect(screen.getByRole("link", { name: "Stages" }).getAttribute("aria-current")).toBe("page"));
   });
-
 });

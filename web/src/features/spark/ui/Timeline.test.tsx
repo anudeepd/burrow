@@ -213,7 +213,14 @@ describe("buildTimelineRows", () => {
         rddIds: [],
         accumulatorUpdates: [],
       }),
-      SparkStageSchema.parse({ stageId: 10, status: "FAILED", submissionTime: "5000", completionTime: "4000", rddIds: [], accumulatorUpdates: [] }),
+      SparkStageSchema.parse({
+        stageId: 10,
+        status: "FAILED",
+        submissionTime: "5000",
+        completionTime: "4000",
+        rddIds: [],
+        accumulatorUpdates: [],
+      }),
       SparkStageSchema.parse({ stageId: 11, status: "PENDING", submissionTime: "3000", rddIds: [], accumulatorUpdates: [] }),
       SparkStageSchema.parse({ stageId: 12, status: "ACTIVE", rddIds: [], accumulatorUpdates: [] }),
     ];
@@ -224,26 +231,56 @@ describe("buildTimelineRows", () => {
     ];
 
     const rows = buildTimelineRows({ jobs, stages, executors, now: 4_000 });
-    expect(rows.filter((row) => row.kind === "header").map((row) => row.label)).toEqual([
-      "Executors (3)",
-      "Jobs (3)",
-      "Stages (6)",
-    ]);
+    expect(rows.filter((row) => row.kind === "header").map((row) => row.label)).toEqual(["Executors (3)", "Jobs (3)", "Stages (6)"]);
     const byKey = new Map(rows.filter((row) => row.kind === "bar").map((row) => [row.key, row]));
 
-    expect(byKey.get("executor:1")).toMatchObject({ start: 1_000, end: 4_000, durationMs: 3_000, open: true, tone: "live", sub: "worker:1234" });
+    expect(byKey.get("executor:1")).toMatchObject({
+      start: 1_000,
+      end: 4_000,
+      durationMs: 3_000,
+      open: true,
+      tone: "live",
+      sub: "worker:1234",
+    });
     expect(byKey.get("executor:2")).toMatchObject({ end: 3_500, durationMs: 2_500, tone: "idle", note: undefined });
-    expect(byKey.get("executor:3")).toMatchObject({ start: null, end: null, durationMs: null, tone: "wait", note: "Spark reported no addTime for this executor." });
+    expect(byKey.get("executor:3")).toMatchObject({
+      start: null,
+      end: null,
+      durationMs: null,
+      tone: "wait",
+      note: "Spark reported no addTime for this executor.",
+    });
 
     expect(byKey.get("job:9")).toMatchObject({ end: 4_000, durationMs: 2_000, open: true, sub: "live query", note: undefined });
     expect(byKey.get("job:3")).toMatchObject({ end: 3_000, durationMs: 2_000, open: false, sub: "finished query" });
-    expect(byKey.get("job:7")).toMatchObject({ start: null, end: null, durationMs: null, note: "Spark reported no submissionTime for this job." });
+    expect(byKey.get("job:7")).toMatchObject({
+      start: null,
+      end: null,
+      durationMs: null,
+      note: "Spark reported no submissionTime for this job.",
+    });
 
     expect(byKey.get("stage:5/0")).toMatchObject({ start: 1_000, end: 1_000, ghost: true, durationMs: null });
-    expect(byKey.get("stage:6/2")).toMatchObject({ start: null, end: null, ghost: true, note: expect.stringContaining("no job referenced it") });
-    expect(byKey.get("stage:8/1")).toMatchObject({ start: 2_000, end: 4_000, open: true, durationMs: 2_000, name: "Stage 8 attempt 1", note: "Spark reported no submissionTime; the bar starts at firstTaskLaunchedTime." });
+    expect(byKey.get("stage:6/2")).toMatchObject({
+      start: null,
+      end: null,
+      ghost: true,
+      note: expect.stringContaining("no job referenced it"),
+    });
+    expect(byKey.get("stage:8/1")).toMatchObject({
+      start: 2_000,
+      end: 4_000,
+      open: true,
+      durationMs: 2_000,
+      name: "Stage 8 attempt 1",
+      note: "Spark reported no submissionTime; the bar starts at firstTaskLaunchedTime.",
+    });
     expect(byKey.get("stage:10/0")).toMatchObject({ durationMs: 0, note: undefined });
-    expect(byKey.get("stage:11/0")).toMatchObject({ end: null, durationMs: 1_000, note: "Spark reported no completionTime for this stage." });
+    expect(byKey.get("stage:11/0")).toMatchObject({
+      end: null,
+      durationMs: 1_000,
+      note: "Spark reported no completionTime for this stage.",
+    });
     expect(byKey.get("stage:12/0")).toMatchObject({ start: null, end: 4_000, durationMs: null, open: true, note: undefined });
   });
 
@@ -254,7 +291,9 @@ describe("buildTimelineRows", () => {
       SparkJobSchema.parse({ jobId: 3, submissionTime: "1000", stageIds: [4], jobTags: [] }),
     ];
     const stages = [SparkStageSchema.parse({ stageId: 4, status: "SKIPPED", rddIds: [], accumulatorUpdates: [] })];
-    const executors = [SparkExecutorSchema.parse({ id: "removed-time-missing", isActive: false, addTime: "1000", blacklistedInStages: [] })];
+    const executors = [
+      SparkExecutorSchema.parse({ id: "removed-time-missing", isActive: false, addTime: "1000", blacklistedInStages: [] }),
+    ];
 
     const rows = buildTimelineRows({ jobs, stages, executors, now: null });
     expect(rows.find((row) => row.kind === "bar" && row.key === "stage:4/0")).toMatchObject({ start: 1_000, end: 1_000 });

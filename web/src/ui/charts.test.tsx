@@ -137,7 +137,15 @@ describe("AreaChart sample inspection", () => {
     expect(screen.getByRole("img", { name: "No samples" }).querySelector("line")?.getAttribute("stroke-dasharray")).toBe("2 3");
     rerender(<Sparkline points={[{ t: 1, v: 2 }]} label="One sample" />);
     expect(screen.getByRole("img", { name: "One sample" }).querySelector("path")).toBeNull();
-    rerender(<Sparkline points={[{ t: 5, v: 4 }, { t: 5, v: 4 }]} label="Flat samples" />);
+    rerender(
+      <Sparkline
+        points={[
+          { t: 5, v: 4 },
+          { t: 5, v: 4 },
+        ]}
+        label="Flat samples"
+      />,
+    );
     expect(container.querySelector("path")?.getAttribute("d")).not.toBe("");
     expect(container.querySelector("circle")?.getAttribute("cy")).toBe("12");
   });

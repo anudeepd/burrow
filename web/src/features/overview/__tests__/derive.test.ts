@@ -163,11 +163,21 @@ describe("legacy #metricsoverview cells from the captured ClusterMetrics", () =>
   });
 
   it("uses zero-safe fallbacks when cross-partition counters are incomplete", () => {
-    expect(containersRunning({ crossPartitionMetricsAvailable: true, containersAllocated: undefined } as unknown as ClusterMetrics)).toBe(0);
+    expect(containersRunning({ crossPartitionMetricsAvailable: true, containersAllocated: undefined } as unknown as ClusterMetrics)).toBe(
+      0,
+    );
     expect(containersRunning({ crossPartitionMetricsAvailable: false } as unknown as ClusterMetrics)).toBe(0);
     expect(usedResources({} as unknown as ClusterMetrics)).toEqual({ memory: 0, vCores: 0, customs: [] });
-    expect(totalResources({ crossPartitionMetricsAvailable: true } as unknown as ClusterMetrics)).toEqual({ memory: 0, vCores: 0, customs: [] });
-    expect(reservedResources({ crossPartitionMetricsAvailable: true } as unknown as ClusterMetrics)).toEqual({ memory: 0, vCores: 0, customs: [] });
+    expect(totalResources({ crossPartitionMetricsAvailable: true } as unknown as ClusterMetrics)).toEqual({
+      memory: 0,
+      vCores: 0,
+      customs: [],
+    });
+    expect(reservedResources({ crossPartitionMetricsAvailable: true } as unknown as ClusterMetrics)).toEqual({
+      memory: 0,
+      vCores: 0,
+      customs: [],
+    });
     expect(
       usedResources({
         crossPartitionMetricsAvailable: true,
@@ -230,7 +240,12 @@ describe("scheduler block", () => {
     expect(maximumClusterPriority(undefined)).toBeNull();
     expect(maximumClusterPriority([{ key: "yarn.cluster.max-application-priority", value: "x" }])).toBeNull();
     expect(confValue([{ key: "nil", value: null }], "nil")).toBeNull();
-    expect(minAllocationText([{ key: "yarn.scheduler.minimum-allocation-mb", value: "bad" }, { key: "yarn.scheduler.minimum-allocation-vcores", value: "1" }])).toBeNull();
+    expect(
+      minAllocationText([
+        { key: "yarn.scheduler.minimum-allocation-mb", value: "bad" },
+        { key: "yarn.scheduler.minimum-allocation-vcores", value: "1" },
+      ]),
+    ).toBeNull();
     expect(minAllocationText([{ key: "yarn.scheduler.minimum-allocation-mb", value: "256" }])).toBeNull();
     expect(maximumClusterPriority([{ key: "yarn.cluster.max-application-priority", value: "   " }])).toBeNull();
   });

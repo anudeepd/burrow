@@ -150,7 +150,13 @@ describe("DataTable", () => {
       { id: "n-4", name: "delta", count: 8 },
       { id: "n-5", name: "epsilon", count: 10 },
     ];
-    const { container } = renderTable({ data: manyRows, totalCount: 10, stableViewport: true, toolbarArrangement: "inline", toolbar: <button>Filter</button> });
+    const { container } = renderTable({
+      data: manyRows,
+      totalCount: 10,
+      stableViewport: true,
+      toolbarArrangement: "inline",
+      toolbar: <button type="button">Filter</button>,
+    });
     expect(screen.getByText("5 of 10 rows")).toBeTruthy();
     expect(container.querySelector('[data-burrow-table-root="test-data-table"]')?.className).toContain("h-[min(34dvh,360px)]");
 

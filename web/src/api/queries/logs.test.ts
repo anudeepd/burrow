@@ -59,10 +59,12 @@ describe("container log wire helpers", () => {
       ["stdout", 10, 1791010000000],
     ]);
     expect(orderLogFiles(parsed.files).map((f) => f.name)).toEqual(["stdout", "stderr", "zeta"]);
-    expect(orderLogFiles([{ name: "z", size: 1, lastModified: null }, { name: "a", size: 1, lastModified: null }]).map((f) => f.name)).toEqual([
-      "a",
-      "z",
-    ]);
+    expect(
+      orderLogFiles([
+        { name: "z", size: 1, lastModified: null },
+        { name: "a", size: 1, lastModified: null },
+      ]).map((f) => f.name),
+    ).toEqual(["a", "z"]);
     expect(LogFilesResponseSchema.parse({}).files).toEqual([]);
   });
 
@@ -83,16 +85,17 @@ describe("container log wire helpers", () => {
   });
 
   it("reads a byte window with server headers, or falls back to the requested offset and text length", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL) =>
-      new Response("hello", {
-        headers: {
-          "x-burrow-log-start": "8",
-          "x-burrow-log-end": "not-a-number",
-          "x-burrow-log-size": "90",
-          "x-burrow-log-source": "jhs",
-          "x-burrow-upstream": "http://jhs",
-        },
-      }),
+    const fetchMock = vi.fn(
+      async (_input: RequestInfo | URL) =>
+        new Response("hello", {
+          headers: {
+            "x-burrow-log-start": "8",
+            "x-burrow-log-end": "not-a-number",
+            "x-burrow-log-size": "90",
+            "x-burrow-log-source": "jhs",
+            "x-burrow-upstream": "http://jhs",
+          },
+        }),
     );
     vi.stubGlobal("fetch", fetchMock);
     const result = await fetchLogWindow("container", "stdout", {
@@ -112,7 +115,9 @@ describe("container log wire helpers", () => {
   });
 
   it("gives tail reads priority over ranges and reports HTTP failures with the response body", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL) => new Response("bad gateway", { status: 502, headers: { "content-type": "text/plain" } }));
+    const fetchMock = vi.fn(
+      async (_input: RequestInfo | URL) => new Response("bad gateway", { status: 502, headers: { "content-type": "text/plain" } }),
+    );
     vi.stubGlobal("fetch", fetchMock);
     await expect(fetchLogWindow("container", "stdout", { offset: 10, length: 20, tail: 5 })).rejects.toMatchObject({
       kind: "http",
@@ -154,7 +159,10 @@ describe("container log wire helpers", () => {
     const progress: [number, number][] = [];
     const blob = await downloadLogFile("container", "stdout", 6, { user: "alice" }, (loaded, total) => progress.push([loaded, total]));
     expect(await blob.text()).toBe("onetwo");
-    expect(progress).toEqual([[3, 6], [6, 6]]);
+    expect(progress).toEqual([
+      [3, 6],
+      [6, 6],
+    ]);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(String(fetchMock.mock.calls[1]?.[0])).toContain("offset=3");
 
