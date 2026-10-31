@@ -60,7 +60,7 @@ import {
   type JmxTree,
 } from "./jmx";
 import { HighlightedText } from "./highlighted-text";
-import { handleTreeNavigationKey } from "./tree-navigation";
+import { handleTreeNavigationEvent } from "./tree-navigation";
 import { OptionalTooltip } from "~/ui/tooltip";
 
 const route = getRouteApi("/tools/jmx");
@@ -213,12 +213,8 @@ export function JmxView() {
   );
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (handleTreeNavigationEvent(e, scrollRef.current?.clientHeight ?? 400, rowH, activeIndex, rows.length, move)) return;
     if (e.target !== e.currentTarget) return;
-    const page = Math.max(1, Math.floor((scrollRef.current?.clientHeight ?? 400) / rowH) - 2);
-    if (handleTreeNavigationKey(e.key, activeIndex, rows.length, page, move)) {
-      e.preventDefault();
-      return;
-    }
     const row = rows[activeIndex];
     switch (e.key) {
       case "ArrowRight": {
