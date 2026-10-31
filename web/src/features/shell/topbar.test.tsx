@@ -75,7 +75,13 @@ describe("Topbar", () => {
   });
 
   it("shows response age, parity state, and connection details for the loaded cluster", async () => {
-    connectionStore.setState((state) => ({ ...state, lastOkAt: Date.now() - 5_000, lastUpstream: "http://rm:8088", lastCache: "hit", clockSkewMs: 1300 }));
+    connectionStore.setState((state) => ({
+      ...state,
+      lastOkAt: Date.now() - 5_000,
+      lastUpstream: "http://rm:8088",
+      lastCache: "hit",
+      clockSkewMs: 1300,
+    }));
     parityStore.setState(() => ({ enabled: true }));
     renderTopbar();
     expect(screen.getByText("parity")).toBeTruthy();

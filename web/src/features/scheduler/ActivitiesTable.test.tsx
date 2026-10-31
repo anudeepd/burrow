@@ -9,9 +9,9 @@ const { act, cleanup, fireEvent, render, screen } = await import("@testing-libra
 const { ActivitiesTable } = await import("./ActivitiesTable");
 afterEach(() => cleanup());
 
-const fixture = JSON.parse(
-  readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler-activities.json"), "utf8"),
-) as { activities: Activities };
+const fixture = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler-activities.json"), "utf8")) as {
+  activities: Activities;
+};
 
 describe("ActivitiesTable", () => {
   it("renders allocation activity and updates grouping and queue filters", () => {

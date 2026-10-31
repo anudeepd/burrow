@@ -39,10 +39,7 @@ function renderOverview(children: React.ReactNode, withFixtures = true) {
       ov.scheduler().queryKey,
       JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler.json"), "utf8")),
     );
-    client.setQueryData(
-      ov.schedulerOverview().queryKey,
-      JSON.parse(readFileSync(`${FIXTURE}/scheduler-overview.json`, "utf8")),
-    );
+    client.setQueryData(ov.schedulerOverview().queryKey, JSON.parse(readFileSync(`${FIXTURE}/scheduler-overview.json`, "utf8")));
     client.setQueryData(tq.conf().queryKey, JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/tools/conf.json"), "utf8")));
     client.setQueryData(q.meta().queryKey, {
       name: "Burrow",
@@ -168,9 +165,7 @@ describe("overview sections", () => {
 
   it("keeps cached scheduler values visible when the three refreshes fail", async () => {
     const { client } = renderOverview(<SchedulerSection />);
-    const queries = [ov.schedulerOverview(), ov.scheduler(), tq.conf()].map(({ queryKey }) =>
-      client.getQueryCache().find({ queryKey })!,
-    );
+    const queries = [ov.schedulerOverview(), ov.scheduler(), tq.conf()].map(({ queryKey }) => client.getQueryCache().find({ queryKey })!);
     for (const query of queries) {
       query.setState({
         ...query.state,

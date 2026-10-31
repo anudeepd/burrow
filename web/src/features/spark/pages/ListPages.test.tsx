@@ -48,7 +48,8 @@ function renderListPage(
   const spark = createRoute({ getParentRoute: () => app, path: "spark" });
   const routeFor = (path: string, component: () => ReactElement) =>
     createRoute({ getParentRoute: () => spark, path, validateSearch: sparkSearch, component });
-  const pagePath = page === "jobs" || page === "stages" ? `${page}/` : page === "storage" ? "storage/" : page === "stage-detail" ? "stages/0/0" : page;
+  const pagePath =
+    page === "jobs" || page === "stages" ? `${page}/` : page === "storage" ? "storage/" : page === "stage-detail" ? "stages/0/0" : page;
   const pageRoutes = [
     routeFor("executors", () => <ExecutorsPage />),
     routeFor("jobs/", () => <JobsPage />),
@@ -75,7 +76,8 @@ function renderListPage(
   client.setQueryData(sp.jobs(APP_ID, { kind, attempt: null }).queryKey, allJobs);
   client.setQueryData(sp.stages(APP_ID, { kind, attempt: null }).queryKey, allStages);
   client.setQueryData(
-    sp.stageAttempt(APP_ID, 0, 0, { details: true, withSummaries: true, quantiles: [0.05, 0.25, 0.5, 0.75, 0.95], kind, attempt: null }).queryKey,
+    sp.stageAttempt(APP_ID, 0, 0, { details: true, withSummaries: true, quantiles: [0.05, 0.25, 0.5, 0.75, 0.95], kind, attempt: null })
+      .queryKey,
     stageDetail,
   );
   client.setQueryData(sp.stageAttempts(APP_ID, 0, kind, null).queryKey, stageAttempts);
@@ -108,9 +110,7 @@ function renderListPage(
   configure?.(client);
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkProvider
-        value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
-      >
+      <SparkProvider value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}>
         <RouterProvider router={router} />
       </SparkProvider>
     </QueryClientProvider>,
@@ -314,17 +314,15 @@ describe("Spark list pages", () => {
 
     expect(await screen.findByText("all failed + killed attempts loaded")).toBeTruthy();
     expect(screen.getByRole("region", { name: "Tasks of stage 0 attempt 0" }).textContent).toContain("2 retained task attempts");
-    const rawStatuses = [...screen.getByRole("region", { name: "Tasks of stage 0 attempt 0" }).querySelectorAll('[data-yf="spark.task.status"]')]
-      .map((element) => element.getAttribute("data-yv"));
+    const rawStatuses = [
+      ...screen.getByRole("region", { name: "Tasks of stage 0 attempt 0" }).querySelectorAll('[data-yf="spark.task.status"]'),
+    ].map((element) => element.getAttribute("data-yv"));
     expect(new Set(rawStatuses)).toEqual(new Set(["FAILED", "KILLED"]));
   });
 
   it("shows retry context and a stage-level failure reason", async () => {
     const failedStage: SparkStage = { ...stageDetail, status: "FAILED", failureReason: "Executor exited unexpectedly" };
-    const retriedAttempts: SparkStage[] = [
-      stageAttempts[0]!,
-      { ...stageAttempts[0]!, attemptId: 1, status: "FAILED" },
-    ];
+    const retriedAttempts: SparkStage[] = [stageAttempts[0]!, { ...stageAttempts[0]!, attemptId: 1, status: "FAILED" }];
     renderListPage("stage-detail", "", (client) => {
       client.setQueryData(
         sp.stageAttempt(APP_ID, 0, 0, {
@@ -394,10 +392,7 @@ describe("Spark list pages", () => {
   });
 
   it("filters an unpaged single status in the browser", async () => {
-    const mixedTasks: SparkTask[] = [
-      stageTasks[0]!,
-      { ...stageTasks[1]!, taskId: 9200, status: "FAILED" },
-    ];
+    const mixedTasks: SparkTask[] = [stageTasks[0]!, { ...stageTasks[1]!, taskId: 9200, status: "FAILED" }];
     renderListPage("stage-detail", "?taskStatus=SUCCESS", (client) => {
       client.setQueryData(sp.allTasks(APP_ID, 0, 0, "static", null).queryKey, mixedTasks);
     });

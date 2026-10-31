@@ -58,7 +58,11 @@ function renderSections() {
     now,
     readOnly: true,
     rm: { urls: ["http://rm:8088"], active: "http://rm:8088", reachable: true },
-    services: { sparkHistory: { configured: true, url: "http://history:18080", reachable: true }, jobHistory: { configured: false }, timeline: { configured: false } },
+    services: {
+      sparkHistory: { configured: true, url: "http://history:18080", reachable: true },
+      jobHistory: { configured: false },
+      timeline: { configured: false },
+    },
     features: { sparkLive: true, sparkHistory: true, aggregatedLogs: true, nodeLogs: true, events: true, kerberos: false },
     yarn: { logServerUrl: null, httpPolicy: "HTTP_ONLY", scheduler: "capacity" },
   });

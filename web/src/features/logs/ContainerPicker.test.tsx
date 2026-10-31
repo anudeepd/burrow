@@ -18,7 +18,12 @@ vi.mock("@tanstack/react-query", async (importOriginal) => ({
 }));
 vi.mock("@tanstack/react-router", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-router")>()),
-  Link: ({ children, to, params: _params, ...props }: { children?: React.ReactNode; to: string; params?: unknown } & Record<string, unknown>) =>
+  Link: ({
+    children,
+    to,
+    params: _params,
+    ...props
+  }: { children?: React.ReactNode; to: string; params?: unknown } & Record<string, unknown>) =>
     createElement("a", { ...props, href: to }, children),
 }));
 
@@ -112,10 +117,7 @@ describe("ContainerPicker", () => {
       {
         data: {
           containers: {
-            container: [
-              { ...live, containerId: amId },
-              live,
-            ],
+            container: [{ ...live, containerId: amId }, live],
           },
         },
         isError: false,

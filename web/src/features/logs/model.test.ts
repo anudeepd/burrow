@@ -208,11 +208,15 @@ describe("search", () => {
 
   it("stops at its async cap and reports the final partial batch", async () => {
     const progress: Array<[number, number]> = [];
-    const scan = scanMatchesAsync(["xx", "x", "x"], { query: "x", regex: false, caseSensitive: false }, {
-      cap: 2,
-      batch: 10,
-      onProgress: (found, scanned) => progress.push([found, scanned]),
-    });
+    const scan = scanMatchesAsync(
+      ["xx", "x", "x"],
+      { query: "x", regex: false, caseSensitive: false },
+      {
+        cap: 2,
+        batch: 10,
+        onProgress: (found, scanned) => progress.push([found, scanned]),
+      },
+    );
     await expect(scan.promise).resolves.toHaveLength(2);
     expect(progress).toEqual([[2, 1]]);
     await expect(scanMatchesAsync(["x"], { query: "", regex: false, caseSensitive: false }).promise).resolves.toEqual([]);

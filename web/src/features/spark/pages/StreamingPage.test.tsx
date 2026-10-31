@@ -2,11 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type { QueryClient as QueryClientType } from "@tanstack/react-query";
-import type {
-  SparkStreamingBatch,
-  SparkStreamingReceiver,
-  SparkStreamingStatistics,
-} from "../data/schemas";
+import type { SparkStreamingBatch, SparkStreamingReceiver, SparkStreamingStatistics } from "../data/schemas";
 
 window.__BURROW_PARITY__ = true;
 

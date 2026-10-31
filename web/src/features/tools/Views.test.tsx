@@ -1,7 +1,7 @@
 /** Page-level coverage for the JMX browser and thread-dump viewer, using captured daemon payloads. */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 window.__BURROW_PARITY__ = true;
 
@@ -86,7 +86,9 @@ describe("JmxView", () => {
 
     fireEvent.change(screen.getByRole("searchbox", { name: "Search attributes and values" }), { target: { value: "Memory" } });
     await waitFor(() => expect(router.state.location.search.q).toBe("Memory"));
-    fireEvent.click(screen.getAllByRole("button", { name: "Clear search" }).find((button) => button.textContent?.trim() === "Clear search")!);
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Clear search" }).find((button) => button.textContent?.trim() === "Clear search")!,
+    );
     await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
   });
 
@@ -97,7 +99,7 @@ describe("JmxView", () => {
   });
 
   it("selects a bean and drills from a nested object into a scalar value", async () => {
-    const { container, router } = renderToolPage("jmx");
+    const { router } = renderToolPage("jmx");
     const tree = await screen.findByRole("tree", { name: "JMX beans of the ResourceManager" });
     const bean = tree.querySelector('[data-burrow-jmx-node="b:java.lang:type=Memory"]');
     expect(bean).not.toBeNull();
@@ -118,7 +120,6 @@ describe("JmxView", () => {
       beans: [{ name: "Hadoop:service=ResourceManager", result: "ERROR", message: "No MBean matched this pattern" }],
     });
     expect(await screen.findByText(/No MBean matched this pattern/)).toBeTruthy();
-
   });
 
   it("renders an empty filtered tree when the query has no matches", async () => {
@@ -212,7 +213,9 @@ describe("StacksView", () => {
   it("shows an empty filtered tree when no thread or frame matches", { timeout: 30_000 }, async () => {
     const { router } = renderToolPage("stacks");
     await screen.findByRole("tree", { name: "Thread dump" });
-    fireEvent.change(screen.getByRole("searchbox", { name: "Search threads and frames" }), { target: { value: "no-such-thread-or-frame" } });
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search threads and frames" }), {
+      target: { value: "no-such-thread-or-frame" },
+    });
     await waitFor(() => expect(router.state.location.search.q).toBe("no-such-thread-or-frame"));
     await waitFor(() => expect(screen.getByRole("tree", { name: "Thread dump" }).getAttribute("data-burrow-stacks-rows")).toBe("0"));
     expect(screen.getByText(/0 of 230 threads match/)).toBeTruthy();

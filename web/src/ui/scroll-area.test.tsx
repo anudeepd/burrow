@@ -41,7 +41,8 @@ describe("ScrollArea", () => {
         <div>wide content</div>
       </ScrollArea>,
     );
-    const bars = () => [...view.container.querySelectorAll<HTMLElement>('[data-part="scrollbar"]')].map((el) => el.getAttribute("data-orientation"));
+    const bars = () =>
+      [...view.container.querySelectorAll<HTMLElement>('[data-part="scrollbar"]')].map((el) => el.getAttribute("data-orientation"));
 
     expect(viewportRef.current).not.toBeNull();
     expect(view.container.querySelector(".test-root")).not.toBeNull();

@@ -12,16 +12,12 @@ const { logsSearchSchema, parseSearch } = await import("./search");
 
 const APP_ID = "application_1_2";
 const CONTAINER_ID = "container_1_2_3_4";
-const LOG_TEXT = [
-  "2026-10-31 10:00:00,000 INFO [main] startup complete",
-  "2026-10-31 10:00:01,500 WARN [worker] queue is slow",
-  "2026-10-31 10:00:02,000 ERROR [worker] task failed",
-].join("\n") + "\n";
+const LOG_TEXT = `2026-10-31 10:00:00,000 INFO [main] startup complete
+2026-10-31 10:00:01,500 WARN [worker] queue is slow
+2026-10-31 10:00:02,000 ERROR [worker] task failed
+`;
 
-function renderLogs(
-  search = "",
-  options: { containerId?: string | null; filesError?: Error; windowError?: Error; logText?: string } = {},
-) {
+function renderLogs(search = "", options: { containerId?: string | null; filesError?: Error; windowError?: Error; logText?: string } = {}) {
   const containerId = options.containerId === undefined ? CONTAINER_ID : options.containerId;
   const logText = options.logText ?? LOG_TEXT;
   const root = createRootRoute();
@@ -116,10 +112,9 @@ function stubLogFetch(listStatus = 200, fileStatus = 200) {
           },
         });
       }
-      return new Response(
-        JSON.stringify({ source: "nm", node: "worker:8041", files: [{ name: "stdout", size: LOG_TEXT.length }] }),
-        { headers: { "content-type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ source: "nm", node: "worker:8041", files: [{ name: "stdout", size: LOG_TEXT.length }] }), {
+        headers: { "content-type": "application/json" },
+      });
     }),
   );
 }

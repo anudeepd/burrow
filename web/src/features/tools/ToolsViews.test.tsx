@@ -7,7 +7,14 @@ window.__BURROW_PARITY__ = true;
 
 vi.mock("./logs", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./logs")>()),
-  fetchLogChunk: vi.fn(async () => ({ text: "INFO startup\nERROR task failed\nERROR second failure\nINFO shutdown\n", size: 64, start: 0, end: 64, source: "rm", derived: false })),
+  fetchLogChunk: vi.fn(async () => ({
+    text: "INFO startup\nERROR task failed\nERROR second failure\nINFO shutdown\n",
+    size: 64,
+    start: 0,
+    end: 64,
+    source: "rm",
+    derived: false,
+  })),
 }));
 
 const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
@@ -42,11 +49,12 @@ function renderToolsPage(page: "conf" | "logs", search = "", options: { listingE
     const status = options.listingError instanceof ApiError ? 404 : 500;
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () =>
-        new Response(JSON.stringify({ error: { message: options.listingError!.message } }), {
-          status,
-          headers: { "content-type": "application/json" },
-        }),
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ error: { message: options.listingError!.message } }), {
+            status,
+            headers: { "content-type": "application/json" },
+          }),
       ),
     );
   } else {

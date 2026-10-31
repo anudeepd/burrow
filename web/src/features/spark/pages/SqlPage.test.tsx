@@ -100,7 +100,9 @@ function renderSqlDetail() {
   client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, SQL_JOBS as never);
   return render(
     <QueryClientProvider client={client}>
-      <SparkProvider value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}>
+      <SparkProvider
+        value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
+      >
         <RouterProvider router={router} />
       </SparkProvider>
     </QueryClientProvider>,

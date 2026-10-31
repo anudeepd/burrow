@@ -54,7 +54,11 @@ describe("DAG edge layers", () => {
         labels: [],
       }),
     ];
-    const { container } = render(<svg><EdgeLayer edges={edges} showLabels interactive onHover={onHover} onActivate={onActivate} /></svg>);
+    const { container } = render(
+      <svg aria-label="DAG edges">
+        <EdgeLayer edges={edges} showLabels interactive onHover={onHover} onActivate={onActivate} />
+      </svg>,
+    );
     expect(container.querySelectorAll(".burrow-dag-edge")).toHaveLength(2);
     expect(container.querySelectorAll(".burrow-dag-edge-flow")).toHaveLength(1);
     expect(container.querySelectorAll(".burrow-dag-arrow")).toHaveLength(1);
@@ -112,8 +116,18 @@ describe("DAG edge layers", () => {
 
   it("keeps reduced-motion and offscreen canvas drawings static", () => {
     const ctx = {
-      setTransform: vi.fn(), clearRect: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn(),
-      setLineDash: vi.fn(), globalAlpha: 1, strokeStyle: "", lineWidth: 1, lineCap: "butt", lineDashOffset: 0,
+      setTransform: vi.fn(),
+      clearRect: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      stroke: vi.fn(),
+      setLineDash: vi.fn(),
+      globalAlpha: 1,
+      strokeStyle: "",
+      lineWidth: 1,
+      lineCap: "butt",
+      lineDashOffset: 0,
     };
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
     const raf = vi.spyOn(window, "requestAnimationFrame").mockReturnValue(1);

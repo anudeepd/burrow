@@ -20,14 +20,21 @@ const FIXTURES = resolve(process.cwd(), "../fixtures/rm/nodes");
 const readJson = (name: string) => JSON.parse(readFileSync(`${FIXTURES}/${name}`, "utf8")) as unknown;
 const nodesResponse = readJson("nodes.json") as NodesResponse;
 const nodeLabelsResponse = readJson("get-node-labels.json") as NodeLabelsResponse;
-const node = (nodesResponse.nodes?.node as Node[])[0]!;
+const nodeEntries = nodesResponse.nodes?.node as Node[] | undefined;
+if (!nodeEntries?.[0]) throw new Error("nodes fixture has no node");
+const node = nodeEntries[0];
 
 function renderNodeRoute(page: "nodes" | "labels", search = "") {
   const root = createRootRoute();
   const route =
     page === "nodes"
       ? createRoute({ getParentRoute: () => root, path: "/nodes/", validateSearch: nodesSearchSchema, component: NodesPage })
-      : createRoute({ getParentRoute: () => root, path: "/node-labels", validateSearch: nodeLabelsSearchSchema, component: NodeLabelsPage });
+      : createRoute({
+          getParentRoute: () => root,
+          path: "/node-labels",
+          validateSearch: nodeLabelsSearchSchema,
+          component: NodeLabelsPage,
+        });
   const router = createRouter({
     routeTree: root.addChildren([route]),
     history: createMemoryHistory({ initialEntries: [`${page === "nodes" ? "/nodes/" : "/node-labels"}${search}`] }),
@@ -97,9 +104,7 @@ describe("node pages", () => {
       totalVCoresNeeded: 1,
       containerLogsShortLink: "/tools/logs?container=container_1791010984040_0002_01_000001",
     };
-    const view = render(
-      <NodeContainers node={node} containers={[container]} loading={false} error={null} onRetry={() => {}} />,
-    );
+    const view = render(<NodeContainers node={node} containers={[container]} loading={false} error={null} onRetry={() => {}} />);
     expect(screen.getByRole("table", { name: "Containers on this node" })).toBeTruthy();
     expect(screen.getByText(container.id)).toBeTruthy();
     expect(screen.getByRole("link", { name: "app" }).getAttribute("href")).toContain("/apps/application_");
