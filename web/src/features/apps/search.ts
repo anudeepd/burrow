@@ -145,6 +145,6 @@ export function colsToParam(visibility: Record<string, boolean>): string {
   const hidden = Object.entries(visibility)
     .filter(([, visible]) => !visible)
     .map(([id]) => id)
-    .sort();
+    .sort((a, b) => a.localeCompare(b));
   return hidden.length ? hidden.join(",") : "all";
 }

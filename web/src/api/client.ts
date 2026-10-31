@@ -39,7 +39,7 @@ export type Query = Record<string, string | number | boolean | readonly string[]
 export function canonicalQuery(q?: Query): string {
   if (!q) return "";
   const parts: string[] = [];
-  for (const k of Object.keys(q).sort()) {
+  for (const k of Object.keys(q).sort((a, b) => a.localeCompare(b))) {
     const v = q[k];
     if (v == null || v === "") continue;
     const s = Array.isArray(v) ? v.join(",") : String(v);

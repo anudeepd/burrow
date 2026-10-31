@@ -281,8 +281,8 @@ html[data-switching] *, html[data-switching] *::before, html[data-switching] *::
 @keyframes burrow-needle {
   0% { transform: translateX(-100%); opacity: 0; }
   15%, 70% { opacity: 1; }
-  90%, 100% { opacity: 0; }
-  100% { transform: translateX(400%); }
+  90% { opacity: 0; }
+  100% { transform: translateX(400%); opacity: 0; }
 }
 @keyframes burrow-pulse-ring { 0% { transform: scale(0.8); opacity: 0.7; } 70%, 100% { transform: scale(2.1); opacity: 0; } }
 @keyframes burrow-skeleton { from { transform: translateX(-100%); } to { transform: translateX(100%); } }

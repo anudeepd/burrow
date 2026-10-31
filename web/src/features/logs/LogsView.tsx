@@ -64,7 +64,9 @@ export function LogsView() {
   );
 
   const setSearch = useCallback(
-    (patch: Record<string, unknown>) => navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true }),
+    (patch: Record<string, unknown>) => {
+      void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+    },
     [navigate],
   );
 

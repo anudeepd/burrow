@@ -38,7 +38,7 @@ export function goldensFor(version: string): Golden[] {
     const dir = join(base, workload);
     for (const file of readdirSync(dir)
       .filter((f) => f.startsWith("dag-") && f.endsWith(".json"))
-      .sort()) {
+      .sort((a, b) => a.localeCompare(b))) {
       out.push({ version, workload, file, path: join(dir, file) });
     }
   }
@@ -67,7 +67,7 @@ export function sqlPlans(version: string): { workload: string; file: string; pat
     } catch {
       continue;
     }
-    for (const file of files.filter((f) => /^final\.sql-\d+\.json$/.test(f)).sort()) {
+    for (const file of files.filter((f) => /^final\.sql-\d+\.json$/.test(f)).sort((a, b) => a.localeCompare(b))) {
       out.push({ workload, file: `rest/${file}`, path: join(restDir, file) });
     }
   }

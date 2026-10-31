@@ -238,6 +238,7 @@ export function DagView({
     [containerRef, inViewRef],
   );
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const dagKeyboardRef = useRef<HTMLDivElement | null>(null);
   const [layout, setLayout] = useState<LayoutResult | null>(null);
   const [layoutError, setLayoutError] = useState<string | null>(null);
   const [viewport, setViewport] = useState<Viewport | null>(null);
@@ -726,54 +727,64 @@ export function DagView({
     [focusNode, focusedId, navOrder],
   );
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
-    didAutoFocusRef.current = true;
-    const shift = e.shiftKey;
-    switch (e.key) {
-      case "ArrowDown":
-      case "ArrowRight":
-        if (shift) {
-          setViewport((v) => panBy(v ?? IDENTITY_VIEWPORT, -40, 0));
-        } else step(1);
-        e.preventDefault();
-        break;
-      case "ArrowUp":
-      case "ArrowLeft":
-        if (shift) {
-          setViewport((v) => panBy(v ?? IDENTITY_VIEWPORT, 40, 0));
-        } else step(-1);
-        e.preventDefault();
-        break;
-      case "Home":
-        if (navOrder[0]) focusNode(navOrder[0].id);
-        e.preventDefault();
-        break;
-      case "End":
-        if (navOrder.length > 0) focusNode(navOrder[navOrder.length - 1]!.id);
-        e.preventDefault();
-        break;
-      case "+":
-      case "=":
-        zoomBy(ZOOM_STEP);
-        e.preventDefault();
-        break;
-      case "-":
-      case "_":
-        zoomBy(1 / ZOOM_STEP);
-        e.preventDefault();
-        break;
-      case "0":
-        fitToView();
-        e.preventDefault();
-        break;
-      case "Escape":
-        setSelectedNodeId(null);
-        setSelectedEdgeId(null);
-        break;
-      default:
-        break;
-    }
-  };
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent): void => {
+      didAutoFocusRef.current = true;
+      const shift = e.shiftKey;
+      switch (e.key) {
+        case "ArrowDown":
+        case "ArrowRight":
+          if (shift) {
+            setViewport((v) => panBy(v ?? IDENTITY_VIEWPORT, -40, 0));
+          } else step(1);
+          e.preventDefault();
+          break;
+        case "ArrowUp":
+        case "ArrowLeft":
+          if (shift) {
+            setViewport((v) => panBy(v ?? IDENTITY_VIEWPORT, 40, 0));
+          } else step(-1);
+          e.preventDefault();
+          break;
+        case "Home":
+          if (navOrder[0]) focusNode(navOrder[0].id);
+          e.preventDefault();
+          break;
+        case "End":
+          if (navOrder.length > 0) focusNode(navOrder[navOrder.length - 1]!.id);
+          e.preventDefault();
+          break;
+        case "+":
+        case "=":
+          zoomBy(ZOOM_STEP);
+          e.preventDefault();
+          break;
+        case "-":
+        case "_":
+          zoomBy(1 / ZOOM_STEP);
+          e.preventDefault();
+          break;
+        case "0":
+          fitToView();
+          e.preventDefault();
+          break;
+        case "Escape":
+          setSelectedNodeId(null);
+          setSelectedEdgeId(null);
+          break;
+        default:
+          break;
+      }
+    },
+    [fitToView, focusNode, navOrder, step, zoomBy],
+  );
+
+  useEffect(() => {
+    const element = dagKeyboardRef.current;
+    if (!element) return;
+    element.addEventListener("keydown", onKeyDown);
+    return () => element.removeEventListener("keydown", onKeyDown);
+  }, [onKeyDown]);
 
   // ---- actions -----------------------------------------------------------------------------------
   const activateNode = useCallback(
@@ -908,8 +919,8 @@ export function DagView({
 
   return (
     <div className="burrow-dag-frame" style={{ height }}>
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: handles keyboard shortcuts bubbling from focusable nodes in the SVG tree. */}
       <div
+        ref={dagKeyboardRef}
         className={cn("burrow-dag", className)}
         style={{ height: "100%", width: "100%" }}
         data-level={level}
@@ -923,7 +934,6 @@ export function DagView({
         data-dag-layout={layoutError ? "error" : layout ? "ready" : "pending"}
         data-dense={scene && scene.nodes.length > DENSE_NODE_LIMIT ? "true" : undefined}
         data-testid="dag-canvas"
-        onKeyDown={onKeyDown}
       >
         <div className="burrow-dag-toolbar-slot">
           {layout ? (

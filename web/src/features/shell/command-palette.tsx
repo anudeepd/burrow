@@ -155,25 +155,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       className="w-[min(44rem,calc(100vw-2rem))]"
       initialFocus={inputRef}
     >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: keyboard handling for the listbox lives on this wrapper */}
-      <div
-        data-testid="command-palette"
-        className="flex flex-col"
-        onKeyDown={(e) => {
-          if (e.key === "ArrowDown") {
-            setActive(Math.min(shown.length - 1, activeIdx + 1));
-            e.preventDefault();
-          } else if (e.key === "ArrowUp") {
-            setActive(Math.max(0, activeIdx - 1));
-            e.preventDefault();
-          } else if (e.key === "Enter") {
-            runItem(activeItem);
-            e.preventDefault();
-          } else if (e.key === "Escape") {
-            onOpenChange(false);
-          }
-        }}
-      >
+      <div data-testid="command-palette" className="flex flex-col">
         <div className="flex items-center gap-2 rounded-md border border-seam-strong bg-well px-2.5">
           <Search className="size-4 shrink-0 text-ink-3" aria-hidden="true" />
           <input
@@ -189,6 +171,20 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
             aria-activedescendant={activeItem ? `palette-${activeItem.id}` : undefined}
             role="combobox"
             aria-expanded="true"
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") {
+                setActive(Math.min(shown.length - 1, activeIdx + 1));
+                e.preventDefault();
+              } else if (e.key === "ArrowUp") {
+                setActive(Math.max(0, activeIdx - 1));
+                e.preventDefault();
+              } else if (e.key === "Enter") {
+                runItem(activeItem);
+                e.preventDefault();
+              } else if (e.key === "Escape") {
+                onOpenChange(false);
+              }
+            }}
             className="h-9 min-w-0 flex-1 bg-transparent text-body text-ink outline-none placeholder:text-ink-4"
           />
           <Kbd>esc</Kbd>
@@ -214,6 +210,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 id={`palette-${item.id}`}
                 role="option"
                 aria-selected={i === activeIdx}
+                tabIndex={-1}
                 onMouseEnter={() => setActive(i)}
                 onClick={() => runItem(item)}
                 className={cn(

@@ -41,7 +41,6 @@ import {
   findBeanNode,
   findValueNode,
   flattenJmxTree,
-  highlightJmxText,
   JMX_PATTERNS,
   jmxBranchSummary,
   jmxErrorBean,
@@ -60,6 +59,8 @@ import {
   type JmxNode,
   type JmxTree,
 } from "./jmx";
+import { HighlightedText } from "./highlighted-text";
+import { handleTreeNavigationKey } from "./tree-navigation";
 import { OptionalTooltip } from "~/ui/tooltip";
 
 const route = getRouteApi("/tools/jmx");
@@ -213,17 +214,13 @@ export function JmxView() {
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.target !== e.currentTarget) return;
-    const row = rows[activeIndex];
     const page = Math.max(1, Math.floor((scrollRef.current?.clientHeight ?? 400) / rowH) - 2);
+    if (handleTreeNavigationKey(e.key, activeIndex, rows.length, page, move)) {
+      e.preventDefault();
+      return;
+    }
+    const row = rows[activeIndex];
     switch (e.key) {
-      case "ArrowDown":
-      case "j":
-        move(activeIndex + 1);
-        break;
-      case "ArrowUp":
-      case "k":
-        move(activeIndex - 1);
-        break;
       case "ArrowRight": {
         const open = row ? isOpenNext(rows, activeIndex) : false;
         if (row && row.children.length > 0 && !open) toggle(row);
@@ -236,18 +233,6 @@ export function JmxView() {
           const at = rows.findIndex((n) => n.id === row.parent?.id);
           if (at >= 0) move(at);
         }
-        break;
-      case "PageDown":
-        move(activeIndex + page);
-        break;
-      case "PageUp":
-        move(activeIndex - page);
-        break;
-      case "Home":
-        move(0);
-        break;
-      case "End":
-        move(rows.length - 1);
         break;
       case " ":
         if (row && row.children.length > 0) toggle(row);
@@ -528,7 +513,7 @@ function JmxRowBody({ node, query, tz }: { node: JmxNode; query: string; tz: TzM
     return (
       <>
         <span className="min-w-0 flex-1 truncate font-medium text-ink">
-          <Highlighted text={node.label} query={query} />
+          <HighlightedText text={node.label} query={query} />
         </span>
         <span className="shrink-0 text-micro text-ink-4 tnum">
           {node.children.length === 1 ? "1 bean" : `${node.children.length} beans`}
@@ -543,7 +528,7 @@ function JmxRowBody({ node, query, tz }: { node: JmxNode; query: string; tz: TzM
       <>
         <OptionalTooltip label={node.label}>
           <span className="min-w-0 shrink-0 basis-[38%] truncate text-ink">
-            <Highlighted text={shortLabel} query={query} />
+            <HighlightedText text={shortLabel} query={query} />
           </span>
         </OptionalTooltip>
         <OptionalTooltip label={String(node.value ?? "")}>
@@ -563,7 +548,7 @@ function JmxRowBody({ node, query, tz }: { node: JmxNode; query: string; tz: TzM
       <>
         <OptionalTooltip label={node.path.join(".")}>
           <span className="min-w-0 shrink-0 basis-[42%] truncate font-mono text-small text-ink-2">
-            <Highlighted text={node.label} query={query} />
+            <HighlightedText text={node.label} query={query} />
           </span>
         </OptionalTooltip>
         <span className="min-w-0 flex-1" />
@@ -589,7 +574,7 @@ function JmxValueCell({ node, query, tz }: { node: JmxNode; query: string; tz: T
     <>
       <OptionalTooltip label={node.path.join(".")}>
         <span className="min-w-0 shrink-0 basis-[42%] truncate font-mono text-small text-ink-3">
-          <Highlighted text={node.label} query={query} />
+          <HighlightedText text={node.label} query={query} />
         </span>
       </OptionalTooltip>
       <span className="min-w-0 flex-1" />
@@ -613,7 +598,7 @@ function JmxValueCell({ node, query, tz }: { node: JmxNode; query: string; tz: T
           )}
           title={jmxValueText(node.value).length > 40 ? jmxValueText(node.value) : undefined}
         >
-          <Highlighted text={kind === "number" ? text : truncateMiddle(text, 80)} query={query} />
+          <HighlightedText text={kind === "number" ? text : truncateMiddle(text, 80)} query={query} />
         </Datum>
       )}
       {hint && <span className="shrink-0 text-micro text-ink-4 tnum">{hint.text}</span>}
@@ -635,23 +620,6 @@ function MemoryBar({ memory, field, raw }: { memory: JmxMemory; field: string; r
         datum={{ "data-yf": field, "data-yv": JSON.stringify(raw) ?? "", "data-yfmt": "pct" }}
       />
     </span>
-  );
-}
-
-function Highlighted({ text, query }: { text: string; query: string }) {
-  const parts = highlightJmxText(text, query);
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.hit ? (
-          <mark key={i} className="rounded-xs bg-live/25 px-0.5 text-ink">
-            {part.text}
-          </mark>
-        ) : (
-          <span key={i}>{part.text}</span>
-        ),
-      )}
-    </>
   );
 }
 

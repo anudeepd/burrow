@@ -158,7 +158,7 @@ export const SparkJobsSchema = listOf(SparkJobSchema);
 /** Quantile arrays: index-aligned with the request's `quantiles` parameter. */
 const QuantileValues = listOf(num);
 
-export const TaskMetricsDistributionsSchema = obj({
+const TASK_METRIC_QUANTILE_SHAPE = {
   quantiles: QuantileValues.nullish(),
   duration: QuantileValues.nullish(),
   executorDeserializeTime: QuantileValues.nullish(),
@@ -194,11 +194,15 @@ export const TaskMetricsDistributionsSchema = obj({
     writeRecords: QuantileValues.nullish(),
     writeTime: QuantileValues.nullish(),
   }).nullish(),
-  /** Optional executor-level metrics (`spark.executor.metrics.pollingInterval`): same quantile arrays per key. */
-  executorMetricsDistributions: z.record(str, z.unknown()).nullish(),
   /** Shuffle-push (push-based shuffle) quantiles, present on 3.2+. */
   shufflePushReadMetricsDist: z.record(str, z.unknown()).nullish(),
   remoteReqsDuration: QuantileValues.nullish(),
+};
+
+export const TaskMetricsDistributionsSchema = obj({
+  ...TASK_METRIC_QUANTILE_SHAPE,
+  /** Optional executor-level metrics (`spark.executor.metrics.pollingInterval`): same quantile arrays per key. */
+  executorMetricsDistributions: z.record(str, z.unknown()).nullish(),
 });
 export type TaskMetricsDistributions = z.infer<typeof TaskMetricsDistributionsSchema>;
 
@@ -279,45 +283,7 @@ export type SparkStage = z.infer<typeof SparkStageSchema>;
 export const SparkStagesSchema = listOf(SparkStageSchema);
 export const SparkStageResponseSchema = obj({ stage: SparkStageSchema.nullish() });
 
-export const SparkTaskSummarySchema = obj({
-  quantiles: QuantileValues.nullish(),
-  duration: QuantileValues.nullish(),
-  executorDeserializeTime: QuantileValues.nullish(),
-  executorDeserializeCpuTime: QuantileValues.nullish(),
-  executorRunTime: QuantileValues.nullish(),
-  executorCpuTime: QuantileValues.nullish(),
-  resultSize: QuantileValues.nullish(),
-  jvmGcTime: QuantileValues.nullish(),
-  resultSerializationTime: QuantileValues.nullish(),
-  gettingResultTime: QuantileValues.nullish(),
-  schedulerDelay: QuantileValues.nullish(),
-  peakExecutionMemory: QuantileValues.nullish(),
-  memoryBytesSpilled: QuantileValues.nullish(),
-  diskBytesSpilled: QuantileValues.nullish(),
-  failedTasks: QuantileValues.nullish(),
-  killedTasks: QuantileValues.nullish(),
-  inputMetrics: obj({ bytesRead: QuantileValues.nullish(), recordsRead: QuantileValues.nullish() }).nullish(),
-  outputMetrics: obj({ bytesWritten: QuantileValues.nullish(), recordsWritten: QuantileValues.nullish() }).nullish(),
-  shuffleReadMetrics: obj({
-    readBytes: QuantileValues.nullish(),
-    readRecords: QuantileValues.nullish(),
-    remoteBlocksFetched: QuantileValues.nullish(),
-    localBlocksFetched: QuantileValues.nullish(),
-    fetchWaitTime: QuantileValues.nullish(),
-    remoteBytesRead: QuantileValues.nullish(),
-    remoteBytesReadToDisk: QuantileValues.nullish(),
-    totalBlocksFetched: QuantileValues.nullish(),
-    remoteReqsDuration: QuantileValues.nullish(),
-    shufflePushReadMetricsDist: z.record(str, z.unknown()).nullish(),
-  }).nullish(),
-  shuffleWriteMetrics: obj({
-    writeBytes: QuantileValues.nullish(),
-    writeRecords: QuantileValues.nullish(),
-    writeTime: QuantileValues.nullish(),
-  }).nullish(),
-  shufflePushReadMetricsDist: z.record(str, z.unknown()).nullish(),
-  remoteReqsDuration: QuantileValues.nullish(),
-});
+export const SparkTaskSummarySchema = obj(TASK_METRIC_QUANTILE_SHAPE);
 export type SparkTaskSummary = z.infer<typeof SparkTaskSummarySchema>;
 
 /* ── tasks ──────────────────────────────────────────────────────────────────────────────────────────────────── */

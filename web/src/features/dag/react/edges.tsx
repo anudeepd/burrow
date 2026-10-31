@@ -145,7 +145,7 @@ const Edge = memo(function Edge({ edge: e, showLabels, interactive, onHover, onA
     </g>
   );
 }, sameEdgeProps);
-function sameEdgeBatchProps(prev: EdgeLayerProps, next: EdgeLayerProps): boolean {
+function sameEdgeCollectionProps(prev: EdgeLayerProps, next: EdgeLayerProps): boolean {
   if (
     prev.showLabels !== next.showLabels ||
     prev.interactive !== next.interactive ||
@@ -166,24 +166,7 @@ const EdgeBatch = memo(function EdgeBatch({ edges, showLabels, interactive, onHo
   return edges.map((e) => (
     <Edge key={e.edge.id} edge={e} showLabels={showLabels} interactive={interactive} onHover={onHover} onActivate={onActivate} />
   ));
-}, sameEdgeBatchProps);
-
-function sameEdgeLayerProps(prev: EdgeLayerProps, next: EdgeLayerProps): boolean {
-  if (
-    prev.showLabels !== next.showLabels ||
-    prev.interactive !== next.interactive ||
-    prev.onHover !== next.onHover ||
-    prev.onActivate !== next.onActivate
-  ) {
-    return false;
-  }
-  if (prev.edges === next.edges) return true;
-  if (prev.edges.length !== next.edges.length) return false;
-  for (let i = 0; i < prev.edges.length; i += 1) {
-    if (prev.edges[i] !== next.edges[i]) return false;
-  }
-  return true;
-}
+}, sameEdgeCollectionProps);
 
 export const EdgeLayer = memo(function EdgeLayer({ edges, showLabels, interactive, onHover, onActivate }: EdgeLayerProps) {
   const batches: EdgeVisual[][] = [];
@@ -213,7 +196,7 @@ export const EdgeLayer = memo(function EdgeLayer({ edges, showLabels, interactiv
       ))}
     </g>
   );
-}, sameEdgeLayerProps);
+}, sameEdgeCollectionProps);
 
 export interface CanvasEdgeLayerProps {
   edges: readonly EdgeVisual[];

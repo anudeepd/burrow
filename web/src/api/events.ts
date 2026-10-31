@@ -19,7 +19,7 @@ export function topicsInUse(qc: QueryClient): string[] {
     // doesn't refresh. Keeping both out of the topic set also prevents expensive JMX/config topics being polled by SSE.
     if (meta?.topic && meta.refetchKind === "live" && query.getObserversCount() > 0) set.add(meta.topic);
   }
-  return [...set].sort().slice(0, MAX_TOPICS);
+  return [...set].sort((a, b) => a.localeCompare(b)).slice(0, MAX_TOPICS);
 }
 
 export function startEvents(qc: QueryClient, enabled: () => boolean): () => void {

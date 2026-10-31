@@ -45,11 +45,13 @@ export function NodesPage() {
     [byTab, search.label, search.rack, search.q],
   );
   const summary = useMemo(() => summarize(nodes ?? []), [nodes]);
-  const racks = useMemo(() => [...new Set((nodes ?? []).map(rackOf))].sort(), [nodes]);
-  const labels = useMemo(() => [...new Set((nodes ?? []).flatMap((n) => n.nodeLabels ?? []))].sort(), [nodes]);
+  const racks = useMemo(() => [...new Set((nodes ?? []).map(rackOf))].sort((a, b) => a.localeCompare(b)), [nodes]);
+  const labels = useMemo(() => [...new Set((nodes ?? []).flatMap((n) => n.nodeLabels ?? []))].sort((a, b) => a.localeCompare(b)), [nodes]);
   const anyUnlabelled = useMemo(() => (nodes ?? []).some((n) => (n.nodeLabels ?? []).length === 0), [nodes]);
 
-  const setSearch = (patch: Partial<typeof search>) => navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  const setSearch = (patch: Partial<typeof search>) => {
+    void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  };
   const sorting = useMemo(() => parseSort(search.sort), [search.sort]);
   const visibility = useMemo(() => {
     const defaults = defaultVisibility(nodes ?? []);

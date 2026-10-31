@@ -105,8 +105,7 @@ export interface NodeRowGeometry {
 /**
  * The card's text rows. The same offsets drive the rendered labels, quiet metadata, and progress strip.
  */
-export function nodeRowGeometry(height: number, kind: GraphNode["kind"]): NodeRowGeometry {
-  const rdd = kind === "rdd";
+export function nodeRowGeometry(height: number, _kind: GraphNode["kind"]): NodeRowGeometry {
   const compact = height < 72;
   const roomy = height >= 144;
   const titleY = compact ? 21 : roomy ? 47 : 24;
@@ -115,7 +114,7 @@ export function nodeRowGeometry(height: number, kind: GraphNode["kind"]): NodeRo
     titleY,
     subY,
     metaY: roomy ? 111 : 0,
-    progressY: height - (roomy ? 25 : rdd ? 16 : 16),
+    progressY: height - (roomy ? 25 : 16),
   };
 }
 
@@ -496,7 +495,7 @@ export function buildScene(input: SceneInput): Scene {
     const metric = node.stageId != null ? metrics.get(node.stageId) : undefined;
     const skipped = node.skipped === true || metric?.status === "SKIPPED";
     const p = metric ? stageProgress(metric) : null;
-    const percent = p ? p.percent : skipped ? 0 : 0;
+    const percent = p?.percent ?? 0;
     // Status: REST metrics win; the payload's own status (fallback DAGs carry `stages[].status`) is the second
     // source; only then do we fall back to "pending".
     const status =

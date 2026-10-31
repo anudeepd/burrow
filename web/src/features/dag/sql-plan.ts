@@ -89,11 +89,22 @@ export function parsePlanText(planDescription: string | null | undefined): PlanT
   const appendix = new Map<number, string[]>();
   let open: number | null = null;
   for (const raw of (planDescription ?? "").split("\n")) {
-    const entry = /^\((\d+)\)\s*(.*)$/.exec(raw);
-    if (entry) {
-      open = Number(entry[1]);
-      appendix.set(open, [raw.trim()]);
-      continue;
+    const close = raw.startsWith("(") ? raw.indexOf(")", 1) : -1;
+    if (close > 1) {
+      const idText = raw.slice(1, close);
+      let digitsOnly = true;
+      for (let i = 0; i < idText.length; i += 1) {
+        const digit = idText.charCodeAt(i);
+        if (digit < 48 || digit > 57) {
+          digitsOnly = false;
+          break;
+        }
+      }
+      if (digitsOnly) {
+        open = Number(idText);
+        appendix.set(open, [raw.trim()]);
+        continue;
+      }
     }
     // Past the first appendix heading every unindented line belongs to the entry above it; tree lines are indented.
     if (open !== null) {

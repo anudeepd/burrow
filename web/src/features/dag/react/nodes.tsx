@@ -125,7 +125,7 @@ function badgeSummary(visual: NodeVisual): string | null {
 }
 
 function taskSummary(visual: NodeVisual): string | null {
-  return visual.taskSummary?.replace(/\s+tasks\b/, " complete") ?? null;
+  return visual.taskSummary?.replace(" tasks", " complete") ?? null;
 }
 
 function partitionSummary(visual: NodeVisual): string | null {

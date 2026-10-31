@@ -110,9 +110,9 @@ export function parseThreadDump(text: string): ThreadDump {
       i++;
       continue;
     }
-    const dump = /^Process Thread Dump:\s*(.*)$/.exec(line);
-    if (dump && active === null) {
-      process = (dump[1] ?? "").trim();
+    const dumpPrefix = "Process Thread Dump:";
+    if (line.startsWith(dumpPrefix) && active === null) {
+      process = line.slice(dumpPrefix.length).trim();
       i++;
       continue;
     }
@@ -151,9 +151,10 @@ export function parseThreadDump(text: string): ThreadDump {
         i++;
         continue;
       }
-      const state = /^State:\s*(.+)$/.exec(trimmed);
+      const statePrefix = "State:";
+      const state = trimmed.startsWith(statePrefix) ? trimmed.slice(statePrefix.length).trim() : "";
       if (state) {
-        thread.state = (state[1] ?? "").trim();
+        thread.state = state;
         i++;
         continue;
       }
@@ -169,9 +170,11 @@ export function parseThreadDump(text: string): ThreadDump {
         i++;
         continue;
       }
-      const waitingOn = /^Waiting on\s+(.+)$/.exec(trimmed);
+      const waitingPrefix = "Waiting on";
+      const waitingRemainder = trimmed.startsWith(waitingPrefix) ? trimmed.slice(waitingPrefix.length) : "";
+      const waitingOn = waitingRemainder[0]?.trim() === "" ? waitingRemainder.trim() : "";
       if (waitingOn) {
-        thread.waitingOn = (waitingOn[1] ?? "").trim();
+        thread.waitingOn = waitingOn;
         i++;
         continue;
       }
@@ -200,9 +203,8 @@ export function parseThreadDump(text: string): ThreadDump {
             i++;
             continue;
           }
-          const item = /^-\s*(.*)$/.exec(et);
-          if (!item) break;
-          const value = (item[1] ?? "").trim();
+          if (!et.startsWith("-")) break;
+          const value = et.slice(1).trim();
           if (value && value.toLowerCase() !== "none") thread.locks.push(value);
           i++;
         }
