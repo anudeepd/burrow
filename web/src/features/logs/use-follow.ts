@@ -73,7 +73,7 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
     let pollTimer: ReturnType<typeof setTimeout> | undefined;
     let streamRetryTimer: ReturnType<typeof setTimeout> | undefined;
-    let mode: FollowMode = "connecting";
+    let mode: FollowMode = "off";
     let failures = 0;
     let pollFailures = 0;
     let pollingReason = "stream unavailable";

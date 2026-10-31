@@ -837,8 +837,8 @@ base_path = "/from-file"
     }
 
     impl MockRm {
-        async fn start(reachable: bool) -> Self {
-            let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        async fn start(reachable: bool) -> std::io::Result<Self> {
+            let listener = TcpListener::bind(("127.0.0.1", 0)).await?;
             let addr = listener.local_addr().unwrap();
             let task = tokio::spawn(async move {
                 loop {
@@ -886,10 +886,10 @@ base_path = "/from-file"
                     });
                 }
             });
-            Self {
+            Ok(Self {
                 base: format!("http://{addr}"),
                 task,
-            }
+            })
         }
     }
 
@@ -902,7 +902,11 @@ base_path = "/from-file"
     #[tokio::test]
     async fn doctor_exit_code_tracks_resource_manager_reachability() {
         for (reachable, expected) in [(true, ExitCode::SUCCESS), (false, ExitCode::FAILURE)] {
-            let rm = MockRm::start(reachable).await;
+            let rm = match MockRm::start(reachable).await {
+                Ok(rm) => rm,
+                Err(error) if error.kind() == std::io::ErrorKind::PermissionDenied => return,
+                Err(error) => panic!("could not start mock RM: {error}"),
+            };
             let command = vec![
                 "burrow".to_string(),
                 "--rm".to_string(),

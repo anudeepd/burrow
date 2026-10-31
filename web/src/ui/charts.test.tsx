@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { AreaChart } from "./charts";
+import { AreaChart, Sparkline } from "./charts";
 
 describe("AreaChart sample inspection", () => {
   it("keeps the plotted trace close to its axis labels", () => {
@@ -85,5 +85,60 @@ describe("AreaChart sample inspection", () => {
     expect(svg?.getAttribute("viewBox")).toBe("0 0 320 84");
     expect(labels).toContain("start");
     expect(labels).toContain("end");
+  });
+
+  it("supports keyboard sampling, clamps pointer positions, and clears the active sample", () => {
+    const { container } = render(
+      <AreaChart
+        points={[
+          { t: 0, v: 7 },
+          { t: 10, v: 7 },
+        ]}
+        width={320}
+        height={72}
+        domain={[0, 10]}
+        label="Flat memory history"
+        sampleTooltip={(point) => `${point.t}:${point.v}`}
+      />,
+    );
+    const svg = screen.getByRole("group", { name: "Flat memory history" });
+    const slider = screen.getByRole("slider", { name: "Chart samples" });
+    Object.defineProperty(svg, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, left: 0, top: 0, right: 320, bottom: 72, width: 320, height: 72, toJSON: () => ({}) }),
+    });
+
+    fireEvent.focus(slider);
+    expect(slider.getAttribute("aria-valuenow")).toBe("1");
+    fireEvent.keyDown(slider, { key: "ArrowLeft" });
+    expect(slider.getAttribute("aria-valuetext")).toBe("0:7");
+    fireEvent.keyDown(slider, { key: "ArrowUp" });
+    expect(slider.getAttribute("aria-valuenow")).toBe("1");
+    fireEvent.keyDown(slider, { key: "Home" });
+    expect(slider.getAttribute("aria-valuenow")).toBe("0");
+    fireEvent.keyDown(slider, { key: "End" });
+    expect(slider.getAttribute("aria-valuenow")).toBe("1");
+    const unknown = new KeyboardEvent("keydown", { key: "x", bubbles: true, cancelable: true });
+    slider.dispatchEvent(unknown);
+    expect(unknown.defaultPrevented).toBe(false);
+
+    fireEvent.pointerMove(slider, { clientX: -20, pointerId: 1 });
+    expect(slider.getAttribute("aria-valuenow")).toBe("0");
+    fireEvent.pointerMove(slider, { clientX: 400, pointerId: 1 });
+    expect(slider.getAttribute("aria-valuenow")).toBe("1");
+    fireEvent.pointerLeave(slider);
+    expect(slider.getAttribute("aria-valuenow")).toBe("1");
+    fireEvent.blur(slider);
+    expect(container.querySelectorAll("circle")).toHaveLength(0);
+  });
+
+  it("uses a dashed fallback for short sparklines and a centered path for constant timestamps", () => {
+    const { rerender, container } = render(<Sparkline points={[]} label="No samples" />);
+    expect(screen.getByRole("img", { name: "No samples" }).querySelector("line")?.getAttribute("stroke-dasharray")).toBe("2 3");
+    rerender(<Sparkline points={[{ t: 1, v: 2 }]} label="One sample" />);
+    expect(screen.getByRole("img", { name: "One sample" }).querySelector("path")).toBeNull();
+    rerender(<Sparkline points={[{ t: 5, v: 4 }, { t: 5, v: 4 }]} label="Flat samples" />);
+    expect(container.querySelector("path")?.getAttribute("d")).not.toBe("");
+    expect(container.querySelector("circle")?.getAttribute("cy")).toBe("12");
   });
 });
