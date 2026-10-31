@@ -23,7 +23,7 @@ import { ROW_HEIGHT } from "~/ui/data-table/data-table";
 import { CenteredPageState, EmptyState, ErrorState, StaleErrorBanner, TableSkeleton } from "~/ui/feedback";
 import { ScrollBottomFade, useHasMoreBelow } from "~/ui/scroll-bottom-fade";
 import { HighlightedText } from "./highlighted-text";
-import { handleTreeNavigationKey } from "./tree-navigation";
+import { handleTreeNavigationEvent } from "./tree-navigation";
 import { type DumpThread, frameText, parseThreadDump, searchThreads, stateHistogram, THREAD_STATE_TONE, threadToText } from "./stacks";
 import { OptionalTooltip } from "~/ui/tooltip";
 
@@ -152,12 +152,8 @@ export function StacksView() {
   }, [focusFrame, rows, move]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (handleTreeNavigationEvent(e, scrollRef.current?.clientHeight ?? 400, rowH, activeIndex, rows.length, move)) return;
     if (e.target !== e.currentTarget) return;
-    const page = Math.max(1, Math.floor((scrollRef.current?.clientHeight ?? 400) / rowH) - 2);
-    if (handleTreeNavigationKey(e.key, activeIndex, rows.length, page, move)) {
-      e.preventDefault();
-      return;
-    }
     const row = rows[activeIndex];
     switch (e.key) {
       case "ArrowRight": {
