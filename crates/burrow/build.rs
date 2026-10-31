@@ -72,11 +72,9 @@ fn main() {
     let _ = fs::remove_dir_all(&out);
     fs::create_dir_all(&out).expect("create OUT_DIR/burrow-assets");
 
-    let mut files = 0;
-    let (mut br, mut gz) = (0, 0);
     if let Some((src, _label)) = &picked {
         println!("cargo:rerun-if-changed={}", src.display());
-        (files, br, gz) = copy_tree(src, &out, &mut |p| {
+        copy_tree(src, &out, &mut |p| {
             println!("cargo:rerun-if-changed={}", p.display())
         })
         .unwrap_or_else(|e| panic!("cannot stage assets from {}: {e}", src.display()));
@@ -88,22 +86,11 @@ fn main() {
              crates/burrow/assets) — run `bun run build` in web/ first; the server will answer with \
              a placeholder page until then"
         );
-    } else if let Some((src, label)) = &picked {
-        println!(
-            "cargo:warning=burrow: embedding web assets from {label} = {} ({files} files, {br} brotli + {gz} gzip precompressed)",
-            src.display()
-        );
     }
 }
 
-/// Copy `src` into `dst`, returning `(files copied, brotli variants, gzip variants)`.
-fn copy_tree(
-    src: &Path,
-    dst: &Path,
-    on_file: &mut impl FnMut(&Path),
-) -> std::io::Result<(usize, usize, usize)> {
-    let mut files = 0;
-    let (mut br, mut gz) = (0, 0);
+/// Copy `src` into `dst`.
+fn copy_tree(src: &Path, dst: &Path, on_file: &mut impl FnMut(&Path)) -> std::io::Result<()> {
     for entry in fs::read_dir(src)? {
         let entry = entry?;
         let name = entry.file_name();
@@ -116,10 +103,7 @@ fn copy_tree(
         let kind = entry.file_type()?;
         if kind.is_dir() {
             fs::create_dir_all(&to)?;
-            let (f, b, g) = copy_tree(&from, &to, on_file)?;
-            files += f;
-            br += b;
-            gz += g;
+            copy_tree(&from, &to, on_file)?;
             continue;
         }
         if !kind.is_file() {
@@ -128,15 +112,12 @@ fn copy_tree(
         on_file(&from);
         let data = fs::read(&from)?;
         fs::write(&to, &data)?;
-        files += 1;
         if data.len() >= 512 && compressible(&from) {
             fs::write(dst.join(format!("{name}.br")), brotli_bytes(&data)).expect("write .br");
             fs::write(dst.join(format!("{name}.gz")), gzip_bytes(&data)).expect("write .gz");
-            br += 1;
-            gz += 1;
         }
     }
-    Ok((files, br, gz))
+    Ok(())
 }
 
 /// Brotli quality 9 for ordinary assets, 6 for multi-hundred-KB bundles (build time, not size, is the

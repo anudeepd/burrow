@@ -205,10 +205,13 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu # manylinux
             runner: ubuntu-24.04
+            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ecdhe_ecdsa_aes_128_gcm_sha_256:ecdhe_rsa_aes_128_gcm_sha_256:ecdhe_ecdsa_aes_256_gcm_sha_384:ecdhe_rsa_aes_256_gcm_sha_384 --env=PIP_ROOT_USER_ACTION=ignore
           - target: aarch64-unknown-linux-gnu
             runner: ubuntu-24.04-arm
+            docker_options: --env=RUSTUP_TLS_CIPHERSUITES=ecdhe_ecdsa_aes_128_gcm_sha_256:ecdhe_rsa_aes_128_gcm_sha_256:ecdhe_ecdsa_aes_256_gcm_sha_384:ecdhe_rsa_aes_256_gcm_sha_384 --env=PIP_ROOT_USER_ACTION=ignore
           - target: x86_64-unknown-linux-musl # musllinux (alpine images)
             runner: ubuntu-24.04
+            docker_options: --env=PIP_ROOT_USER_ACTION=ignore
           - target: aarch64-apple-darwin
             runner: macos-15
           - target: x86_64-apple-darwin
@@ -240,7 +243,8 @@ jobs:
         with:
           target: ${{ matrix.target }}
           manylinux: auto
-          cache: kache
+          docker-options: ${{ matrix.docker_options || '' }}
+          sccache: true
           command: build
           args: --release --manifest-path crates/burrow/Cargo.toml --out dist --compatibility ${{ startsWith(matrix.target, 'x86_64-unknown-linux-musl') && 'musllinux_1_2' || '' }}
       - name: Install and smoke-test wheel on its native runner
@@ -257,6 +261,7 @@ jobs:
             --volume "$GITHUB_WORKSPACE/dist:/dist:ro" \
             --volume "$GITHUB_WORKSPACE/scripts/smoke_release_wheel.py:/smoke_release_wheel.py:ro" \
             --env RELEASE_VERSION \
+            --env PIP_ROOT_USER_ACTION=ignore \
             python:3.12-alpine \
             python /smoke_release_wheel.py /dist
       - uses: actions/upload-artifact@v7
