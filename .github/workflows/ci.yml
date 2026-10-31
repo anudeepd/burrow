@@ -102,6 +102,7 @@ jobs:
     needs: web
     runs-on: ubuntu-24.04
     permissions:
+      actions: read
       contents: write
     outputs:
       source_sha: ${{ steps.commit.outputs.source_sha }}
@@ -110,10 +111,11 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
-      - uses: actions/download-artifact@v8
-        with:
-          name: linux-snapshots
-          path: web/e2e/__screenshots__/linux
+      - name: Download refreshed Linux screenshot baselines
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name linux-snapshots --dir web/e2e/__screenshots__/linux
       - name: Commit refreshed Linux screenshot baselines
         id: commit
         run: |
@@ -140,6 +142,9 @@ jobs:
     needs: [web, linux-snapshot-baselines]
     if: ${{ always() && needs.web.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v5
         with:
@@ -148,10 +153,11 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
-      - uses: actions/download-artifact@v8
-        with:
-          name: web-dist
-          path: crates/burrow/assets
+      - name: Download web assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name web-dist --dir crates/burrow/assets
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       # offline tests only: live-cluster tests are gated on BURROW_LIVE=1
@@ -219,6 +225,9 @@ jobs:
           - target: x86_64-pc-windows-msvc
             runner: windows-2025
     runs-on: ${{ matrix.runner }}
+    permissions:
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v5
         with:
@@ -230,10 +239,11 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - uses: actions/download-artifact@v8
-        with:
-          name: web-dist
-          path: crates/burrow/assets
+      - name: Download web assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name web-dist --dir crates/burrow/assets
       - name: Set release version in wheel build
         env:
           RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
@@ -305,6 +315,7 @@ jobs:
     needs: [wheel, parity-replay, linux-snapshot-baselines, release-version]
     runs-on: ubuntu-24.04
     permissions:
+      actions: read
       contents: write
     outputs:
       version: ${{ needs.release-version.outputs.version }}
@@ -316,11 +327,24 @@ jobs:
           fetch-depth: 0
           ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
       - name: Download wheels built by this workflow
-        uses: actions/download-artifact@v8
-        with:
-          pattern: wheel-*
-          path: dist
-          merge-multiple: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for target in \
+            x86_64-unknown-linux-gnu \
+            aarch64-unknown-linux-gnu \
+            x86_64-unknown-linux-musl \
+            aarch64-apple-darwin \
+            x86_64-apple-darwin \
+            x86_64-pc-windows-msvc
+          do
+            gh run download "$GITHUB_RUN_ID" \
+              --repo "$GITHUB_REPOSITORY" \
+              --name "wheel-$target" \
+              --dir dist
+          done
       - name: Verify exact wheel target set
         env:
           VERSION: ${{ needs.release-version.outputs.version }}
@@ -366,13 +390,14 @@ jobs:
     needs: prepare-release
     runs-on: ubuntu-24.04
     permissions:
+      actions: read
       contents: write
     steps:
       - name: Download validated wheels
-        uses: actions/download-artifact@v8
-        with:
-          name: release-dist
-          path: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name release-dist --dir dist
       - name: Create GitHub Release and attach wheels
         env:
           GH_TOKEN: ${{ github.token }}
@@ -393,14 +418,15 @@ jobs:
       name: pypi
       url: https://pypi.org/project/yarn-burrow/
     permissions:
+      actions: read
       contents: read
       id-token: write
     steps:
       - name: Download validated wheels
-        uses: actions/download-artifact@v8
-        with:
-          name: release-dist
-          path: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name release-dist --dir dist
       - name: Publish yarn-burrow to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
