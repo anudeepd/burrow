@@ -650,7 +650,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
           aria-rowcount={rows.length + 1}
           aria-colcount={leafCols.length + (selectable ? 1 : 0)}
           // biome-ignore lint/a11y/noNoninteractiveTabindex: the native scrollport needs keyboard scrolling for overflow columns and rows.
-          tabIndex={0}
+          tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
           aria-busy={loading || undefined}
           onScroll={syncScrollCues}
           data-burrow-table={storageKey}

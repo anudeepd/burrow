@@ -193,7 +193,7 @@ export function NodeLabelsCard({
                 role="region"
                 aria-label="Partition resource totals"
                 // biome-ignore lint/a11y/noNoninteractiveTabindex: This horizontal region must be focusable so keyboard users can scroll additional partitions.
-                tabIndex={0}
+                tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
                 onScroll={partitionCues.onScroll}
                 className="burrow-scroll burrow-scroll-hidden flex min-w-0 items-center gap-2 overflow-x-auto py-px"
               >

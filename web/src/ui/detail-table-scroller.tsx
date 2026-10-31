@@ -35,7 +35,7 @@ export function DetailTableScroller({ children, className, ariaLabel }: { childr
         aria-label={ariaLabel}
         role="region"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: the scroll region must be keyboard focusable.
-        tabIndex={0}
+        tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
         onScroll={syncOverflowCue}
         className="burrow-scroll burrow-table-scroll min-w-0 overflow-x-auto overflow-y-hidden outline-none focus-visible:outline focus-visible:outline-offset-[-2px] focus-visible:outline-live"
       >

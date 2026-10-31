@@ -390,7 +390,7 @@ export function StageDrawer({ open, onClose, node, metric, now, stageHref, rddHr
       className="burrow-dag-drawer burrow-scroll burrow-table-scroll"
       data-open={open}
       aria-hidden={!open}
-      tabIndex={open ? 0 : -1}
+      tabIndex={open ? 0 : -1} //NOSONAR -- required for keyboard scrolling in Safari
       aria-label={node ? `Details for ${node.node.label}` : "Stage details"}
       data-testid="dag-drawer"
       data-scroll-cue={scrollCue.visible}
@@ -623,7 +623,7 @@ export function EdgeDrawer({ open, onClose, edge, graphKind, metrics, producer, 
       className="burrow-dag-drawer burrow-scroll burrow-table-scroll"
       data-open={open}
       aria-hidden={!open}
-      tabIndex={open ? 0 : -1}
+      tabIndex={open ? 0 : -1} //NOSONAR -- required for keyboard scrolling in Safari
       aria-label={`${title} details`}
       data-testid="dag-edge-drawer"
       data-scroll-cue={scrollCue.visible}
