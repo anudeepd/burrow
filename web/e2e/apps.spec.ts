@@ -468,6 +468,38 @@ test.describe("/apps", () => {
     expect(geom.rowBottom).toBeLessThanOrEqual(geom.scrollportBottom + 0.5);
   });
 
+  test("defaults to newest applications first while preserving an explicit ID sort", async ({ page }) => {
+    await freezeLive(page);
+    const template = APPS_SAMPLE.apps.app[0];
+    if (!template) throw new Error("The apps sample must include a row");
+    const apps = [
+      { ...template, id: "application_1767225600000_0009", name: "Older", startedTime: 1767225700000 },
+      { ...template, id: "application_1767225600000_0003", name: "Newest", startedTime: 1767225900000 },
+      { ...template, id: "application_1767225600000_0006", name: "Middle", startedTime: 1767225800000 },
+    ];
+    await page.route(
+      (url) => url.pathname === "/api/yarn/apps",
+      async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          headers: { "x-burrow-api": "1", "x-burrow-cache": "miss" },
+          json: { ...APPS_SAMPLE, apps: { ...APPS_SAMPLE.apps, app: apps } },
+        });
+      },
+    );
+    await page.goto("/apps");
+    await expect(table(page)).toBeVisible();
+    const ids = table(page).locator('[data-yf="app.id"]');
+    await expect(table(page).locator('[data-col="starttime"]')).toHaveAttribute("aria-sort", "descending");
+    await expect(ids).toHaveText(["application_1767225600000_0003", "application_1767225600000_0006", "application_1767225600000_0009"]);
+    await expect(page).not.toHaveURL(/sort=/);
+
+    await page.goto("/apps?sort=-id");
+    await expect(table(page).locator('[data-col="id"]')).toHaveAttribute("aria-sort", "descending");
+    await expect(ids).toHaveText(["application_1767225600000_0009", "application_1767225600000_0006", "application_1767225600000_0003"]);
+  });
+
   test("sorting is URL-synced and toggles direction", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/apps");
@@ -481,7 +513,7 @@ test.describe("/apps", () => {
     await expect(page).toHaveURL(/sort=-allocatedMemory/);
     await expect(table(page).locator('[data-col="allocatedMemory"]')).toHaveAttribute("aria-sort", "descending");
     await page.goto("/apps");
-    await expect(table(page).locator('[data-col="id"]')).toHaveAttribute("aria-sort", "descending");
+    await expect(table(page).locator('[data-col="starttime"]')).toHaveAttribute("aria-sort", "descending");
   });
 
   test("shift-click adds a secondary sort and Clear returns to the default", async ({ page }) => {
@@ -501,7 +533,7 @@ test.describe("/apps", () => {
     await expect(page.locator("[data-burrow-sort]")).toHaveAttribute("data-burrow-sort", "Name ↑");
     await page.getByRole("button", { name: "Clear sort" }).click();
     await expect(page).not.toHaveURL(/sort=/);
-    await expect(table(page).locator('[data-col="id"]')).toHaveAttribute("aria-sort", "descending");
+    await expect(table(page).locator('[data-col="starttime"]')).toHaveAttribute("aria-sort", "descending");
   });
 
   test("the sort panel adds, flips and removes sorts", async ({ page }) => {
@@ -790,7 +822,7 @@ test.describe("/apps", () => {
     expect(seen).toContain("app.trackingUrl");
   });
 
-  test("screenshots: applications page in dark and light", async ({ page }) => {
+  test("screenshots: applications page in dark and light", { tag: "@snapshot" }, async ({ page }) => {
     await setPrefs(page, { theme: "dark" });
     await freezeLive(page);
     await seedScreenshotData(page);

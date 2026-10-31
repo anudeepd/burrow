@@ -15,6 +15,7 @@ import { fmtEpoch } from "~/lib/format";
 import { useParity } from "~/state/parity";
 import { usePref } from "~/state/prefs";
 import { Button } from "~/ui/button";
+import { TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
 import { Datum, Entity } from "~/ui/datum";
 import { ErrorState, Skeleton } from "~/ui/feedback";
 import { HorizontalScrollCues, useHorizontalScrollCues } from "~/ui/horizontal-scroll-cues";
@@ -393,28 +394,28 @@ function SparkNav({ appId, attempt, kind }: { appId: string; attempt: string | n
 
   return (
     <div className="relative min-w-0">
-      <nav
-        ref={navRef}
-        aria-label="Spark pages"
-        onScroll={cues.onScroll}
-        className="burrow-scroll burrow-scroll-hidden flex items-center gap-1 overflow-x-auto border-b border-seam"
-      >
-        {SPARK_PAGES.map((p) => (
-          <Link
-            key={p.key}
-            to={p.to}
-            params={{ appId }}
-            search={{ attempt: attempt ?? undefined }}
-            activeOptions={{ exact: false }}
-            aria-busy={pendingKey === p.key || undefined}
-            onClick={(event) => handleClick(p, event)}
-            className="relative inline-flex h-10 shrink-0 items-center rounded-t-sm whitespace-nowrap px-4 text-body font-medium text-ink-3 outline-offset-[-2px] hover:bg-fabric-2 hover:text-ink-2 aria-[current=page]:bg-fabric-2 aria-[current=page]:text-ink"
-            activeProps={{ "aria-current": "page" as const, className: "border-b-2 border-live" }}
-          >
-            {p.label}
-            {pendingKey === p.key && <span className="ml-1.5 size-1.5 shrink-0 rounded-full bg-live/70" aria-hidden="true" />}
-          </Link>
-        ))}
+      <nav ref={navRef} aria-label="Spark pages" onScroll={cues.onScroll} className={TAB_STRIP_CLASS}>
+        {SPARK_PAGES.map((p) => {
+          const targetPath = p.to.replace("$appId", encodeURIComponent(appId));
+          const isCurrent = location.pathname === targetPath || location.pathname.startsWith(`${targetPath}/`);
+          return (
+            <Link
+              key={p.key}
+              to={p.to}
+              params={{ appId }}
+              search={{ attempt: attempt ?? undefined }}
+              activeOptions={{ exact: false }}
+              aria-busy={pendingKey === p.key || undefined}
+              onClick={(event) => handleClick(p, event)}
+              className={TAB_LINK_CLASS}
+              activeProps={{ "aria-current": "page" as const }}
+            >
+              {p.label}
+              {isCurrent && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-live" />}
+              {pendingKey === p.key && <span className="ml-1.5 size-1.5 shrink-0 rounded-full bg-live/70" aria-hidden="true" />}
+            </Link>
+          );
+        })}
       </nav>
       <HorizontalScrollCues left={cues.left} right={cues.right} />
     </div>

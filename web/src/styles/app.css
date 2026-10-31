@@ -630,10 +630,6 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
     min-width: 44px;
     min-height: 44px;
   }
-  main nav[aria-label="Application sections"] a,
-  main nav[aria-label="Spark pages"] a {
-    min-height: 44px;
-  }
   main .burrow-touch-link {
     display: inline-flex;
     align-items: center;

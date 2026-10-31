@@ -244,7 +244,7 @@ test.describe("nodes", () => {
     await expect(page.getByText(/Check that the NodeManager is reachable/)).toBeVisible();
   });
 
-  test("screenshots: table, heatmap and detail (dark + light)", async ({ page }) => {
+  test("screenshots: table, heatmap and detail (dark + light)", { tag: "@snapshot" }, async ({ page }) => {
     for (const scheme of ["dark", "light"] as const) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto("/nodes");

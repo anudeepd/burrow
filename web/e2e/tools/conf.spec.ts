@@ -107,7 +107,7 @@ test.describe("RM configuration", () => {
     await expect(page.locator(TABLE)).toHaveAttribute("data-burrow-rows", "1091", { timeout: 30_000 });
   });
 
-  test("dark", async ({ page }) => {
+  test("dark", { tag: "@snapshot" }, async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/tools/conf");
     await expect(page.locator(TABLE)).toHaveAttribute("data-burrow-rows", "1709", { timeout: 30_000 });
@@ -116,7 +116,7 @@ test.describe("RM configuration", () => {
     await shoot(page, "conf-dark.png");
   });
 
-  test("light", async ({ page }) => {
+  test("light", { tag: "@snapshot" }, async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("/tools/conf");
     await expect(page.locator(TABLE)).toHaveAttribute("data-burrow-rows", "1709", { timeout: 30_000 });

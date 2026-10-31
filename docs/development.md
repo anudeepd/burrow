@@ -27,7 +27,8 @@ The Python distribution built by `make wheel` is `yarn-burrow`; the installed ex
 
 ## Release
 
-The GitHub Actions **Burrow CI and Release** workflow (`ci.yml`) runs only when manually dispatched. Every run builds and uploads the web assets, six platform wheels, and parity report as workflow artifacts. Its final cleanup job deletes older completed runs of `ci.yml` and their attached workflow artifacts, retaining the current run and artifacts. Cleanup runs after failures as well as successes, but skips cancelled runs. It does not delete GitHub Releases/assets, tags, source commits, PyPI releases, or runs from other workflows. A CI-only run (`publish=false`) creates temporary artifacts but does not publish a release.
+The GitHub Actions **Burrow CI and Release** workflow (`ci.yml`) runs only when manually dispatched. Successful runs upload the built web assets and parity report; publishing runs also build and upload six platform wheels. Publishing or an explicit Linux snapshot refresh first updates only Playwright tests tagged `@snapshot`, then runs one full browser verification. Non-publishing runs skip release-version calculation and wheel packaging; they never publish or commit refreshed screenshot baselines. An explicit snapshot refresh uploads the Linux baseline artifact for review. The workflow no longer deletes previous runs or artifacts; GitHub’s retention policy applies.
+Wheel jobs cache Rust outputs per target and enable Maturin’s compiler cache, including for containerized Linux builds.
 
 To publish, run **Burrow CI and Release** from the `master` branch, set `publish` to `true`, and select a `bump`:
 
@@ -35,7 +36,7 @@ To publish, run **Burrow CI and Release** from the `master` branch, set `publish
 - `minor`: increment the minor component and reset patch to zero.
 - `major`: increment the major component and reset minor and patch to zero.
 
-After web, Rust, parity, and six-platform wheel checks pass, Actions applies the selected bump, synchronizes `pyproject.toml`, the Cargo workspace manifest and lockfile, and the internal `burrow-core` dependency, then commits that bump to `master` before publishing those exact wheels to GitHub Releases and PyPI. It refuses to reuse an existing release tag. Leave `publish` unchecked for a CI-only run; that run does not change versions or publish.
+After web, Rust, parity, and the exact six-platform wheel checks pass—including install, CLI, health-endpoint, and embedded-SPA smoke tests—Actions applies the selected bump, synchronizes `pyproject.toml`, the Cargo workspace manifest and lockfile, and the internal `burrow-core` dependency, then commits that bump to `master` before publishing those exact wheels to GitHub Releases and PyPI. It refuses to reuse an existing release tag. Leave `publish` unchecked for a CI-only run; that run does not change versions or publish.
 
 PyPI publishing uses Trusted Publishing, so no API token is stored in GitHub. Before the first release, configure a pending GitHub Actions publisher in PyPI with owner `anudeepd`, repository `burrow`, workflow file `ci.yml`, environment `pypi`, and project name `yarn-burrow`. The first successful upload creates the PyPI project if that name is available. Configure the GitHub `pypi` environment with the desired reviewer and branch restrictions before publishing.
 

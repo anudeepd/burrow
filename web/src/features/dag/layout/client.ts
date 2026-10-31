@@ -8,9 +8,8 @@ import type { LayoutRequest, LayoutResponse, LayoutResult, LayoutWire, RenderGra
 import { decodeWire, layoutRequest } from "./wire";
 
 /**
- * The ELK engine is loaded on demand. The normal path never touches this: layout happens inside the worker, which
- * bundles its own copy. Only the worker-failure fallback and the (test/SSR) synchronous API pay for it here — and
- * because the import is dynamic, ELK stays out of the application chunk.
+ * The ELK API is loaded on demand. The layout worker fetches the algorithm asset on first use. A browser fallback
+ * loads this module dynamically and uses the same asset; tests/SSR use the package's inline worker export.
  */
 async function engine(): Promise<typeof import("./elk")> {
   return await import("./elk");
@@ -91,7 +90,8 @@ export class LayoutClient {
     if (!this.allowWorker) return null;
     if (this.worker) return this.worker;
     try {
-      const w = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+      // The classic worker can load ELK's standalone script asset without bundling it into this worker.
+      const w = new Worker(new URL("./worker.ts", import.meta.url));
       w.addEventListener("message", (ev: MessageEvent<unknown>) => this.onMessage(ev.data));
       w.addEventListener("error", (ev) => {
         // A worker-level error kills every in-flight request; resolve them through the fallback path.

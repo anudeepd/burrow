@@ -11,6 +11,7 @@
  *
  * It deliberately does not use the router or the query layer: the embedding route passes data in and gets events out.
  */
+import { ChevronDown } from "lucide-react";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import "../dag.css";
@@ -56,7 +57,6 @@ import { serializeDagHtml } from "../export-html";
 import { serializeDagSvg } from "../export-svg";
 import { Button } from "~/ui/button";
 import { MenuContent, MenuGroup, MenuGroupLabel, MenuRoot, MenuSeparator, MenuTrigger } from "~/ui/menu";
-import { OptionalTooltip } from "~/ui/tooltip";
 
 const NO_LABELS: LabelPlacement[] = [];
 
@@ -908,266 +908,271 @@ export function DagView({
 
   return (
     <div className="burrow-dag-frame" style={{ height }}>
-      <OptionalTooltip label={"Scroll to zoom · scroll beside the graph or Shift+scroll to scroll the page · drag to pan"}>
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: handles keyboard shortcuts bubbling from focusable nodes in the SVG tree. */}
-        <div
-          className={cn("burrow-dag", className)}
-          style={{ height: "100%", width: "100%" }}
-          data-level={level}
-          data-panning={panning}
-          data-visible={paneVisible}
-          data-strategy={strategy.edges}
-          // The SVG edge groups that carried `data-flowing` disappear above CANVAS_THRESHOLD, so the count stays
-          // observable here for tests and assistive tech regardless of which layer draws the edges.
-          data-flowing-edges={flowingEdgeCount}
-          data-inferred={graph.inferred}
-          data-dag-layout={layoutError ? "error" : layout ? "ready" : "pending"}
-          data-dense={scene && scene.nodes.length > DENSE_NODE_LIMIT ? "true" : undefined}
-          data-testid="dag-canvas"
-          onKeyDown={onKeyDown}
-        >
-          <div className="burrow-dag-toolbar-slot">
-            {layout ? (
-              <DagToolbar
-                scale={effectiveViewport.scale}
-                onZoomIn={() => zoomBy(ZOOM_STEP)}
-                onZoomOut={() => zoomBy(1 / ZOOM_STEP)}
-                onFit={fitToView}
-                onExportHtml={prepareDagHtmlExport}
-                exporting={exporting}
-                totals={scene?.totals ?? { done: 0, total: 0, active: 0, failed: 0 }}
-                percent={totalsPercent}
-                layoutNote={layoutNote}
-                nodeCount={graph.nodes.length}
-                edgeCount={graph.edges.length}
-                focusStageId={focusStageId}
-                onFocusStage={focusStage}
-                trailingControls={
-                  <>
-                    {toolbarExtras}
-                    <div className="burrow-dag-toolbar-extras burrow-dag-edge-menu">
-                      <MenuRoot
-                        open={edgeListOpen}
-                        onOpenChange={(open) => {
-                          setEdgeListOpen(open);
-                          if (open) {
-                            // Keep the edge menu and node/edge detail card from occupying the same small DAG pane.
-                            setSelectedNodeId(null);
-                            setSelectedEdgeId(null);
-                          }
-                        }}
-                      >
-                        <MenuTrigger
-                          render={
-                            <Button
-                              size="sm"
-                              variant={edgeListOpen ? "default" : "quiet"}
-                              aria-label={`Edges (${graph.edges.length})`}
-                              aria-expanded={edgeListOpen}
-                            />
-                          }
-                        >
-                          Edges <span className="burrow-dag-edge-count">({graph.edges.length})</span>
-                        </MenuTrigger>
-                        <MenuContent className="max-h-[min(20rem,calc(100dvh-2rem))] w-64 overflow-y-auto">
-                          <MenuGroup data-testid="dag-edge-list">
-                            <MenuGroupLabel>Dependency edges</MenuGroupLabel>
-                            <MenuSeparator />
-                            <EdgeListView
-                              edges={scene?.edges ?? []}
-                              nodes={scene?.byId ?? new Map()}
-                              onActivate={(edge) => {
-                                activateEdge(edge);
-                                setEdgeListOpen(false);
-                              }}
-                              metrics={metricsIndex}
-                            />
-                          </MenuGroup>
-                        </MenuContent>
-                      </MenuRoot>
-                    </div>
-                  </>
-                }
-              />
-            ) : null}
-          </div>
-
-          <div
-            ref={paneRef}
-            className="burrow-dag-stage"
-            data-testid="dag-stage"
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            onPointerLeave={() => setHoveredNodeId(null)}
-          >
-            {!layoutError && !empty ? (
-              <DagLoadingPanel detail={`${graph.nodes.length} nodes · ${graph.edges.length} edges`} hidden={Boolean(layout)} />
-            ) : null}
-            {layoutError && !empty ? (
-              <DagStatePanel
-                title="Could not lay out this DAG"
-                detail={`${layoutError} — the graph structure is still available in the drawer/list views.`}
-                action={
-                  <Button
-                    size="sm"
-                    variant="quiet"
-                    onClick={() => {
-                      setLayoutError(null);
-                      setLayoutRetry((attempt) => attempt + 1);
-                    }}
-                  >
-                    Retry
-                  </Button>
-                }
-              />
-            ) : null}
-            {empty ? <DagStatePanel title="This DAG has no nodes" detail="Spark reported an empty graph for this job or stage." /> : null}
-
-            <svg
-              ref={svgRef}
-              className="burrow-dag-svg"
-              // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: WAI-ARIA graph pattern; the SVG is the interactive surface.
-              role="tree"
-              aria-label={ariaLabel ?? (graph.kind === "sql" ? "SQL plan DAG" : `${graph.kind} DAG`)}
-              aria-describedby={`${liveId}-help`}
-              width={size.width || undefined}
-              height={size.height || undefined}
-              onDoubleClick={fitToView}
-            >
-              <title>{ariaLabel ?? `${graph.kind} DAG with ${graph.nodes.length} nodes`}</title>
-              <g transform={viewportTransform(effectiveViewport)}>
-                {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: the cluster frames are decoration; the node groups inside carry the a11y tree. */}
-                <g className="burrow-dag-cluster-layer" aria-hidden="true">
-                  {scene?.clusters.map((c) => (
-                    <ClusterFrame
-                      key={c.cluster.id}
-                      x={c.rect.x}
-                      y={c.rect.y}
-                      width={c.rect.width}
-                      height={c.rect.height}
-                      label={c.cluster.label}
-                      detail={c.cluster.detail}
-                      depth={c.depth}
-                      dimmed={c.dimmed}
-                    />
-                  ))}
-                </g>
-                {strategy.edges === "svg" && scene ? (
-                  <EdgeLayer
-                    edges={renderedEdges}
-                    showLabels={strategy.edgeLabels}
-                    interactive
-                    onHover={setHoveredEdgeId}
-                    onActivate={activateEdge}
-                  />
-                ) : null}
-                {scene ? renderNodeGroups("__root__", 0) : null}
-              </g>
-            </svg>
-
-            {strategy.edges === "canvas" && scene ? (
-              <CanvasEdgeLayer
-                edges={visibleEdges}
-                viewport={effectiveViewport}
-                size={size}
-                reducedMotion={!motion}
-                inView={paneVisible}
-                now={sampledNow}
-                style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-              />
-            ) : null}
-
-            {layout ? (
-              <>
-                <DagMinimap
-                  nodes={scene?.nodes ?? []}
-                  width={MINIMAP_W}
-                  height={MINIMAP_H}
-                  contentWidth={layout.width}
-                  contentHeight={layout.height}
-                  projection={minimap}
-                  viewRect={viewRect}
-                  onPick={pickMinimapPoint}
-                  onDragStart={startMinimapDrag}
-                  onDragEnd={endMinimapDrag}
-                />
-                {/* Notes that explain graph provenance and incomplete stage metrics. */}
-                <div className="burrow-dag-hints">
-                  {graph.notes.length > 0 ? (
-                    <button
-                      type="button"
-                      className="burrow-dag-hint text-left"
-                      data-interactive="true"
-                      aria-expanded={notesOpen}
-                      onClick={() => setNotesOpen((v) => !v)}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: handles keyboard shortcuts bubbling from focusable nodes in the SVG tree. */}
+      <div
+        className={cn("burrow-dag", className)}
+        style={{ height: "100%", width: "100%" }}
+        data-level={level}
+        data-panning={panning}
+        data-visible={paneVisible}
+        data-strategy={strategy.edges}
+        // The SVG edge groups that carried `data-flowing` disappear above CANVAS_THRESHOLD, so the count stays
+        // observable here for tests and assistive tech regardless of which layer draws the edges.
+        data-flowing-edges={flowingEdgeCount}
+        data-inferred={graph.inferred}
+        data-dag-layout={layoutError ? "error" : layout ? "ready" : "pending"}
+        data-dense={scene && scene.nodes.length > DENSE_NODE_LIMIT ? "true" : undefined}
+        data-testid="dag-canvas"
+        onKeyDown={onKeyDown}
+      >
+        <div className="burrow-dag-toolbar-slot">
+          {layout ? (
+            <DagToolbar
+              scale={effectiveViewport.scale}
+              onZoomIn={() => zoomBy(ZOOM_STEP)}
+              onZoomOut={() => zoomBy(1 / ZOOM_STEP)}
+              onFit={fitToView}
+              onExportHtml={prepareDagHtmlExport}
+              exporting={exporting}
+              totals={scene?.totals ?? { done: 0, total: 0, active: 0, failed: 0 }}
+              percent={totalsPercent}
+              layoutNote={layoutNote}
+              nodeCount={graph.nodes.length}
+              edgeCount={graph.edges.length}
+              focusStageId={focusStageId}
+              onFocusStage={focusStage}
+              trailingControls={
+                <>
+                  {toolbarExtras}
+                  <div className="burrow-dag-toolbar-extras burrow-dag-edge-menu">
+                    <MenuRoot
+                      open={edgeListOpen}
+                      onOpenChange={(open) => {
+                        setEdgeListOpen(open);
+                        if (open) {
+                          // Keep the edge menu and node/edge detail card from occupying the same small DAG pane.
+                          setSelectedNodeId(null);
+                          setSelectedEdgeId(null);
+                        }
+                      }}
                     >
-                      {graph.notes.length} provenance note{graph.notes.length === 1 ? "" : "s"}
-                      {notesOpen ? `: ${graph.notes.join("; ")}` : ""}
-                    </button>
-                  ) : null}
-                  {!hasMetrics && !empty && graph.kind !== "sql" ? (
-                    // Stage metrics are a stage-graph join; a SQL plan has none by design (its own accumulables are in the
-                    // drawer), so this message was permanent noise on every SQL execution.
-                    <div className="burrow-dag-hint" data-testid="dag-partial">
-                      {graph.granularity === "stage"
-                        ? "Structure only: this DAG came from the REST fallback, so there is no RDD detail."
-                        : "Waiting for stage metrics — task progress appears as soon as the stage list loads."}
-                    </div>
-                  ) : null}
-                </div>
-                {scene && scene.warnings.length > 0 ? (
-                  <div className="burrow-dag-warn" role="status" data-testid="dag-warnings">
-                    {scene.warnings.length} data warning{scene.warnings.length === 1 ? "" : "s"}: {scene.warnings[0]}
+                      <MenuTrigger
+                        render={
+                          <Button
+                            size="sm"
+                            variant={edgeListOpen ? "default" : "quiet"}
+                            aria-label={`Edges (${graph.edges.length})`}
+                            aria-expanded={edgeListOpen}
+                          />
+                        }
+                      >
+                        Edges <span className="burrow-dag-edge-count">({graph.edges.length})</span>
+                        <ChevronDown
+                          className={cn(
+                            "size-3.5 text-ink-3 transition-transform duration-(--dur-fast) ease-(--ease-out)",
+                            edgeListOpen && "rotate-180",
+                          )}
+                          aria-hidden="true"
+                        />
+                      </MenuTrigger>
+                      <MenuContent className="max-h-[min(20rem,calc(100dvh-2rem))] w-64 overflow-y-auto">
+                        <MenuGroup data-testid="dag-edge-list">
+                          <MenuGroupLabel>Dependency edges</MenuGroupLabel>
+                          <MenuSeparator />
+                          <EdgeListView
+                            edges={scene?.edges ?? []}
+                            nodes={scene?.byId ?? new Map()}
+                            onActivate={(edge) => {
+                              activateEdge(edge);
+                              setEdgeListOpen(false);
+                            }}
+                            metrics={metricsIndex}
+                          />
+                        </MenuGroup>
+                      </MenuContent>
+                    </MenuRoot>
+                  </div>
+                </>
+              }
+            />
+          ) : null}
+        </div>
+
+        <div
+          ref={paneRef}
+          className="burrow-dag-stage"
+          data-testid="dag-stage"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onPointerLeave={() => setHoveredNodeId(null)}
+        >
+          {!layoutError && !empty ? (
+            <DagLoadingPanel detail={`${graph.nodes.length} nodes · ${graph.edges.length} edges`} hidden={Boolean(layout)} />
+          ) : null}
+          {layoutError && !empty ? (
+            <DagStatePanel
+              title="Could not lay out this DAG"
+              detail={`${layoutError} — the graph structure is still available in the drawer/list views.`}
+              action={
+                <Button
+                  size="sm"
+                  variant="quiet"
+                  onClick={() => {
+                    setLayoutError(null);
+                    setLayoutRetry((attempt) => attempt + 1);
+                  }}
+                >
+                  Retry
+                </Button>
+              }
+            />
+          ) : null}
+          {empty ? <DagStatePanel title="This DAG has no nodes" detail="Spark reported an empty graph for this job or stage." /> : null}
+
+          <svg
+            ref={svgRef}
+            className="burrow-dag-svg"
+            // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: WAI-ARIA graph pattern; the SVG is the interactive surface.
+            role="tree"
+            aria-label={ariaLabel ?? (graph.kind === "sql" ? "SQL plan DAG" : `${graph.kind} DAG`)}
+            aria-describedby={`${liveId}-help`}
+            width={size.width || undefined}
+            height={size.height || undefined}
+            onDoubleClick={fitToView}
+          >
+            <title>{ariaLabel ?? `${graph.kind} DAG with ${graph.nodes.length} nodes`}</title>
+            <g transform={viewportTransform(effectiveViewport)}>
+              {/* biome-ignore lint/a11y/noAriaHiddenOnFocusable: the cluster frames are decoration; the node groups inside carry the a11y tree. */}
+              <g className="burrow-dag-cluster-layer" aria-hidden="true">
+                {scene?.clusters.map((c) => (
+                  <ClusterFrame
+                    key={c.cluster.id}
+                    x={c.rect.x}
+                    y={c.rect.y}
+                    width={c.rect.width}
+                    height={c.rect.height}
+                    label={c.cluster.label}
+                    detail={c.cluster.detail}
+                    depth={c.depth}
+                    dimmed={c.dimmed}
+                  />
+                ))}
+              </g>
+              {strategy.edges === "svg" && scene ? (
+                <EdgeLayer
+                  edges={renderedEdges}
+                  showLabels={strategy.edgeLabels}
+                  interactive
+                  onHover={setHoveredEdgeId}
+                  onActivate={activateEdge}
+                />
+              ) : null}
+              {scene ? renderNodeGroups("__root__", 0) : null}
+            </g>
+          </svg>
+
+          {strategy.edges === "canvas" && scene ? (
+            <CanvasEdgeLayer
+              edges={visibleEdges}
+              viewport={effectiveViewport}
+              size={size}
+              reducedMotion={!motion}
+              inView={paneVisible}
+              now={sampledNow}
+              style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+            />
+          ) : null}
+
+          {layout ? (
+            <>
+              <DagMinimap
+                nodes={scene?.nodes ?? []}
+                width={MINIMAP_W}
+                height={MINIMAP_H}
+                contentWidth={layout.width}
+                contentHeight={layout.height}
+                projection={minimap}
+                viewRect={viewRect}
+                onPick={pickMinimapPoint}
+                onDragStart={startMinimapDrag}
+                onDragEnd={endMinimapDrag}
+              />
+              {/* Notes that explain graph provenance and incomplete stage metrics. */}
+              <div className="burrow-dag-hints">
+                {graph.notes.length > 0 ? (
+                  <button
+                    type="button"
+                    className="burrow-dag-hint text-left"
+                    data-interactive="true"
+                    aria-expanded={notesOpen}
+                    onClick={() => setNotesOpen((v) => !v)}
+                  >
+                    {graph.notes.length} provenance note{graph.notes.length === 1 ? "" : "s"}
+                    {notesOpen ? `: ${graph.notes.join("; ")}` : ""}
+                  </button>
+                ) : null}
+                {!hasMetrics && !empty && graph.kind !== "sql" ? (
+                  // Stage metrics are a stage-graph join; a SQL plan has none by design (its own accumulables are in the
+                  // drawer), so this message was permanent noise on every SQL execution.
+                  <div className="burrow-dag-hint" data-testid="dag-partial">
+                    {graph.granularity === "stage"
+                      ? "Structure only: this DAG came from the REST fallback, so there is no RDD detail."
+                      : "Waiting for stage metrics — task progress appears as soon as the stage list loads."}
                   </div>
                 ) : null}
-              </>
-            ) : null}
+              </div>
+              {scene && scene.warnings.length > 0 ? (
+                <div className="burrow-dag-warn" role="status" data-testid="dag-warnings">
+                  {scene.warnings.length} data warning{scene.warnings.length === 1 ? "" : "s"}: {scene.warnings[0]}
+                </div>
+              ) : null}
+            </>
+          ) : null}
 
-            <StageDrawer
-              open={selectedVisual !== null}
-              onClose={() => setSelectedNodeId(null)}
-              node={selectedVisual}
-              metric={selectedMetric}
-              now={sampledNow}
-              chain={chain}
-              stageHref={
-                selectedVisual?.node.stageId != null && stageHref
-                  ? stageHref(selectedVisual.node.stageId, selectedVisual.node.attempt ?? 0)
-                  : null
-              }
-              rddHref={
-                selectedVisual?.node.kind === "rdd" && selectedVisual.node.ref != null && rddHref ? rddHref(selectedVisual.node.ref) : null
-              }
-            />
-            <EdgeDrawer
-              open={selectedEdgeVisual !== null}
-              onClose={() => setSelectedEdgeId(null)}
-              edge={selectedEdgeVisual}
-              graphKind={graph.kind}
-              metrics={metricsIndex}
-              producer={selectedEdgeVisual ? (scene?.byId.get(selectedEdgeVisual.edge.from) ?? null) : null}
-              consumer={selectedEdgeVisual ? (scene?.byId.get(selectedEdgeVisual.edge.to) ?? null) : null}
-            />
+          <StageDrawer
+            open={selectedVisual !== null}
+            onClose={() => setSelectedNodeId(null)}
+            node={selectedVisual}
+            metric={selectedMetric}
+            now={sampledNow}
+            chain={chain}
+            stageHref={
+              selectedVisual?.node.stageId != null && stageHref
+                ? stageHref(selectedVisual.node.stageId, selectedVisual.node.attempt ?? 0)
+                : null
+            }
+            rddHref={
+              selectedVisual?.node.kind === "rdd" && selectedVisual.node.ref != null && rddHref ? rddHref(selectedVisual.node.ref) : null
+            }
+          />
+          <EdgeDrawer
+            open={selectedEdgeVisual !== null}
+            onClose={() => setSelectedEdgeId(null)}
+            edge={selectedEdgeVisual}
+            graphKind={graph.kind}
+            metrics={metricsIndex}
+            producer={selectedEdgeVisual ? (scene?.byId.get(selectedEdgeVisual.edge.from) ?? null) : null}
+            consumer={selectedEdgeVisual ? (scene?.byId.get(selectedEdgeVisual.edge.to) ?? null) : null}
+          />
 
-            <p id={`${liveId}-help`} className="sr-only">
-              Graph with {graph.nodes.length} nodes and {graph.edges.length} edges. Mouse wheel zooms at the pointer; scrolling beside the
-              graph or Shift plus mouse wheel scrolls the page. Arrow keys move between nodes, Enter opens details, Shift plus arrow keys
-              pan, plus and minus zoom, zero fits the graph.
-            </p>
-            <p className="sr-only" role="status" aria-live="polite">
-              {announcement
-                ? `${announcement}. ${fmtInt(scene?.totals.done ?? 0)} of ${fmtInt(scene?.totals.total ?? 0)} tasks complete, ${fmtPct(totalsPercent, 0)}.`
-                : ""}
-            </p>
-            <span className="sr-only" data-testid="dag-sr-summary">
-              {`nodes ${graph.nodes.length}; edges ${graph.edges.length}; running ${scene?.runningNodes.length ?? 0}; tasks ${scene?.totals.done ?? 0}/${scene?.totals.total ?? 0}`}
-            </span>
-          </div>
-          <div className="burrow-dag-footer">{showLegend ? <DagLegend showFlow={hasMetrics} inferred={graph.inferred} /> : null}</div>
+          <p id={`${liveId}-help`} className="sr-only">
+            Graph with {graph.nodes.length} nodes and {graph.edges.length} edges. Mouse wheel zooms at the pointer; scrolling beside the
+            graph or Shift plus mouse wheel scrolls the page. Arrow keys move between nodes, Enter opens details, Shift plus arrow keys pan,
+            plus and minus zoom, zero fits the graph.
+          </p>
+          <p className="sr-only" role="status" aria-live="polite">
+            {announcement
+              ? `${announcement}. ${fmtInt(scene?.totals.done ?? 0)} of ${fmtInt(scene?.totals.total ?? 0)} tasks complete, ${fmtPct(totalsPercent, 0)}.`
+              : ""}
+          </p>
+          <span className="sr-only" data-testid="dag-sr-summary">
+            {`nodes ${graph.nodes.length}; edges ${graph.edges.length}; running ${scene?.runningNodes.length ?? 0}; tasks ${scene?.totals.done ?? 0}/${scene?.totals.total ?? 0}`}
+          </span>
         </div>
-      </OptionalTooltip>
+        <div className="burrow-dag-footer">{showLegend ? <DagLegend showFlow={hasMetrics} inferred={graph.inferred} /> : null}</div>
+      </div>
     </div>
   );
 }

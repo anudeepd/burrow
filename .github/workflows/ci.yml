@@ -73,7 +73,7 @@ jobs:
         working-directory: web
         env:
           PW_SNAPSHOT_DIR: e2e/__screenshots__/linux
-        run: bun run e2e --project=firefox --update-snapshots
+        run: bun run e2e --project=chromium --no-deps --grep '@snapshot' --update-snapshots
       - name: Verify browser regressions against refreshed Linux baselines
         working-directory: web
         env:
@@ -161,7 +161,7 @@ jobs:
   release-version:
     name: Calculate release version
     needs: [web, rust, parity-replay, linux-snapshot-baselines]
-    if: ${{ always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    if: ${{ inputs.publish && always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -177,26 +177,20 @@ jobs:
       - name: Calculate release version
         id: version
         env:
-          PUBLISH: ${{ inputs.publish }}
           BUMP: ${{ inputs.bump }}
         run: |
           set -euo pipefail
-          if [[ "$PUBLISH" == "true" ]]; then
-            version="$(python scripts/release_version.py next --bump "$BUMP")"
-            tag="v$version"
-            set +e
-            git ls-remote --exit-code --refs origin "refs/tags/$tag" >/dev/null
-            status=$?
-            set -e
-            if [[ "$status" -eq 0 ]]; then
-              echo "::error::Release tag $tag already exists."
-              exit 1
-            elif [[ "$status" -ne 2 ]]; then
-              exit "$status"
-            fi
-          else
-            version="$(python scripts/release_version.py current)"
-            tag="v$version"
+          version="$(python scripts/release_version.py next --bump "$BUMP")"
+          tag="v$version"
+          set +e
+          git ls-remote --exit-code --refs origin "refs/tags/$tag" >/dev/null
+          status=$?
+          set -e
+          if [[ "$status" -eq 0 ]]; then
+            echo "::error::Release tag $tag already exists."
+            exit 1
+          elif [[ "$status" -ne 2 ]]; then
+            exit "$status"
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
@@ -204,7 +198,7 @@ jobs:
   # ------------------------------------------------------------------- wheels
   wheel:
     needs: [web, rust, linux-snapshot-baselines, parity-replay, release-version]
-    if: ${{ always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && needs.release-version.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
+    if: ${{ inputs.publish && always() && needs.web.result == 'success' && needs.rust.result == 'success' && needs.parity-replay.result == 'success' && needs.release-version.result == 'success' && (needs.linux-snapshot-baselines.result == 'success' || needs.linux-snapshot-baselines.result == 'skipped') }}
     strategy:
       fail-fast: false
       matrix:
@@ -226,6 +220,10 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ needs.linux-snapshot-baselines.outputs.source_sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: wheel-${{ runner.os }}-${{ runner.arch }}-${{ matrix.target }}
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -242,23 +240,25 @@ jobs:
         with:
           target: ${{ matrix.target }}
           manylinux: auto
+          cache: kache
           command: build
           args: --release --manifest-path crates/burrow/Cargo.toml --out dist --compatibility ${{ startsWith(matrix.target, 'x86_64-unknown-linux-musl') && 'musllinux_1_2' || '' }}
-      - name: install smoke (x86_64 glibc Linux only)
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
+      - name: Install and smoke-test wheel on its native runner
+        if: matrix.target != 'x86_64-unknown-linux-musl'
+        env:
+          RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
+        run: python scripts/smoke_release_wheel.py dist
+      - name: Install and smoke-test musllinux wheel
+        if: matrix.target == 'x86_64-unknown-linux-musl'
         env:
           RELEASE_VERSION: ${{ needs.release-version.outputs.version }}
         run: |
-          python -m venv /tmp/smoke && /tmp/smoke/bin/pip install dist/*.whl
-          version_output=$(/tmp/smoke/bin/burrow --version)
-          echo "$version_output"
-          [[ "$version_output" == *"$RELEASE_VERSION"* ]]
-          /tmp/smoke/bin/burrow --help >/dev/null
-          # serves the embedded SPA and answers /api/healthz without any cluster
-          setsid /tmp/smoke/bin/burrow --no-open --port 8899 --rm http://127.0.0.1:1 &
-          for i in $(seq 1 40); do curl -sf http://127.0.0.1:8899/api/healthz && break || sleep 0.25; done
-          curl -sf http://127.0.0.1:8899/ | grep -qi '<div' && echo "SPA shell served"
-          pkill -f 'burrow --no-open --port 8899' || true
+          docker run --rm \
+            --volume "$GITHUB_WORKSPACE/dist:/dist:ro" \
+            --volume "$GITHUB_WORKSPACE/scripts/smoke_release_wheel.py:/smoke_release_wheel.py:ro" \
+            --env RELEASE_VERSION \
+            python:3.12-alpine \
+            python /smoke_release_wheel.py /dist
       - uses: actions/upload-artifact@v7
         with:
           name: wheel-${{ matrix.target }}
@@ -316,25 +316,10 @@ jobs:
           pattern: wheel-*
           path: dist
           merge-multiple: true
-      - name: Verify wheel set
+      - name: Verify exact wheel target set
         env:
           VERSION: ${{ needs.release-version.outputs.version }}
-        run: |
-          python3 - <<'PYCODE'
-          from pathlib import Path
-          import os
-
-          wheels = sorted(Path("dist").glob("*.whl"))
-          expected_prefix = f"yarn_burrow-{os.environ['VERSION']}-"
-          if len(wheels) != 6:
-              raise SystemExit(f"Expected 6 platform wheels, found {len(wheels)}: {[p.name for p in wheels]}")
-          wrong = [p.name for p in wheels if not p.name.startswith(expected_prefix)]
-          if wrong:
-              raise SystemExit(f"Wheel names do not match {expected_prefix!r}: {wrong}")
-          print("Validated wheels:")
-          for wheel in wheels:
-              print(f"- {wheel.name}")
-          PYCODE
+        run: python3 scripts/verify_release_wheels.py dist "$VERSION"
       - name: Save validated release files
         uses: actions/upload-artifact@v7
         with:
@@ -414,29 +399,3 @@ jobs:
       - name: Publish yarn-burrow to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-  cleanup-previous-runs:
-    name: Remove older Burrow CI and Release runs
-    needs: [web, rust, parity-replay, wheel, prepare-release, github-release, pypi-publish]
-    if: ${{ always() && !cancelled() }}
-    runs-on: ubuntu-24.04
-    permissions:
-      actions: write
-    steps:
-      - name: Delete older completed runs of this workflow
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          old_run_ids="$(gh api --paginate \
-            --jq '.workflow_runs[] | select(.status == "completed" and .id != (env.RUN_ID | tonumber)) | .id' \
-            "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?per_page=100")"
-          if [[ -z "$old_run_ids" ]]; then
-            echo "No older completed Burrow CI and Release runs to delete."
-            exit 0
-          fi
-          while IFS= read -r run_id; do
-            [[ -n "$run_id" ]] || continue
-            echo "Deleting workflow run $run_id and its attached artifacts."
-            gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/runs/$run_id"
-          done <<< "$old_run_ids"

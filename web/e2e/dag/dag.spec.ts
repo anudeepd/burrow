@@ -49,7 +49,7 @@ async function expectNodesWithinCanvas(canvas: Locator, nodes: Locator): Promise
 
 test.describe("DAG rendering", () => {
   for (const theme of ["dark", "light"] as const) {
-    test(`screenshots every fixture category in ${theme}`, async ({ page }) => {
+    test(`screenshots every fixture category in ${theme}`, { tag: "@snapshot" }, async ({ page }) => {
       test.setTimeout(180_000);
       for (const [name, query] of Object.entries(GOLDEN)) {
         await gotoFixture(page, query, name === "synthetic300" ? "simulated" : "captured");
@@ -64,6 +64,11 @@ test.describe("DAG rendering", () => {
       }
     });
   }
+
+  test("runs ELK layout in the dedicated worker", async ({ page }) => {
+    await gotoFixture(page, GOLDEN.medium);
+    await expect(page.getByTestId("dag-canvas")).toContainText(/worker · \d+ ms/);
+  });
 });
 
 test.describe("interaction", () => {
@@ -311,11 +316,16 @@ test.describe("interaction", () => {
 
   test("selects a shuffle edge and shows its metrics", async ({ page }) => {
     await gotoFixture(page, GOLDEN.big);
-    await page.getByRole("button", { name: /^Edges \(\d+\)$/ }).click();
-    const entry = page
-      .getByTestId("dag-edge-list")
-      .getByRole("menuitem", { name: /shuffle read/i })
-      .first();
+    const edgesButton = page.getByRole("button", { name: /^Edges \(\d+\)$/ });
+    const gestureHint = page.getByRole("tooltip").filter({ hasText: /^Scroll to zoom/ });
+    await edgesButton.hover();
+    await expect(gestureHint).toBeHidden();
+    await expect(edgesButton.locator("svg")).toBeVisible();
+    await edgesButton.click();
+    await expect(edgesButton).toHaveAttribute("aria-expanded", "true");
+    const edgeList = page.getByTestId("dag-edge-list");
+    await expect(edgeList).toBeVisible();
+    const entry = edgeList.getByRole("menuitem", { name: /shuffle read/i }).first();
     await expect(entry).toHaveAttribute("aria-label", / to /);
     await entry.click();
     const drawer = page.getByTestId("dag-edge-drawer");

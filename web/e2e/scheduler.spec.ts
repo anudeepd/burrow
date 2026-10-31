@@ -19,12 +19,32 @@ const FAIR = fixture("fair/scheduler.json");
 const FIFO = fixture("fifo/scheduler.json");
 const CAPACITY = fixture("capacity/scheduler.json");
 
-/** Serve one captured scheduler payload for `/api/yarn/scheduler` only (not `-conf`, not `/activities`). */
+/** Serve scheduler fixtures without mixing Fair/FIFO data with the mock's captured Capacity scheduler-overview response. */
 async function useScheduler(page: Page, body: unknown) {
+  const parsed = SchedulerResponseSchema.safeParse(body);
+  const type = parsed.success ? parsed.data.scheduler.schedulerInfo.type : undefined;
   await page.route(
     (url) => url.pathname === "/api/yarn/scheduler",
     (route) => route.fulfill({ json: body, headers: { "x-burrow-api": "1", "x-burrow-cache": "miss" } }),
   );
+  if (type === "fairScheduler" || type === "fifoScheduler") {
+    await page.route(
+      (url) => url.pathname === "/api/yarn/scheduler-overview",
+      (route) =>
+        route.fulfill({
+          status: 404,
+          contentType: "application/json",
+          headers: { "x-burrow-api": "1", "x-burrow-cache": "miss" },
+          json: {
+            error: {
+              code: "upstream_status",
+              message: "scheduler-overview is unavailable for this captured scheduler fixture",
+              upstream: { url: "http://rm.example:8088/ws/v1/cluster/scheduler-overview", status: 404 },
+            },
+          },
+        }),
+    );
+  }
 }
 
 function activityPayload(rowCount: number) {
@@ -74,7 +94,7 @@ test.describe("scheduler", () => {
     await expect(tree.getByRole("columnheader").first()).toBeVisible();
   });
 
-  test("shows the queue workspace in the first phone viewport", async ({ page }) => {
+  test("shows the queue workspace in the first phone viewport", { tag: "@snapshot" }, async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/scheduler?parity=1");
 
@@ -262,12 +282,20 @@ test.describe("scheduler", () => {
     await expect(page.getByRole("heading", { name: "Scheduler", level: 1 })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Queue headroom" })).toBeVisible();
 
-    // scheduler type + root queue, raw values
+    // Scheduler facts now share sources and units with Overview.
     expect(await yv(page, "scheduler.type")).toBe("capacityScheduler");
-    // the KPI strip's real values (maximum allocation comes from the scheduler payload)
-    await expect(page.locator('[data-yf="scheduler.maximumAllocation.memory"]')).toBeVisible();
-    // missing scheduler values are described in operator language, not API-contract terminology
-    await expect(page.getByText("The ResourceManager did not return this setting.").first()).toBeVisible();
+    await expect(page.locator('[data-yf="scheduler.derived.schedulerName"]')).toHaveAttribute("data-yv", "Capacity Scheduler");
+    await expect(page.locator('[data-yf="scheduler.derived.schedulingResourceTypes"]')).toHaveAttribute(
+      "data-yv",
+      "[memory-mb (unit=Mi), vcores]",
+    );
+    await expect(page.locator('[data-yf="scheduler.derived.minAllocationText"]')).toHaveText("256 MiB · 1 vCore");
+    await expect(page.locator('[data-yf="scheduler.derived.maxAllocationText"]')).toHaveText("16 GiB · 8 vCores");
+    await expect(page.locator('[data-yf="scheduler.derived.maximumClusterPriority"]')).toHaveAttribute("data-yv", "10");
+    const maximumMemory = page.locator('[data-yf="scheduler.maximumAllocation.memory"]');
+    await expect(maximumMemory).toHaveAttribute("data-yv", "16384");
+    await expect(maximumMemory).toHaveAttribute("data-yfmt", "mb");
+    await expect(page.getByText("The ResourceManager did not return this setting.")).toHaveCount(0);
     await expect(page.getByText("not in the REST contract")).toHaveCount(0);
     await expect(page.getByText("YARN memory allocation")).toBeVisible();
     await expect(page.getByText("Average node physical memory")).toBeVisible();
@@ -613,7 +641,7 @@ test.describe("scheduler", () => {
   });
 
   for (const theme of ["dark", "light"] as const) {
-    test(`screenshot · capacity · ${theme}`, async ({ page }) => {
+    test(`screenshot · capacity · ${theme}`, { tag: "@snapshot" }, async ({ page }) => {
       await page.setViewportSize({ width: 1600, height: 1500 });
       await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
       await page.addInitScript(() => {
@@ -629,7 +657,7 @@ test.describe("scheduler", () => {
       await expect(page).toHaveScreenshot(`scheduler/capacity-${theme}.png`, { fullPage: true });
     });
 
-    test(`screenshot · fair · ${theme}`, async ({ page }) => {
+    test(`screenshot · fair · ${theme}`, { tag: "@snapshot" }, async ({ page }) => {
       await page.setViewportSize({ width: 1600, height: 1200 });
       await useScheduler(page, FAIR);
       await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
@@ -641,7 +669,7 @@ test.describe("scheduler", () => {
       await expect(page).toHaveScreenshot(`scheduler/fair-${theme}.png`, { fullPage: true });
     });
 
-    test(`screenshot · fifo · ${theme}`, async ({ page }) => {
+    test(`screenshot · fifo · ${theme}`, { tag: "@snapshot" }, async ({ page }) => {
       await page.setViewportSize({ width: 1600, height: 1000 });
       await useScheduler(page, FIFO);
       await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
@@ -653,7 +681,7 @@ test.describe("scheduler", () => {
       await expect(page).toHaveScreenshot(`scheduler/fifo-${theme}.png`, { fullPage: true });
     });
 
-    test(`screenshot · queue detail · ${theme}`, async ({ page }) => {
+    test(`screenshot · queue detail · ${theme}`, { tag: "@snapshot" }, async ({ page }) => {
       await page.setViewportSize({ width: 1600, height: 1400 });
       await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
       await page.addInitScript(() => {

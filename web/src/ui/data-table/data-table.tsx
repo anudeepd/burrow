@@ -1000,15 +1000,17 @@ function ColumnChooser<T extends RowData>({ table, onReset }: { table: ReactTabl
 }
 
 function readSizing(key: string): ColumnSizingState {
+  if (typeof window === "undefined") return {};
   try {
-    return JSON.parse(localStorage.getItem(`burrow.cols.${key}`) ?? "{}") as ColumnSizingState;
+    return JSON.parse(window.localStorage.getItem(`burrow.cols.${key}`) ?? "{}") as ColumnSizingState;
   } catch {
     return {};
   }
 }
 function writeSizing(key: string, s: ColumnSizingState): void {
+  if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(`burrow.cols.${key}`, JSON.stringify(s));
+    window.localStorage.setItem(`burrow.cols.${key}`, JSON.stringify(s));
   } catch {
     /* ignore */
   }

@@ -29,7 +29,7 @@ async function openJmx(page: Page, path: string, minRows: number) {
 
 test.describe("/tools/jmx", () => {
   for (const scheme of ["dark", "light"] as const) {
-    test(`renders the bean tree (${scheme})`, async ({ page }) => {
+    test(`renders the bean tree (${scheme})`, { tag: "@snapshot" }, async ({ page }) => {
       await page.clock.setFixedTime(new Date("2026-10-03T12:04:09.000Z"));
       await page.emulateMedia({ colorScheme: scheme });
       await openJmx(page, "/tools/jmx", 100);

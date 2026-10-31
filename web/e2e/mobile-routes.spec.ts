@@ -65,7 +65,10 @@ test.beforeEach(async ({ page }) => {
 });
 
 for (const [name, path, marker] of routes) {
-  test(`phone route ${name} renders upstream content within the document width`, async ({ page }) => {
+  const capturesScreenshot = ["overview", "applications", "container-logs", "spark-job"].includes(name);
+  test(`phone route ${name} renders upstream content within the document width`, {
+    tag: capturesScreenshot ? "@snapshot" : undefined,
+  }, async ({ page }) => {
     const exceptions: string[] = [];
     const failedApiResponses: string[] = [];
     page.on("pageerror", (error) => exceptions.push(error.message));
@@ -140,7 +143,7 @@ for (const [name, path, marker] of routes) {
       await expect(cues.locator('[data-scroll-cue="left"]')).toHaveCSS("opacity", "0");
       await expect(cues.locator('[data-scroll-cue="right"]')).toHaveCSS("opacity", "1");
     }
-    if (["overview", "applications", "container-logs", "spark-job"].includes(name)) {
+    if (capturesScreenshot) {
       await expect(page).toHaveScreenshot(`mobile/${name}.png`);
     }
   });
