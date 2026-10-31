@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "e2e": "NO_COLOR= playwright test",
+    "e2e": "FORCE_COLOR=0 playwright test",
     "load:test": "BUN_CONFIG_MAX_HTTP_REQUESTS=65535 bun run scripts/load-test.ts",
     "lint": "biome check .",
     "format": "biome check --write ."
