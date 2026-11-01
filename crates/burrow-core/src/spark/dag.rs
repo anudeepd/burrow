@@ -1669,9 +1669,9 @@ mod tests {
             "\u{8}\t\n\u{c}\r'/q\u{12}"
         );
         assert_eq!(java_unescape(r"\uuuu0041"), "A");
-        assert_eq!(java_unescape(r"\ud800!"), "�!");
-        assert_eq!(java_unescape(r"\ud800\u0041"), "�A");
-        assert_eq!(java_unescape(r"\uZZZZ"), "�");
+        assert_eq!(java_unescape(r"\ud800!"), "\u{FFFD}!");
+        assert_eq!(java_unescape(r"\ud800\u0041"), "\u{FFFD}A");
+        assert_eq!(java_unescape(r"\uZZZZ"), "\u{FFFD}");
         assert_eq!(parse_node_label("RDD [1]", 1).callsite, "");
         assert_eq!(parse_edge(" \n ").unwrap(), None);
         assert!(parse_edge("1").is_err());

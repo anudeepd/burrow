@@ -244,6 +244,6 @@ mod tests {
         assert_eq!(percent_decode("plain"), "plain");
         assert_eq!(percent_decode("a+b%20c"), "a b c");
         assert_eq!(percent_decode("%QZ%"), "%QZ%");
-        assert_eq!(percent_decode("%FF"), "�");
+        assert_eq!(percent_decode("%FF"), "\u{FFFD}");
     }
 }
