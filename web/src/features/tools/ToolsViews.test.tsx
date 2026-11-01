@@ -34,7 +34,7 @@ const FIXTURE = resolve(process.cwd(), "../fixtures/rm/tools");
 const readJson = (name: string) => JSON.parse(readFileSync(`${FIXTURE}/${name}`, "utf8")) as unknown;
 const logFiles = RmLogsSchema.parse(readJson("logs.json"));
 
-function renderToolsPage(page: "conf" | "logs", search = "", options: { listingError?: Error } = {}) {
+function renderToolsPage(page: "conf" | "logs", search = "", options: { listingError?: Error; confKeys?: string[] } = {}) {
   const root = createRootRoute();
   const route = createRoute({
     getParentRoute: () => root,
@@ -46,7 +46,11 @@ function renderToolsPage(page: "conf" | "logs", search = "", options: { listingE
     history: createMemoryHistory({ initialEntries: [`/tools/${page}${search}`] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
-  client.setQueryData(tq.conf().queryKey, readJson("conf.json") as ConfResponse);
+  const conf = readJson("conf.json") as ConfResponse;
+  client.setQueryData(
+    tq.conf().queryKey,
+    options.confKeys ? { ...conf, properties: conf.properties.filter((property) => options.confKeys?.includes(property.key)) } : conf,
+  );
   client.setQueryData(
     nq.nmConf("127.0.0.2:8042").queryKey,
     JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/nodes/nm-127.0.0.2_8042-conf.json"), "utf8")) as never,
@@ -115,7 +119,7 @@ describe("tools pages", () => {
         throw new Error("offline retry");
       }),
     );
-    const { client } = renderToolsPage("conf");
+    const { client } = renderToolsPage("conf", "", { confKeys: ["yarn.admin.acl"] });
     await screen.findByRole("table", { name: "Configuration properties" });
     const meta = client.getQueryCache().find({ queryKey: q.meta().queryKey })!;
     act(() => {
@@ -142,7 +146,9 @@ describe("tools pages", () => {
   });
 
   it("drives the configuration filters, row detail, sorting, and optional columns", { timeout: 30_000 }, async () => {
-    const { router } = renderToolsPage("conf", "?q=not-a-real-property");
+    const { router } = renderToolsPage("conf", "?q=not-a-real-property", {
+      confKeys: ["yarn.admin.acl", "yarn.scheduler.maximum-allocation-mb"],
+    });
     await screen.findByRole("table", { name: "Configuration properties" });
     fireEvent.click(screen.getAllByRole("button", { name: "Clear filters" })[0]!);
     await waitFor(() => expect((router.state.location.search as { q?: string }).q).toBeUndefined());

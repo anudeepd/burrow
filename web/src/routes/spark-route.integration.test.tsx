@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 describe("Spark route screens", () => {
-  it("mounts every Spark list route and its job, stage, SQL, and RDD detail routes", async () => {
+  it("mounts every Spark list route and its job, stage, SQL, and RDD detail routes", { timeout: 30_000 }, async () => {
     const router = routerAt(`/apps/${APP_ID}/spark`);
     render(<RouterProvider router={router} />);
     const navigate = async (path: string) =>

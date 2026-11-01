@@ -160,6 +160,7 @@ describe("accessibility tree", () => {
 describe("keyboard navigation", () => {
   it("moves the roving tab stop with the arrow keys", async () => {
     await mount(wordcountStage());
+    await waitFor(() => expect(screen.getByTestId("dag-canvas").getAttribute("data-dag-layout")).toBe("ready"));
     const tree = screen.getByRole("tree");
     const tabbable = () => screen.getAllByRole("treeitem").filter((i) => i.getAttribute("tabindex") === "0");
     // svg <g> focus() is a no-op in jsdom, so the assertion is on the roving tabindex the component maintains
