@@ -59,6 +59,15 @@ describe("queue user rows", () => {
   it("multiplies by the user weight with Java's (long) truncation, and only when the weight is not 1.0", () => {
     expect(scaleResource(r(1536, 3), 0.5)).toEqual({ memory: 768, vCores: 1, customs: [] });
     expect(scaleResource(r(1000, 1), 1.5)).toEqual({ memory: 1500, vCores: 1, customs: [] });
+    expect(
+      scaleResource(
+        {
+          ...r(1000, 1),
+          resourceInformations: { resourceInformation: [{ name: "gpu", value: 3, units: "cards" }] },
+        } as ResourceInfo,
+        0.5,
+      ).customs,
+    ).toEqual([{ name: "gpu", value: 1, units: "cards" }]);
     const raw = {
       resources: { resourceUsagesByPartition: [{ partitionName: "", userAmLimit: r(1536, 1) }] },
       users: { user: [{ username: "w", numPendingApplications: 0, numActiveApplications: 1, userWeight: 2 }] },

@@ -16,6 +16,7 @@ window.__BURROW_PARITY__ = true;
 
 const { buildTimelineRows, TimelineChart } = await import("./Timeline");
 const { SparkExecutorSchema, SparkJobSchema, SparkStageSchema } = await import("../data/schemas");
+const { parityStore } = await import("~/state/parity");
 
 /** A job bar with the defaults filled in; `over` picks the tone and which branch of `Bar` is exercised. */
 const bar = (over: Partial<TimelineBar> & { key: string }): TimelineBar => ({
@@ -44,6 +45,7 @@ const ROWS: TimelineRow[] = [
 
 afterEach(() => {
   document.body.innerHTML = "";
+  parityStore.setState(() => ({ enabled: true }));
 });
 
 describe("TimelineChart", () => {
@@ -116,6 +118,38 @@ describe("TimelineChart", () => {
     expect(screen.getByRole("status").textContent).toContain("duration");
     expect(container.textContent).toContain("still running");
     expect(container.querySelectorAll('svg rect[fill="var(--tone)"]')).toHaveLength(1);
+    fireEvent.mouseLeave(container.querySelector('[data-ye="active"]')!);
+  });
+
+  it("uses the virtual row range outside parity mode and cancels a range drag", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(400);
+    vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockReturnValue(1_000);
+    const onSelectRange = vi.fn();
+    const { container } = render(
+      <TimelineChart
+        rows={ROWS}
+        window={[0, 4_000]}
+        tz="local"
+        onZoom={() => undefined}
+        onPan={() => undefined}
+        onSelectRange={onSelectRange}
+        onFit={() => undefined}
+        label="Virtual timeline"
+      />,
+    );
+    const figure = container.querySelector(".select-none") as HTMLDivElement;
+    const list = container.querySelector(".burrow-scroll > .relative") as HTMLDivElement;
+    expect(container.querySelectorAll("[data-ye]").length).toBeGreaterThan(0);
+    Object.defineProperty(list, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, top: 0, left: 0, right: 1_000, bottom: 400, width: 1_000, height: 400, toJSON: () => ({}) }),
+    });
+    Object.defineProperty(figure, "setPointerCapture", { configurable: true, value: () => {} });
+    fireEvent.pointerDown(figure, { pointerId: 12, clientX: 500 });
+    fireEvent.pointerMove(figure, { pointerId: 12, clientX: 700 });
+    fireEvent.pointerCancel(figure, { pointerId: 12 });
+    expect(onSelectRange).not.toHaveBeenCalled();
   });
   it("zooms over the axis, pans on Shift-wheel, and selects only a meaningful drag range", () => {
     const onZoom = vi.fn();

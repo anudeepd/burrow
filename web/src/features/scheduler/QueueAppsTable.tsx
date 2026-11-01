@@ -14,6 +14,7 @@ import type { App } from "~/api/schemas";
 const COLS: ColDef<App>[] = [
   {
     id: "id",
+    accessorFn: (app) => app.id,
     meta: { label: "ID", pinned: true },
     size: 250,
     cell: ({ row }) => (

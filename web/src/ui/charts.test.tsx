@@ -1,6 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AreaChart, Sparkline } from "./charts";
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe("AreaChart sample inspection", () => {
   it("keeps the plotted trace close to its axis labels", () => {
@@ -148,5 +150,55 @@ describe("AreaChart sample inspection", () => {
     );
     expect(container.querySelector("path")?.getAttribute("d")).not.toBe("");
     expect(container.querySelector("circle")?.getAttribute("cy")).toBe("12");
+  });
+
+  it("measures a flex chart panel and falls back to its intrinsic height when it stops filling", () => {
+    let notifyResize: ResizeObserverCallback | undefined;
+    class TestResizeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        notifyResize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal("ResizeObserver", TestResizeObserver);
+    const { container } = render(
+      <div style={{ display: "flex" }}>
+        <AreaChart
+          points={[
+            { t: 0, v: 10 },
+            { t: 1, v: 20 },
+          ]}
+          height={72}
+          fillHeight
+          label="Measured chart"
+          timeLabel={(t) => String(t)}
+        />
+      </div>,
+    );
+    const svg = screen.getByRole("img", { name: "Measured chart" });
+    const panel = svg.parentElement!;
+    Object.defineProperty(panel, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, left: 0, top: 0, right: 640, bottom: 240, width: 640, height: 240, toJSON: () => ({}) }),
+    });
+    const observer = {} as ResizeObserver;
+    act(() => {
+      notifyResize?.(
+        [
+          { target: svg, contentRect: { width: 640, height: 80 } },
+          { target: panel, contentRect: { width: 640, height: 240 } },
+        ] as unknown as ResizeObserverEntry[],
+        observer,
+      );
+    });
+    expect(svg.getAttribute("viewBox")).toBe("0 0 640 240");
+    expect(svg.getAttribute("class")).toContain("h-full");
+
+    panel.style.display = "block";
+    act(() => notifyResize?.([{ target: panel, contentRect: { width: 640, height: 240 } }] as unknown as ResizeObserverEntry[], observer));
+    expect(svg.getAttribute("viewBox")).toBe("0 0 640 84");
+    expect(svg.getAttribute("class")).toContain("h-auto");
+    expect(container.querySelector("svg text")?.textContent).toBe("0%");
   });
 });

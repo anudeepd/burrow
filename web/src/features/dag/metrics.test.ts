@@ -120,6 +120,7 @@ describe("status normalisation", () => {
     expect(stageTone({ ...mk(1, 0), status: "COMPLETE" }, false)).toBe("ok");
     expect(stageTone({ ...mk(1, 0), status: "FAILED" }, false)).toBe("fail");
     expect(stageTone({ ...mk(1, 0), status: "PENDING" }, false)).toBe("wait");
+    expect(stageTone({ ...mk(1, 0), status: "FUTURE_STATUS" as never }, false)).toBe("idle");
   });
 });
 

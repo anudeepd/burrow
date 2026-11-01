@@ -12,7 +12,7 @@ export function ShortcutsDialog({ open, onOpenChange }: { open: boolean; onOpenC
             <h3 className="mb-1 text-micro font-semibold tracking-[0.08em] text-ink-4 uppercase">{group}</h3>
             <dl className="divide-y divide-seam-soft">
               {SHORTCUTS.filter((s) => s.group === group).map((s) => (
-                <div key={`${group}-${s.what}`} className="flex items-center justify-between gap-3 py-1">
+                <div key={`${group}-${s.keys.join("-")}-${s.what}`} className="flex items-center justify-between gap-3 py-1">
                   <dt className="text-small text-ink-2">{s.what}</dt>
                   <dd className="flex shrink-0 items-center gap-1">
                     {s.keys.map((k) => (

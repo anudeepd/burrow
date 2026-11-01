@@ -114,6 +114,7 @@ describe("apps search codec", () => {
     const hidden = visibilityOf(["id", "user", "queue"], new Set(["queue"]));
     expect(hidden).toEqual({ id: true, user: true, queue: false });
     expect(colsToParam(hidden)).toBe("queue");
+    expect(colsToParam({ id: true, user: false, queue: false })).toBe("queue,user");
     const allVisible = visibilityOf(["id", "user"], hiddenFromParam("all"));
     expect(allVisible).toEqual({ id: true, user: true });
     expect(colsToParam(allVisible)).toBe("all");

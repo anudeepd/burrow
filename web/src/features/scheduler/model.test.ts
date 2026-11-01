@@ -235,6 +235,12 @@ describe("captured scheduler payloads", () => {
     expect(pressurePctOf(fair, { ...metricsOf(fair), fairMb: 0, usedMb: null })).toBeNull();
     expect(usedOfFairPct(fair)).toBeNull();
     expect(usedOfMinPct(fair)).toBeNull();
+    const reportedShare: QueueNode = {
+      ...fair,
+      fair: { fairResources: { memory: 100 }, usedResources: { memory: 40 }, minResources: { memory: 20 } } as never,
+    };
+    expect(usedOfFairPct(reportedShare)).toBe(40);
+    expect(usedOfMinPct(reportedShare)).toBe(200);
   });
 
   it("maps scheduler health operations and preserves unknown operations", () => {
@@ -289,6 +295,13 @@ describe("treemap geometry", () => {
   it("squarify returns nothing for an empty or zero-area input", () => {
     expect(squarify([], 0, 0, 100, 50)).toHaveLength(0);
     expect(squarify([{ key: "a", label: "a", value: 0, field: "f", raw: 0, usedPct: null }], 0, 0, 100, 50)).toHaveLength(0);
+  });
+
+  it("keeps similarly sized tiles together in a squarified row", () => {
+    const items = Array.from({ length: 10 }, (_, i) => ({ key: `q${i}`, value: 1, field: "f", raw: 1, usedPct: null }));
+    const tiles = squarify(items, 0, 0, 100, 100);
+    expect(tiles).toHaveLength(10);
+    expect(tiles[0]?.h).toBe(tiles[1]?.h);
   });
 
   it("treemap items use leaf queues and the partition-aware used field", () => {

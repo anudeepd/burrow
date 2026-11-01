@@ -15,6 +15,7 @@ import { cn } from "~/lib/cn";
 const COLS: ColDef<SchedulerConfItem>[] = [
   {
     id: "name",
+    accessorFn: (row) => row.name,
     meta: { label: "Property", pinned: true },
     cell: ({ row }) => (
       <Datum field="conf.property.name" raw={row.original.name} className="truncate font-mono text-caption">

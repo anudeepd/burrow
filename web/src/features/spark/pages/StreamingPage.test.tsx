@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { QueryClient as QueryClientType } from "@tanstack/react-query";
 import type { SparkStreamingBatch, SparkStreamingReceiver, SparkStreamingStatistics } from "../data/schemas";
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { StreamingPage } = await import("./StreamingPage");
@@ -52,10 +52,28 @@ function renderStreamingPage(search = "", configure?: (client: QueryClientType) 
   return { ...view, router, client };
 }
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+function failQuery(client: QueryClientType, queryKey: readonly unknown[], message: string, clearData = false) {
+  const query = client.getQueryCache().find({ queryKey })!;
+  query.setState({
+    ...query.state,
+    ...(clearData ? { data: undefined } : {}),
+    status: "error",
+    error: new Error(message),
+    errorUpdatedAt: Date.now(),
+    errorUpdateCount: query.state.errorUpdateCount + 1,
+    fetchStatus: "idle",
+  });
+}
 
 describe("StreamingPage", () => {
   it("renders captured batch metrics and receivers, then applies status and batch-window URL filters", async () => {
+    const createUrl = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:streaming-export");
+    const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
     const { router } = renderStreamingPage("?status=COMPLETED&size=5");
 
     await screen.findByText("Statistics over time");
@@ -65,6 +83,35 @@ describe("StreamingPage", () => {
     expect(screen.getByText("Queue stream [0]")).toBeTruthy();
     expect(screen.getByText("1 of 5 shown")).toBeTruthy();
     expect(router.state.location.search).toMatchObject({ status: "COMPLETED", size: "5" });
+
+    const batchRegion = screen.getByRole("region", { name: "Streaming batches" });
+    const batchTable = within(batchRegion).getByRole("table", { name: "Streaming batches" });
+    fireEvent.click(within(batchTable).getByRole("button", { name: "Batch time" }));
+    await waitFor(() => expect(router.state.location.search.sort).toBeTruthy());
+    fireEvent.click(within(batchRegion).getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    await waitFor(() => expect(router.state.location.search.cols).toBeTruthy());
+
+    fireEvent.click(within(batchRegion).getByRole("combobox", { name: "Batch status filter" }));
+    const processing = await screen.findByRole("option", { name: "PROCESSING" });
+    fireEvent.pointerDown(processing, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(processing, { button: 0, pointerType: "mouse" });
+    fireEvent.click(processing);
+    await waitFor(() => expect(router.state.location.search.status).toBe("PROCESSING"));
+
+    fireEvent.click(within(batchRegion).getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
+    fireEvent.click(within(batchRegion).getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /JSON/ }));
+
+    const receiverRegion = screen.getByRole("region", { name: "Streaming receivers" });
+    fireEvent.click(within(receiverRegion).getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    await waitFor(() => expect(router.state.location.search.cols).toBeTruthy());
+    fireEvent.click(within(receiverRegion).getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getAllByRole("menuitem", { name: /CSV/ }).at(-1)!);
+    expect(createUrl).toHaveBeenCalledTimes(3);
+    expect(clickAnchor).toHaveBeenCalledTimes(3);
 
     const newest = screen.getByRole("spinbutton", { name: "How many of the newest batches to load" });
     fireEvent.change(newest, { target: { value: "2" } });
@@ -97,6 +144,12 @@ describe("StreamingPage", () => {
   });
 
   it("keeps captured statistics under stale errors and renders batch and receiver failures", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("retry failed");
+      }),
+    );
     const refreshError = new Error("refresh failed");
     const { client } = renderStreamingPage();
     const stats = client.getQueryCache().find({ queryKey: sp.streamingStatistics(APP_ID, "static", null).queryKey })!;
@@ -114,9 +167,44 @@ describe("StreamingPage", () => {
     expect(await screen.findByText(/Could not refresh the streaming statistics/)).toBeTruthy();
     expect(screen.getByText(/Could not refresh the streaming batches/)).toBeTruthy();
     expect(screen.getByText(/Could not refresh the streaming receivers/)).toBeTruthy();
+    for (const retry of screen.getAllByRole("button", { name: "Retry now" })) fireEvent.click(retry);
+  });
+
+  it("retries fatal statistics, batch, and receiver fetches", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("retry failed");
+      }),
+    );
+
+    const statistics = renderStreamingPage("", (client) => {
+      failQuery(client, sp.streamingStatistics(APP_ID, "static", null).queryKey, "statistics unavailable", true);
+    });
+    expect((await screen.findAllByText("statistics unavailable")).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    statistics.unmount();
+    cleanup();
+
+    const batchFailure = renderStreamingPage("", (client) => {
+      failQuery(client, sp.streamingBatches(APP_ID, "static", null).queryKey, "batches unavailable", true);
+    });
+    expect((await screen.findAllByText("batches unavailable")).length).toBeGreaterThan(0);
+    for (const retry of screen.getAllByRole("button", { name: "Retry now" })) fireEvent.click(retry);
+    batchFailure.unmount();
+    cleanup();
+
+    const receiverFailure = renderStreamingPage("", (client) => {
+      failQuery(client, sp.streamingReceivers(APP_ID, "static", null).queryKey, "receivers unavailable", true);
+    });
+    expect((await screen.findAllByText("receivers unavailable")).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    receiverFailure.unmount();
   });
 
   it("renders optional receiver details and the legacy last-error fallback", async () => {
+    const createUrl = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:receiver-export");
+    const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
     const detailReceivers: SparkStreamingReceiver[] = [
       {
         ...receivers[0]!,
@@ -156,6 +244,12 @@ describe("StreamingPage", () => {
     expect(table.textContent).toContain("worker-2:8041");
     expect(table.textContent).toContain("connection reset");
     expect(table.textContent).toContain("legacy receiver failure");
+
+    const region = screen.getByRole("region", { name: "Streaming receivers" });
+    fireEvent.click(within(region).getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
+    expect(createUrl).toHaveBeenCalledOnce();
+    expect(clickAnchor).toHaveBeenCalledOnce();
   });
 
   it("keeps the complete receiver schema visible when Spark reports no receivers", async () => {

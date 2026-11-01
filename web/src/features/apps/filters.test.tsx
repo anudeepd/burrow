@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AppFilters } from "./filters";
 import type { Facets } from "./view";
 import type { AppsSearch } from "./search";
+import { parityStore } from "~/state/parity";
 
 const facets: Facets = {
   total: 2,
@@ -76,5 +77,174 @@ describe("AppFilters", () => {
 
     view.rerender(<AppFilters search={{ name: "server" }} facets={facets} patch={patch} now={now} compact={false} />);
     expect((screen.getByRole("textbox", { name: "Filter by name or application ID" }) as HTMLInputElement).value).toBe("server");
+  });
+
+  it("clears a selected facet from its picker", async () => {
+    const patch = vi.fn();
+    render(<AppFilters search={{ user: "alice" }} facets={facets} patch={patch} now={now} compact={false} />);
+
+    fireEvent.click(screen.getByRole("combobox", { name: "User" }));
+    const anyUser = await screen.findByRole("option", { name: "Any user" });
+    fireEvent.pointerDown(anyUser, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(anyUser, { button: 0, pointerType: "mouse" });
+    fireEvent.click(anyUser);
+    expect(patch).toHaveBeenCalledWith({ user: undefined });
+  });
+
+  it("clears every active facet chip individually", () => {
+    const patch = vi.fn();
+    render(
+      <AppFilters
+        search={{ final: "SUCCEEDED", user: "alice", queue: "default", type: "SPARK", tag: "nightly", name: "word count" }}
+        facets={facets}
+        patch={patch}
+        now={now}
+        compact={false}
+      />,
+    );
+
+    for (const [label, update] of [
+      ["Final status: Succeeded", { final: undefined }],
+      ["User: alice", { user: undefined }],
+      ["Queue: default", { queue: undefined }],
+      ["Application type: SPARK", { type: undefined }],
+      ["Tag: nightly", { tag: undefined }],
+      ["Name: word count", { name: undefined }],
+    ] as const) {
+      fireEvent.click(screen.getByRole("button", { name: label }));
+      expect(patch).toHaveBeenCalledWith(update);
+    }
+  });
+
+  it("selects a facet, collapses compact filters, and clears the debounced name", async () => {
+    const patch = vi.fn();
+    render(<AppFilters search={{ name: "queue" }} facets={facets} patch={patch} now={now} compact />);
+
+    const toggle = screen.getByTestId("apps-filter-toggle");
+    fireEvent.click(toggle);
+    expect(screen.getByRole("combobox", { name: "Queue" })).toBeTruthy();
+    fireEvent.click(toggle);
+    expect(screen.queryByRole("combobox", { name: "Queue" })).toBeNull();
+    fireEvent.click(toggle);
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Queue" }));
+    const queue = await screen.findByRole("option", { name: "default (2)" });
+    fireEvent.pointerDown(queue, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(queue, { button: 0, pointerType: "mouse" });
+    fireEvent.click(queue);
+    expect(patch).toHaveBeenCalledWith({ queue: "default" });
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Application type" }));
+    const appType = await screen.findByRole("option", { name: "SPARK (1)" });
+    fireEvent.pointerDown(appType, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(appType, { button: 0, pointerType: "mouse" });
+    fireEvent.click(appType);
+    expect(patch).toHaveBeenCalledWith({ type: "SPARK" });
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Tag" }));
+    const tag = await screen.findByRole("option", { name: "nightly (1)" });
+    fireEvent.pointerDown(tag, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(tag, { button: 0, pointerType: "mouse" });
+    fireEvent.click(tag);
+    expect(patch).toHaveBeenCalledWith({ tag: "nightly" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear name filter" }));
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 275)));
+    expect(patch).toHaveBeenCalledWith({ name: undefined });
+  });
+
+  it("edits both bounds and clears a finish-time range and an individual chip", async () => {
+    const patch = vi.fn();
+    render(
+      <AppFilters
+        search={{ user: "alice", startedAfter: now - 60_000, startedBefore: now, finishedAfter: now - 120_000 }}
+        facets={facets}
+        patch={patch}
+        now={now}
+        compact={false}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Start time range/ }));
+    const from = (await screen.findByLabelText("Start time from")) as HTMLInputElement;
+    const localDate = new Date(now - 5 * 60_000);
+    const localValue = [
+      `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, "0")}-${String(localDate.getDate()).padStart(2, "0")}`,
+      `${String(localDate.getHours()).padStart(2, "0")}:${String(localDate.getMinutes()).padStart(2, "0")}`,
+    ].join("T");
+    fireEvent.input(from, { target: { value: localValue } });
+    fireEvent.change(from, { target: { value: localValue } });
+    expect(patch).toHaveBeenCalledWith({ startedAfter: new Date(localValue).getTime(), startedBefore: now });
+
+    fireEvent.click(screen.getByRole("button", { name: /Start time range/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Finish time range/ }));
+    const to = (await screen.findByLabelText("Finish time to")) as HTMLInputElement;
+    const finishDate = new Date(now - 5 * 60_000);
+    const finishValue = [
+      `${finishDate.getFullYear()}-${String(finishDate.getMonth() + 1).padStart(2, "0")}-${String(finishDate.getDate()).padStart(2, "0")}`,
+      `${String(finishDate.getHours()).padStart(2, "0")}:${String(finishDate.getMinutes()).padStart(2, "0")}`,
+    ].join("T");
+    fireEvent.input(to, { target: { value: finishValue } });
+    fireEvent.change(to, { target: { value: finishValue } });
+    expect(patch).toHaveBeenCalledWith({ finishedAfter: now - 120_000, finishedBefore: new Date(finishValue).getTime() });
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear finish time range" }));
+    expect(patch).toHaveBeenCalledWith({ finishedAfter: undefined, finishedBefore: undefined });
+
+    fireEvent.click(screen.getByRole("button", { name: "User: alice" }));
+    expect(patch).toHaveBeenCalledWith({ user: undefined });
+  });
+
+  it("animates moving and removed filter chips when motion is enabled", () => {
+    const originalParity = parityStore.get().enabled;
+    const originalMotion = document.documentElement.dataset.motion;
+    const originalAnimate = HTMLElement.prototype.animate;
+    parityStore.setState(() => ({ enabled: false }));
+    delete document.documentElement.dataset.motion;
+
+    let phase = 0;
+    const animation = {
+      cancel: vi.fn(),
+      oncancel: null,
+      onfinish: null,
+    } as unknown as Animation;
+    const animate = vi.fn(() => animation);
+    const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      const shift = this.dataset.filterMotionKey && phase === 1 ? 24 : 0;
+      return {
+        x: shift,
+        y: 0,
+        left: shift,
+        top: 0,
+        right: shift + 80,
+        bottom: 24,
+        width: 80,
+        height: 24,
+        toJSON: () => ({}),
+      };
+    });
+    HTMLElement.prototype.animate = animate;
+    const view = render(
+      <AppFilters search={{ user: "alice", queue: "default" }} facets={facets} patch={() => {}} now={now} compact={false} />,
+    );
+    const removedChip = screen.getByRole("button", { name: "User: alice" });
+    removedChip.id = "user-chip";
+    removedChip.querySelector("svg")?.setAttribute("id", "user-chip-icon");
+    phase = 1;
+    view.rerender(<AppFilters search={{ queue: "default" }} facets={facets} patch={() => {}} now={now} compact={false} />);
+
+    expect(animate.mock.calls.length).toBeGreaterThan(0);
+    const exit = view.container.querySelector('[role="presentation"]');
+    expect(exit?.id).toBe("");
+    expect(exit?.querySelector("[id]")).toBeNull();
+    view.rerender(<AppFilters search={{}} facets={facets} patch={() => {}} now={now} compact={false} />);
+    view.unmount();
+    expect(animation.cancel).toHaveBeenCalled();
+    rect.mockRestore();
+    if (originalAnimate) HTMLElement.prototype.animate = originalAnimate;
+    else delete (HTMLElement.prototype as Partial<HTMLElement>).animate;
+    parityStore.setState(() => ({ enabled: originalParity }));
+    if (originalMotion === undefined) delete document.documentElement.dataset.motion;
+    else document.documentElement.dataset.motion = originalMotion;
   });
 });

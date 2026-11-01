@@ -12,7 +12,7 @@ import { TooltipProvider } from "~/ui/tooltip";
 import "~/styles/app.css";
 
 /** One client per page load (SPA): the query cache is the app's memory of the cluster. */
-const queryClient = createQueryClient();
+export const queryClient = createQueryClient();
 
 export const Route = createRootRoute({
   head: () => ({

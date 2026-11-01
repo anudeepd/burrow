@@ -262,14 +262,6 @@ export function buildSqlPlanGraph(plan: SqlPlanExecution): RenderGraph {
     });
   }
   const clusters = codegenClusters(plan.nodes);
-  // Plan nodes whose WholeStageCodegen id never appeared (partial payloads) are pulled out of their dead cluster.
-  const clusterIds = new Set(clusters.map((c) => c.id));
-  for (const n of nodes) {
-    if (n.clusterId && !clusterIds.has(n.clusterId)) {
-      warnings.push(`${n.label}: wholeStageCodegenId ${n.clusterId.slice(4)} has no other members`);
-      n.clusterId = null;
-    }
-  }
   return {
     hash: hashGraph("sql", "rdd", { nodes, edges, clusters, sizes }),
     kind: "sql",

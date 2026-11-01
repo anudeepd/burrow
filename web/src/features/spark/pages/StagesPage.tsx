@@ -104,21 +104,24 @@ export function StagesPage() {
           const list = attemptsByStage.get(s.stageId) ?? [];
           if (list.length <= 1) return <span className="text-ink-4">—</span>;
           return (
-            <Select
-              label={`Attempts of stage ${s.stageId}`}
-              value={String(s.attemptId ?? 0)}
-              onClick={(e) => e.stopPropagation()}
-              onValueChange={(v) => {
-                if (v) {
-                  void navigate({
-                    to: "/apps/$appId/spark/stages/$stageId/$attemptId",
-                    params: { appId, stageId: String(s.stageId), attemptId: v },
-                    search: { attempt: attempt ?? undefined },
-                  });
-                }
-              }}
-              options={list.map((a) => ({ value: String(a.attemptId ?? 0), label: `Attempt ${a.attemptId ?? 0} · ${a.status ?? "?"}` }))}
-            />
+            // biome-ignore lint/a11y/noStaticElementInteractions: Stops popup option clicks from triggering the clickable stage row.
+            <div onClick={(event) => event.stopPropagation()}>
+              <Select
+                label={`Attempts of stage ${s.stageId}`}
+                value={String(s.attemptId ?? 0)}
+                onClick={(e) => e.stopPropagation()}
+                onValueChange={(v) => {
+                  if (v) {
+                    void navigate({
+                      to: "/apps/$appId/spark/stages/$stageId/$attemptId",
+                      params: { appId, stageId: String(s.stageId), attemptId: v },
+                      search: { attempt: attempt ?? undefined },
+                    });
+                  }
+                }}
+                options={list.map((a) => ({ value: String(a.attemptId ?? 0), label: `Attempt ${a.attemptId ?? 0} · ${a.status ?? "?"}` }))}
+              />
+            </div>
           );
         },
       },

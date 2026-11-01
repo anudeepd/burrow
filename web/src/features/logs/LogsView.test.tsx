@@ -2,13 +2,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { LogsView } = await import("./LogsView");
 const { lq } = await import("~/api/queries/logs");
+const { q } = await import("~/api/queries");
 const { ApiError } = await import("~/api/client");
 const { logsSearchSchema, parseSearch } = await import("./search");
+const { parityStore } = await import("~/state/parity");
+const originalCreateObjectURL = Object.getOwnPropertyDescriptor(URL, "createObjectURL");
+const originalRevokeObjectURL = Object.getOwnPropertyDescriptor(URL, "revokeObjectURL");
 
 const APP_ID = "application_1_2";
 const CONTAINER_ID = "container_1_2_3_4";
@@ -17,7 +21,10 @@ const LOG_TEXT = `2026-10-31 10:00:00,000 INFO [main] startup complete
 2026-10-31 10:00:02,000 ERROR [worker] task failed
 `;
 
-function renderLogs(search = "", options: { containerId?: string | null; filesError?: Error; windowError?: Error; logText?: string } = {}) {
+function renderLogs(
+  search = "",
+  options: { containerId?: string | null; filesError?: Error; windowError?: Error; logText?: string; omitFile?: boolean } = {},
+) {
   const containerId = options.containerId === undefined ? CONTAINER_ID : options.containerId;
   const logText = options.logText ?? LOG_TEXT;
   const root = createRootRoute();
@@ -33,7 +40,11 @@ function renderLogs(search = "", options: { containerId?: string | null; filesEr
     history: createMemoryHistory({
       initialEntries: [
         `/apps/${APP_ID}/logs${
-          containerId ? `?container=${encodeURIComponent(containerId)}&file=stdout${search}` : search ? `?${search.replace(/^&/, "")}` : ""
+          containerId
+            ? `?container=${encodeURIComponent(containerId)}${options.omitFile ? "" : "&file=stdout"}${search}`
+            : search
+              ? `?${search.replace(/^&/, "")}`
+              : ""
         }`,
       ],
     }),
@@ -86,6 +97,12 @@ function renderLogs(search = "", options: { containerId?: string | null; filesEr
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  parityStore.setState(() => ({ enabled: true }));
+  window.__BURROW_PARITY__ = true;
+  if (originalCreateObjectURL) Object.defineProperty(URL, "createObjectURL", originalCreateObjectURL);
+  else Reflect.deleteProperty(URL, "createObjectURL");
+  if (originalRevokeObjectURL) Object.defineProperty(URL, "revokeObjectURL", originalRevokeObjectURL);
+  else Reflect.deleteProperty(URL, "revokeObjectURL");
 });
 
 function stubLogFetch(listStatus = 200, fileStatus = 200) {
@@ -131,6 +148,9 @@ describe("LogsView", () => {
     fireEvent.change(search, { target: { value: "ERROR" } });
     await waitFor(() => expect(router.state.location.search.q).toBe("ERROR"));
     await screen.findByText("1 match");
+    fireEvent.keyDown(search, { key: "Enter" });
+    fireEvent.keyDown(search, { key: "Enter", shiftKey: true });
+    fireEvent.keyDown(search, { key: "Enter", metaKey: true });
     expect(screen.getAllByText("ERROR").some((node) => node.tagName === "MARK")).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "Next match" }));
     fireEvent.click(screen.getByRole("button", { name: "Jump to first error" }));
@@ -138,6 +158,50 @@ describe("LogsView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Show elapsed time since previous timestamp" }));
     await waitFor(() => expect(router.state.location.search.ts).toBe("relative"));
     expect(screen.getByRole("button", { name: "Show elapsed time since previous timestamp" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("chooses stdout when the URL does not name a file", async () => {
+    const { router } = renderLogs("", { omitFile: true });
+    await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(router.state.location.search.file).toBe("stdout"));
+  });
+
+  it("wires the log toolbar controls to URL state and the current file", async () => {
+    stubLogFetch();
+    const { router } = renderLogs("&q=ERROR");
+    await screen.findByRole("log", { name: "Container log" });
+    await screen.findByText("1 match");
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous match" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next match" }));
+    fireEvent.click(screen.getByRole("button", { name: "Regular expression search" }));
+    await waitFor(() => expect(router.state.location.search.re).toBe(true));
+    fireEvent.click(screen.getByRole("button", { name: "Case-sensitive search" }));
+    await waitFor(() => expect(router.state.location.search.cs).toBe(true));
+    fireEvent.click(screen.getByRole("button", { name: "Wrap long lines" }));
+    await waitFor(() => expect(router.state.location.search.wrap).toBe(true));
+    fireEvent.click(screen.getByRole("button", { name: "Show elapsed time since previous timestamp" }));
+    await waitFor(() => expect(router.state.location.search.ts).toBe("relative"));
+    fireEvent.click(screen.getByRole("button", { name: "Show clock time" }));
+    await waitFor(() => expect(router.state.location.search.ts).toBeUndefined());
+
+    const filter = screen.getByRole("combobox", { name: "Minimum log level" });
+    fireEvent.click(filter);
+    const level = await screen.findByRole("option", { name: "ERROR and above" });
+    fireEvent.pointerDown(level, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(level, { button: 0, pointerType: "mouse" });
+    fireEvent.click(level);
+    await waitFor(() => expect(router.state.location.search.filter).toBe("ERROR"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh window" }));
+    await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalled());
+    const file = screen.getByRole("combobox", { name: "Log file" });
+    fireEvent.click(file);
+    const stderr = await screen.findByRole("option", { name: /^stderr/ });
+    fireEvent.pointerDown(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.click(stderr);
+    await waitFor(() => expect(router.state.location.search.file).toBe("stderr"));
   });
 
   it("shows a malformed-regex error and keeps an explicit filter in the URL", async () => {
@@ -151,8 +215,12 @@ describe("LogsView", () => {
   });
 
   it("shows the container picker when the URL has no container", async () => {
-    renderLogs("", { containerId: null });
-    await waitFor(() => expect(document.querySelector('[aria-busy="true"]')).not.toBeNull());
+    const { client, router } = renderLogs("", { containerId: null });
+    client.setQueryData(q.appAttempts(APP_ID).queryKey, { appAttempts: { appAttempt: [] } });
+    const input = await screen.findByRole("textbox", { name: "Container id" });
+    fireEvent.change(input, { target: { value: CONTAINER_ID } });
+    fireEvent.click(screen.getByRole("button", { name: "Open pasted container" }));
+    await waitFor(() => expect(router.state.location.search.container).toBe(CONTAINER_ID));
   });
 
   it("distinguishes missing log routes from other file-list failures", async () => {
@@ -164,6 +232,7 @@ describe("LogsView", () => {
     stubLogFetch(500);
     renderLogs("", { filesError: new Error("file listing failed") });
     expect(await screen.findByRole("heading", { name: "Cannot list this container's log files" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
   it("distinguishes missing byte reads from other read failures", async () => {
@@ -175,6 +244,15 @@ describe("LogsView", () => {
     stubLogFetch(200, 500);
     renderLogs("", { windowError: new Error("window read failed") });
     expect(await screen.findByRole("heading", { name: "Cannot read this log file" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("uses the timer fallback when animation frames are unavailable", async () => {
+    vi.stubGlobal("requestAnimationFrame", undefined);
+    stubLogFetch();
+    renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(log.textContent).toContain("startup complete"));
   });
 
   it("reports when the loaded window has no ERROR or FATAL line", async () => {
@@ -225,5 +303,66 @@ describe("LogsView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Download stdout" }));
     expect(await screen.findByText(/Download failed: HTTP 500/)).toBeTruthy();
     expect(viewer.textContent).toContain("startup complete");
+  });
+
+  it("downloads the loaded log through a temporary object URL", async () => {
+    stubLogFetch();
+    const createObjectURL = vi.fn(() => "blob:burrow-log");
+    const revokeObjectURL = vi.fn();
+    Object.defineProperty(URL, "createObjectURL", { configurable: true, value: createObjectURL });
+    Object.defineProperty(URL, "revokeObjectURL", { configurable: true, value: revokeObjectURL });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(log.textContent).toContain("startup complete"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Download stdout" }));
+    await waitFor(() => expect(createObjectURL).toHaveBeenCalledOnce());
+    expect(click).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the current files visible after a refresh error", async () => {
+    stubLogFetch();
+    const { client } = renderLogs();
+    const query = client.getQueryCache().find({ queryKey: lq.files(CONTAINER_ID, { node: null, user: null, app: APP_ID }).queryKey })!;
+    query.setState({
+      ...query.state,
+      status: "error",
+      error: new Error("file refresh failed"),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: query.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText(/Could not refresh this container's log files/)).toBeTruthy();
+    expect(screen.getByRole("log", { name: "Container log" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("starts live search follow and tears down its refresh timer on unmount", async () => {
+    class TestEventSource {
+      static instances: TestEventSource[] = [];
+      private listeners = new Map<string, Array<(event: Event) => void>>();
+      constructor(readonly url: string) {
+        TestEventSource.instances.push(this);
+      }
+      addEventListener(type: string, callback: (event: Event) => void) {
+        this.listeners.set(type, [...(this.listeners.get(type) ?? []), callback]);
+      }
+      close() {}
+      emit(type: string) {
+        for (const listener of this.listeners.get(type) ?? []) listener(new Event(type));
+      }
+    }
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    vi.stubGlobal("EventSource", TestEventSource);
+    stubLogFetch();
+    const { router, unmount } = renderLogs();
+    await screen.findByRole("log", { name: "Container log" });
+    fireEvent.click(screen.getByRole("switch", { name: "Follow new log output" }));
+    await waitFor(() => expect(router.state.location.search.follow).toBe(true));
+    await waitFor(() => expect(TestEventSource.instances.length).toBeGreaterThan(0));
+    act(() => TestEventSource.instances[0]!.emit("open"));
+    await waitFor(() => expect(document.querySelector('[data-burrow-log-follow="streaming"]')).toBeTruthy());
+    unmount();
   });
 });

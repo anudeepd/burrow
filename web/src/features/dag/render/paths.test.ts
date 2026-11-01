@@ -132,5 +132,14 @@ describe("pointAlong", () => {
   it("handles degenerate input", () => {
     expect(pointAlong([], 0.5)).toEqual({ x: 0, y: 0 });
     expect(pointAlong([{ x: 7, y: 8 }], 0.5)).toEqual({ x: 7, y: 8 });
+    expect(
+      pointAlong(
+        [
+          { x: 0, y: 0 },
+          { x: 10, y: 0 },
+        ],
+        Number.NaN,
+      ),
+    ).toEqual({ x: 10, y: 0 });
   });
 });

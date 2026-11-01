@@ -7,6 +7,7 @@
  * The components are imported dynamically AFTER the flag is set, because `~/state/parity` reads it at module scope.
  */
 import { readFileSync } from "node:fs";
+import { useState } from "react";
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -19,11 +20,13 @@ if (typeof Element.prototype.getAnimations !== "function") {
   Element.prototype.getAnimations = () => [];
 }
 
-const { render, cleanup, screen, waitFor } = await import("@testing-library/react");
+const { render, cleanup, fireEvent, screen, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { SchedulerPage } = await import("./SchedulerPage");
 const { QueuePage } = await import("./QueuePage");
+const { QueueTreemap, squarify } = await import("./Treemap");
+type SchedulerSearch = import("./search").SchedulerSearch;
 
 const fixture = (rel: string): unknown => JSON.parse(readFileSync(`../fixtures/rm/scheduler/${rel}`, "utf8"));
 const other = (rel: string): unknown => JSON.parse(readFileSync(`../fixtures/rm/${rel}`, "utf8"));
@@ -61,7 +64,7 @@ function stubApi(routes: Record<string, unknown>) {
   });
 }
 
-function renderAt(element: ReactElement, entries: string[]) {
+function renderAt(element: ReactElement, entries: string[], configure?: (client: InstanceType<typeof QueryClient>) => void) {
   const rootRoute = createRootRoute();
   const schedulerRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -73,21 +76,36 @@ function renderAt(element: ReactElement, entries: string[]) {
     path: "/scheduler/$queue",
     component: () => element,
   });
+  const nodeDetailRoute = createRoute({ getParentRoute: () => rootRoute, path: "/nodes/$nodeId", component: () => null });
   const router = createRouter({
-    routeTree: rootRoute.addChildren([schedulerRoute, queueRoute]),
+    routeTree: rootRoute.addChildren([schedulerRoute, queueRoute, nodeDetailRoute]),
     history: createMemoryHistory({ initialEntries: entries }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
-    <QueryClientProvider client={client}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  );
+  configure?.(client);
+  return {
+    ...render(
+      <QueryClientProvider client={client}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    ),
+    router,
+  };
 }
 
 const schedulerView = () => <SchedulerPage search={{}} patch={() => undefined} />;
+function InteractiveScheduler() {
+  const [search, setSearch] = useState<SchedulerSearch>({});
+  return <SchedulerPage search={search} patch={(next) => setSearch((current) => ({ ...current, ...next }))} />;
+}
+function InteractiveQueue({ queue }: { queue: string }) {
+  const [search, setSearch] = useState<import("./search").QueueSearch>({});
+  return <QueuePage queue={queue} search={search} patch={(next) => setSearch((current) => ({ ...current, ...next }))} />;
+}
 const healthView = () => <SchedulerPage search={{ tab: "health" }} patch={() => undefined} />;
-const queueView = (queue: string) => <QueuePage queue={queue} search={{}} patch={() => undefined} />;
+const queueView = (queue: string, search: import("./search").QueueSearch = {}) => (
+  <QueuePage queue={queue} search={search} patch={() => undefined} />
+);
 
 afterEach(() => {
   cleanup();
@@ -95,6 +113,21 @@ afterEach(() => {
 });
 
 describe("SchedulerPage over captured payloads", () => {
+  it("lays out tall treemaps and follows a tile from the keyboard", async () => {
+    const items = [
+      { key: "root.large", value: 100, field: "queue.used", raw: 100, usedPct: 50, sub: "used" },
+      { key: "root.medium", value: 60, field: "queue.used", raw: 60, usedPct: 30, sub: "used" },
+      { key: "root.small", value: 20, field: "queue.used", raw: 20, usedPct: 10, sub: "used" },
+    ];
+    expect(squarify(items, 0, 0, 900, 1200)).toHaveLength(3);
+    expect(squarify(items, 0, 0, 0, 1200)).toEqual([]);
+
+    const { router } = renderAt(<QueueTreemap items={items} basis="capacity" height={1200} label="Keyboard queue map" />, ["/scheduler"]);
+    const tile = await screen.findByRole("link", { name: /root\.large/ });
+    fireEvent.keyDown(tile, { key: "Enter" });
+    await waitFor(() => expect(router.state.location.pathname).toBe("/scheduler/root.large"));
+  });
+
   it("capacity: renders the freeness tree, KPI strip and treemap without a single parity warning", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     stubApi(CAPACITY);
@@ -113,6 +146,8 @@ describe("SchedulerPage over captured payloads", () => {
     expect(
       container.querySelector('[data-yf="scheduler.derived.schedulingResourceTypes"][data-yv="[memory-mb (unit=Mi), vcores]"]'),
     ).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "More scheduler metrics" }));
+    expect(screen.getByRole("button", { name: "Fewer metrics" })).toBeTruthy();
     await waitFor(() => {
       expect(container.querySelector('[data-yf="scheduler.derived.minAllocationText"]')?.textContent?.replace(/\s+/g, " ").trim()).toBe(
         "256 MiB · 1 vCore",
@@ -145,6 +180,28 @@ describe("SchedulerPage over captured payloads", () => {
     const parityWarnings = warn.mock.calls.filter((c) => String(c[0]).includes("[parity]"));
     expect(parityWarnings).toEqual([]);
     warn.mockRestore();
+  });
+
+  it("sorts the node partition card and opens node details from both its row and link", async () => {
+    stubApi(CAPACITY);
+    const { router } = renderAt(schedulerView(), ["/scheduler"]);
+    const table = await screen.findByRole("table", { name: "Nodes by label partition" });
+
+    for (const column of ["containers", "memory", "vcores", "state"]) {
+      fireEvent.click(table.querySelector(`[data-col="${column}"] button`)!);
+    }
+
+    const nodeLink = table.querySelector<HTMLAnchorElement>("a");
+    expect(nodeLink).not.toBeNull();
+    fireEvent.click(nodeLink!);
+    await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/nodes\//));
+    await router.navigate({ to: "/scheduler" });
+
+    const refreshed = await screen.findByRole("table", { name: "Nodes by label partition" });
+    const row = refreshed.querySelectorAll<HTMLElement>('[role="row"]')[1];
+    expect(row).toBeTruthy();
+    fireEvent.click(row!);
+    await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/nodes\//));
   });
 
   it("capacity: formats queue resources and default partitions for operators while preserving raw data", async () => {
@@ -200,9 +257,115 @@ describe("SchedulerPage over captured payloads", () => {
     warn.mockRestore();
   });
 
+  it("updates queue ordering, visible columns, partition, and treemap basis", async () => {
+    const patch = vi.fn();
+    stubApi(CAPACITY);
+    renderAt(<SchedulerPage search={{}} patch={patch} />, ["/scheduler"]);
+    expect(await screen.findByText("Queue headroom")).toBeTruthy();
+
+    fireEvent.click(within(screen.getByRole("group", { name: "Sibling order" })).getByRole("button", { name: "Free" }));
+    expect(patch).toHaveBeenCalledWith({ sort: "free" });
+
+    fireEvent.click(screen.getAllByRole("button", { name: /Choose columns/ })[0]!);
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "Ordering Policy" }));
+    expect(patch).toHaveBeenCalledWith({ queueHide: expect.stringContaining("policy") });
+
+    fireEvent.click(within(screen.getByRole("group", { name: "Size queues by" })).getByRole("button", { name: "Guaranteed share" }));
+    expect(patch).toHaveBeenCalledWith({ basis: "capacity" });
+    fireEvent.click(within(screen.getByRole("group", { name: "Size queues by" })).getByRole("button", { name: "Used memory" }));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Partition" }));
+    const gpu = await screen.findByRole("option", { name: "gpu" });
+    fireEvent.pointerDown(gpu, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(gpu, { button: 0, pointerType: "mouse" });
+    fireEvent.click(gpu);
+    expect(patch).toHaveBeenCalledWith({ partition: "gpu" });
+  });
+
+  it("offers guaranteed shares when every leaf queue is idle", async () => {
+    const raw = structuredClone(CAPACITY["yarn/scheduler"]) as { scheduler: { schedulerInfo: unknown } };
+    const zeroQueueUsage = (value: unknown): void => {
+      if (typeof value !== "object" || value === null) return;
+      const queue = value as Record<string, unknown>;
+      const used = queue.resourcesUsed;
+      if (typeof used === "object" && used !== null && "memory" in used) (used as Record<string, unknown>).memory = 0;
+      const children = (queue.queues as { queue?: unknown[] } | undefined)?.queue ?? [];
+      children.forEach(zeroQueueUsage);
+    };
+    zeroQueueUsage(raw.scheduler.schedulerInfo);
+    stubApi({ ...CAPACITY, "yarn/scheduler": raw });
+    const patch = vi.fn();
+    renderAt(<SchedulerPage search={{}} patch={patch} />, ["/scheduler"]);
+    expect(await screen.findByRole("button", { name: "View guaranteed shares" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "View guaranteed shares" }));
+    expect(patch).toHaveBeenCalledWith({ basis: "capacity" });
+  });
+
+  it("drives the queue, activity, health, and configuration controls through URL state", async () => {
+    stubApi(CAPACITY);
+    const view = renderAt(<InteractiveScheduler />, ["/scheduler"]);
+    expect(await screen.findByText("Queue headroom")).toBeTruthy();
+
+    const queueTree = view.container.querySelector('[data-burrow-table="scheduler-capacity-tree"]')!;
+    fireEvent.click(queueTree.querySelector('[role="columnheader"] button')!);
+    const siblingOrder = within(screen.getByRole("group", { name: "Sibling order" }));
+    for (const direction of ["Used", "Free", "Apps"]) fireEvent.click(siblingOrder.getByRole("button", { name: direction }));
+    const users = await screen.findByRole("table", { name: "Queue users" });
+    fireEvent.click(users.querySelector('[data-col="username"] button')!);
+    const usersTableRoot = users.closest("[data-burrow-table-root]")!;
+    fireEvent.click(within(usersTableRoot as HTMLElement).getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "User Limit Resource" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Collapse root.etl" }));
+    const queueTable = view.container.querySelector('[data-burrow-table="scheduler-capacity-tree"]')!;
+    await waitFor(() => expect(queueTable.querySelector('[data-ye="root.etl.ingest"]')).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: "Expand root.etl" }));
+    await waitFor(() => expect(queueTable.querySelector('[data-ye="root.etl.ingest"]')).toBeTruthy());
+
+    fireEvent.click(screen.getByRole("tab", { name: "Activities" }));
+    const activities = await screen.findByRole("table", { name: "Scheduler allocation activities" });
+    await waitFor(() => expect(activities.textContent).toContain("Queue does not need more resource"));
+    fireEvent.click(activities.querySelector('[data-col="container"] button')!);
+    const activitiesTableRoot = activities.closest("[data-burrow-table-root]")!;
+    fireEvent.click(within(activitiesTableRoot as HTMLElement).getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "Node Id" }));
+    fireEvent.click(screen.getByRole("button", { name: "Group by diagnostic" }));
+    fireEvent.click(screen.getByRole("button", { name: "Detailed" }));
+    const node = screen.getByRole("combobox", { name: "NodeManager" });
+    fireEvent.click(node);
+    const nodeOption = await screen.findByRole("option", { name: "127.0.0.2:8041" });
+    fireEvent.pointerDown(nodeOption, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(nodeOption, { button: 0, pointerType: "mouse" });
+    fireEvent.click(nodeOption);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Health" }));
+    expect(await screen.findByText("Aggregate scheduler counts")).toBeTruthy();
+    fireEvent.click(screen.getByRole("tab", { name: "Configuration" }));
+    const config = await screen.findByRole("table", { name: "Scheduler configuration" });
+    await waitFor(() => expect(config.textContent).toContain("yarn.scheduler.capacity.root"));
+    fireEvent.click(within(config).getByRole("button", { name: "Property" }));
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "Value" }));
+    expect(screen.queryByRole("columnheader", { name: "Value" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Queues" }));
+    const activeQueueTable = await screen.findByRole("table", { name: "Capacity scheduler queue tree" });
+    fireEvent.click(activeQueueTable.querySelector('[role="row"][data-ye="root.etl"]')!);
+    await waitFor(() => expect(view.router.state.location.pathname).toBe("/scheduler/root.etl"));
+  });
+
+  it("explains when the RM returns no scheduler info", async () => {
+    const noScheduler = renderAt(<SchedulerPage search={{}} patch={() => undefined} />, ["/scheduler"], (client) => {
+      client.setQueryDefaults(["yarn", "scheduler"], { staleTime: Infinity, refetchOnMount: false });
+      client.setQueryData(["yarn", "scheduler"], { scheduler: { schedulerInfo: null } });
+    });
+    expect(await screen.findByText("This cluster reports no scheduler")).toBeTruthy();
+    noScheduler.unmount();
+  });
+
   it("fair: renders the fair tree with fair-share freeness", async () => {
     stubApi({ ...CAPACITY, "yarn/scheduler": fixture("fair/scheduler.json") });
-    const { container } = renderAt(schedulerView(), ["/scheduler"]);
+    const { container } = renderAt(<InteractiveScheduler />, ["/scheduler"]);
 
     expect(await screen.findByRole("heading", { name: "Scheduler", level: 1 })).toBeTruthy();
     expect(await screen.findByText("Queue headroom")).toBeTruthy();
@@ -215,6 +378,9 @@ describe("SchedulerPage over captured payloads", () => {
     expect(container.querySelector('[data-yf="queue.usedResources.memory"]')).toBeTruthy();
     expect(container.querySelector('[data-yf="queue.derived.fairShareFreeMb"]')).toBeTruthy();
     expect(container.querySelector('[data-yf="queue.schedulingPolicy"]')).toBeTruthy();
+    const fairTree = container.querySelector('[data-burrow-table="scheduler-fair-tree"]')!;
+    fireEvent.click(screen.getByRole("button", { name: "Collapse root.etl" }));
+    await waitFor(() => expect(fairTree.querySelector('[data-ye="root.etl.transform"]')).toBeNull());
   });
 
   it("fifo: renders the single-queue block with its fractions converted for display", async () => {
@@ -342,6 +508,79 @@ describe("QueuePage over captured payloads", () => {
     const userRows = [...container.querySelectorAll('[data-ye^="root.default#"]')];
     expect(userRows.length).toBeGreaterThan(0);
     expect(container.querySelector('[data-yf="queueuser.username"]')).toBeTruthy();
+  });
+
+  it("renders the queue applications table and node-label partition table from capacity fixtures", async () => {
+    stubApi({ ...CAPACITY, "yarn/apps": other("app/running/apps.json") });
+    const apps = renderAt(queueView("root.default", { tab: "apps" }), ["/scheduler/root.default"]);
+    const appTable = await screen.findByRole("table", { name: "Applications in this queue" });
+    expect(appTable.textContent).toContain("appdetail-long");
+    expect(appTable.querySelector('[data-yf="app.id"]')).toBeTruthy();
+    apps.unmount();
+
+    stubApi(CAPACITY);
+    const partitions = renderAt(queueView("root.default", { tab: "partitions" }), ["/scheduler/root.default"]);
+    const partitionTable = await screen.findByRole("table", { name: "Node-label partitions of root.default" });
+    expect(partitionTable.querySelector('[data-yf="queue.capacities.queueCapacitiesByPartition.partitionName"]')).toBeTruthy();
+    expect(partitionTable.querySelector('[data-yf="queue.resources.resourceUsagesByPartition.used.memory"]')).toBeTruthy();
+    partitions.unmount();
+  });
+
+  it("scopes scheduler configuration to a queue or displays the whole scheduler", async () => {
+    stubApi(CAPACITY);
+    const scoped = renderAt(queueView("root.default", { tab: "conf" }), ["/scheduler/root.default"]);
+    const confTable = await screen.findByRole("table", { name: "Scheduler configuration" });
+    await waitFor(() => expect(confTable.textContent).toContain("yarn.scheduler.capacity.root.default"));
+    expect(confTable.textContent).not.toContain("yarn.scheduler.capacity.root.etl");
+    fireEvent.click(screen.getByRole("button", { name: "This queue" }));
+    fireEvent.click(screen.getByRole("button", { name: "Whole scheduler" }));
+    scoped.unmount();
+
+    stubApi(CAPACITY);
+    renderAt(queueView("root.default", { tab: "conf", confAll: true }), ["/scheduler/root.default"]);
+    const wholeTable = await screen.findByRole("table", { name: "Scheduler configuration" });
+    await waitFor(() => expect(wholeTable.textContent).toContain("yarn.scheduler.capacity.root.etl"));
+  });
+
+  it("updates every queue-table tab and its filters through URL state", async () => {
+    stubApi(CAPACITY);
+    renderAt(<InteractiveQueue queue="root.default" />, ["/scheduler/root.default"]);
+
+    const users = await screen.findByRole("table", { name: "Queue users" });
+    fireEvent.click(users.querySelector('[data-col="username"] button')!);
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "User Limit Resource" }));
+
+    fireEvent.click(screen.getByRole("tab", { name: "Applications" }));
+    const apps = await screen.findByRole("table", { name: "Applications in this queue" });
+    fireEvent.click(apps.querySelector('[data-col="id"] button')!);
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "Application Type" }));
+
+    fireEvent.click(screen.getByRole("tab", { name: "Partitions" }));
+    const partitions = await screen.findByRole("table", { name: "Node-label partitions of root.default" });
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "Configured Min" }));
+
+    fireEvent.click(screen.getByRole("tab", { name: "Activities" }));
+    const activities = await screen.findByRole("table", { name: "Scheduler allocation activities" });
+    fireEvent.click(screen.getByRole("button", { name: "Group by diagnostic" }));
+    const node = screen.getByRole("combobox", { name: "NodeManager" });
+    fireEvent.click(node);
+    const option = await screen.findByRole("option", { name: "127.0.0.2:8041" });
+    fireEvent.pointerDown(option, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(option, { button: 0, pointerType: "mouse" });
+    fireEvent.click(option);
+    expect(activities).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Configuration" }));
+    const config = await screen.findByRole("table", { name: "Scheduler configuration" });
+    fireEvent.click(screen.getByRole("button", { name: "Whole scheduler" }));
+    await waitFor(() => expect(config.textContent).toContain("yarn.scheduler.capacity.root.etl"));
+    fireEvent.click(within(config).getByRole("button", { name: "Property" }));
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "Value" }));
+    expect(partitions).toBeTruthy();
   });
 
   it("fair queue: renders the fair status labels and explains the missing per-user table", async () => {

@@ -185,6 +185,44 @@ describe("fetchLogChunk", () => {
     expect(chunk).toMatchObject({ size: 4096, start: 2048, end: 2053, source: "rm", derived: false });
   });
 
+  it("keeps the caller signal when AbortSignal.any is unavailable", async () => {
+    const originalAny = Object.getOwnPropertyDescriptor(AbortSignal, "any");
+    const signal = new AbortController().signal;
+    let requestSignal: AbortSignal | null | undefined;
+    Object.defineProperty(AbortSignal, "any", { configurable: true, value: undefined });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        requestSignal = init?.signal;
+        return new Response("ok", { status: 206 });
+      }),
+    );
+    try {
+      await fetchLogChunk("a.log", { offset: 0, length: 8, size: 2 }, signal);
+      expect(requestSignal).toBe(signal);
+    } finally {
+      if (originalAny) Object.defineProperty(AbortSignal, "any", originalAny);
+      else Reflect.deleteProperty(AbortSignal, "any");
+    }
+  });
+
+  it("combines the caller signal with the read timeout when supported", async () => {
+    expect(AbortSignal.any).toBeTypeOf("function");
+    const signal = new AbortController().signal;
+    let requestSignal: AbortSignal | null | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        requestSignal = init?.signal;
+        return new Response("ok", { status: 206 });
+      }),
+    );
+
+    await fetchLogChunk("a.log", { offset: 0, length: 8, size: 2 }, signal);
+    expect(requestSignal).toBeInstanceOf(AbortSignal);
+    expect(requestSignal).not.toBe(signal);
+  });
+
   it("treats a missing endpoint (404 envelope) as an ApiError the page can recognise", async () => {
     vi.stubGlobal(
       "fetch",
@@ -213,6 +251,23 @@ describe("fetchLogChunk", () => {
     expect(isEndpointMissing(err)).toBe(false);
     expect((err as ApiError).status).toBe(502);
     expect((err as ApiError).message).toContain("502");
+  });
+
+  it("reads Hadoop RemoteException error envelopes", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ RemoteException: { message: "remote failure" } }), {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          }),
+      ),
+    );
+    const err = await fetchLogChunk("a.log", { offset: 0, length: 128, size: 0 }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).message).toBe("remote failure");
+    expect((err as ApiError).code).toBe("RemoteException");
   });
 
   it("does not mistake a ResourceManager 404 for a missing Burrow route", async () => {

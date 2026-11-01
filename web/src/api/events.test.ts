@@ -87,7 +87,8 @@ describe("SSE topics and lifecycle", () => {
     globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
     const topic = "yarn/apps?states=NEW,NEW_SAVING";
     const client = makeClient([{ topic }]);
-    const invalidate = vi.spyOn(client, "invalidateQueries").mockResolvedValue();
+    const actualInvalidateQueries = client.invalidateQueries.bind(client);
+    const invalidate = vi.spyOn(client, "invalidateQueries").mockImplementation((...args) => actualInvalidateQueries(...args));
     const stop = startEvents(client, () => true);
     await vi.advanceTimersByTimeAsync(250);
 
@@ -134,6 +135,41 @@ describe("SSE topics and lifecycle", () => {
     await vi.advanceTimersByTimeAsync(250);
     expect(eventsStore.get()).toMatchObject({ state: "idle", topics: [] });
     expect(second?.closed).toBe(true);
+    stop();
+    client.clear();
+  });
+
+  it("responds to enablement, query removal, and document visibility changes", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    const client = makeClient([{ topic: "rm/cluster" }]);
+    let enabled = false;
+    const stop = startEvents(client, () => enabled);
+    await vi.advanceTimersByTimeAsync(250);
+    expect(eventsStore.get()).toMatchObject({ state: "unsupported", topics: [] });
+    expect(FakeEventSource.instances).toHaveLength(0);
+
+    enabled = true;
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(250);
+    expect(FakeEventSource.instances).toHaveLength(1);
+
+    const hidden = Object.getOwnPropertyDescriptor(document, "hidden");
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(250);
+    expect(eventsStore.get()).toMatchObject({ state: "idle", topics: [] });
+    expect(FakeEventSource.instances[0]?.closed).toBe(true);
+    if (hidden) Object.defineProperty(document, "hidden", hidden);
+    else Reflect.deleteProperty(document, "hidden");
+
+    document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(250);
+    expect(FakeEventSource.instances).toHaveLength(2);
+    client.clear();
+    await vi.advanceTimersByTimeAsync(250);
+    expect(eventsStore.get()).toMatchObject({ state: "idle", topics: [] });
+    expect(FakeEventSource.instances[1]?.closed).toBe(true);
     stop();
     client.clear();
   });

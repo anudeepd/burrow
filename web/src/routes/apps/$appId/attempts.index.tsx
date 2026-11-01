@@ -50,21 +50,13 @@ function AttemptsRoute() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {app.error &&
-        (app.data ? (
-          <StaleErrorBanner
-            title="Application summary refresh failed; attempts remain available"
-            error={app.error}
-            onRetry={() => void app.refetch()}
-          />
-        ) : (
-          <ErrorState
-            compact
-            title="Application summary could not be read; attempts remain available"
-            message={app.error instanceof Error ? app.error.message : String(app.error)}
-            onRetry={() => void app.refetch()}
-          />
-        ))}
+      {app.error && (
+        <StaleErrorBanner
+          title="Application summary refresh failed; attempts remain available"
+          error={app.error}
+          onRetry={() => void app.refetch()}
+        />
+      )}
       {attempts.error && (
         <StaleErrorBanner
           title="Attempt refresh failed; showing the last loaded attempts"

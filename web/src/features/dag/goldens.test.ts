@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 import { buildGraph } from "./dag-model";
 import { layoutGraphSync } from "./layout";
 import type { RenderGraph } from "./types";
-import { allGoldens, goldensFor, overlappingPairs, readGolden, sparkVersions } from "./testing/fixtures.node";
+import { allGoldens, goldensFor, overlappingPairs, readCapturedStages, readGolden, sparkVersions, sqlPlans } from "./testing/fixtures.node";
 
 interface Failure {
   where: string;
@@ -81,6 +81,12 @@ async function checkAll(goldens: ReturnType<typeof goldensFor>): Promise<void> {
 }
 
 describe("DAG corpus", () => {
+  it("handles missing fixture directories and optional REST captures", () => {
+    expect(goldensFor("missing-version")).toEqual([]);
+    expect(sqlPlans("2.4.0")).toEqual([]);
+    expect(readCapturedStages("4.2.0", "missing-workload")).toBeNull();
+  });
+
   it("finds both goldens sets", () => {
     const versions = sparkVersions();
     expect(versions).toEqual(expect.arrayContaining(["3.5.9", "4.2.0"]));

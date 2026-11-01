@@ -213,10 +213,13 @@ function SparkHeader({
               label="Application attempt"
               value={selectedAttempt ?? ""}
               onValueChange={setAttempt}
-              options={attempts.map((a, i) => ({
-                value: attemptValue(a, i),
-                label: `Attempt ${attemptValue(a, i)} · ${fmtEpoch(parseSparkTime(a.startTime), tz)}`,
-              }))}
+              options={[
+                { value: "", label: "Default attempt" },
+                ...attempts.map((a, i) => ({
+                  value: attemptValue(a, i),
+                  label: `Attempt ${attemptValue(a, i)} · ${fmtEpoch(parseSparkTime(a.startTime), tz)}`,
+                })),
+              ]}
             />
           )}
         </div>

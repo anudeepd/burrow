@@ -20,6 +20,7 @@ export interface PartitionRow {
 const COLS: ColDef<PartitionRow>[] = [
   {
     id: "partition",
+    accessorFn: (row) => row.cap.partitionName ?? "",
     meta: { label: "Partition", hint: "Node-label partition. Unlabelled nodes belong to the default partition.", pinned: true },
     size: 180,
     cell: ({ row }) => (

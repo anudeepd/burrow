@@ -11,7 +11,7 @@ const { CommandPalette } = await import("./command-palette");
 const apps = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/overview/apps.json"), "utf8")) as unknown;
 const scrollDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, "scrollIntoView");
 
-function renderPalette() {
+function renderPalette(options: { appsError?: Error } = {}) {
   const onOpenChange = vi.fn();
   const root = createRootRoute();
   const home = createRoute({ getParentRoute: () => root, path: "/", component: () => <CommandPalette open onOpenChange={onOpenChange} /> });
@@ -29,9 +29,21 @@ function renderPalette() {
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
   client.setQueryData(q.apps().queryKey, apps as never);
+  if (options.appsError) {
+    const query = client.getQueryCache().find({ queryKey: q.apps().queryKey })!;
+    query.setState({
+      ...query.state,
+      status: "error",
+      error: options.appsError,
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: query.state.errorUpdateCount + 1,
+      fetchStatus: "idle",
+    });
+  }
   return {
     onOpenChange,
     router,
+    client,
     ...render(
       <QueryClientProvider client={client}>
         <RouterProvider router={router} />
@@ -76,10 +88,49 @@ describe("command palette", () => {
     const input = await screen.findByRole("combobox", { name: "Search applications and commands" });
     fireEvent.change(input, { target: { value: "no-such-command-or-app" } });
     const filterOption = await screen.findByRole("option", { name: /Applications named/ });
+    fireEvent.mouseEnter(filterOption);
     fireEvent.keyDown(input, { key: "Escape" });
     expect(onOpenChange).toHaveBeenCalledWith(false);
     fireEvent.click(filterOption);
     await waitFor(() => expect(router.state.location.pathname).toBe("/apps"));
     expect(router.state.location.search).toMatchObject({ name: "no-such-command-or-app" });
+  });
+
+  it("runs theme and live-update actions", async () => {
+    const { client } = renderPalette();
+    const { prefsStore, setPrefs } = await import("~/state/prefs");
+    setPrefs({ theme: "dark", livePaused: false });
+
+    fireEvent.click(await screen.findByRole("option", { name: /Switch theme: light/ }));
+    await waitFor(() => expect(prefsStore.get().theme).toBe("light"));
+    fireEvent.click(await screen.findByRole("option", { name: "Theme: follow system" }));
+    await waitFor(() => expect(prefsStore.get().theme).toBe("system"));
+    fireEvent.click(await screen.findByRole("option", { name: "Pause live updates" }));
+    await waitFor(() => expect(prefsStore.get().livePaused).toBe(true));
+    setPrefs({ livePaused: false, theme: "dark" });
+    client.clear();
+  });
+
+  it("runs a built-in navigation result", async () => {
+    const { router } = renderPalette();
+    const input = await screen.findByRole("combobox", { name: "Search applications and commands" });
+    fireEvent.change(input, { target: { value: "Scheduler" } });
+    await waitFor(() => expect(document.getElementById("palette-nav:/scheduler")).not.toBeNull());
+    const scheduler = document.getElementById("palette-nav:/scheduler");
+    expect(scheduler).not.toBeNull();
+    fireEvent.click(scheduler!);
+    await waitFor(() => expect(router.state.location.pathname).toBe("/scheduler"));
+  });
+
+  it("shows and retries a failed application lookup", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () => new Response(JSON.stringify({ apps: { app: [] } }), { status: 200, headers: { "content-type": "application/json" } }),
+      ),
+    );
+    renderPalette({ appsError: new Error("applications unavailable") });
+    expect((await screen.findByRole("alert")).textContent).toContain("Application search refresh failed; showing cached results");
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 });

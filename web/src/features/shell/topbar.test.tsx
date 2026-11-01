@@ -10,7 +10,7 @@ import { prefsStore, setPrefs } from "~/state/prefs";
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { Topbar } = await import("./topbar");
 
 const read = (path: string) => JSON.parse(readFileSync(resolve(process.cwd(), path), "utf8")) as Record<string, unknown>;
@@ -67,6 +67,12 @@ describe("Topbar", () => {
     expect(prefsStore.get().tz).toBe("utc");
 
     expect(screen.getByRole("combobox", { name: "Refresh interval" }).textContent).toContain("3 s");
+    fireEvent.click(screen.getByRole("combobox", { name: "Refresh interval" }));
+    const fiveSeconds = await screen.findByRole("option", { name: "5 s" });
+    fireEvent.pointerDown(fiveSeconds, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(fiveSeconds, { button: 0, pointerType: "mouse" });
+    fireEvent.click(fiveSeconds);
+    await waitFor(() => expect(prefsStore.get().liveIntervalMs).toBe(5000));
 
     fireEvent.click(screen.getByRole("button", { name: /Search applications and pages/ }));
     fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
@@ -100,5 +106,45 @@ describe("Topbar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Connection: 2 failed request(s)" }));
     expect((await screen.findByRole("alert")).textContent).toContain("gateway timeout");
     expect(screen.getByRole("button", { name: "Retry failed requests on this page" })).toBeTruthy();
+  });
+
+  it("shows failed query details, retries active failures, and updates connection settings", async () => {
+    parityStore.setState(() => ({ enabled: true }));
+    const { client } = renderTopbar();
+    const metaQuery = client.getQueryCache().find({ queryKey: q.meta().queryKey })!;
+    act(() => {
+      metaQuery.setState({
+        ...metaQuery.state,
+        status: "error",
+        error: new Error("metadata refresh failed"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: 1,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId("connection").getAttribute("aria-label")).toContain("1 failed"));
+    fireEvent.click(screen.getByTestId("connection"));
+    expect((await screen.findByRole("alert")).textContent).toContain("Burrow service metadata failed");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}", { status: 200, headers: { "content-type": "application/json" } })),
+    );
+    const refetch = vi.spyOn(client, "refetchQueries");
+    fireEvent.click(screen.getByRole("button", { name: "Retry failed requests on this page" }));
+    expect(refetch).toHaveBeenCalledWith(expect.objectContaining({ type: "active", predicate: expect.any(Function) }));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Theme" }));
+    const dark = await screen.findByRole("option", { name: "Dark" });
+    fireEvent.pointerDown(dark, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(dark, { button: 0, pointerType: "mouse" });
+    fireEvent.click(dark);
+    await waitFor(() => expect(prefsStore.get().theme).toBe("dark"));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Time zone" }));
+    const utc = await screen.findByRole("option", { name: "UTC" });
+    fireEvent.pointerDown(utc, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(utc, { button: 0, pointerType: "mouse" });
+    fireEvent.click(utc);
+    await waitFor(() => expect(prefsStore.get().tz).toBe("utc"));
   });
 });

@@ -2,6 +2,18 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { SortingState } from "@tanstack/react-table";
 import type { ColDef } from "./features";
 
+const motionMocks = vi.hoisted(() => ({
+  allowed: false,
+  flash: vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation),
+}));
+
+vi.mock("~/lib/motion", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("~/lib/motion")>()),
+  motionAllowed: () => motionMocks.allowed,
+  flash: motionMocks.flash,
+  tokenMs: (_element: Element | null, _token: string, fallback: number) => fallback,
+}));
+
 vi.mock("@tanstack/react-virtual", () => ({
   useVirtualizer: ({ count, estimateSize }: { count: number; estimateSize: (index: number) => number }) => ({
     getVirtualItems: () =>
@@ -17,7 +29,8 @@ vi.mock("@tanstack/react-virtual", () => ({
 window.__BURROW_PARITY__ = true;
 
 const { cleanup, fireEvent, render, screen } = await import("@testing-library/react");
-const { DataTable } = await import("./data-table");
+const { DataTable, defaultVisibilityOf } = await import("./data-table");
+const { Datum } = await import("../datum");
 const { EmptyState, ErrorState } = await import("../feedback");
 const { parityStore } = await import("~/state/parity");
 let originalClientHeight: PropertyDescriptor | null | undefined;
@@ -83,11 +96,50 @@ afterEach(() => {
   originalAnimate = undefined;
   originalClientWidth = undefined;
   originalRect = undefined;
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
   vi.useRealTimers();
+  motionMocks.allowed = false;
+  motionMocks.flash.mockClear();
 });
 
 describe("DataTable", () => {
+  it("uses accessor keys when a column does not declare an id", () => {
+    const keyColumns: ColDef<Row>[] = [{ accessorKey: "name", meta: { label: "Name", defaultVisible: false } }, { accessorKey: "count" }];
+    expect(defaultVisibilityOf(keyColumns)).toEqual({ name: false, count: true });
+  });
+
+  it("updates horizontal overflow cues as the user scrolls across columns", () => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+        observe(target: Element) {
+          const contentRect = { width: 100, height: 300 } as DOMRectReadOnly;
+          this.callback([{ target, contentRect } as ResizeObserverEntry], this as unknown as ResizeObserver);
+        }
+        disconnect() {}
+        unobserve() {}
+      },
+    );
+    const { container } = renderTable();
+    const table = screen.getByRole("table", { name: "Nodes" });
+    Object.defineProperties(table, {
+      scrollLeft: { configurable: true, writable: true, value: 0 },
+      clientWidth: { configurable: true, value: 100 },
+      scrollWidth: { configurable: true, value: 500 },
+      clientHeight: { configurable: true, value: 80 },
+      scrollHeight: { configurable: true, value: 300 },
+    });
+    fireEvent.scroll(table);
+    expect(screen.getByText("Scroll for more columns")).toBeTruthy();
+    expect(container.querySelector(".burrow-table-edge-fade")?.className).toContain("opacity-100");
+
+    table.scrollLeft = 450;
+    fireEvent.scroll(table);
+    expect(container.querySelector(".burrow-table-edge-fade")?.className).toContain("opacity-0");
+  });
+
   it("sorts, selects rows, activates a row, resets columns, and exports CSV/JSON", () => {
     const createUrl = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:table-export");
     const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
@@ -233,6 +285,7 @@ describe("DataTable", () => {
     originalRect = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getBoundingClientRect") ?? null;
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     const animations: Array<{ cancel: ReturnType<typeof vi.fn>; oncancel: (() => void) | null; onfinish: (() => void) | null }> = [];
+    let reordered = false;
     const animate = vi.fn(() => {
       const animation = { cancel: vi.fn(), oncancel: null, onfinish: null };
       animations.push(animation);
@@ -242,17 +295,26 @@ describe("DataTable", () => {
     Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 600 });
     Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
       configurable: true,
-      value: () => ({ x: 0, y: 0, top: 0, left: 0, right: 600, bottom: 400, width: 600, height: 400, toJSON: () => ({}) }),
+      value: function (this: HTMLElement) {
+        const row = this.matches(".burrow-row[data-ye]") ? this : this.closest<HTMLElement>(".burrow-row[data-ye]");
+        const top = row?.dataset.ye === "n-2" && reordered ? 0 : row ? 40 : 0;
+        return { x: 0, y: top, top, left: 0, right: 600, bottom: top + 40, width: 600, height: 40, toJSON: () => ({}) };
+      },
     });
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
     parityStore.setState(() => ({ enabled: false }));
     window.__BURROW_PARITY__ = false;
+    motionMocks.allowed = true;
 
     const view = renderTable({ data: [...rows], rowVersion: (row) => row.count });
     expect(await screen.findByText("alpha")).toBeTruthy();
+    reordered = true;
     view.rerender(
       <DataTable<Row>
-        data={[rows[1]!, { id: "n-3", name: "gamma", count: 6 }]}
+        data={[
+          { ...rows[1]!, count: 5 },
+          { id: "n-3", name: "gamma", count: 6 },
+        ]}
         columns={columns}
         getRowId={(row) => row.id}
         entityKey={(row) => row.id}
@@ -271,8 +333,83 @@ describe("DataTable", () => {
     );
     expect(await screen.findByText("gamma")).toBeTruthy();
     expect(animate).toHaveBeenCalled();
+    expect(motionMocks.flash).toHaveBeenCalled();
     expect(view.container.querySelector('[aria-hidden="true"][inert][role="presentation"]')).not.toBeNull();
+    animations.forEach((animation) => {
+      animation.onfinish?.();
+    });
+    expect(view.container.querySelector('[aria-hidden="true"][inert][role="presentation"]')).toBeNull();
     view.unmount();
     expect(animations.some((animation) => animation.cancel.mock.calls.length > 0)).toBe(true);
+  });
+
+  it("cleans parity stamps from exit clones and cancels active row animations on updates and unmount", async () => {
+    originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
+    const animations: Array<{ cancel: ReturnType<typeof vi.fn>; oncancel: (() => void) | null; onfinish: (() => void) | null }> = [];
+    const exitNodes: HTMLElement[] = [];
+    const animate = vi.fn(function (this: HTMLElement) {
+      if (this.getAttribute("role") === "presentation") exitNodes.push(this);
+      const animation = { cancel: vi.fn(), oncancel: null, onfinish: null };
+      animations.push(animation);
+      return animation as unknown as Animation;
+    });
+    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    motionMocks.allowed = true;
+
+    const datumColumns: ColDef<Row>[] = [
+      {
+        id: "name",
+        accessorKey: "name",
+        meta: { label: "Name" },
+        cell: ({ row }) => (
+          <Datum field="node.name" raw={row.original.name}>
+            {row.original.name}
+          </Datum>
+        ),
+      },
+    ];
+    const first = [...rows];
+    const second = [rows[1]!, { id: "n-3", name: "gamma", count: 6 }];
+    const third = [
+      { id: "n-3", name: "gamma", count: 6 },
+      { id: "n-4", name: "delta", count: 8 },
+    ];
+    const view = renderTable({ data: first, columns: datumColumns, selectable: false });
+    expect(await screen.findByText("alpha")).toBeTruthy();
+
+    const renderData = (data: readonly Row[]) =>
+      view.rerender(
+        <DataTable<Row>
+          data={data}
+          columns={datumColumns}
+          getRowId={(row) => row.id}
+          entityKey={(row) => row.id}
+          label="Nodes"
+          storageKey="test-data-table"
+          sorting={[]}
+          onSortingChange={view.onSortingChange}
+          columnVisibility={{}}
+          onColumnVisibilityChange={view.onColumnVisibilityChange}
+          defaultVisibility={{ name: true }}
+          selectable={false}
+          rowVersion={(row) => row.count}
+          exportName="nodes"
+        />,
+      );
+
+    renderData(second);
+    expect(await screen.findByText("gamma")).toBeTruthy();
+    expect(exitNodes).toHaveLength(1);
+    expect(exitNodes[0]!.querySelector("[data-yf], [data-yv], [data-ye], [id]")).toBeNull();
+
+    renderData(third);
+    expect(await screen.findByText("delta")).toBeTruthy();
+    expect(animations.some((animation) => animation.cancel.mock.calls.length > 0)).toBe(true);
+    expect(exitNodes.length).toBeGreaterThan(1);
+    view.unmount();
+    expect(exitNodes.every((element) => element.parentElement === null)).toBe(true);
+    expect(animations.every((animation) => animation.cancel.mock.calls.length > 0)).toBe(true);
   });
 });

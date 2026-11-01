@@ -5,7 +5,7 @@ import type { App } from "~/api/schemas";
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, render, screen, fireEvent } = await import("@testing-library/react");
+const { cleanup, render, screen, fireEvent, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
@@ -127,18 +127,87 @@ describe("AppsPage", () => {
     expect(patch.mock.calls.at(-1)?.[0]).toEqual(expect.objectContaining({ cols: expect.any(String) }));
   });
 
+  it("sorts the application table, toggles final outcomes, and opens a selected row", async () => {
+    const { patch, onOpenApp } = renderAppsPage({ previewApps: apps });
+    const table = await screen.findByRole("table", { name: "Applications" });
+    const nameHeader = table.querySelector('[data-col="name"] button')!;
+    fireEvent.click(nameHeader);
+    expect(patch.mock.calls.at(-1)?.[0]).toEqual(expect.objectContaining({ sort: expect.any(String) }));
+
+    const succeeded = screen.getByRole("button", { name: "Filter by final status: Succeeded" });
+    fireEvent.click(succeeded);
+    expect(patch).toHaveBeenCalledWith({ final: "SUCCEEDED" });
+
+    const row = table.querySelector<HTMLElement>('[role="row"][aria-rowindex="2"]')!;
+    fireEvent.click(row);
+    expect(onOpenApp).toHaveBeenCalledWith(expect.any(String));
+
+    const openedBeforeLinks = onOpenApp.mock.calls.length;
+    const trackingLink = table.querySelector<HTMLAnchorElement>('a[target="_blank"]');
+    expect(trackingLink).not.toBeNull();
+    const dispatchWithoutNavigation = (link: HTMLAnchorElement) => {
+      link.addEventListener("click", (event) => event.preventDefault(), { once: true });
+      link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    };
+    dispatchWithoutNavigation(trackingLink!);
+    expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
+    const queueLink = within(table).getAllByRole("link", { name: "root.default" })[0]!;
+    fireEvent.click(queueLink);
+    expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
+  });
+
+  it("changes lifecycle state through the compact picker", async () => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+        observe(target: Element) {
+          this.callback([{ target, contentRect: { width: 600 } } as ResizeObserverEntry], this as unknown as ResizeObserver);
+        }
+        disconnect() {}
+        unobserve() {}
+      },
+    );
+    const { patch } = renderAppsPage({ previewApps: apps });
+    fireEvent.click(await screen.findByRole("combobox", { name: "Lifecycle state" }));
+    const running = await screen.findByRole("option", { name: /Running/ });
+    fireEvent.pointerDown(running, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(running, { button: 0, pointerType: "mouse" });
+    fireEvent.click(running);
+    await waitFor(() => expect(patch).toHaveBeenCalledWith({ states: "RUNNING" }));
+  });
+
   it("keeps stale applications visible and distinguishes failed initial loads", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () => new Response(JSON.stringify({ apps: { app: apps } }), { status: 200, headers: { "content-type": "application/json" } }),
+      ),
+    );
     const stale = renderAppsPage({ live: true, queryError: new Error("refresh failed"), previewApps: apps });
     expect(await screen.findByText("Applications refresh failed; showing the last loaded rows")).toBeTruthy();
     expect(screen.getByText("stale")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     stale.unmount();
 
     const emptyStale = renderAppsPage({ live: true, queryError: new Error("refresh failed"), previewApps: [] });
     expect(await screen.findByText("Applications refresh failed; showing the last loaded result")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     emptyStale.unmount();
 
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ error: { message: "ResourceManager unavailable" } }), {
+            status: 503,
+            headers: { "content-type": "application/json" },
+          }),
+      ),
+    );
     renderAppsPage({ live: true, queryError: new Error("initial load failed"), queryHasData: false });
     expect(await screen.findByRole("heading", { name: "Cannot load applications" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 });
 

@@ -32,16 +32,6 @@ function AttemptRoute() {
     );
   }
 
-  if (!app.data) {
-    return (
-      <ErrorState
-        title="Could not load the parent application"
-        message={app.error instanceof Error ? app.error.message : "The RM returned no application payload."}
-        onRetry={() => void app.refetch()}
-      />
-    );
-  }
-
   if (attempts.isError && !attempts.data) {
     return (
       <ErrorState
@@ -106,7 +96,7 @@ function AttemptRoute() {
         />
       )}
       <AttemptDetail
-        app={app.data}
+        app={app.data!}
         attempt={attempt}
         containers={containerRows}
         containersUnavailable={containersUnavailable}

@@ -3,6 +3,7 @@ import type { App, AppAttempt } from "~/api/schemas";
 import {
   attemptHostPortText,
   attemptIdFromContainerId,
+  appIdFromAttemptId,
   attemptIdOf,
   attemptTrackingText,
   appTimeline,
@@ -27,6 +28,8 @@ import {
   trackingKind,
   trackingLabel,
   nodeHostPort,
+  exportPortsText,
+  rawExportPorts,
 } from "./model";
 
 /** Minimal App/AppAttempt builders — the model only reads a handful of keys. */
@@ -331,5 +334,22 @@ describe("nodeHostPort", () => {
     expect(nodeHostPort({})).toBeNull();
     expect(nodeHostPort({ nodeHttpAddress: "" })).toBeNull();
     expect(nodeHostPort({ nodeHttpAddress: "http://" })).toBeNull();
+  });
+});
+
+describe("attempt selection and export ports", () => {
+  it("derives an application id from an attempt id and keeps malformed ids unavailable", () => {
+    expect(appIdFromAttemptId("appattempt_1700000000000_0042_000003")).toBe("application_1700000000000_0042");
+    expect(appIdFromAttemptId(null)).toBeNull();
+    expect(appIdFromAttemptId("not-an-attempt")).toBeNull();
+  });
+
+  it("renders missing Gson port maps as empty while retaining raw values", () => {
+    expect(exportPortsText(undefined)).toBe("{}");
+    expect(exportPortsText("null")).toBe("{}");
+    expect(exportPortsText('{"http":8080}')).toBe('{"http":8080}');
+    expect(rawExportPorts("null")).toBeNull();
+    expect(rawExportPorts(undefined)).toBeNull();
+    expect(rawExportPorts("{}")).toBe("{}");
   });
 });

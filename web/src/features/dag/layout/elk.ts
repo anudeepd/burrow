@@ -49,7 +49,7 @@ async function loadInlineWorkerModule(): Promise<ElkWorkerConstructor> {
  * Load ELK's UMD worker as a script asset and provide the CommonJS globals it expects to expose its inline Worker.
  * `importScripts` is available in the classic layout worker; the small-graph fallback uses a script element on window.
  */
-async function loadInlineWorkerAsset(): Promise<ElkWorkerConstructor> {
+export async function loadInlineWorkerAsset(): Promise<ElkWorkerConstructor> {
   const scope = globalThis as unknown as Record<string, unknown>;
   const documentDescriptor = Object.getOwnPropertyDescriptor(scope, "document");
   const moduleDescriptor = Object.getOwnPropertyDescriptor(scope, "module");

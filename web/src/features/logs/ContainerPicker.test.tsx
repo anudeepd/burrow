@@ -139,7 +139,13 @@ describe("ContainerPicker", () => {
       logsLink: i === 0 ? baseAttempt.logsLink : "",
     }));
     const refetch = vi.fn();
-    setAttempts({ data: { appAttempts: { appAttempt: attempts } }, isError: true, error: new Error("refresh failed") });
+    const attemptsRefetch = vi.fn();
+    setAttempts({
+      data: { appAttempts: { appAttempt: attempts } },
+      isError: true,
+      error: new Error("refresh failed"),
+      refetch: attemptsRefetch,
+    });
     mockState.containers = [
       { isError: true, error: new Error("worker A"), refetch },
       { isError: true, error: "worker B", refetch },
@@ -150,6 +156,8 @@ describe("ContainerPicker", () => {
     expect(screen.getByText(/4 attempt container lookup\(s\) failed/)).toBeTruthy();
     expect(screen.getByText(/1 more failed/)).toBeTruthy();
     expect(screen.getByText("refresh failed")).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: /retry/i })[0]!);
+    expect(attemptsRefetch).toHaveBeenCalledOnce();
     fireEvent.click(screen.getAllByRole("button", { name: /retry/i })[1]!);
     expect(refetch).toHaveBeenCalledTimes(4);
   });

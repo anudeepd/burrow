@@ -324,28 +324,11 @@ export function DagView({
     const stagePlan = prev ? diffProgress(metricOrder, prev.visuals, visuals) : null;
     let plan = stagePlan;
     if (stagePlan) {
-      const updates = [];
-      for (const update of stagePlan.updates) {
-        const nodeIds = nodeIdsByRepresentative.get(update.id);
-        if (!nodeIds) {
-          updates.push(update);
-          continue;
-        }
-        for (const id of nodeIds) updates.push({ ...update, id });
-      }
-      const entering: string[] = [];
-      for (const representative of stagePlan.entering) {
-        const nodeIds = nodeIdsByRepresentative.get(representative);
-        if (nodeIds) entering.push(...nodeIds);
-        else entering.push(representative);
-      }
-      const exiting: string[] = [];
-      for (const representative of stagePlan.exiting) {
-        const nodeIds = nodeIdsByRepresentative.get(representative);
-        if (nodeIds) exiting.push(...nodeIds);
-        else exiting.push(representative);
-      }
-      plan = { ...stagePlan, updates, entering, exiting, unchanged: [] };
+      // Both `order` and `visuals` are built from these representatives, so every update has rendered RDD ids and
+      // `diffProgress` cannot report an entering id outside that order. Leaving ids can belong to the previous graph;
+      // they remain in the plan as representatives and are not drawn on the new graph.
+      const updates = stagePlan.updates.flatMap((update) => nodeIdsByRepresentative.get(update.id)!.map((id) => ({ ...update, id })));
+      plan = { ...stagePlan, updates, entering: [], unchanged: [] };
     }
     const tweenMs = new Map<string, number>();
     if (plan) for (const update of plan.updates) if (update.tweenMs > 0) tweenMs.set(update.id, update.tweenMs);

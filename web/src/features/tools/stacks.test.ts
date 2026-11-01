@@ -151,6 +151,35 @@ describe("edge cases", () => {
     });
   });
 
+  it("keeps blank lines and indented diagnostics outside known sections", () => {
+    const parsed = parseThreadDump(
+      [
+        "1 active thread",
+        "Thread 1 (worker):",
+        "  State: RUNNABLE",
+        "",
+        "    vendor diagnostic detail (Unknown Source)",
+        "  Waited count: 2",
+      ].join("\n"),
+    );
+    expect(parsed.threads[0]).toMatchObject({ state: "RUNNABLE", waited: 2 });
+    expect(parsed.threads[0]?.frames).toMatchObject([{ className: "vendor diagnostic detail ", file: "Unknown Source" }]);
+  });
+
+  it("skips an unknown unindented line between thread records", () => {
+    const parsed = parseThreadDump(
+      [
+        "2 active threads",
+        "Thread 1 (first):",
+        "  State: RUNNABLE",
+        "Unexpected header emitted by a different JVM",
+        "Thread 2 (second):",
+        "  State: WAITING",
+      ].join("\n"),
+    );
+    expect(parsed.threads.map((thread) => thread.name)).toEqual(["first", "second"]);
+  });
+
   it("collects Locked ownable synchronizers and drops `- None`", () => {
     const text = [
       "2 active threads",

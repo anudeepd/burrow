@@ -5,8 +5,10 @@ import type { App, AppAttempt } from "~/api/schemas";
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, render, screen } = await import("@testing-library/react");
+const { cleanup, fireEvent, render, screen } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
+const { useState } = await import("react");
+const { parityStore } = await import("~/state/parity");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
 const { appSparkSource } = await import("../queries");
@@ -21,26 +23,31 @@ const app = (readJson("app.json") as { app: App }).app;
 const attempts = (readJson("appattempts.json") as { appAttempts: { appAttempt: AppAttempt[] } }).appAttempts.appAttempt;
 const now = Math.max(app.finishedTime, ...attempts.map((a) => a.finishedTime)) + 1_000;
 
-function renderSections() {
+function Sections({ attemptRows }: { attemptRows: AppAttempt[] }) {
+  const [sorting, setSorting] = useState<{ id: string; desc: boolean }[]>([]);
+  return (
+    <Entity id={app.id}>
+      <AppHeader app={app} attempts={attemptRows} now={now} />
+      <OverviewTab app={app} attempts={attemptRows} />
+      <AttemptsTab
+        appId={app.id}
+        attempts={attemptRows}
+        now={now}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        columnVisibility={ATTEMPT_DEFAULT_VISIBILITY}
+        onColumnVisibilityChange={vi.fn()}
+      />
+    </Entity>
+  );
+}
+
+function renderSections(attemptRows: AppAttempt[] = attempts) {
   const root = createRootRoute();
   const home = createRoute({
     getParentRoute: () => root,
     path: "/",
-    component: () => (
-      <Entity id={app.id}>
-        <AppHeader app={app} attempts={attempts} now={now} />
-        <OverviewTab app={app} attempts={attempts} />
-        <AttemptsTab
-          appId={app.id}
-          attempts={attempts}
-          now={now}
-          sorting={[]}
-          onSortingChange={vi.fn()}
-          columnVisibility={ATTEMPT_DEFAULT_VISIBILITY}
-          onColumnVisibilityChange={vi.fn()}
-        />
-      </Entity>
-    ),
+    component: () => <Sections attemptRows={attemptRows} />,
   });
   const routeStubs = [
     createRoute({ getParentRoute: () => root, path: "/scheduler/$queue", component: () => null }),
@@ -82,7 +89,12 @@ function renderSections() {
   );
 }
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  parityStore.setState(() => ({ enabled: true }));
+  window.__BURROW_PARITY__ = true;
+});
 
 describe("application sections", () => {
   it("renders the completed application header, status timeline, metrics, diagnostics and attempts", async () => {
@@ -103,5 +115,34 @@ describe("application sections", () => {
     expect(screen.getByText(/0 characters · 1 lines/)).toBeTruthy();
     expect(screen.getByText("Application Timeout (Remaining Time):")).toBeTruthy();
     expect(screen.getByText("Unmanaged Application:")).toBeTruthy();
+  });
+
+  it("opens the diagnostics reader and summarizes retries after a failed attempt", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const failed = { ...attempts[0]!, id: 0, appAttemptId: `${attempts[0]!.appAttemptId}_000002`, appAttemptState: "FAILED" };
+    renderSections([...attempts, failed]);
+    expect(await screen.findByRole("button", { name: "Show all" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show all" }));
+    expect(screen.getByRole("button", { name: "Collapse" })).toBeTruthy();
+    expect(screen.getByText(/attempts — the application was retried after failures/)).toBeTruthy();
+  });
+
+  it("shows optional attempt fields and exports each attempt's source values", async () => {
+    const createUrl = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:attempts");
+    const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    renderSections();
+    await screen.findByRole("table", { name: "Application attempts" });
+    const table = screen.getByRole("table", { name: "Application attempts" });
+    for (const column of ["startTime", "finishedTime", "elapsed"]) {
+      fireEvent.click(table.querySelector(`[data-col="${column}"] button`)!);
+    }
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    expect(screen.getByRole("columnheader", { name: /Node ID \(RPC\)/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /JSON/ }));
+    expect(createUrl).toHaveBeenCalledOnce();
+    expect(clickAnchor).toHaveBeenCalledOnce();
   });
 });

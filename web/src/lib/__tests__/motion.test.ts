@@ -128,6 +128,8 @@ describe("tokenMs()", () => {
 
     getPropertyValue.mockReturnValue("260ms");
     expect(tokenMs(el, "--dur-slow", 180)).toBe(260);
+    getPropertyValue.mockReturnValue("260px");
+    expect(tokenMs(el, "--dur-slow", 180)).toBe(180);
     getPropertyValue.mockReturnValue("");
     expect(tokenMs(el, "--dur-slow", 180)).toBe(180);
     expect(tokenMs(null, "--dur-slow", 180)).toBe(180);

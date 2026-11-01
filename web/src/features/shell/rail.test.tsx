@@ -10,14 +10,16 @@
  * This test pins the invariant: the rail's element structure is identical whatever the prefs say. The visual state is
  * allowed to differ (classes, `data-collapsed`, the rail's width) — React patches those silently.
  */
-import { render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const railData = vi.hoisted(() => ({ metrics: undefined as unknown, meta: undefined as unknown }));
 
 /** The rail only needs its *shape* here: the queries, the connection store and the router link are stubbed. */
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
-  useQuery: () => ({ data: undefined }),
+  useQuery: ({ queryKey }: { queryKey: readonly unknown[] }) => ({ data: queryKey[0] === "meta" ? railData.meta : railData.metrics }),
 }));
 vi.mock("~/api/connection", () => ({
   useConnection: (select: (s: { consecutiveFailures: number; lastCache: string | null }) => unknown) =>
@@ -53,7 +55,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  setPrefs({ railCollapsed: false });
+  cleanup();
+  setPrefs({ railCollapsed: false, motion: "system" });
+  railData.metrics = undefined;
+  railData.meta = undefined;
+  vi.restoreAllMocks();
 });
 
 describe("rail hydration shape", () => {
@@ -81,5 +87,50 @@ describe("rail hydration shape", () => {
     // the drawer is closed, never collapsed: labels are present and there is no collapse control inside it
     expect(text(drawer)).toContain("Applications");
     expect(drawer.querySelector("button[aria-label*='navigation' i]")).toBeNull();
+  });
+
+  it("notifies the drawer when a navigation item is selected", () => {
+    const onNavigate = vi.fn();
+    const view = render(<Rail inDrawer onNavigate={onNavigate} />);
+    const applications = view.container.querySelectorAll<HTMLAnchorElement>(".burrow-nav-link")[1];
+    expect(applications).toBeTruthy();
+    fireEvent.click(applications!);
+    expect(onNavigate).toHaveBeenCalledOnce();
+  });
+
+  it("collapses badges to dots and toggles the desktop rail", async () => {
+    railData.metrics = { appsRunning: 5, appsPending: 2, unhealthyNodes: 3, lostNodes: 1 };
+    setPrefs({ railCollapsed: true });
+    const view = render(<Rail />);
+    await waitFor(() => expect(view.getByRole("button", { name: "Expand navigation" })).toBeTruthy());
+    const appsLink = view.container.querySelectorAll(".burrow-nav-link")[1];
+    expect(appsLink?.querySelector('span[class*="size-1.5"]')).not.toBeNull();
+
+    fireEvent.click(view.getByRole("button", { name: "Expand navigation" }));
+    await waitFor(() => expect(view.getByRole("button", { name: "Collapse navigation" })).toBeTruthy());
+    expect(view.container.textContent).toContain("5");
+  });
+
+  it("explains app-requested and operating-system reduced motion", async () => {
+    setPrefs({ motion: "reduced" });
+    const view = render(<Rail />);
+    const preferenceChip = await view.findByTestId("motion-chip");
+    expect(preferenceChip.textContent).toBe("motion off");
+    fireEvent.click(preferenceChip);
+    await waitFor(() => expect(view.queryByTestId("motion-chip")).toBeNull());
+
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia;
+    try {
+      const osView = render(<Rail />);
+      expect(await osView.findByText("os: no motion")).toBeTruthy();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 });

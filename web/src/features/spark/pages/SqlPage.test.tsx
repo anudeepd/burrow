@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 window.__BURROW_PARITY__ = true;
 
-const { render, cleanup, screen, waitFor } = await import("@testing-library/react");
+const { act, render, cleanup, fireEvent, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { SqlPage } = await import("./SqlPage");
@@ -51,7 +51,10 @@ function stubApi(routes: Record<string, unknown>) {
 }
 
 /** Mirrors the real route hierarchy so `getRouteApi("/apps/$appId/spark/sql/")` resolves, plus the two link targets. */
-function renderSqlTab(application: { id: string; attempts: { appSparkVersion: string; attemptId?: string }[] } | null = null) {
+function renderSqlTab(
+  application: { id: string; attempts: { appSparkVersion: string; attemptId?: string }[] } | null = null,
+  initialSearch = "",
+) {
   const rootRoute = createRootRoute();
   const appRoute = createRoute({ getParentRoute: () => rootRoute, path: "/apps/$appId" });
   const sparkRoute = createRoute({ getParentRoute: () => appRoute, path: "spark" });
@@ -64,7 +67,7 @@ function renderSqlTab(application: { id: string; attempts: { appSparkVersion: st
   const jobRoute = createRoute({ getParentRoute: () => sparkRoute, path: "jobs/$jobId", component: () => null });
   const router = createRouter({
     routeTree: rootRoute.addChildren([appRoute.addChildren([sparkRoute.addChildren([sqlRoute, executionRoute, jobRoute])])]),
-    history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/sql`] }),
+    history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/sql${initialSearch}`] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const view = render(
@@ -76,10 +79,12 @@ function renderSqlTab(application: { id: string; attempts: { appSparkVersion: st
       </SparkProvider>
     </QueryClientProvider>,
   );
-  return { ...view, router };
+  return { ...view, router, client };
 }
 
-function renderSqlDetail() {
+function renderSqlDetail(
+  options: { execution?: "loaded" | "stale" | "error" | "missing"; jobs?: "loaded" | "stale" | "error"; disableFetch?: boolean } = {},
+) {
   const root = createRootRoute();
   const appRoute = createRoute({ getParentRoute: () => root, path: "/apps/$appId" });
   const sparkRoute = createRoute({ getParentRoute: () => appRoute, path: "spark" });
@@ -95,10 +100,56 @@ function renderSqlDetail() {
     routeTree: root.addChildren([appRoute.addChildren([sparkRoute.addChildren([sqlRoute, detailRoute, jobRoute])])]),
     history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/sql/1`] }),
   });
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
-  client.setQueryData(sp.sqlExecution(APP_ID, 1, { kind: "static", attempt: null }).queryKey, SQL_DETAIL as never);
-  client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, SQL_JOBS as never);
-  return render(
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, refetchOnMount: false, enabled: !options.disableFetch } },
+  });
+  const executionOptions = sp.sqlExecution(APP_ID, 1, { kind: "static", attempt: null });
+  const executionQuery = client.getQueryCache().build(client, executionOptions as never);
+  const executionState = options.execution ?? "loaded";
+  if (executionState === "loaded" || executionState === "stale") {
+    client.setQueryData(executionOptions.queryKey, SQL_DETAIL as never);
+    if (executionState === "stale")
+      executionQuery.setState({
+        ...executionQuery.state,
+        status: "error",
+        error: new Error("SQL detail refresh failed"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: executionQuery.state.errorUpdateCount + 1,
+      });
+  } else {
+    executionQuery.setState({
+      ...executionQuery.state,
+      data: undefined,
+      status: executionState === "error" ? "error" : "success",
+      error: executionState === "error" ? new Error("SQL execution unavailable") : null,
+      errorUpdatedAt: Date.now(),
+      fetchStatus: "idle",
+    });
+  }
+  const jobsOptions = sp.jobs(APP_ID, { kind: "static", attempt: null });
+  const jobsQuery = client.getQueryCache().build(client, jobsOptions as never);
+  const jobsState = options.jobs ?? "loaded";
+  if (jobsState === "loaded" || jobsState === "stale") {
+    client.setQueryData(jobsOptions.queryKey, SQL_JOBS as never);
+    if (jobsState === "stale")
+      jobsQuery.setState({
+        ...jobsQuery.state,
+        status: "error",
+        error: new Error("job refresh failed"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: jobsQuery.state.errorUpdateCount + 1,
+      });
+  } else {
+    jobsQuery.setState({
+      ...jobsQuery.state,
+      data: undefined,
+      status: "error",
+      error: new Error("job list unavailable"),
+      errorUpdatedAt: Date.now(),
+      fetchStatus: "idle",
+    });
+  }
+  const view = render(
     <QueryClientProvider client={client}>
       <SparkProvider
         value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
@@ -107,6 +158,7 @@ function renderSqlDetail() {
       </SparkProvider>
     </QueryClientProvider>,
   );
+  return { ...view, router, client };
 }
 
 afterEach(() => {
@@ -163,6 +215,48 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     expect(screen.getByText("7")).toBeTruthy();
   });
 
+  it("filters SQL executions, selects a page size, and exports the visible fields", async () => {
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:spark-sql-export");
+    const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    stubApi({ [`spark/${APP_ID}/sql`]: SQL });
+    const { container, router } = renderSqlTab();
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+
+    const search = screen.getByRole("searchbox", { name: "Filter SQL executions" });
+    fireEvent.change(search, { target: { value: "union" } });
+    await waitFor(() => expect((router.state.location.search as { q?: string }).q).toBe("union"));
+    expect(container.querySelector('[data-burrow-table="spark-sql"]')?.getAttribute("data-burrow-rows")).toBe("3");
+
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    const durationButton = screen
+      .getByRole("table", { name: "Spark SQL executions" })
+      .querySelector<HTMLElement>('[data-col="duration"] button');
+    expect(durationButton).toBeTruthy();
+    fireEvent.click(durationButton!);
+    await waitFor(() => expect((router.state.location.search as { sort?: string }).sort).toBe("duration"));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "SQL status filter" }));
+    const completed = await screen.findByRole("option", { name: "Completed" });
+    fireEvent.pointerDown(completed, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(completed, { button: 0, pointerType: "mouse" });
+    fireEvent.click(completed);
+    await waitFor(() => expect((router.state.location.search as { status?: string }).status).toBe("COMPLETED"));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Rows per page" }));
+    const pageSize = await screen.findByRole("option", { name: "25 / page" });
+    fireEvent.pointerDown(pageSize, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(pageSize, { button: 0, pointerType: "mouse" });
+    fireEvent.click(pageSize);
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ size: "25", page: "0" }));
+    expect((await screen.findByRole("button", { name: /Next/ })).hasAttribute("disabled")).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    expect(clickAnchor).toHaveBeenCalledOnce();
+  });
+
   it("keeps a Spark 3.3.2 SQL 404 classified as an ordinary missing resource", async () => {
     stubApi({ [`spark/${APP_ID}/sql`]: new Response(`unknown app local-test, attempt sql`, { status: 404 }) });
     renderSqlTab({ id: APP_ID, attempts: [{ appSparkVersion: "3.3.2" }] });
@@ -170,13 +264,119 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     expect(await screen.findByRole("heading", { name: "Not found in the Spark source" })).toBeTruthy();
   });
 
+  it("paginates SQL executions and links rows to their details", async () => {
+    const rows = Array.from({ length: 30 }, (_, index) => {
+      const seed = (SQL as { id: number; errorMessage?: string }[])[index % 8]!;
+      return { ...seed, id: index, errorMessage: index === 0 ? "Execution failed after the stage was aborted." : "" };
+    });
+    stubApi({ [`spark/${APP_ID}/sql`]: rows });
+    const { router } = renderSqlTab(null, "?size=25");
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+    fireEvent.click(screen.getByRole("button", { name: /Next/ }));
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ size: 25, page: "1" }));
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+    fireEvent.click(screen.getByRole("button", { name: /Prev/ }));
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ size: 25, page: "0" }));
+    await waitFor(() => expect(screen.getByRole("table", { name: "Spark SQL executions" }).querySelector(".burrow-row")).toBeTruthy());
+    const navigate = vi.spyOn(router, "navigate");
+    fireEvent.click(screen.getByRole("table", { name: "Spark SQL executions" }).querySelector<HTMLElement>(".burrow-row")!);
+    expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/apps/$appId/spark/sql/$executionId" }));
+  });
+
+  it("links SQL error messages and shows the empty-list state", async () => {
+    const failure = "Execution failed after the stage was aborted.";
+    const rows = [...(SQL as { id: number; errorMessage?: string }[])];
+    rows[0] = { ...rows[0]!, errorMessage: failure };
+    stubApi({ [`spark/${APP_ID}/sql`]: rows });
+    renderSqlTab();
+    expect(await screen.findByRole("link", { name: failure })).toBeTruthy();
+
+    cleanup();
+    stubApi({ [`spark/${APP_ID}/sql`]: [] });
+    renderSqlTab();
+    expect(await screen.findByRole("heading", { name: "No SQL executions" })).toBeTruthy();
+  });
+
+  it("keeps stale SQL rows visible and supports fatal-load retry", async () => {
+    stubApi({ [`spark/${APP_ID}/sql`]: SQL });
+    const stale = renderSqlTab();
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+    const key = sp.sql(APP_ID, { kind: "static", attempt: null }).queryKey;
+    const staleQuery = stale.client.getQueryCache().find({ queryKey: key })!;
+    act(() => {
+      staleQuery.setState({
+        ...staleQuery.state,
+        status: "error",
+        error: new Error("SQL refresh failed"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: staleQuery.state.errorUpdateCount + 1,
+        fetchStatus: "idle",
+      });
+    });
+    expect(await screen.findByText("Could not refresh the SQL execution list")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    stale.unmount();
+
+    const fatal = renderSqlTab();
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+    const failedQuery = fatal.client.getQueryCache().find({ queryKey: key })!;
+    act(() => {
+      failedQuery.setState({
+        ...failedQuery.state,
+        data: undefined,
+        status: "error",
+        error: new Error("SQL list unavailable"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: failedQuery.state.errorUpdateCount + 1,
+        fetchStatus: "idle",
+      });
+    });
+    expect(await screen.findByRole("heading", { name: "Spark request failed" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
   it("renders an SQL execution's physical plan, job links, and derived stage links", async () => {
-    renderSqlDetail();
-    expect(await screen.findByRole("heading", { name: /SQL execution 1/ })).toBeTruthy();
+    const { router } = renderSqlDetail();
+    expect(await screen.findByRole("heading", { name: /^SQL execution 1/ })).toBeTruthy();
     expect(screen.getByRole("link", { name: "All SQL executions" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Plan DAG of SQL execution 1" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Raw plan of SQL execution 1" })).toBeTruthy();
     expect(screen.getByText("Raw plan tree")).toBeTruthy();
     expect(screen.getByText("Succeeded")).toBeTruthy();
+    const search = screen.getByRole("searchbox", { name: "Find in the SQL plan" });
+    fireEvent.change(search, { target: { value: "SortMergeJoin" } });
+    await waitFor(() => expect(router.state.location.search.q).toBe("SortMergeJoin"));
+  });
+
+  it("keeps SQL detail and jobs visible during refresh failures and retries both", async () => {
+    stubApi({ [`spark/${APP_ID}/sql/1`]: SQL_DETAIL, [`spark/${APP_ID}/jobs`]: SQL_JOBS });
+    renderSqlDetail({ execution: "stale", jobs: "stale" });
+    expect(await screen.findByRole("heading", { name: /^SQL execution 1/ })).toBeTruthy();
+    expect(await screen.findByText(/Could not refresh SQL execution 1/)).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: "Retry now" })[0]!);
+
+    expect(await screen.findByText(/Could not refresh the jobs for this SQL execution/)).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: "Retry now" })[0]!);
+  });
+
+  it("shows fatal and missing SQL execution states and retries stage resolution", async () => {
+    stubApi({
+      [`spark/${APP_ID}/sql/1`]: new Response("unavailable", { status: 503 }),
+      [`spark/${APP_ID}/jobs`]: new Response("unavailable", { status: 503 }),
+    });
+    const failed = renderSqlDetail({ execution: "error" });
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    failed.unmount();
+    cleanup();
+
+    const missing = renderSqlDetail({ execution: "missing", disableFetch: true });
+    expect(await screen.findByRole("heading", { name: "SQL execution 1 is not in this application" })).toBeTruthy();
+    missing.unmount();
+    cleanup();
+
+    renderSqlDetail({ jobs: "error" });
+    expect(await screen.findByText("Could not resolve stage ids")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 });

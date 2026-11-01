@@ -21,10 +21,11 @@ window.__BURROW_PARITY__ = true;
 
 let DataTable: typeof import("~/ui/data-table/data-table").DataTable;
 let nodeColumns: typeof import("./columns").nodeColumns;
+let nodeDefaultVisibility: typeof import("./columns").defaultVisibility;
 
 beforeAll(async () => {
   ({ DataTable } = await import("~/ui/data-table/data-table"));
-  ({ nodeColumns } = await import("./columns"));
+  ({ nodeColumns, defaultVisibility: nodeDefaultVisibility } = await import("./columns"));
 });
 
 // vitest runs with cwd = web/, and Vite rewrites `new URL(..., import.meta.url)` into an asset request (denied outside root)
@@ -174,5 +175,47 @@ describe("nodes table column contract", () => {
     expect(used?.getAttribute("data-yv")).toBe("3");
     expect(avail?.textContent).toBe("1");
     expect(avail?.getAttribute("data-yv")).toBe("1");
+  });
+
+  it("handles inactive nodes with empty optional fields and derives the inventory defaults", async () => {
+    const inactive: Node = {
+      ...sampleNode,
+      id: "127.0.0.10:8041",
+      rack: "",
+      state: "DECOMMISSIONED",
+      nodeHTTPAddress: "",
+      lastHealthUpdate: 0,
+      healthReport: "",
+      numContainers: 0,
+      usedMemoryMB: 0,
+      availMemoryMB: 0,
+      usedVirtualCores: 0,
+      availableVirtualCores: 0,
+      memUtilization: undefined,
+      cpuUtilization: undefined,
+      nodeLabels: [],
+      allocationTags: undefined,
+      totalResource: undefined,
+      usedResource: undefined,
+      availableResource: undefined,
+      version: undefined,
+    };
+    const view = await renderTable([inactive, gpuNode], ["yarn.io/gpu"]);
+    const datums = rowDatums(inactive.id);
+    expect(view.container.textContent).toContain("/default-rack");
+    expect(view.container.textContent).toContain("N/A");
+    expect(datums.get("node.lastHealthUpdate")?.getAttribute("data-yv")).toBe("0");
+    expect(datums.get("node.derived.customResourceUsed")?.getAttribute("data-yv")).toBe("0");
+    expect(datums.get("node.derived.customResourceAvail")?.getAttribute("data-yv")).toBe("0");
+    expect(nodeDefaultVisibility([])).toMatchObject({ nodeLabels: false, healthReport: false, allocationTags: false });
+    expect(nodeDefaultVisibility([inactive, { ...gpuNode, healthReport: "disk check warning" }])).toMatchObject({
+      nodeLabels: true,
+      healthReport: true,
+    });
+
+    const columns = nodeColumns(["yarn.io/gpu"]);
+    for (const column of columns) {
+      if ("accessorFn" in column && typeof column.accessorFn === "function") column.accessorFn(inactive, 0);
+    }
   });
 });

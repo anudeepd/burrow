@@ -178,6 +178,7 @@ export function ActivitiesTable({
       },
       {
         id: "container",
+        accessorFn: (row) => row.containerId ?? "",
         meta: { label: "Container Id" },
         size: 150,
         cell: ({ row }) => (

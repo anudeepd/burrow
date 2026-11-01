@@ -5,8 +5,8 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, hashGraph, reduceTransitive, stageFlags, EXPAND_LIMIT } from "./dag-model";
 import { goldensFor, readGolden, sqlPlans, readSqlPlan } from "./testing/fixtures.node";
-import { buildSqlPlanGraph, isCodegenBoundary, planOperatorCount, sqlMetricSummary } from "./sql-plan";
-import type { Dag, DagStage, GraphEdge, SqlPlanExecution } from "./types";
+import { buildSqlPlanGraph, isCodegenBoundary, parsePlanText, planOperatorCount, sqlMetricSummary } from "./sql-plan";
+import type { Dag, DagInput, DagStage, GraphEdge, SqlPlanExecution } from "./types";
 
 function golden(workload: string, file: string, version = "4.2.0"): Dag {
   const g = goldensFor(version).find((x) => x.workload === workload && x.file === file);
@@ -155,6 +155,68 @@ describe("REST fallback", () => {
 });
 
 describe("defensive handling", () => {
+  it("drops duplicate node ids and reports a missing operation-scope parent", () => {
+    const duplicate = stage({
+      stageId: 4,
+      clusters: [{ id: "orphan", name: "Orphan", parentId: "missing" }],
+      nodes: [{ id: 2, name: "R2", callsite: "c", cached: false, clusterId: null }],
+    });
+    const dag: Dag = {
+      kind: "job",
+      granularity: "rdd",
+      stages: [duplicate, { ...duplicate, nodes: [{ ...duplicate.nodes[0]!, name: "Duplicate" }] }],
+      edges: [],
+    };
+    const graph = buildGraph(dag);
+    expect(graph.nodes.filter((node) => node.id === "4.0.n2")).toHaveLength(1);
+    expect(graph.warnings).toEqual(
+      expect.arrayContaining([
+        "cluster orphan in stage 4 references missing parent missing",
+        "duplicate node id 4.0.n2 — the second occurrence was dropped",
+      ]),
+    );
+  });
+
+  it("connects named stage endpoints through their last and first RDD boundary nodes", () => {
+    const dag: Dag = {
+      kind: "job",
+      granularity: "rdd",
+      stages: [
+        stage({ stageId: 2, nodes: [1, 2].map((id) => ({ id, name: `R${id}`, callsite: "c", cached: false, clusterId: null })) }),
+        stage({ stageId: 3, nodes: [3, 4].map((id) => ({ id, name: `R${id}`, callsite: "c", cached: false, clusterId: null })) }),
+      ],
+      edges: [{ from: null, to: null, fromStage: 2, toStage: 3 }],
+    };
+    const graph = buildGraph(dag);
+    expect(graph.edges.map(({ from, to }) => [from, to])).toEqual([["2.0.n2", "3.0.n3"]]);
+  });
+
+  it("warns when named stage endpoints cannot resolve to an RDD on this page", () => {
+    const dag: Dag = {
+      kind: "job",
+      granularity: "rdd",
+      stages: [stage({ stageId: 0, nodes: [{ id: 1, name: "R1", callsite: "c", cached: false, clusterId: null }] })],
+      edges: [{ from: null, to: null, fromStage: 9, toStage: 10 }],
+    };
+    expect(buildGraph(dag).warnings).toContain("cross-stage edge ?→? has no resolvable endpoint on this page");
+  });
+
+  it("warns about stage-summary edges that point to a stage absent from the payload", () => {
+    const dag: Dag = {
+      kind: "job",
+      granularity: "stage",
+      stages: [stage({ stageId: 0 })],
+      edges: [{ from: null, to: null, fromStage: 9, toStage: 0 }],
+    };
+    expect(buildGraph(dag).warnings).toContain("cross-stage edge 9→0 references an unknown stage");
+  });
+
+  it("rejects a SQL plan that was not adapted into a render graph", () => {
+    expect(() => buildGraph({ id: 1, status: "COMPLETED", description: "select 1", nodes: [], edges: [] } as DagInput)).toThrow(
+      "buildGraph expects a Dag; use buildSqlPlanGraph for SQL plan executions",
+    );
+  });
+
   it("drops cyclic edges and warns", () => {
     const dag: Dag = {
       kind: "stage",
@@ -421,5 +483,29 @@ describe("SQL plan adaptation", () => {
     );
     expect(summary).toBe("duration 1.2 s (+1)");
     expect(sqlMetricSummary({ nodeId: 1, nodeName: "Project", metrics: [] })).toBeUndefined();
+  });
+
+  it("ignores non-numeric appendix headings and falls back to physical plan lines", () => {
+    const parsed = parsePlanText("(1x) Project [id#1]\n== Physical Plan ==\n* Range (0, 10)");
+    expect(parsed.appendix.size).toBe(0);
+    expect(parsed.tree).toEqual([{ id: 0, name: "Range", line: "Range (0, 10)" }]);
+  });
+
+  it("drops duplicate operator ids and edges that point to missing operators", () => {
+    const graph = buildSqlPlanGraph({
+      id: 12,
+      status: "COMPLETED",
+      description: "select 1",
+      nodes: [
+        { nodeId: 1, nodeName: "Range" },
+        { nodeId: 1, nodeName: "Duplicate" },
+      ],
+      edges: [{ fromId: 1, toId: 9 }],
+    });
+    expect(graph.nodes).toHaveLength(1);
+    expect(graph.warnings).toEqual([
+      "duplicate plan node id 1 — the second occurrence was dropped",
+      "plan edge 1→9 references an unknown operator",
+    ]);
   });
 });

@@ -105,7 +105,7 @@ describe("useFollow", () => {
       source: "node",
       responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
     });
-    const opts = options();
+    const opts = options({ intervalMs: 30_000 });
     const { result, unmount } = renderHook(() => useFollow(opts));
 
     const first = FakeEventSource.instances[0];
@@ -121,7 +121,7 @@ describe("useFollow", () => {
     act(() => third?.emit("error", "not json"));
     expect(result.current.status).toMatchObject({ mode: "polling", reconnects: 3, detail: "log stream error" });
 
-    await act(async () => vi.advanceTimersByTimeAsync(250));
+    await act(async () => vi.advanceTimersByTimeAsync(30_000));
     expect(fetchWindow).toHaveBeenCalledWith(opts.containerId, opts.name, {
       offset: 0,
       length: 128 * 1024,
@@ -129,11 +129,37 @@ describe("useFollow", () => {
     });
     expect(opts.buffer.toLines()).toEqual(["INFO polled"]);
     expect(opts.onAppend).toHaveBeenCalledOnce();
-
-    act(() => result.current.retry());
     expect(FakeEventSource.instances).toHaveLength(4);
     expect(third?.closed).toBe(true);
     unmount();
     expect(FakeEventSource.instances[3]?.closed).toBe(true);
+  });
+
+  it("reports a failed poll and returns to the original polling reason after recovery", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    fetchWindow.mockRejectedValueOnce("poll endpoint unavailable").mockResolvedValueOnce({
+      text: "INFO recovered\n",
+      start: 0,
+      end: 16,
+      size: 16,
+      source: "node",
+      responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+    });
+    const opts = options();
+    const { result, unmount } = renderHook(() => useFollow(opts));
+
+    act(() => FakeEventSource.instances[0]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    act(() => FakeEventSource.instances[1]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    act(() => FakeEventSource.instances[2]?.emit("error", "invalid payload"));
+
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+    expect(result.current.status).toMatchObject({ mode: "polling", detail: "poll read failed: poll endpoint unavailable", reconnects: 3 });
+    await act(async () => vi.advanceTimersByTimeAsync(500));
+    expect(result.current.status).toMatchObject({ mode: "polling", detail: "log stream error", reconnects: 3 });
+    expect(opts.buffer.toLines()).toEqual(["INFO recovered"]);
+    unmount();
   });
 });

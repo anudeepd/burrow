@@ -9,12 +9,13 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { DagView } from "./DagView";
-import { DagMinimap } from "./chrome";
+import { DagMinimap, EdgeDrawer } from "./chrome";
 import { toRenderGraph } from "../layout";
 import { layoutClient } from "../layout/client";
 import { createSimulator, syntheticDag } from "../simulate";
 import { stageMetricsFromRest } from "../metrics";
 import type { Dag, DagInput, SqlPlanExecution, SqlPlanMetric } from "../types";
+import type { EdgeVisual, Scene } from "../render/scene";
 
 const FIXTURES = join(process.cwd(), "..", "fixtures", "spark");
 
@@ -189,6 +190,19 @@ describe("keyboard navigation", () => {
     await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(zoomed));
   });
 
+  it("centres keyboard focus after zooming past the visible graph area", async () => {
+    await mount(wordcountStage());
+    const tree = screen.getByRole("tree");
+    for (let i = 0; i < 7; i++) fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe("100%"));
+
+    const before = screen.getAllByRole("treeitem").find((item) => item.getAttribute("tabindex") === "0");
+    fireEvent.keyDown(tree, { key: "End" });
+    const after = screen.getAllByRole("treeitem").find((item) => item.getAttribute("tabindex") === "0");
+    expect(after).toBeTruthy();
+    expect(after).not.toBe(before);
+  });
+
   it("handles both arrow aliases, shifted panning, zoom-out aliases, and unknown keys", async () => {
     await mount(wordcountStage());
     const canvas = screen.getByTestId("dag-canvas");
@@ -236,18 +250,67 @@ describe("keyboard navigation", () => {
     expect(scroller.scrollTop).toBe(120);
   });
 
+  it("leaves Shift-wheel unhandled when there is no scrollable page ancestor", async () => {
+    await mount(wordcountStage());
+    const stage = screen.getByTestId("dag-stage");
+    const zoom = screen.getByTestId("dag-zoom").textContent;
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({ overflowY: "visible" } as CSSStyleDeclaration);
+    const shiftWheel = new WheelEvent("wheel", { deltaY: 20, shiftKey: true, bubbles: true, cancelable: true });
+    Object.defineProperty(shiftWheel, "shiftKey", { value: true });
+    stage.dispatchEvent(shiftWheel);
+    expect(shiftWheel.defaultPrevented).toBe(false);
+    expect(screen.getByTestId("dag-zoom").textContent).toBe(zoom);
+  });
+
   it("opens the drawer with Enter and closes it with Escape", async () => {
     await mount(wordcountStage());
     const first = screen.getAllByRole("treeitem")[0]!;
     fireEvent.keyDown(first, { key: "Enter" });
     const drawer = await screen.findByRole("complementary", { name: /Details for/ });
     expect(drawer.getAttribute("data-open")).toBe("true");
+    fireEvent.click(within(drawer).getByRole("button", { name: "Close details" }));
+    await waitFor(() => expect(drawer.getAttribute("data-open")).toBe("false"));
+    fireEvent.keyDown(first, { key: "Enter" });
+    await waitFor(() => expect(drawer.getAttribute("data-open")).toBe("true"));
     fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key: "Escape" });
     await waitFor(() => expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("false"));
   });
 });
 
 describe("interaction", () => {
+  it("shows only reported shuffle measurements in a cross-stage edge drawer", () => {
+    const metrics = new Map(
+      stageMetricsFromRest([
+        { stageId: 2, status: "COMPLETE", numTasks: 1, shuffleWriteBytes: 1024, shuffleWriteRecords: null },
+        { stageId: 3, status: "COMPLETE", numTasks: 1, shuffleReadBytes: null, shuffleFetchWaitTime: 12 },
+      ]).map((metric) => [metric.stageId, metric]),
+    );
+    const edge = {
+      edge: { id: "2-3", from: "stage-2", to: "stage-3", kind: "cross-stage", fromStage: 2, toStage: 3 },
+      points: [],
+      path: "",
+      arrow: null,
+      flowing: false,
+      intensity: 0,
+      opacity: 1,
+      dashArray: "",
+      animationSeconds: 0,
+      travel: 0,
+      selected: false,
+      hovered: false,
+      dimmed: false,
+      shuffleLabel: null,
+      labels: [],
+    } as EdgeVisual;
+    render(<EdgeDrawer open onClose={() => undefined} edge={edge} graphKind="job" metrics={metrics} producer={null} consumer={null} />);
+
+    const table = document.querySelector(".burrow-dag-measure-table")!;
+    expect(table.textContent).toContain("Stage 2 shuffle write");
+    expect(table.textContent).toContain("Stage 3 fetch wait");
+    expect(table.textContent).not.toContain("shuffle records written");
+    expect(table.textContent).not.toContain("Stage 3 shuffle read");
+  });
+
   it("uses toolbar zoom, fit, stage focus, and the accessible edge menu", async () => {
     const selected: unknown[] = [];
     await mount(barrierJob(), {
@@ -268,6 +331,8 @@ describe("interaction", () => {
     expect(selected).toHaveLength(1);
     expect(selected[0]).toEqual(expect.objectContaining({ from: expect.any(Number), to: expect.any(Number) }));
     expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("true");
+    fireEvent.click(within(screen.getByTestId("dag-edge-drawer")).getByRole("button", { name: "Close details" }));
+    expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("false");
   });
 
   it("shows a layout failure and retries it", async () => {
@@ -303,6 +368,88 @@ describe("interaction", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Focus stage 0" }));
     expect(canvas.getAttribute("data-dag-layout")).toBe("ready");
+  });
+
+  it("reveals cross-stage shuffle labels at detail zoom", async () => {
+    const metrics = stageMetricsFromRest(readStages("4.2.0", "barrier-scopes")).map((metric) => ({
+      ...metric,
+      shuffleReadBytes: metric.stageId === 1 ? 1024 : metric.shuffleReadBytes,
+    }));
+    const scenes: Scene[] = [];
+    await mount(barrierJob(), { expandStages: true, metrics, onScene: (scene: Scene) => scenes.push(scene) });
+
+    for (let i = 0; i < 8; i++) fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    await waitFor(() => expect(scenes.some((scene) => scene.edges.some((edge) => edge.shuffleLabel != null))).toBe(true));
+    expect(scenes.some((scene) => scene.edges.some((edge) => Boolean(edge.shuffleLabel)))).toBe(true);
+  });
+
+  it("summarizes RDD partitions, refreshes changed badges, and tracks node hover", async () => {
+    const dag = wordcountStage();
+    for (const stage of dag.stages) for (const node of stage.nodes) node.callsite = "";
+    const metrics = stageMetricsFromRest(readStages("4.2.0", "rdd-wordcount")).map((metric) => ({
+      ...metric,
+      stageId: 0,
+      shuffleWriteBytes: 1024,
+    }));
+    const scenes: Scene[] = [];
+    const view = await mount(dag, { metrics, onScene: (scene: Scene) => scenes.push(scene) });
+    for (let i = 0; i < 8; i++) fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+
+    const rddVisual = scenes.at(-1)?.nodes.find((visual) => visual.node.kind === "rdd");
+    expect(rddVisual?.taskSummary).toMatch(/\d+ \/ \d+ tasks/);
+    expect(rddVisual?.badges.some((badge) => badge.key === "sw" && badge.text.includes("1 KiB"))).toBe(true);
+    const item = screen.getAllByRole("treeitem").find((candidate) => candidate.getAttribute("data-kind") === "rdd")!;
+    fireEvent.pointerEnter(item);
+    await waitFor(() => expect(item.getAttribute("data-hovered")).toBe("true"));
+    fireEvent.pointerLeave(item);
+    await waitFor(() => expect(item.getAttribute("data-hovered")).toBe("false"));
+
+    const changedMetrics = metrics.map((metric) => ({
+      ...metric,
+      shuffleWriteBytes: (metric.shuffleWriteBytes ?? 0) + 1024,
+    }));
+    view.rerender(<DagView dag={dag} height={400} metrics={changedMetrics} onScene={(scene) => scenes.push(scene)} />);
+    await waitFor(() => {
+      const updatedRdd = scenes.at(-1)?.nodes.find((visual) => visual.node.kind === "rdd");
+      expect(updatedRdd?.badges.some((badge) => badge.key === "sw" && badge.text.includes("2 KiB"))).toBe(true);
+    });
+  });
+
+  it("opens a wide active graph focused on running work", async () => {
+    const dag = syntheticDag({ stages: 120, nodesPerStage: 4, skipEvery: 0, seed: 7 });
+    const metrics = createSimulator(dag).at(1000);
+    const scenes: Scene[] = [];
+    const view = await mount(dag, { onScene: (scene: Scene) => scenes.push(scene) });
+    const initialTransform = screen.getByRole("tree").querySelector("g")?.getAttribute("transform");
+    view.rerender(<DagView dag={dag} height={400} metrics={metrics} onScene={(scene) => scenes.push(scene)} />);
+
+    await waitFor(() => expect(scenes.at(-1)?.runningNodes.length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getByRole("tree").querySelector("g")?.getAttribute("transform")).not.toBe(initialTransform));
+    expect(screen.getByTestId("dag-canvas").getAttribute("data-dag-layout")).toBe("ready");
+  });
+
+  it("uses the minimap to recenter and drag, while its wheel stays outside graph zoom", async () => {
+    await mount(barrierJob(), { expandStages: true });
+    const canvas = screen.getByTestId("dag-canvas");
+    const stage = screen.getByTestId("dag-stage");
+    const minimap = screen.getByTestId("dag-minimap");
+    Object.defineProperty(minimap, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, top: 0, left: 0, right: 168, bottom: 112, width: 168, height: 112, toJSON: () => ({}) }),
+    });
+    Object.defineProperty(minimap, "setPointerCapture", { configurable: true, value: () => {} });
+    Object.defineProperty(minimap, "releasePointerCapture", { configurable: true, value: () => {} });
+    const zoom = screen.getByTestId("dag-zoom").textContent;
+    const wheel = new WheelEvent("wheel", { deltaY: -120, bubbles: true, cancelable: true });
+    minimap.dispatchEvent(wheel);
+    expect(screen.getByTestId("dag-zoom").textContent).toBe(zoom);
+
+    fireEvent.pointerDown(minimap, { pointerId: 12, clientX: 30, clientY: 20 });
+    expect(canvas.getAttribute("data-panning")).toBe("true");
+    fireEvent.pointerMove(minimap, { pointerId: 12, clientX: 40, clientY: 26, buttons: 1 });
+    fireEvent.pointerLeave(stage);
+    fireEvent.pointerUp(minimap, { pointerId: 12 });
+    expect(canvas.getAttribute("data-panning")).toBe("false");
   });
 
   it("expands provenance notes on a REST fallback graph", async () => {
@@ -478,6 +625,18 @@ describe("metrics and parity attributes", () => {
       const segments = progress.querySelectorAll<SVGRectElement>(".burrow-dag-progress-seg");
       expect([...segments].some((segment) => segment.style.transitionDuration === "620ms")).toBe(true);
     }
+  });
+
+  it("maps newly entering stage progress onto its rendered RDD nodes", async () => {
+    const first = syntheticDag({ stages: 1, nodesPerStage: 4, skipEvery: 0, seed: 13 });
+    const expanded = syntheticDag({ stages: 2, nodesPerStage: 4, skipEvery: 0, seed: 13 });
+    const firstMetrics = createSimulator(first).at(1000);
+    const nextMetrics = createSimulator(expanded).at(1000);
+    const view = await mount(first, { metrics: firstMetrics });
+    const initialCount = screen.getAllByRole("treeitem").length;
+
+    view.rerender(<DagView dag={expanded} height={400} metrics={nextMetrics} />);
+    await waitFor(() => expect(screen.getAllByRole("treeitem").length).toBeGreaterThan(initialCount), { timeout: 10_000 });
   });
   it("makes skipped RDD state accessible in codegen clusters", async () => {
     const dag = readDag("4.2.0", "df-join-aqe", "dag-job-2.json");

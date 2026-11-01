@@ -204,7 +204,9 @@ describe("formatting", () => {
     expect(jmxValueText(null)).toBe("");
     expect(jmxValueText(3)).toBe("3");
     expect(jmxValueText({ a: 1 })).toBe('{"a":1}');
+    expect(jmxValueText(1n)).toBe("1");
     expect(jmxValueJson({ a: 1 })).toBe('{\n  "a": 1\n}');
+    expect(jmxValueJson(1n)).toBe("1");
     expect(jmxValueJson(undefined)).toBe("");
   });
 

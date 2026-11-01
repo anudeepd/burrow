@@ -36,7 +36,11 @@ const application = {
   ],
 };
 
-function renderShell(search = "", mode: "live-proxy" | "history" | "none" = "live-proxy") {
+function renderShell(
+  search = "",
+  mode: "live-proxy" | "history" | "none" = "live-proxy",
+  configure?: (client: InstanceType<typeof QueryClient>) => void,
+) {
   const root = createRootRoute();
   const app = createRoute({ getParentRoute: () => root, path: "/apps/$appId" });
   const spark = createRoute({ getParentRoute: () => app, path: "spark" });
@@ -65,6 +69,7 @@ function renderShell(search = "", mode: "live-proxy" | "history" | "none" = "liv
     attempt: "2",
   });
   client.setQueryData(sp.application(APP_ID, mode === "history" ? "static" : "live").queryKey, application);
+  configure?.(client);
   const view = render(
     <QueryClientProvider client={client}>
       <RouterProvider router={router} />
@@ -88,6 +93,8 @@ describe("SparkShell", () => {
     expect(screen.getByRole("navigation", { name: "Spark pages" }).querySelectorAll("a")).toHaveLength(8);
     expect(screen.getByRole("link", { name: "Jobs" }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByText("Live")).toBeTruthy();
+    fireEvent.click(screen.getByRole("link", { name: "Jobs" }));
+    expect(screen.getByRole("link", { name: "Jobs" }).getAttribute("aria-current")).toBe("page");
   });
 
   it("uses history data and falls back to the source attempt for an invalid link", async () => {
@@ -133,5 +140,42 @@ describe("SparkShell", () => {
     await screen.findByRole("heading", { name: "word count stream" });
     fireEvent.click(screen.getByRole("link", { name: "Stages" }));
     await waitFor(() => expect(screen.getByRole("link", { name: "Stages" }).getAttribute("aria-current")).toBe("page"));
+  });
+
+  it("selects another attempt and retries failed source and application refreshes", async () => {
+    const { client, router } = renderShell("", "live-proxy", (client) => {
+      const sourceQuery = client.getQueryCache().find({ queryKey: sp.source(APP_ID, null).queryKey })!;
+      sourceQuery.setState({ ...sourceQuery.state, status: "error", error: new Error("source refresh failed") });
+      const appQuery = client.getQueryCache().find({ queryKey: sp.application(APP_ID, "live").queryKey })!;
+      appQuery.setState({ ...appQuery.state, status: "error", error: new Error("application refresh failed") });
+    });
+
+    expect(await screen.findByText("Spark source check failed")).toBeTruthy();
+    expect(screen.getByText("Spark application refresh failed; showing the last loaded details")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+
+    const attempt = screen.getByRole("combobox", { name: "Application attempt" });
+    fireEvent.click(attempt);
+    const firstAttempt = await screen.findByRole("option", { name: /Attempt 1 ·/ });
+    fireEvent.pointerDown(firstAttempt, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(firstAttempt, { button: 0, pointerType: "mouse" });
+    fireEvent.click(firstAttempt);
+    await waitFor(() => expect(router.state.location.search.attempt).toBe(1));
+    expect(client.getQueryData(sp.application(APP_ID, "live").queryKey)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Application attempt" }));
+    const defaultAttempt = await screen.findByRole("option", { name: "Default attempt" });
+    fireEvent.pointerDown(defaultAttempt, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(defaultAttempt, { button: 0, pointerType: "mouse" });
+    fireEvent.click(defaultAttempt);
+    await waitFor(() => expect(router.state.location.search.attempt).toBeUndefined());
+  });
+
+  it("shows the resolving source placeholder when source data is null", async () => {
+    renderShell("", "live-proxy", (client) => {
+      client.setQueryData(sp.source(APP_ID, null).queryKey, null as never);
+    });
+    expect(await screen.findByRole("status", { name: "Resolving the Spark REST source" })).toBeTruthy();
   });
 });

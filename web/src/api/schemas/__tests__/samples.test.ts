@@ -25,6 +25,8 @@ import {
   NodeResponseSchema,
   NodesResponseSchema,
   NodeToLabelsResponseSchema,
+  ResourceProfilesSchema,
+  ResourceTypesSchema,
   RemoteExceptionSchema,
   RmLogsListingSchema,
   SchedulerActivitiesSchema,
@@ -33,6 +35,7 @@ import {
   selectApps,
   selectAppStatistics,
   selectNodeLabels,
+  selectNodeToLabels,
 } from "~/api/schemas";
 import appJson from "~/api/schemas/samples/app.json";
 import appActivities from "~/api/schemas/samples/app-activities.json";
@@ -128,11 +131,61 @@ describe("upstream schemas (strict)", () => {
     expect(result.success).toBe(false);
   });
 
+  it("normalizes the wrapped application-attempt detail response", () => {
+    const parsed = AppAttemptDetailResponseSchema.parse(appAttemptDetail);
+    expect(AppAttemptDetailResponseSchema.parse({ appAttempt: parsed })).toEqual(parsed);
+  });
+
   it("normalises Hadoop's null/single-object collections", () => {
     expect(selectApps(AppsResponseSchema.parse({ apps: null }))).toEqual([]);
     const one = AppsResponseSchema.parse(apps);
     expect(selectApps(one).length).toBeGreaterThan(0);
     expect(selectNodeLabels(NodeLabelsResponseSchema.parse(nodeLabels)).length).toBeGreaterThan(0);
     expect(selectAppStatistics(AppStatisticsResponseSchema.parse(appstatistics)).length).toBeGreaterThan(0);
+  });
+
+  it("accepts wrapped and unwrapped scheduler configuration and user-info payloads", () => {
+    expect(SchedulerConfSchema.parse({ configuration: { property: [{ name: "x", value: "1" }] } })).toEqual({
+      property: [{ name: "x", value: "1" }],
+    });
+    expect(SchedulerConfSchema.parse({ property: [{ name: "y", value: "2" }] })).toEqual({ property: [{ name: "y", value: "2" }] });
+    expect(ClusterUserInfoSchema.parse({ clusterUserInfo: { rmLoginUser: "rm" } })).toEqual({ rmLoginUser: "rm" });
+    expect(ClusterUserInfoSchema.parse({ requestedUser: "alice" })).toEqual({ requestedUser: "alice" });
+  });
+
+  it("normalises every supported resource-type and resource-profile response shape", () => {
+    const resource = { name: "memory-mb", value: 1024 };
+    const parsedResource = { ...resource, tags: [] };
+    expect(ResourceTypesSchema.parse([resource])).toEqual([parsedResource]);
+    expect(ResourceTypesSchema.parse({ resourceInformations: { resourceInformation: [resource] } })).toEqual([parsedResource]);
+    expect(ResourceTypesSchema.parse({ resourceInformation: [resource] })).toEqual([parsedResource]);
+
+    expect(ResourceProfilesSchema.parse({ profiles: { small: { memory: 1024 } } })).toEqual({ small: { memory: 1024 } });
+    expect(ResourceProfilesSchema.parse({ profile: [{ name: "small", value: { entry: [{ key: "memory", value: "1024" }] } }] })).toEqual({
+      small: { memory: 1024 },
+    });
+    expect(ResourceProfilesSchema.parse({ small: { memory: 1024 } })).toEqual({ small: { memory: 1024 } });
+  });
+
+  it("normalises wrapped and unwrapped node-label maps and label mappings", () => {
+    const label = { name: "gpu", exclusivity: true };
+    const wrappedLabels = NodeLabelsResponseSchema.parse({ nodeLabelsInfo: { nodeLabelInfo: [label] } });
+    const plainLabels = NodeLabelsResponseSchema.parse({ nodeLabelInfo: [label] });
+    expect(selectNodeLabels(wrappedLabels)).toEqual([expect.objectContaining({ name: "gpu", exclusivity: true })]);
+    expect(selectNodeLabels(plainLabels)).toEqual([expect.objectContaining({ name: "gpu", exclusivity: true })]);
+
+    const nodeToLabels = {
+      nodeToLabels: { entry: [{ key: "worker:8041", value: { nodeLabelInfo: [label] } }] },
+    };
+    expect(selectNodeToLabels(NodeToLabelsResponseSchema.parse({ nodeToLabelsInfo: nodeToLabels }))).toEqual({
+      "worker:8041": [expect.objectContaining({ name: "gpu" })],
+    });
+    expect(selectNodeToLabels(NodeToLabelsResponseSchema.parse(nodeToLabels))).toEqual({
+      "worker:8041": [expect.objectContaining({ name: "gpu" })],
+    });
+
+    const mappings = { labelsToNodes: { entry: [] } };
+    expect(LabelMappingsResponseSchema.parse({ labelsToNodesInfo: mappings })).toEqual(mappings);
+    expect(LabelMappingsResponseSchema.parse(mappings)).toEqual(mappings);
   });
 });

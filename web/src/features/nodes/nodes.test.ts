@@ -17,6 +17,7 @@ import { NmAppsResponseSchema, NmContainersResponseSchema, NmInfoResponseSchema 
 import { nodeColumns } from "./columns";
 import {
   allocationTagSummary,
+  allocationTags,
   averageNodeMemoryUtilization,
   appIdOfContainer,
   buildLabelRows,
@@ -187,6 +188,10 @@ describe("derived values", () => {
       }),
     ).toBe("a(2),b(1)");
     expect(allocationTagSummary({ allocationTags: { allocationTagInfo: [] } })).toBe("");
+    expect(allocationTags({ allocationTags: { allocationTagInfo: [{ allocationTag: "batch", allocationsCount: 3 }] } })).toEqual([
+      { tag: "batch", count: 3 },
+    ]);
+    expect(allocationTags({})).toEqual([]);
   });
 
   it("joins every resource type into one total/used/available matrix", () => {

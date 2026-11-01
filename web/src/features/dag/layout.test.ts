@@ -3,12 +3,12 @@
  * Layout: golden positions (committed, compared with tolerance), determinism, the option ladder and the 300-node
  * timing budget. The committed snapshot is the regression guard — a change here is a deliberate visual change.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildGraph, hashGraph } from "./dag-model";
-import { LAYOUT_LADDER, LAYOUT_OPTIONS, layoutRequest, runLayout } from "./layout/elk";
+import { getElk, LAYOUT_LADDER, LAYOUT_OPTIONS, layoutRequest, runLayout } from "./layout/elk";
 import { layoutGraphSync, layoutSync, toRenderGraph } from "./layout";
 import { syntheticDag } from "./simulate";
 import { goldensFor, overlappingPairs, readGolden } from "./testing/fixtures.node";
@@ -152,6 +152,44 @@ describe("layout determinism and policy", () => {
     const b = await layoutSync(dag);
     expect(b.width).toBe(a.width);
     expect(b.height).toBe(a.height);
+  });
+
+  it("falls back to the next ELK option rung when the requested options fail", async () => {
+    const engine = await getElk();
+    const layout = vi.spyOn(engine, "layout");
+    layout.mockRejectedValueOnce(new Error("primary option failed"));
+    layout.mockResolvedValueOnce({ id: "__root__", width: 10, height: 10, children: [], edges: [] } as never);
+    try {
+      const graph = buildGraph(fixtureFor("4.2.0/barrier-scopes/dag-job-2.json"));
+      const wire = await runLayout(layoutRequest(graph, 99));
+      expect(wire.rung).toBe(1);
+      expect(layout).toHaveBeenCalledTimes(2);
+    } finally {
+      layout.mockRestore();
+    }
+  });
+
+  it("reports the last error after every layout option rung fails", async () => {
+    const engine = await getElk();
+    const layout = vi.spyOn(engine, "layout").mockRejectedValue(new Error("all ELK options failed"));
+    try {
+      const graph = buildGraph(fixtureFor("4.2.0/barrier-scopes/dag-job-2.json"));
+      await expect(runLayout(layoutRequest(graph, 100))).rejects.toThrow("all ELK options failed");
+      expect(layout).toHaveBeenCalledTimes(LAYOUT_LADDER.length);
+    } finally {
+      layout.mockRestore();
+    }
+  });
+
+  it("normalizes a non-Error failure after every layout option rung fails", async () => {
+    const engine = await getElk();
+    const layout = vi.spyOn(engine, "layout").mockRejectedValue("worker terminated");
+    try {
+      const graph = buildGraph(fixtureFor("4.2.0/barrier-scopes/dag-job-2.json"));
+      await expect(runLayout(layoutRequest(graph, 101))).rejects.toThrow("worker terminated");
+    } finally {
+      layout.mockRestore();
+    }
   });
 });
 

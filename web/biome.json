@@ -5,6 +5,7 @@
     "includes": [
       "**",
       "!**/dist",
+      "!**/coverage",
       "!**/.e2e-dist",
       "!**/node_modules",
       "!**/.tanstack",

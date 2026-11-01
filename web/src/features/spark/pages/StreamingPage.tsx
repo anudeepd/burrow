@@ -89,6 +89,7 @@ export function StreamingPage() {
   const { kind, attempt } = useSpark();
   const now = useNow();
   const tz = usePref("tz");
+  const [receiverSorting, setReceiverSorting] = useState<SortingState>([]);
 
   // No retry: Spark's 404 for a non-streaming application is a definitive answer, and the honest state should appear
   // immediately instead of after three backoff attempts.
@@ -612,8 +613,8 @@ export function StreamingPage() {
           entityKey={(r) => String(r.streamId ?? r.streamName ?? "receiver")}
           label="Streaming receivers"
           storageKey="spark-streaming-receivers"
-          sorting={[]}
-          onSortingChange={() => undefined}
+          sorting={receiverSorting}
+          onSortingChange={setReceiverSorting}
           columnVisibility={columnVisibility}
           onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
           defaultVisibility={RECEIVER_DEFAULT_VISIBILITY}

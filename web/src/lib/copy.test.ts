@@ -45,4 +45,17 @@ describe("copyText", () => {
 
     await expect(copyText("blocked")).resolves.toBe(false);
   });
+
+  it("reports a failed legacy copy when the browser rejects execCommand", async () => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+    Object.defineProperty(document, "execCommand", {
+      configurable: true,
+      value: vi.fn(() => {
+        throw new Error("copy denied");
+      }),
+    });
+
+    await expect(copyText("blocked by browser policy")).resolves.toBe(false);
+    expect(document.querySelector("textarea[aria-hidden='true']")).toBeNull();
+  });
 });

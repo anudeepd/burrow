@@ -69,6 +69,7 @@ describe("ActiveRail", () => {
     render(<ActiveRail parity={false} />);
     expect(screen.getByText("Nothing is running right now")).toBeTruthy();
     expect(screen.getByText(/showing the last loaded result/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
   it("ranks running work first, limits the default rail, and keeps every row in parity mode", () => {
@@ -78,7 +79,8 @@ describe("ActiveRail", () => {
       { ...app, id: "running-early", name: "running-early", state: "RUNNING", startedTime: 2, applicationType: undefined },
       ...Array.from({ length: 4 }, (_, i) => ({ ...app, id: `queued-${i}`, name: `queued-${i}`, state: "SUBMITTED", startedTime: 4 + i })),
     ];
-    setQuery({ data: apps });
+    const retry = vi.fn();
+    setQuery({ data: apps, isError: true, error: new Error("refresh failed"), refetch: retry });
 
     const defaultRail = render(<ActiveRail parity={false} bordered />);
     const rows = screen.getAllByRole("listitem");
@@ -94,6 +96,8 @@ describe("ActiveRail", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(7);
     expect(screen.getByText("7 shown active applications")).toBeTruthy();
     expect(screen.getAllByText("Values may be out of date.").length).toBe(7);
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    expect(retry).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("link", { name: "Open application running-early" }));
     expect(mockState.push).toHaveBeenCalledWith("/apps/running-early", undefined, { ignoreBlocker: true });
   });

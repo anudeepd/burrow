@@ -83,11 +83,14 @@ describe("ServicesHealthSection", () => {
     expect(screen.getByTestId("service-job-history").textContent).toContain("Not configured");
     expect(screen.getByTestId("service-timeline-service").textContent).toContain("Reachable");
     expect(screen.getByText(/showing the last loaded values/i)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    expect(refetch).toHaveBeenCalledOnce();
   });
 
   it("renders the detailed pre-release service and capability diagnostics", () => {
     mockState.connection = { lastOkAt: 1_791_011_000_000, consecutiveFailures: 2 };
-    setQuery({});
+    const refetch = vi.fn();
+    setQuery({ isError: true, error: new Error("refresh failed"), refetch });
     render(<ServicesHealthSection renderVersion="pre" />);
     expect(screen.getByText("ResourceManager")).toBeTruthy();
     expect(screen.getByText("http://rm-a:8088")).toBeTruthy();
@@ -96,5 +99,7 @@ describe("ServicesHealthSection", () => {
     expect(screen.getAllByText("○").length).toBe(3);
     expect(screen.getByText(/API 2 failed/)).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open Configuration" }).getAttribute("href")).toBe("/tools/conf");
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    expect(refetch).toHaveBeenCalledOnce();
   });
 });

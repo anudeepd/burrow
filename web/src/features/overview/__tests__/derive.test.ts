@@ -23,6 +23,7 @@ import {
   queueTeasers,
   reservedResources,
   resourceInfoText,
+  resourceSummaryText,
   resourceText,
   schedulerBusyPercent,
   schedulerDisplayName,
@@ -90,6 +91,13 @@ describe("legacy resource strings", () => {
     expect(resourceInfoText(Number(schedulerOverview.maximumAllocation.memory), Number(schedulerOverview.maximumAllocation.vCores))).toBe(
       "<memory:3072, vCores:4>",
     );
+  });
+
+  it("summarizes paired resources with custom units and singular core labels", () => {
+    expect(resourceSummaryText(1024, 1, [{ name: "yarn.io/gpu", value: 2, units: "cards" }])).toBe(
+      "Memory 1 GB · 1 vCore · yarn.io/gpu: 2 cards",
+    );
+    expect(resourceSummaryText(0, 0, [{ name: "yarn.io/gpu", value: 0, units: "" }])).toBe("Memory 0 B · 0 vCores · yarn.io/gpu: 0");
   });
 
   it("appends custom resource types exactly like Resource.getFormattedString", () => {

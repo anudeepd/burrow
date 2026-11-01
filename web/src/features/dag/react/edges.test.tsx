@@ -54,11 +54,12 @@ describe("DAG edge layers", () => {
         labels: [],
       }),
     ];
-    const { container } = render(
+    const view = render(
       <svg aria-label="DAG edges">
         <EdgeLayer edges={edges} showLabels interactive onHover={onHover} onActivate={onActivate} />
       </svg>,
     );
+    const { container } = view;
     expect(container.querySelectorAll(".burrow-dag-edge")).toHaveLength(2);
     expect(container.querySelectorAll(".burrow-dag-edge-flow")).toHaveLength(1);
     expect(container.querySelectorAll(".burrow-dag-arrow")).toHaveLength(1);
@@ -70,6 +71,12 @@ describe("DAG edge layers", () => {
     expect(onHover).toHaveBeenNthCalledWith(1, "flowing");
     expect(onHover).toHaveBeenNthCalledWith(2, null);
     expect(onActivate).toHaveBeenCalledWith(edges[0]);
+    view.rerender(
+      <svg aria-label="DAG edges">
+        <EdgeLayer edges={edges} showLabels={false} interactive onHover={onHover} onActivate={onActivate} />
+      </svg>,
+    );
+    expect(container.querySelectorAll(".burrow-dag-edge-label")).toHaveLength(0);
   });
 
   it("draws static and flowing canvas segments, then stops the animation loop when unmounted", () => {
@@ -95,7 +102,7 @@ describe("DAG edge layers", () => {
     });
     const cancel = vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => undefined);
     const flowing = edge("canvas-flow", { dimmed: true });
-    const staticEdge = edge("canvas-static", { flowing: false, dimmed: false, points: [point(1, 1)] });
+    const staticEdge = edge("canvas-static", { flowing: false, dimmed: false });
     const view = render(
       <CanvasEdgeLayer
         edges={[flowing, staticEdge]}
@@ -105,11 +112,11 @@ describe("DAG edge layers", () => {
         now={1000}
       />,
     );
-    expect(ctx.stroke).toHaveBeenCalledOnce();
+    expect(ctx.stroke).toHaveBeenCalledTimes(2);
     expect(ctx.globalAlpha).toBe(1);
     expect(raf).toHaveBeenCalledOnce();
     frame?.(500);
-    expect(ctx.stroke).toHaveBeenCalledTimes(2);
+    expect(ctx.stroke).toHaveBeenCalledTimes(4);
     view.unmount();
     expect(cancel).toHaveBeenCalledWith(9);
   });

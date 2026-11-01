@@ -149,6 +149,7 @@ function usedCell(row: UserRow) {
 const BASE_COLS: ColDef<UserRow>[] = [
   {
     id: "username",
+    accessorFn: (row) => row.user.username,
     meta: { label: "User Name", pinned: true },
     size: 160,
     cell: ({ row }) => (
