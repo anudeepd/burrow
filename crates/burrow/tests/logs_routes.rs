@@ -407,6 +407,401 @@ async fn node_hint_accepts_the_url_form_the_rm_uses_in_container_payloads() {
     assert_eq!(r.status, 400, "{}", r.text());
 }
 
+#[tokio::test]
+async fn log_resolution_discovers_the_node_from_attempts_and_containers() {
+    for via_containers in [false, true] {
+        let mock = Mock::start().await;
+        mock.seed_rm().await;
+        seed_nodes(&mock).await;
+        seed_app(&mock, "RUNNING").await;
+        let attempt = if via_containers {
+            format!(
+                r#"{{"appAttempts":{{"appAttempt":[{{"appAttemptId":"appattempt_1791010984040_0005_000001"}}]}}}}"#
+            )
+        } else {
+            format!(
+                r#"{{"appAttempts":{{"appAttempt":[{{"appAttemptId":"appattempt_1791010984040_0005_000001","containerId":"{CID}","nodeHttpAddress":"{}"}}]}}}}"#,
+                mock.authority()
+            )
+        };
+        mock.json(&format!("/ws/v1/cluster/apps/{APP}/appattempts"), &attempt)
+            .await;
+        if via_containers {
+            mock.json(
+                &format!(
+                    "/ws/v1/cluster/apps/{APP}/appattempts/appattempt_1791010984040_0005_000001/containers"
+                ),
+                &format!(
+                    r#"{{"containers":{{"container":[{{"id":"{CID}","nodeHttpAddress":"http://{}"}}]}}}}"#,
+                    mock.authority()
+                ),
+            )
+            .await;
+        }
+        seed_nm(&mock, "RUNNING").await;
+        let h = Harness::start(logs_config(&mock)).await;
+        let r = h
+            .get(&format!("/api/logs/containers/{CID}?user={USER}"))
+            .await;
+        assert_eq!(r.status, 200, "{}", r.text());
+        assert_eq!(r.json()["source"], "nm");
+        assert_eq!(r.json()["node"], mock.authority());
+        assert!(
+            mock.hits_of_path(&format!("/ws/v1/cluster/apps/{APP}/appattempts"))
+                .await
+                >= 1
+        );
+        if via_containers {
+            assert!(mock
+                .hits_of_path(&format!(
+                    "/ws/v1/cluster/apps/{APP}/appattempts/appattempt_1791010984040_0005_000001/containers"
+                ))
+                .await >= 1);
+        } else {
+            assert_eq!(
+                mock.hits_of_path(&format!("/ws/v1/cluster/apps/{APP}/appattempts/"))
+                    .await,
+                0
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn terminal_log_resolution_skips_failed_jhs_candidates_and_recovers() {
+    let rm = Mock::start().await;
+    let failed = Mock::start().await;
+    let empty = Mock::start().await;
+    let ready = Mock::start().await;
+    rm.seed_rm().await;
+    seed_nodes(&rm).await;
+    seed_app(&rm, "FINISHED").await;
+    let path = format!("/jobhistory/logs/{RPC}/{CID}/{CID}/{USER}/");
+    failed
+        .set(&path, Canned::new(503, "text/plain", "temporarily down"))
+        .await;
+    empty
+        .set(
+            &path,
+            Canned::new(
+                200,
+                "text/html",
+                "<html><body><h1>No logs available for this container</h1></body></html>",
+            ),
+        )
+        .await;
+    ready
+        .set(&path, Canned::new(200, "text/html", jhs_listing_html()))
+        .await;
+
+    let mut config = Harness::config_for(&rm.base());
+    config.jhs = [failed.base(), empty.base(), ready.base()]
+        .into_iter()
+        .map(|u| url::Url::parse(&u).unwrap())
+        .collect();
+    config.log_server_url = Some(format!("{}/jobhistory/logs", ready.base()));
+    let h = Harness::start(config).await;
+    let r = h.get(&listing_url(&rm)).await;
+    assert_eq!(r.status, 200, "{}", r.text());
+    assert_eq!(r.json()["source"], "jhs");
+    assert_eq!(r.json()["files"].as_array().unwrap().len(), 2);
+    assert_eq!(failed.hits_of_path(&path).await, 1);
+    assert_eq!(empty.hits_of_path(&path).await, 1);
+    assert_eq!(ready.hits_of_path(&path).await, 1);
+    assert_eq!(rm.hits_of_path(&nm_base()).await, 0);
+}
+
+#[tokio::test]
+async fn log_resolution_handles_missing_metadata_nodes_and_empty_nm_listings() {
+    for app_doc in ["not JSON", "{}", r#"{"app":42}"#] {
+        let mock = Mock::start().await;
+        mock.seed_rm().await;
+        seed_nodes(&mock).await;
+        mock.set(
+            &format!("/ws/v1/cluster/apps/{APP}"),
+            Canned::new(200, "application/json", app_doc),
+        )
+        .await;
+        mock.set(
+            &nm_base(),
+            Canned::new(
+                200,
+                "text/html",
+                "<html><body><h1>No logs available for this container</h1></body></html>",
+            ),
+        )
+        .await;
+        let h = Harness::start(logs_config(&mock)).await;
+        let r = h
+            .get(&format!(
+                "/api/logs/containers/{CID}?node={}&user={USER}&app={APP}",
+                mock.authority()
+            ))
+            .await;
+        assert_eq!(r.status, 200, "{}", r.text());
+        assert_eq!(r.json()["source"], "nm");
+        assert!(r.json()["files"].as_array().unwrap().is_empty());
+    }
+
+    let mock = Mock::start().await;
+    mock.seed_rm().await;
+    seed_app(&mock, "RUNNING").await;
+    let h = Harness::start(logs_config(&mock)).await;
+    let no_node = h
+        .get(&format!("/api/logs/containers/{CID}?user={USER}&app={APP}"))
+        .await;
+    assert_eq!(no_node.status, 503);
+    assert!(
+        no_node
+            .text()
+            .contains("cannot determine the container's node")
+    );
+    assert!(no_node.text().contains("cannot map the container's node"));
+
+    let missing_container = Mock::start().await;
+    missing_container.seed_rm().await;
+    seed_app(&missing_container, "RUNNING").await;
+    missing_container
+        .json(
+            &format!("/ws/v1/cluster/apps/{APP}/appattempts"),
+            r#"{"appAttempts":{"appAttempt":[{"appAttemptId":"appattempt_1_1_000001"}]}}"#,
+        )
+        .await;
+    let h = Harness::start(logs_config(&missing_container)).await;
+    let no_container = h
+        .get(&format!("/api/logs/containers/{CID}?user={USER}&app={APP}"))
+        .await;
+    assert_eq!(no_container.status, 503);
+}
+
+#[tokio::test]
+async fn node_allowlist_failures_and_container_state_failures_are_safe() {
+    let denied = Mock::start().await;
+    seed_app(&denied, "RUNNING").await;
+    denied
+        .set(
+            "/ws/v1/cluster/nodes",
+            Canned::new(503, "text/plain", "node list unavailable"),
+        )
+        .await;
+    let h = Harness::start(logs_config(&denied)).await;
+    let failed = h.get(&listing_url(&denied)).await;
+    assert_eq!(failed.status, 503);
+    assert!(
+        failed
+            .text()
+            .contains("cannot read the ResourceManager node list")
+    );
+
+    let huge = Mock::start().await;
+    seed_app(&huge, "RUNNING").await;
+    huge.set(
+        "/ws/v1/cluster/nodes",
+        Canned::new(200, "application/json", vec![b' '; 4096]),
+    )
+    .await;
+    let mut config = logs_config(&huge);
+    config.cache.max_body_bytes = 512;
+    let h = Harness::start(config).await;
+    let failed = h.get(&listing_url(&huge)).await;
+    assert_eq!(failed.status, 500);
+    assert!(failed.text().contains("node list was too large"));
+
+    let mock = Mock::start().await;
+    seed_app(&mock, "RUNNING").await;
+    seed_nodes(&mock).await;
+    let h = Harness::start(logs_config(&mock)).await;
+    let loc = burrow_core::logs::source::LogLocation {
+        kind: burrow_core::logs::source::LogSourceKind::Nm,
+        base_path: nm_base(),
+        node: Some(mock.authority()),
+        upstream_url: None,
+        user: USER.into(),
+        container_id: CID.into(),
+        files: Vec::new(),
+    };
+    mock.set(
+        &format!("/ws/v1/node/containers/{CID}"),
+        Canned::new(503, "application/json", "offline"),
+    )
+    .await;
+    assert_eq!(
+        burrow_core::logs::source::container_running(&h.core, &loc).await,
+        Some(false)
+    );
+    mock.set(
+        &format!("/ws/v1/node/containers/{CID}"),
+        Canned::new(200, "application/json", "not JSON"),
+    )
+    .await;
+    assert_eq!(
+        burrow_core::logs::source::container_running(&h.core, &loc).await,
+        None
+    );
+}
+
+#[tokio::test]
+async fn log_resolution_retries_nm_after_history_lookup_errors() {
+    let rm = Mock::start().await;
+    rm.seed_rm().await;
+    seed_nodes(&rm).await;
+    seed_app(&rm, "FINISHED").await;
+    rm.set(&nm_base(), Canned::new(200, "text/html", nm_listing_html()))
+        .await;
+
+    let mut config = Harness::config_for(&rm.base());
+    config.jhs = vec!["http://127.0.0.1:1".parse().unwrap()];
+    config.log_server_url = Some("http://127.0.0.1:1/jobhistory/logs".into());
+    let h = Harness::start(config).await;
+    let r = h.get(&listing_url(&rm)).await;
+    assert_eq!(r.status, 200, "{}", r.text());
+    assert_eq!(r.json()["source"], "nm");
+}
+
+#[tokio::test]
+async fn node_authority_without_an_rpc_id_cannot_be_used_for_aggregated_logs() {
+    let mock = Mock::start().await;
+    seed_app(&mock, "FINISHED").await;
+    mock.json(
+        "/ws/v1/cluster/nodes",
+        &format!(
+            r#"{{"nodes":{{"node":[{{"nodeHTTPAddress":"{}"}}]}}}}"#,
+            mock.authority()
+        ),
+    )
+    .await;
+    let h = Harness::start(logs_config(&mock)).await;
+    let r = h.get(&listing_url(&mock)).await;
+    assert_eq!(r.status, 503, "{}", r.text());
+    assert!(r.text().contains("cannot map the container's node"));
+}
+
+#[tokio::test]
+async fn terminal_log_resolution_reports_all_failed_sources() {
+    let mock = Mock::start().await;
+    let jhs = Mock::start().await;
+    mock.seed_rm().await;
+    seed_nodes(&mock).await;
+    seed_app(&mock, "FINISHED").await;
+    jhs.set(
+        &format!("/jobhistory/logs/{RPC}/{CID}/{CID}/{USER}/"),
+        Canned::new(503, "text/plain", "JHS maintenance"),
+    )
+    .await;
+    let mut config = Harness::config_for(&mock.base());
+    config.jhs = vec![url::Url::parse(&jhs.base()).unwrap()];
+    config.log_server_url = Some(format!("{}/jobhistory/logs", jhs.base()));
+    let h = Harness::start(config).await;
+    let r = h.get(&listing_url(&mock)).await;
+    assert_eq!(r.status, 503, "{}", r.text());
+    assert!(r.text().contains("JobHistoryServer candidates failed"));
+    assert!(r.text().contains("NodeManager"));
+}
+
+#[tokio::test]
+async fn log_reads_translate_upstream_failures_and_use_listing_size_as_fallback() {
+    let mock = Mock::start().await;
+    mock.seed_rm().await;
+    seed_nodes(&mock).await;
+    seed_app(&mock, "RUNNING").await;
+    seed_nm(&mock, "RUNNING").await;
+    let h = Harness::start(logs_config(&mock)).await;
+
+    mock.set(
+        &format!("{}stdout/?start=0&end=5", nm_base()),
+        Canned::new(502, "text/plain", "nm read failed"),
+    )
+    .await;
+    let failed = h
+        .get(&format!(
+            "/api/logs/containers/{CID}/files/stdout?node={}&user={USER}&offset=0&length=5",
+            mock.authority()
+        ))
+        .await;
+    assert_eq!(failed.status, 502);
+    assert_eq!(failed.error_code(), "upstream_status");
+
+    mock.set(
+        &format!("{}stdout/?start=0&end=5", nm_base()),
+        Canned::new(
+            200,
+            "text/html",
+            "<html><body>Cannot find this log file</body></html>",
+        ),
+    )
+    .await;
+    let missing = h
+        .get(&format!(
+            "/api/logs/containers/{CID}/files/stdout?node={}&user={USER}&offset=0&length=5",
+            mock.authority()
+        ))
+        .await;
+    assert_eq!(missing.status, 404);
+    assert!(missing.text().contains("Cannot find this log"));
+
+    mock.set(
+        &format!("{}stdout/?start=2&end=4", nm_base()),
+        Canned::new(200, "text/html", "<pre>ll</pre>"),
+    )
+    .await;
+    let window = burrow_core::logs::source::read_window(
+        &h.core,
+        &burrow_core::logs::source::LogLocation {
+            kind: burrow_core::logs::source::LogSourceKind::Nm,
+            base_path: nm_base(),
+            node: Some(mock.authority()),
+            upstream_url: None,
+            user: USER.into(),
+            container_id: CID.into(),
+            files: Vec::new(),
+        },
+        "stdout",
+        2,
+        4,
+    )
+    .await
+    .unwrap();
+    assert_eq!(window.text, "ll");
+    assert_eq!(window.total, 4, "the requested end is the last fallback");
+}
+
+#[tokio::test]
+async fn tail_stops_cleanly_when_its_receiver_is_dropped() {
+    let mock = Mock::start().await;
+    mock.seed_rm().await;
+    seed_nodes(&mock).await;
+    seed_app(&mock, "RUNNING").await;
+    seed_nm(&mock, "RUNNING").await;
+    mock.set(
+        &format!("{}stdout/?start=0&end=262144", nm_base()),
+        Canned::new(200, "text/html", "<pre>chunk</pre>"),
+    )
+    .await;
+    let h = Harness::start(logs_config(&mock)).await;
+    let (rx, task) = burrow_core::logs::tail::follow(
+        h.core.clone(),
+        burrow_core::logs::tail::TailSpec {
+            location: burrow_core::logs::source::LogLocation {
+                kind: burrow_core::logs::source::LogSourceKind::Nm,
+                base_path: nm_base(),
+                node: Some(mock.authority()),
+                upstream_url: None,
+                user: USER.into(),
+                container_id: CID.into(),
+                files: Vec::new(),
+            },
+            file: "stdout".into(),
+            start: 0,
+        },
+    );
+    drop(rx);
+    tokio::time::timeout(Duration::from_secs(2), task)
+        .await
+        .expect("tail exits after its receiver is dropped")
+        .expect("tail task completes");
+    assert_eq!(mock.hits_of_path(&format!("{}stdout/", nm_base())).await, 1);
+}
+
 /// Reads SSE frames incrementally off a live response.
 struct Sse {
     stream: std::pin::Pin<

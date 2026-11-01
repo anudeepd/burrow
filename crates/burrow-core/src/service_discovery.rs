@@ -371,7 +371,7 @@ mod tests {
     use std::sync::{Arc, Mutex};
     use tokio::{
         io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
-        net::TcpListener,
+        net::{TcpListener, TcpStream},
         task::JoinHandle,
     };
 
@@ -380,6 +380,7 @@ mod tests {
         status: u16,
         location: Option<String>,
         body: String,
+        declared_length: Option<usize>,
     }
 
     impl TestResponse {
@@ -388,6 +389,7 @@ mod tests {
                 status,
                 location: None,
                 body: body.into(),
+                declared_length: None,
             }
         }
 
@@ -396,6 +398,17 @@ mod tests {
                 status: 302,
                 location: Some(location.into()),
                 body: String::new(),
+                declared_length: None,
+            }
+        }
+
+        fn truncated(body: impl Into<String>) -> Self {
+            let body = body.into();
+            Self {
+                status: 200,
+                location: None,
+                declared_length: Some(body.len() + 32),
+                body,
             }
         }
     }
@@ -403,7 +416,8 @@ mod tests {
     struct TestServer {
         base: String,
         requests: Arc<Mutex<Vec<String>>>,
-        task: JoinHandle<()>,
+        task: Option<JoinHandle<()>>,
+        stop: Option<tokio::sync::oneshot::Sender<()>>,
     }
 
     impl TestServer {
@@ -413,11 +427,14 @@ mod tests {
             let requests = Arc::new(Mutex::new(Vec::new()));
             let request_log = requests.clone();
             let handler: Arc<dyn Fn(&str) -> TestResponse + Send + Sync> = Arc::new(handler);
+            let (stop, mut stop_rx) = tokio::sync::oneshot::channel();
             let task = tokio::spawn(async move {
                 loop {
-                    let Ok((stream, _)) = listener.accept().await else {
-                        break;
+                    let accepted = tokio::select! {
+                        _ = &mut stop_rx => break,
+                        accepted = listener.accept() => accepted,
                     };
+                    let (stream, _) = accepted.expect("test listener remains available");
                     let requests = request_log.clone();
                     let handler = handler.clone();
                     tokio::spawn(async move {
@@ -450,7 +467,7 @@ mod tests {
                         let mut wire = format!(
                             "HTTP/1.1 {} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n",
                             response.status,
-                            response.body.len()
+                            response.declared_length.unwrap_or(response.body.len())
                         );
                         if let Some(location) = response.location {
                             wire.push_str(&format!("Location: {location}\r\n"));
@@ -464,18 +481,40 @@ mod tests {
             Self {
                 base: format!("http://{addr}"),
                 requests,
-                task,
+                task: Some(task),
+                stop: Some(stop),
             }
         }
 
         fn requests(&self) -> Vec<String> {
             self.requests.lock().unwrap().clone()
         }
+
+        async fn close_without_request(&self) {
+            let authority = self.base.strip_prefix("http://").unwrap();
+            drop(TcpStream::connect(authority).await.unwrap());
+            tokio::task::yield_now().await;
+        }
+
+        async fn shutdown(mut self) {
+            self.stop
+                .take()
+                .expect("test server has a stop sender")
+                .send(())
+                .expect("server task is listening");
+            self.task
+                .take()
+                .expect("test server has a task")
+                .await
+                .unwrap();
+        }
     }
 
     impl Drop for TestServer {
         fn drop(&mut self) {
-            self.task.abort();
+            if let Some(task) = &self.task {
+                task.abort();
+            }
         }
     }
 
@@ -616,6 +655,15 @@ mod tests {
             Some("https://shs.example/prefix")
         );
         assert_eq!(
+            job_history_base_from_log_server("ftp://jhs.example/jobhistory/logs"),
+            None
+        );
+        assert_eq!(
+            job_history_base_from_tracking("ftp://jhs.example/jobhistory/job/application_1_0001"),
+            None
+        );
+        assert_eq!(spark_history_base_from_tracking("not a URL"), None);
+        assert_eq!(
             rm_proxy_path_from_tracking(
                 "http://rm.example/proxy/application_1_0001",
                 "application_1_0001"
@@ -634,6 +682,13 @@ mod tests {
             rm_proxy_path_from_tracking(
                 "ftp://rm.example/proxy/application_1_0001",
                 "application_1_0001"
+            ),
+            None
+        );
+        assert_eq!(
+            rm_proxy_path_from_tracking(
+                "http://rm.example/proxy/application_1_0001",
+                "not-an-application"
             ),
             None
         );
@@ -772,6 +827,9 @@ mod tests {
                 .any(|path| path.contains("application_1_0004"))
         );
         assert!(external.requests().is_empty());
+        assert!(rm_get(&core, "/unknown-test-path").await.is_err());
+        rm.close_without_request().await;
+        rm.shutdown().await;
     }
 
     #[tokio::test]
@@ -795,5 +853,68 @@ mod tests {
                 |warning| warning.contains("cannot parse the ResourceManager application list")
             )
         );
+        assert!(rm_get(&core, "/unknown-test-path").await.is_err());
+    }
+
+    #[tokio::test]
+    async fn discovery_reports_invalid_configuration_and_skips_apps_without_tracking_urls() {
+        let apps = r#"{"apps":{"app":[{"id":"application_1_0001","applicationType":"SPARK"}]}}"#;
+        let rm = TestServer::start(move |path| match path {
+            CONFIG_PATH => TestResponse::json(200, "not valid XML"),
+            APPS_PATH => TestResponse::json(200, apps),
+            _ => TestResponse::json(404, "{}"),
+        })
+        .await;
+        let core = crate::core::Core::new(Config::for_rm(&rm.base).unwrap()).unwrap();
+
+        let report = discover(&core).await;
+
+        assert!(report.candidates.is_empty());
+        assert!(
+            report.warnings.iter().any(|warning| {
+                warning.contains("cannot parse the ResourceManager configuration")
+            })
+        );
+        assert_eq!(
+            report.warnings.len(),
+            1,
+            "the app without tracking URL is skipped"
+        );
+        assert!(rm_get(&core, "/unknown-test-path").await.is_err());
+    }
+
+    #[tokio::test]
+    async fn discovery_reports_redirect_inspection_errors_and_oversized_responses() {
+        let apps = r#"{"apps":{"app":[{"id":"application_1_0001","applicationType":"SPARK","trackingUrl":"http://tracking.example/proxy/application_1_0001/"}]}}"#;
+        let rm_apps = TestServer::start(move |path| match path {
+            CONFIG_PATH => TestResponse::json(200, r#"{"properties":[]}"#),
+            APPS_PATH => TestResponse::json(200, apps),
+            "/proxy/application_1_0001/" => TestResponse::truncated("partial"),
+            _ => TestResponse::json(404, "{}"),
+        })
+        .await;
+        let core = crate::core::Core::new(Config::for_rm(&rm_apps.base).unwrap()).unwrap();
+        assert!(rm_get(&core, "/unknown-test-path").await.is_err());
+        let report = discover(&core).await;
+        assert!(report.warnings.iter().any(|warning| {
+            warning.contains("cannot inspect the ResourceManager tracking redirect")
+        }));
+
+        let oversized = "x".repeat(MAX_RESPONSE + 1);
+        let large_rm = TestServer::start(move |path| match path {
+            CONFIG_PATH => TestResponse::json(200, oversized.clone()),
+            APPS_PATH => TestResponse::json(200, r#"{"apps":{"app":[]}}"#),
+            _ => TestResponse::json(404, "{}"),
+        })
+        .await;
+        let large_core = crate::core::Core::new(Config::for_rm(&large_rm.base).unwrap()).unwrap();
+        assert!(
+            rm_get(&large_core, CONFIG_PATH)
+                .await
+                .unwrap_err()
+                .contains("size limit")
+        );
+        assert!(rm_get(&large_core, APPS_PATH).await.is_ok());
+        assert!(rm_get(&large_core, "/unknown-test-path").await.is_err());
     }
 }

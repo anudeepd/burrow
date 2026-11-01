@@ -106,20 +106,25 @@ pub async fn get(core: &Core, req: ApiRequest<'_>) -> Result<Reply, ApiError> {
     };
     // Hadoop's configuration servlet chooses JSON by Accept, not the format query alone.
     // Match the RM daemon route so callers receive the format requested on every NodeManager.
-    let expect = if path == "conf"
-        && req.query.is_some_and(|query| {
-            url::form_urlencoded::parse(query.as_bytes())
-                .any(|(key, value)| key == "format" && value == "json")
-        }) {
-        Expect::Json
-    } else {
-        r.route.expect
-    };
+    let expect = expected_type(path, req.query, r.route.expect);
     let mut spec = GetSpec::new(&r.upstream_path, r.route.ttl, expect);
     spec.authority = Some(&authority);
     spec.query = req.query;
     spec.bypass = req.bypass;
     core.reply(&core.nm, &spec).await
+}
+
+fn expected_type(path: &str, query: Option<&str>, fallback: Expect) -> Expect {
+    if path == "conf"
+        && query.is_some_and(|query| {
+            url::form_urlencoded::parse(query.as_bytes())
+                .any(|(key, value)| key == "format" && value == "json")
+        })
+    {
+        Expect::Json
+    } else {
+        fallback
+    }
 }
 
 #[cfg(test)]
@@ -151,5 +156,34 @@ mod tests {
         assert_eq!(table().lookup("conf").unwrap().upstream_path, "/conf");
         assert!(table().lookup("logs").is_none());
         assert!(table().lookup("../../etc/passwd").is_none());
+    }
+
+    #[test]
+    fn configuration_format_selects_json_only_when_requested() {
+        assert_eq!(
+            expected_type("conf", Some("format=json"), Expect::Any),
+            Expect::Json
+        );
+        assert_eq!(
+            expected_type("conf", Some("format=xml"), Expect::Any),
+            Expect::Any
+        );
+        assert_eq!(
+            expected_type("jmx", Some("format=json"), Expect::Text),
+            Expect::Text
+        );
+    }
+
+    #[tokio::test]
+    async fn get_requires_an_authority_and_resource_separator() {
+        let core =
+            crate::core::Core::new(crate::config::Config::for_rm("http://127.0.0.1:8088").unwrap())
+                .unwrap();
+        let error = get(&core, ApiRequest::new("127.0.0.1:8042"))
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(error.status, http::StatusCode::NOT_FOUND);
+        assert_eq!(error.message, "expected /api/nm/{host:port}/{resource}");
     }
 }

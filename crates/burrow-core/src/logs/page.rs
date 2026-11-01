@@ -21,7 +21,7 @@ static RE_TOTAL: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)Total file length is\s*([\d,]+)\s*bytes").unwrap());
 static RE_JHS_SECTION: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?is)^Log Type:\s*(?P<name>.+?)\s+Log Upload Time:\s*(?P<time>.+?)\s+Log Length:\s*(?P<size>[\d,]+)",
+        r"(?is)^Log Type:\s*(?P<name>.*?)\s+Log Upload Time:\s*(?P<time>.+?)\s+Log Length:\s*(?P<size>[\d,]+)",
     )
     .unwrap()
 });
@@ -381,5 +381,38 @@ mod tests {
         );
         assert_eq!(read_error("<html><pre>ok</pre></html>"), None);
         assert!(no_logs_reason("<h1>No logs available for container c</h1>").is_some());
+    }
+
+    #[test]
+    fn malformed_entities_sections_and_dates_are_ignored_safely() {
+        assert_eq!(
+            unescape("&nbsp; &#x41; &#X42; &#67; &#x110000; &unknown; &amp"),
+            "  A B C &#x110000; &unknown; &amp"
+        );
+        assert_eq!(read_error("<html>ordinary response</html>"), None);
+
+        let listing = r#"<a href="no-size">unrelated</a>
+            <a href="empty">: Total file length is 1 bytes.</a>
+            <a href="huge">huge : Total file length is 999999999999999999999999999999 bytes.</a>"#;
+        let files = nm_listing(listing);
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].name, "huge");
+        assert_eq!(files[0].size, 0);
+        assert!(nm_listing("<h2>ordinary local log page</h2>").is_empty());
+
+        let jhs = "Log Type:   \n malformed Log Type: stderr Log Upload Time: bad Log Length: 12";
+        let files = jhs_listing(jhs);
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].name, "stderr");
+        assert_eq!(files[0].modified, None);
+        assert_eq!(java_date_epoch("Thu Foo 01 00:00:00 +0000 1970"), None);
+        assert_eq!(java_date_epoch("Thu Jan 01 00:00:00 Z000 1970"), None);
+        assert_eq!(java_date_epoch("Thu Jan 01 00:00:00 +00 1970"), None);
+    }
+
+    #[test]
+    fn jhs_listing_skips_sections_with_an_empty_name() {
+        let page = "Log Type:    Log Upload Time: Thu Jan 01 00:00:00 +0000 1970 Log Length: 12";
+        assert!(jhs_listing(page).is_empty());
     }
 }

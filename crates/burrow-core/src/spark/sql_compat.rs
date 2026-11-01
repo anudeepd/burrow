@@ -31,10 +31,8 @@ static RE_SORT_KEY: LazyLock<Regex> = LazyLock::new(|| {
 static RE_EXECUTION_ID: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)(?:[?&])id=(\d+)").unwrap());
 static RE_JOB_ID: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\[(\d+)\]").unwrap());
-static RE_DURATION: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)^\s*([0-9]+(?:\.[0-9]+)?)\s*(ms|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?|d|days?)\s*$")
-        .unwrap()
-});
+static RE_DURATION: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)^\s*([0-9]+(?:\.[0-9]+)?)\s*([a-z]+)\s*$").unwrap());
 static RE_TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?is)<[^>]*>").unwrap());
 static RE_OPEN_ELEMENT: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?is)<([a-z][a-z0-9]*)\b([^>]*)>").unwrap());
@@ -187,14 +185,7 @@ pub fn parse_detail(html: &str, execution_id: i64, mut execution: Value) -> Opti
     let dot = element_by_class(html, "dot-file").map(|s| decode_entities(&strip_tags(s)));
     let (mut nodes, edges) = dot.map_or_else(|| (Vec::new(), Vec::new()), |s| parse_dot_plan(&s));
     let plan_lines = plan_metadata(html);
-    for node in &mut nodes {
-        let Some(node_id) = node["nodeId"].as_i64() else {
-            continue;
-        };
-        if let Some(line) = plan_lines.get(&node_id) {
-            node["planLine"] = json!(line);
-        }
-    }
+    add_plan_lines(&mut nodes, &plan_lines);
     let physical_plan = element_by_id(html, "physical-plan-details")
         .and_then(|inner| RE_PRE.captures(inner).map(|m| decode_entities(&m[1])));
     if let Some(object) = execution.as_object_mut() {
@@ -203,6 +194,17 @@ pub fn parse_detail(html: &str, execution_id: i64, mut execution: Value) -> Opti
         object.insert("edges".into(), json!(edges));
     }
     Some(execution)
+}
+
+fn add_plan_lines(nodes: &mut [Value], plan_lines: &HashMap<i64, String>) {
+    for node in nodes {
+        let Some(node_id) = node["nodeId"].as_i64() else {
+            continue;
+        };
+        if let Some(line) = plan_lines.get(&node_id) {
+            node["planLine"] = json!(line);
+        }
+    }
 }
 
 /// Apply the offset/length query supported by the later REST endpoint, after ordering by execution id.
@@ -249,7 +251,7 @@ fn strip_tags(fragment: &str) -> String {
 
 fn decode_entities(s: &str) -> String {
     static RE_ENTITY: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"&(#(?:x[0-9a-fA-F]+|[0-9]+)|amp|lt|gt|quot|apos|nbsp);").unwrap()
+        Regex::new(r"&(#(?:x[0-9a-fA-F]+|[0-9]+)|[a-zA-Z][a-zA-Z0-9-]*);").unwrap()
     });
     RE_ENTITY
         .replace_all(s, |caps: &regex::Captures<'_>| {
@@ -601,5 +603,155 @@ HashAggregate
                 .as_str()
                 .is_some_and(|s| s.contains("== Physical Plan =="))
         );
+    }
+
+    #[test]
+    fn parsing_helpers_cover_empty_rows_duration_units_and_entities() {
+        assert_eq!(
+            TableStatus::from_table_id("running-execution-table"),
+            Some(TableStatus::Running)
+        );
+        assert_eq!(
+            TableStatus::from_table_id("completed-execution-table"),
+            Some(TableStatus::Completed)
+        );
+        assert_eq!(
+            TableStatus::from_table_id("failed-execution-table"),
+            Some(TableStatus::Failed)
+        );
+        assert_eq!(TableStatus::from_table_id("other"), None);
+        assert_eq!(TableStatus::Running.as_str(), "RUNNING");
+        assert_eq!(TableStatus::Completed.as_str(), "COMPLETED");
+        assert_eq!(TableStatus::Failed.as_str(), "FAILED");
+
+        let unrecognized = r#"<table><tr><td>1</td></tr></table>
+            <table id="unknown"><tr><td>1</td><td>q</td><td>1</td><td>2 s</td></tr></table>
+            <table id="completed-execution-table"><tr><td>1</td></tr></table>"#;
+        assert_eq!(parse_list(unrecognized), Some(vec![]));
+        let recognized_empty = r#"<table id="completed-execution-table">
+            <tr><td>1</td><td>q</td><td>1</td></tr>
+            <tr><td>no id</td><td>q</td><td></td><td></td></tr>
+            <tr><td>6</td><td><a href="/execution/">[6]</a></td><td></td><td></td><td><a href="/jobs/job/">[4]</a></td></tr>
+            <tr><td></td><td><a href="/execution/?id=7">query</a></td><td></td><td></td></tr>
+        </table>"#;
+        let rows = parse_list(recognized_empty).unwrap();
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[0]["id"], 6);
+        assert_eq!(rows[0]["description"], "[6]");
+        assert_eq!(rows[0]["successJobIds"], json!([4]));
+        assert_eq!(rows[1]["id"], 7);
+        assert_eq!(rows[1]["description"], "query");
+
+        for (value, expected) in [
+            ("1 ms", 1),
+            ("2 milliseconds", 2),
+            ("3 seconds", 3_000),
+            ("4 min", 240_000),
+            ("5 minutes", 300_000),
+            ("6 hr", 21_600_000),
+            ("7 hours", 25_200_000),
+            ("8 day", 691_200_000),
+            ("9 days", 777_600_000),
+            ("1.5 s", 1_500),
+        ] {
+            assert_eq!(parse_duration_ms(value), Some(expected), "{value}");
+        }
+        assert_eq!(parse_duration_ms("not a duration"), None);
+        assert_eq!(parse_duration_ms(&format!("{} d", "9".repeat(400))), None);
+        assert_eq!(
+            decode_entities("&amp;&lt;&gt;&quot;&apos;&nbsp;&#65;&#x42;&#x110000;"),
+            "&<>\"' AB&#x110000;"
+        );
+        assert_eq!(decode_entities("&bogus; &amp"), "&bogus; &amp");
+        assert_eq!(decode_entities("&unknown-name;"), "&unknown-name;");
+        assert_eq!(parse_duration_ms("12 fortnights"), None);
+        assert_eq!(
+            java_unescape(r#"literal\\slash\"quote\uZZZZ"#),
+            "literal\\slash\"quote\\uZZZZ"
+        );
+        let mut nodes = vec![json!({"name":"without id"}), json!({"nodeId": 7})];
+        add_plan_lines(&mut nodes, &HashMap::from([(7, "line seven".into())]));
+        assert!(nodes[0].get("planLine").is_none());
+        assert_eq!(nodes[1]["planLine"], "line seven");
+    }
+
+    #[test]
+    fn detail_plan_helpers_handle_missing_markup_and_metric_forms() {
+        assert!(parse_detail("<html></html>", 1, json!({})).is_none());
+        assert_eq!(
+            page(vec![json!({"id": 1}), json!({"id": 2})], None).len(),
+            2
+        );
+        assert_eq!(
+            page(
+                vec![json!({"id": 1}), json!({"id": 2})],
+                Some("offset=bad&length=bad")
+            )
+            .len(),
+            2
+        );
+        assert!(page(vec![json!({"id": 1})], Some("offset=100")).is_empty());
+
+        let mut empty = Vec::new();
+        read_jobs(None, &mut empty);
+        assert!(empty.is_empty());
+        let mut jobs = Vec::new();
+        read_jobs(
+            Some(&(
+                String::new(),
+                r#"<a href="/jobs/job/?x=1">[12]</a><a href="/jobs/job/?id=4">[4]</a><a>[bad]</a>"#
+                    .into(),
+            )),
+            &mut jobs,
+        );
+        assert_eq!(jobs, vec![4, 12]);
+
+        assert_eq!(attr(&RE_ATTR_ID, r#" id='one'"#).as_deref(), Some("one"));
+        assert_eq!(
+            sort_key(r#" sorttable_customkey=123"#).as_deref(),
+            Some("123")
+        );
+        assert_eq!(text("<b> a &amp; b </b>"), "a & b");
+        assert_eq!(strip_tags("a<b>b</b>c"), "abc");
+        assert_eq!(
+            element_by_class("<div class='dot-file'>x</div>", "dot-file"),
+            Some("x")
+        );
+        assert_eq!(element_by_class("<div id='x'>x</div>", "dot-file"), None);
+        assert_eq!(element_by_id("<div id=x>y</div>", "x"), Some("y"));
+        assert_eq!(
+            plan_metadata(
+                "<i id='plan-meta-data-2'>line &amp; detail</i><i id='plan-meta-data-x'>ignored</i><i id='plan-meta-data-3'></i>"
+            ),
+            HashMap::from([(2, "line & detail".into())])
+        );
+        assert_eq!(
+            element_inner(
+                "<b>open",
+                &RE_OPEN_ELEMENT.captures("<b>open").unwrap(),
+                "b"
+            ),
+            None
+        );
+
+        assert_eq!(java_unescape(r"\r\t\b\f\u0041\q\"), "\r\t\u{8}\u{c}A\\q\\");
+        assert_eq!(
+            label_parts("WholeStage\n\n12 ms\nsize:\n9\nrows: 3\nplain"),
+            (
+                "WholeStage".into(),
+                vec![
+                    json!({"name":"duration","value":"12 ms"}),
+                    json!({"name":"size","value":"9"}),
+                    json!({"name":"rows","value":"3"}),
+                    json!({"name":"duration","value":"plain"})
+                ]
+            )
+        );
+        let (nodes, edges) = parse_dot_plan(
+            "subgraph clusterX {\nlabel=\"ignored\";\n999999999999999999999999 [label=\"bad id\"];\n1 [label=\"Stage\\ncount: 1\"];\n}\n1 -> 2;\n999999999999999999999999 -> 2;\nnot dot",
+        );
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0]["nodeName"], "Stage");
+        assert_eq!(edges, vec![json!({"fromId":1,"toId":2})]);
     }
 }

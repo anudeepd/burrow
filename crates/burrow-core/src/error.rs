@@ -159,3 +159,21 @@ pub fn redact_url(url: &str) -> String {
         Err(_) => url.to_string(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn internal_errors_and_url_redaction_cover_fallbacks() {
+        let error = ApiError::internal("broken invariant");
+        assert_eq!(error.status, StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(error.code.as_str(), "internal");
+        assert_eq!(error.message, "broken invariant");
+        assert_eq!(
+            redact_url("http://user:secret@example.test/path"),
+            "http://example.test/path"
+        );
+        assert_eq!(redact_url("not a URL"), "not a URL");
+    }
+}

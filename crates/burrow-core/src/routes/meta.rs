@@ -212,7 +212,11 @@ async fn scheduler_kind(core: &Core) -> Option<&'static str> {
         Served::Entry { entry, .. } if entry.status.is_success() => entry.body.clone(),
         _ => return None,
     };
-    let kind = serde_json::from_slice::<SchedulerDoc>(&body)
+    scheduler_kind_from_json(&body)
+}
+
+fn scheduler_kind_from_json(body: &[u8]) -> Option<&'static str> {
+    let kind = serde_json::from_slice::<SchedulerDoc>(body)
         .ok()?
         .scheduler?
         .info?
@@ -228,6 +232,28 @@ async fn scheduler_kind(core: &Core) -> Option<&'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn route_rejects_nested_meta_resources() {
+        let core =
+            Core::new(crate::config::Config::for_rm("http://127.0.0.1:8088").unwrap()).unwrap();
+        let error = get(&core, ApiRequest::new("nested")).await.err().unwrap();
+        assert_eq!(error.status, http::StatusCode::NOT_FOUND);
+        assert_eq!(error.message, "'/api/meta/nested' does not exist");
+    }
+
+    #[tokio::test]
+    async fn meta_document_is_memoized_after_the_first_request() {
+        let mut config = crate::config::Config::for_rm("http://127.0.0.1:0").unwrap();
+        config.tuning.connect_timeout = Duration::from_millis(1);
+        config.tuning.request_timeout = Duration::from_millis(1);
+        let core = Core::new(config).unwrap();
+
+        let first = get(&core, ApiRequest::new("")).await.unwrap();
+        assert_eq!(first.cache, Some(CacheSource::Miss));
+        let second = get(&core, ApiRequest::new("")).await.unwrap();
+        assert_eq!(second.cache, Some(CacheSource::Hit));
+    }
 
     #[test]
     fn scheduler_kind_mapping_is_exact() {
@@ -246,7 +272,35 @@ mod tests {
     fn host_port_strips_scheme_and_defaults() {
         assert_eq!(host_port("http://rm:8088").as_deref(), Some("rm:8088"));
         assert_eq!(host_port("https://rm/").as_deref(), Some("rm:443"));
+        assert_eq!(host_port("custom://rm").as_deref(), Some("rm"));
         assert_eq!(host_port("nonsense"), None);
+    }
+
+    #[test]
+    fn scheduler_kind_maps_supported_values_and_ignores_unknown_or_partial_documents() {
+        for (kind, expected) in [
+            ("capacityScheduler", "capacity"),
+            ("CapacityScheduler", "capacity"),
+            ("fairScheduler", "fair"),
+            ("FairScheduler", "fair"),
+            ("fifoScheduler", "fifo"),
+            ("FifoScheduler", "fifo"),
+        ] {
+            let json = format!(r#"{{"scheduler":{{"schedulerInfo":{{"type":"{kind}"}}}}}}"#);
+            assert_eq!(scheduler_kind_from_json(json.as_bytes()), Some(expected));
+        }
+        assert_eq!(
+            scheduler_kind_from_json(br#"{"scheduler":{"schedulerInfo":{"type":"unknown"}}}"#),
+            None
+        );
+        assert_eq!(scheduler_kind_from_json(br#"{"scheduler":null}"#), None);
+        assert_eq!(scheduler_kind_from_json(b"not json"), None);
+        assert_eq!(scheduler_kind_from_json(br#"{}"#), None);
+        assert_eq!(scheduler_kind_from_json(br#"{"scheduler":{}}"#), None);
+        assert_eq!(
+            scheduler_kind_from_json(br#"{"scheduler":{"schedulerInfo":{}}}"#),
+            None
+        );
     }
 
     #[test]

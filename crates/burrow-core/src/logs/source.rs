@@ -284,7 +284,10 @@ async fn node_for_container(core: &Core, app: &str, cid: &str) -> Result<Option<
         .unwrap_or_default();
     for a in &attempts {
         if a.container_id.as_deref() == Some(cid)
-            && let Some(http) = a.node_http.as_deref().map(str::to_ascii_lowercase)
+            && let Some(http) = a
+                .node_http
+                .as_deref()
+                .and_then(crate::routes::nm::normalize_authority)
         {
             return Ok(Some(http));
         }
@@ -303,11 +306,14 @@ async fn node_for_container(core: &Core, app: &str, cid: &str) -> Result<Option<
             .and_then(|l| l.container)
             .unwrap_or_default();
         for c in containers {
-            if c.id.as_deref() == Some(cid)
-                && let Some(http) = c.node_http.as_deref().map(str::to_ascii_lowercase)
-            {
-                return Ok(Some(http));
-            }
+            let Some(http) = (c.id.as_deref() == Some(cid))
+                .then(|| c.node_http.as_deref())
+                .flatten()
+                .and_then(crate::routes::nm::normalize_authority)
+            else {
+                continue;
+            };
+            return Ok(Some(http));
         }
     }
     Ok(None)
@@ -557,19 +563,17 @@ pub async fn resolve(core: &Core, q: &LogQuery<'_>) -> Result<Resolved, ApiError
         )));
     }
     let app = match q.app.map(str::to_string) {
-        Some(a) if is_app_id(&a) => Some(a),
+        Some(a) if is_app_id(&a) => a,
         Some(a) => {
             return Err(ApiError::bad_request(format!(
                 "'{a}' is not an application id"
             )));
         }
-        None => app_of_container(q.container_id),
+        None => app_of_container(q.container_id)
+            .expect("a validated container id always includes its application id"),
     };
 
-    let (app_state, app_user) = match &app {
-        Some(a) => app_info(core, a).await?,
-        None => (None, None),
-    };
+    let (app_state, app_user) = app_info(core, &app).await?;
     let user = match q.user.map(str::to_string).or(app_user) {
         Some(u) if !u.is_empty() => u,
         _ => {
@@ -600,10 +604,7 @@ pub async fn resolve(core: &Core, q: &LogQuery<'_>) -> Result<Resolved, ApiError
             }
             Some(n)
         }
-        None => match &app {
-            Some(a) => node_for_container(core, a, q.container_id).await?,
-            None => None,
-        },
+        None => node_for_container(core, &app, q.container_id).await?,
     };
 
     let terminal = app_state.as_deref().is_some_and(is_terminal_state);
@@ -771,6 +772,71 @@ fn upstream_for(core: &Core, loc: &LogLocation) -> Result<std::sync::Arc<Upstrea
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    use tokio::net::TcpListener;
+
+    fn core() -> Arc<Core> {
+        let mut config = crate::config::Config::for_rm("http://127.0.0.1:0").unwrap();
+        config.tuning.connect_timeout = Duration::from_millis(1);
+        config.tuning.request_timeout = Duration::from_millis(1);
+        Core::new(config).unwrap()
+    }
+
+    fn location(
+        kind: LogSourceKind,
+        node: Option<&str>,
+        upstream_url: Option<&str>,
+    ) -> LogLocation {
+        LogLocation {
+            kind,
+            base_path: "/logs/".into(),
+            node: node.map(str::to_string),
+            upstream_url: upstream_url.map(str::to_string),
+            user: "alice".into(),
+            container_id: "container_1_2_3_4".into(),
+            files: Vec::new(),
+        }
+    }
+
+    async fn rm_with_responses(
+        responses: Vec<(&'static str, &'static str)>,
+    ) -> (Arc<Core>, tokio::task::JoinHandle<()>) {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let task = tokio::spawn(async move {
+            for (expected_path, body) in responses {
+                let (stream, _) = listener.accept().await.unwrap();
+                let mut reader = BufReader::new(stream);
+                let mut request_line = String::new();
+                reader.read_line(&mut request_line).await.unwrap();
+                let path = request_line
+                    .split_whitespace()
+                    .nth(1)
+                    .expect("HTTP request has a path");
+                assert_eq!(path, expected_path);
+                loop {
+                    let mut header = String::new();
+                    reader.read_line(&mut header).await.unwrap();
+                    if header == "\r\n" {
+                        break;
+                    }
+                }
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                reader
+                    .get_mut()
+                    .write_all(response.as_bytes())
+                    .await
+                    .unwrap();
+            }
+        });
+        let core = Core::new(crate::config::Config::for_rm(&format!("http://{address}")).unwrap())
+            .unwrap();
+        (core, task)
+    }
 
     #[test]
     fn container_and_app_ids() {
@@ -823,5 +889,190 @@ mod tests {
         }
         assert!(!is_terminal_state("RUNNING"));
         assert!(!is_terminal_state("ACCEPTED"));
+    }
+
+    #[tokio::test]
+    async fn raw_page_helpers_and_source_metadata_cover_fallbacks() {
+        let full = UpResp {
+            status: StatusCode::OK,
+            content_type: None,
+            extra: Default::default(),
+            body: UpBody::Full(Bytes::from_static(b"full")),
+            served_by: "rm".into(),
+            url: "http://rm/test".into(),
+        };
+        assert_eq!(read_up(full, 2).await, "full");
+        let stream = UpResp {
+            status: StatusCode::OK,
+            content_type: None,
+            extra: Default::default(),
+            body: UpBody::Stream {
+                prefix: Bytes::from_static(b"p"),
+                rest: futures_util::stream::iter([
+                    Ok(Bytes::from_static(b"abc")),
+                    Err(std::io::Error::other("broken stream")),
+                    Ok(Bytes::from_static(b"ignored")),
+                ])
+                .boxed(),
+            },
+            served_by: "rm".into(),
+            url: "http://rm/test".into(),
+        };
+        assert_eq!(read_up(stream, 4).await, "pabc");
+
+        let files = files_from(vec![page::ListedFile {
+            name: "stdout".into(),
+            size: 8,
+            modified: Some(12),
+        }]);
+        assert_eq!(files[0].name, "stdout");
+        assert_eq!(files[0].last_modified, Some(12_000));
+
+        let mut config = crate::config::Config::for_rm("http://127.0.0.1:0").unwrap();
+        config.jhs = vec![
+            url::Url::parse("http://jhs.example:19888/").unwrap(),
+            url::Url::parse("http://jhs.example:19888/proxy").unwrap(),
+        ];
+        config.log_server_url = Some("http://jhs.example:19888/proxy/jobhistory/logs/".into());
+        let core = Core::new(config).unwrap();
+        assert_eq!(jhs_prefix(&core, &core.jhs[1]), "/jobhistory/logs");
+        assert_eq!(jhs_prefix(&core, &core.jhs[0]), "/proxy/jobhistory/logs");
+        let mut same_path = crate::config::Config::for_rm("http://127.0.0.1:0").unwrap();
+        same_path.jhs = vec![url::Url::parse("http://jhs.example:19888/proxy").unwrap()];
+        same_path.log_server_url = Some("http://jhs.example:19888/proxy/".into());
+        let same_path = Core::new(same_path).unwrap();
+        assert_eq!(
+            jhs_prefix(&same_path, &same_path.jhs[0]),
+            "/jobhistory/logs"
+        );
+        let err = upstream_for(&core, &location(LogSourceKind::Jhs, None, Some("other"))).unwrap();
+        assert_eq!(err.base_url(), Some("http://jhs.example:19888"));
+        let missing =
+            Core::new(crate::config::Config::for_rm("http://127.0.0.1:0").unwrap()).unwrap();
+        let err = upstream_for(&missing, &location(LogSourceKind::Jhs, None, None))
+            .err()
+            .expect("missing JHS should be unavailable");
+        assert_eq!(err.status, http::StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(
+            container_running(&core, &location(LogSourceKind::Jhs, None, None)).await,
+            Some(false)
+        );
+        assert_eq!(
+            container_running(&core, &location(LogSourceKind::Nm, None, None)).await,
+            None
+        );
+
+        assert_eq!(rpc_id_for(&missing, "nm.example:8042").await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn attempt_lookup_skips_unusable_direct_nodes_and_uses_container_records() {
+        let cid = "container_1_2_3_4";
+        let (core, server) = rm_with_responses(vec![(
+            "/ws/v1/cluster/apps/application_1_2/appattempts",
+            r#"{"appAttempts":{"appAttempt":[{"containerId":"container_1_2_3_4","nodeHttpAddress":"nm.example:8042"}]}}"#,
+        )])
+        .await;
+        assert_eq!(
+            node_for_container(&core, "application_1_2", cid)
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("nm.example:8042")
+        );
+        server.await.unwrap();
+
+        let (core, server) = rm_with_responses(vec![
+            (
+                "/ws/v1/cluster/apps/application_1_2/appattempts",
+                r#"{"appAttempts":{"appAttempt":[{"appAttemptId":"appattempt_1_2_000001","containerId":"container_1_2_3_4","nodeHttpAddress":"bad address"}]}}"#,
+            ),
+            (
+                "/ws/v1/cluster/apps/application_1_2/appattempts/appattempt_1_2_000001/containers",
+                r#"{"containers":{"container":[{"id":"container_1_2_3_5","nodeHttpAddress":"other.example:8042"},{"id":"container_1_2_3_4","nodeHttpAddress":"bad address"},{"id":"container_1_2_3_4","nodeHttpAddress":"nm.example:8042"}]}}"#,
+            ),
+        ])
+        .await;
+        assert_eq!(
+            node_for_container(&core, "application_1_2", cid)
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("nm.example:8042")
+        );
+        server.await.unwrap();
+
+        let (core, server) = rm_with_responses(vec![(
+            "/ws/v1/cluster/apps/application_1_2/appattempts",
+            r#"{"appAttempts":{"appAttempt":[{"containerId":"container_1_2_3_4","nodeHttpAddress":"bad address"}]}}"#,
+        )])
+        .await;
+        assert_eq!(
+            node_for_container(&core, "application_1_2", cid)
+                .await
+                .unwrap(),
+            None
+        );
+        server.await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn log_resolution_rejects_bad_hints_and_missing_owners() {
+        let core = core();
+        let invalid_container = resolve(
+            &core,
+            &LogQuery {
+                container_id: "not-a-container",
+                ..Default::default()
+            },
+        )
+        .await
+        .err()
+        .unwrap();
+        assert_eq!(invalid_container.status, StatusCode::BAD_REQUEST);
+
+        let invalid_app = resolve(
+            &core,
+            &LogQuery {
+                container_id: "container_1_2_3_4",
+                app: Some("not-an-app"),
+                user: Some("alice"),
+                ..Default::default()
+            },
+        )
+        .await
+        .err()
+        .unwrap();
+        assert!(invalid_app.message.contains("is not an application id"));
+
+        let missing_user = resolve(
+            &core,
+            &LogQuery {
+                container_id: "container_1_2_3_4",
+                ..Default::default()
+            },
+        )
+        .await
+        .err()
+        .unwrap();
+        assert!(
+            missing_user
+                .message
+                .contains("cannot determine the log owner")
+        );
+
+        let invalid_node = resolve(
+            &core,
+            &LogQuery {
+                container_id: "container_1_2_3_4",
+                user: Some("alice"),
+                node: Some("not a host"),
+                ..Default::default()
+            },
+        )
+        .await
+        .err()
+        .unwrap();
+        assert!(invalid_node.message.contains("is not a host:port"));
     }
 }

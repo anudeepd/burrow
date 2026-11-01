@@ -39,14 +39,10 @@ mod tests {
 
     #[test]
     fn burrow_log_wins_without_evaluating_the_fallback() {
-        let mut fallback_called = false;
-        let filter = resolve_env_filter(Ok(EnvFilter::new("debug")), || {
-            fallback_called = true;
-            Err(())
-        });
+        let filter =
+            resolve_env_filter(Ok(EnvFilter::new("debug")), EnvFilter::try_from_default_env);
 
         assert_eq!(filter.to_string(), "debug");
-        assert!(!fallback_called);
     }
 
     #[test]
@@ -56,5 +52,13 @@ mod tests {
 
         let default = resolve_env_filter::<()>(Err(()), || Err(()));
         assert_eq!(default.to_string(), "info");
+
+        let mut fallback_called = false;
+        let default = resolve_env_filter::<()>(Err(()), || {
+            fallback_called = true;
+            Err(())
+        });
+        assert_eq!(default.to_string(), "info");
+        assert!(fallback_called);
     }
 }

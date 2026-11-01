@@ -75,10 +75,19 @@ pub fn follow(core: Arc<Core>, spec: TailSpec) -> (mpsc::Receiver<TailEvent>, Jo
 }
 
 async fn run(core: Arc<Core>, spec: TailSpec, tx: mpsc::Sender<TailEvent>) {
+    run_with_limits(core, spec, tx, MAX_BYTES, Instant::now() + MAX_DURATION).await;
+}
+
+async fn run_with_limits(
+    core: Arc<Core>,
+    spec: TailSpec,
+    tx: mpsc::Sender<TailEvent>,
+    max_bytes: u64,
+    deadline: Instant,
+) {
     let mut offset = spec.start;
     let mut sent: u64 = 0;
     let mut backoff = IDLE_MIN;
-    let deadline = Instant::now() + MAX_DURATION;
     loop {
         if Instant::now() >= deadline {
             let _ = tx
@@ -93,13 +102,13 @@ async fn run(core: Arc<Core>, spec: TailSpec, tx: mpsc::Sender<TailEvent>) {
                 .await;
             break;
         }
-        if sent >= MAX_BYTES {
+        if sent >= max_bytes {
             let _ = tx
                 .send(TailEvent::Failed {
                     code: "unavailable",
                     message: format!(
                         "the follow stream reached its {} MiB limit",
-                        MAX_BYTES / (1024 * 1024)
+                        max_bytes / (1024 * 1024)
                     ),
                     hint: Some("reconnect to continue from ?offset=".to_string()),
                 })
@@ -150,5 +159,98 @@ async fn run(core: Arc<Core>, spec: TailSpec, tx: mpsc::Sender<TailEvent>) {
             _ = tx.closed() => break,
         }
         backoff = (backoff * 2).min(IDLE_MAX);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::Config;
+    use crate::logs::source::{LogFileEntry, LogSourceKind};
+
+    fn spec() -> TailSpec {
+        TailSpec {
+            location: LogLocation {
+                kind: LogSourceKind::Nm,
+                base_path: "/node/containerlogs/container_1_2_1_1/user".into(),
+                node: Some("127.0.0.1:8042".into()),
+                upstream_url: None,
+                user: "alice".into(),
+                container_id: "container_1_2_1_1".into(),
+                files: vec![LogFileEntry {
+                    name: "stdout".into(),
+                    size: 0,
+                    last_modified: None,
+                }],
+            },
+            file: "stdout".into(),
+            start: 0,
+        }
+    }
+
+    #[tokio::test]
+    async fn tail_frames_encode_chunks_eof_and_errors() {
+        let chunk = frame(TailEvent::Chunk {
+            start: 4,
+            end: 8,
+            text: "data".into(),
+        });
+        let chunk = String::from_utf8(chunk.to_vec()).unwrap();
+        assert!(chunk.starts_with("event: chunk\n"));
+        assert!(chunk.contains("\"start\":4"));
+
+        assert_eq!(frame(TailEvent::Eof), "event: eof\ndata: {}\n\n");
+        let failed = frame(TailEvent::Failed {
+            code: "unavailable",
+            message: "stopped".into(),
+            hint: Some("retry".into()),
+        });
+        let failed = String::from_utf8(failed.to_vec()).unwrap();
+        assert!(failed.starts_with("event: error\n"));
+        assert!(failed.contains("\"hint\":\"retry\""));
+    }
+
+    #[tokio::test]
+    async fn tail_limits_and_source_errors_finish_the_receiver() {
+        let cfg = Config::for_rm("http://127.0.0.1:0").unwrap();
+        let core = Core::new(cfg).unwrap();
+
+        let (tx, mut rx) = mpsc::channel(1);
+        run_with_limits(
+            core.clone(),
+            spec(),
+            tx,
+            MAX_BYTES,
+            Instant::now() - Duration::from_millis(1),
+        )
+        .await;
+        assert!(
+            matches!(rx.recv().await, Some(TailEvent::Failed { message, .. }) if message.contains("minute limit"))
+        );
+
+        let (tx, mut rx) = mpsc::channel(1);
+        run_with_limits(
+            core.clone(),
+            spec(),
+            tx,
+            0,
+            Instant::now() + Duration::from_secs(1),
+        )
+        .await;
+        assert!(
+            matches!(rx.recv().await, Some(TailEvent::Failed { message, .. }) if message.contains("0 MiB limit"))
+        );
+
+        let (tx, mut rx) = mpsc::channel(1);
+        run_with_limits(
+            core,
+            spec(),
+            tx,
+            MAX_BYTES,
+            Instant::now() + Duration::from_secs(1),
+        )
+        .await;
+        assert!(matches!(rx.recv().await, Some(TailEvent::Failed { .. })));
+        assert!(rx.recv().await.is_none());
     }
 }

@@ -44,11 +44,7 @@ async fn get(core: &Core, req: ApiRequest<'_>) -> Result<Reply, ApiError> {
         ));
     }
 
-    let shared = core.shared().ok_or_else(|| {
-        ApiError::internal(
-            "the events hub has no shared core handle (Core was not built by Core::new)",
-        )
-    })?;
+    let shared = core.shared();
     let subscription = core.events.subscribe(&shared, &topics)?;
     Ok(Reply {
         status: StatusCode::OK,
@@ -116,5 +112,39 @@ mod tests {
             "got {query}"
         );
         assert_eq!(topics[1].path, "yarn/metrics");
+    }
+
+    #[tokio::test]
+    async fn route_rejects_missing_and_empty_topics_and_nested_paths() {
+        let core =
+            crate::core::Core::new(crate::config::Config::for_rm("http://127.0.0.1:8088").unwrap())
+                .unwrap();
+
+        let nested = get(&core, ApiRequest::new("nested")).await.err().unwrap();
+        assert_eq!(nested.status, StatusCode::NOT_FOUND);
+
+        let missing = get(
+            &core,
+            ApiRequest {
+                query: Some("topics="),
+                ..ApiRequest::new("")
+            },
+        )
+        .await
+        .err()
+        .unwrap();
+        assert_eq!(missing.message, "?topics= is required");
+
+        let empty = get(
+            &core,
+            ApiRequest {
+                query: Some("topics=,"),
+                ..ApiRequest::new("")
+            },
+        )
+        .await
+        .err()
+        .unwrap();
+        assert_eq!(empty.message, "?topics= must name at least one topic");
     }
 }

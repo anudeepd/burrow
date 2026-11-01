@@ -10,5 +10,6 @@
 pub mod app;
 pub mod assets;
 pub mod cli;
+mod embedded;
 
 pub use burrow_core as core;

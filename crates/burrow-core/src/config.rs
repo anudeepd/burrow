@@ -510,9 +510,6 @@ pub fn parse_service_url(
     if !matches!(u.scheme(), "http" | "https") {
         return Err(format!("unsupported scheme '{}'", u.scheme()));
     }
-    if u.host_str().is_none() {
-        return Err("missing host".into());
-    }
     if u.query().is_some() || u.fragment().is_some() {
         return Err("must not contain a query string or fragment".into());
     }
@@ -709,5 +706,90 @@ mod tests {
         assert!(parse_bind("not-an-ip").is_err());
         assert_eq!(parse_bind("::1").unwrap().to_string(), "::1");
         assert!(parse_header("nocolon").is_err());
+        assert_eq!(
+            authority_of(&Url::parse("mailto:test@example.com").unwrap()),
+            "?"
+        );
+    }
+
+    #[test]
+    fn policy_headers_and_tuning_accept_every_documented_variant() {
+        for (raw, policy, name, scheme) in [
+            ("HTTP_ONLY", HttpPolicy::HttpOnly, "HTTP_ONLY", "http"),
+            ("https_only", HttpPolicy::HttpsOnly, "HTTPS_ONLY", "https"),
+            (
+                " HTTP_AND_HTTPS ",
+                HttpPolicy::HttpAndHttps,
+                "HTTP_AND_HTTPS",
+                "http",
+            ),
+        ] {
+            assert_eq!(HttpPolicy::parse(raw), Some(policy));
+            assert_eq!(policy.as_str(), name);
+            assert_eq!(policy.node_scheme(), scheme);
+        }
+        assert_eq!(HttpPolicy::parse("unknown"), None);
+
+        let mut headers = BTreeMap::new();
+        headers.insert("X-Map".to_string(), "one".to_string());
+        let c = resolve(
+            vec![layer("flag", |p| {
+                p.headers = Some(HeaderSpec::Map(headers));
+                p.connect_timeout_secs = Some(0);
+                p.request_timeout_secs = Some(0);
+                p.max_concurrency = Some(0);
+                p.cache_max_bytes = Some(0);
+            })],
+            HadoopDiscovery::default(),
+        )
+        .unwrap();
+        assert_eq!(c.headers, vec![("X-Map".into(), "one".into())]);
+        assert_eq!(c.tuning.connect_timeout, Duration::from_secs(1));
+        assert_eq!(c.tuning.request_timeout, Duration::from_secs(1));
+        assert_eq!(c.tuning.rm_concurrency, 1);
+        assert_eq!(c.tuning.nm_concurrency, 1);
+        assert_eq!(c.tuning.other_concurrency, 1);
+        assert_eq!(c.cache.max_bytes, 1024 * 1024);
+    }
+
+    #[test]
+    fn resolution_rejects_empty_addresses_and_invalid_identity_headers() {
+        let cases = [
+            layer("flag", |p| {
+                p.spark_history = Some(StringList::Many(vec!["http://shs".into(), " ".into()]));
+            }),
+            layer("flag", |p| {
+                p.timeline = Some("ftp://timeline.example".into())
+            }),
+            layer("flag", |p| p.user = Some("alice?name=bob".into())),
+            layer("flag", |p| p.token = Some("bad\nvalue".into())),
+            layer("flag", |p| {
+                p.headers = Some(HeaderSpec::Map(BTreeMap::from([(
+                    "bad name".into(),
+                    "v".into(),
+                )])));
+            }),
+            layer("flag", |p| {
+                p.headers = Some(HeaderSpec::Map(BTreeMap::from([(
+                    "X-Test".into(),
+                    "bad\nvalue".into(),
+                )])));
+            }),
+            layer("flag", |p| p.allowed_hosts = Some(vec!["has space".into()])),
+        ];
+        for layer in cases {
+            assert!(resolve(vec![layer], HadoopDiscovery::default()).is_err());
+        }
+        assert_eq!(parse_service_url("", false, None).unwrap_err(), "empty URL");
+        assert!(parse_service_url("http://?x", false, None).is_err());
+        assert!(normalize_allowed_host("/").is_err());
+        assert_eq!(
+            normalize_allowed_host("HTTPS://Example.COM:443/").unwrap(),
+            "example.com:443"
+        );
+        assert_eq!(
+            parse_bind(" LoCaLhOsT ").unwrap(),
+            IpAddr::V4(Ipv4Addr::LOCALHOST)
+        );
     }
 }

@@ -130,8 +130,11 @@ impl Single {
     pub async fn probe(&self, path: &str) -> UpstreamProbe {
         let url = self.ep.base.clone();
         let now = Instant::now();
-        if let Some(remaining) = self.health.lock().backoff_remaining(now) {
-            let last = self.health.lock().last_error.clone();
+        let (remaining, last) = {
+            let health = self.health.lock();
+            (health.backoff_remaining(now), health.last_error.clone())
+        };
+        if let Some(remaining) = remaining {
             return UpstreamProbe {
                 url,
                 reachable: false,
@@ -401,5 +404,182 @@ impl Upstream {
     /// Base URL of a single-endpoint upstream.
     pub fn base_url(&self) -> Option<&str> {
         self.as_single().map(|s| s.ep.base.as_str())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::http::HttpSettings;
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    use tokio::net::TcpListener;
+
+    fn http() -> Arc<HttpClient> {
+        HttpClient::new(&HttpSettings {
+            connect_timeout: Duration::from_millis(100),
+            request_timeout: Duration::from_millis(200),
+            headers: Vec::new(),
+            token: None,
+            user: None,
+            ca_cert: None,
+            insecure: false,
+        })
+        .unwrap()
+    }
+
+    async fn server(response: &'static [u8]) -> (url::Url, tokio::task::JoinHandle<()>) {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let task = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let mut reader = BufReader::new(stream);
+            let mut line = String::new();
+            while reader.read_line(&mut line).await.unwrap_or(0) > 0 && line != "\r\n" {
+                line.clear();
+            }
+            reader.get_mut().write_all(response).await.unwrap();
+        });
+        (url::Url::parse(&format!("http://{address}")).unwrap(), task)
+    }
+
+    fn ok_response() -> &'static [u8] {
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}"
+    }
+
+    #[test]
+    fn upstream_kind_labels_are_stable() {
+        assert_eq!(UpstreamKind::Rm.label(), "ResourceManager");
+        assert_eq!(UpstreamKind::Nm.label(), "NodeManager");
+        assert_eq!(UpstreamKind::SparkHistory.label(), "Spark History Server");
+        assert_eq!(UpstreamKind::Jhs.label(), "JobHistory Server");
+        assert_eq!(UpstreamKind::Timeline.label(), "Timeline Service");
+    }
+
+    #[tokio::test]
+    async fn single_probes_any_http_response_and_skips_a_backing_off_endpoint() {
+        let (url, task) =
+            server(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+                .await;
+        let single = Single::new(&url, http(), 1, HaConfig::default());
+        let probe = single.probe("/").await;
+        assert!(probe.reachable);
+        assert!(probe.error.is_none());
+        assert!(probe.latency_ms.is_some());
+        assert!(single.health().last_ok.is_some());
+        task.await.unwrap();
+
+        let mut down = Single::new(&url, http(), 1, HaConfig::default());
+        down.health
+            .get_mut()
+            .record_failure(Instant::now(), &down.ha, "offline");
+        let probe = down.probe("/").await;
+        assert!(!probe.reachable);
+        assert!(probe.error.unwrap().contains("after: offline"));
+        assert!(probe.latency_ms.is_none());
+    }
+
+    #[tokio::test]
+    async fn single_fetch_refuses_redirects_and_short_circuits_backoff() {
+        let (url, task) = server(b"HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1:9/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").await;
+        let single = Single::new(&url, http(), 1, HaConfig::default());
+        let error = single
+            .fetch(&FetchReq::get("/secret", BodyMode::Stream))
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(error.status, http::StatusCode::BAD_GATEWAY);
+        assert!(error.message.contains("does not follow"));
+        assert_eq!(
+            single.health().fails,
+            0,
+            "the HTTP redirect proves the service is alive"
+        );
+        task.await.unwrap();
+
+        single
+            .health
+            .lock()
+            .record_failure(Instant::now(), &single.ha, "recent failure");
+        let error = single
+            .fetch(&FetchReq::get("/again", BodyMode::Stream))
+            .await
+            .err()
+            .unwrap();
+        assert!(error.message.contains("backing off"));
+        assert!(error.message.contains("recent failure"));
+    }
+
+    #[tokio::test]
+    async fn fleet_and_upstream_wrappers_cover_each_inner_variant() {
+        let (url, task) = server(ok_response()).await;
+        let client = http();
+        let fleet = Fleet::new(client.clone(), "http", 2, HaConfig::default());
+        let missing = fleet
+            .fetch(&FetchReq::get("/info", BodyMode::Buffer { cap: 8 }))
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(missing.code, crate::error::ErrorCode::Internal);
+
+        let mut req = FetchReq::get("/info", BodyMode::Buffer { cap: 8 });
+        let authority = crate::config::authority_of(&url);
+        req.authority = Some(authority.to_ascii_uppercase());
+        let up = fleet.fetch(&req).await.unwrap();
+        assert_eq!(up.served_by.as_ref(), authority);
+        task.await.unwrap();
+
+        let wrapped_fleet =
+            Upstream::fleet(Fleet::new(client.clone(), "http", 1, HaConfig::default()));
+        assert_eq!(wrapped_fleet.cache_id(None), "nm@");
+        assert_eq!(wrapped_fleet.cache_id(Some("NODE:8042")), "nm@node:8042");
+        assert!(wrapped_fleet.as_rm().is_none());
+        assert!(wrapped_fleet.as_single().is_none());
+        let fleet_probe = wrapped_fleet.probe().await;
+        assert!(fleet_probe.reachable);
+        assert!(fleet_probe.error.unwrap().contains("per node"));
+
+        let (single_url, task) = server(ok_response()).await;
+        let tuning = Tuning::default();
+        let wrapped_single = Upstream::single(
+            UpstreamKind::Timeline,
+            &single_url,
+            client.clone(),
+            &tuning,
+            HaConfig::default(),
+        );
+        assert_eq!(
+            wrapped_single.cache_id(None),
+            format!("Timeline@{}", crate::config::authority_of(&single_url))
+        );
+        assert_eq!(
+            wrapped_single.base_url(),
+            Some(single_url.as_str().trim_end_matches('/'))
+        );
+        assert!(wrapped_single.as_single().is_some());
+        let up = wrapped_single
+            .fetch(&FetchReq::get("/", BodyMode::Buffer { cap: 8 }))
+            .await
+            .unwrap();
+        assert!(up.status.is_success());
+        task.await.unwrap();
+
+        let (rm_url, task) = server(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 78\r\nConnection: close\r\n\r\n{\"clusterInfo\":{\"haState\":\"ACTIVE\",\"hadoopVersion\":\"3.4.0\",\"state\":\"STARTED\"}}").await;
+        let pool = RmPool::new(&[rm_url.clone()], client, &tuning, HaConfig::default());
+        let wrapped_rm = Upstream::rm(pool);
+        assert_eq!(wrapped_rm.cache_id(None), "rm");
+        assert!(wrapped_rm.as_rm().is_some());
+        let probe = wrapped_rm.probe().await;
+        assert!(probe.reachable);
+        assert_eq!(probe.url, rm_url.as_str().trim_end_matches('/'));
+        task.await.unwrap();
+
+        let empty = Upstream::rm(RmPool::new(&[], http(), &tuning, HaConfig::default()));
+        let unavailable = empty.probe().await;
+        assert!(!unavailable.reachable);
+        assert_eq!(unavailable.url, "");
+        assert_eq!(
+            unavailable.error.as_deref(),
+            Some("no ResourceManager answered")
+        );
     }
 }

@@ -87,6 +87,238 @@ impl Reply {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cache::Entry;
+    use crate::http::UpBody;
+    use futures_util::StreamExt;
+    use std::sync::Arc;
+    use std::time::{Duration, Instant};
+
+    async fn consume_body(body: ReplyBody) -> (bool, Bytes) {
+        match body {
+            ReplyBody::Bytes(bytes) => (false, bytes),
+            ReplyBody::Stream { prefix, mut rest } => {
+                let mut bytes = BytesMut::from(&prefix[..]);
+                while let Some(Ok(chunk)) = rest.next().await {
+                    bytes.extend_from_slice(&chunk);
+                }
+                (true, bytes.freeze())
+            }
+        }
+    }
+
+    fn entry(
+        status: StatusCode,
+        content_type: Option<&'static str>,
+        body: &'static [u8],
+    ) -> Served {
+        Served::Entry {
+            entry: Arc::new(Entry {
+                status,
+                content_type: content_type.map(HeaderValue::from_static),
+                extra: HeaderMap::new(),
+                body: Bytes::from_static(body),
+                etag: "W/\"etag\"".into(),
+                fetched_at: Instant::now(),
+                ttl: Duration::from_secs(60),
+                served_by: "rm:8088".into(),
+                url: "http://rm:8088/api".into(),
+            }),
+            source: CacheSource::Miss,
+        }
+    }
+
+    fn upstream(status: StatusCode, content_type: Option<&'static str>, body: UpBody) -> UpResp {
+        UpResp {
+            status,
+            content_type: content_type.map(HeaderValue::from_static),
+            extra: HeaderMap::new(),
+            body,
+            served_by: Arc::from("rm:8088"),
+            url: "http://rm:8088/api".into(),
+        }
+    }
+
+    #[tokio::test]
+    async fn served_entries_apply_content_type_and_error_envelope_rules() {
+        let json =
+            Reply::from_served(entry(StatusCode::OK, None, b"{}"), Expect::Json, false).await;
+        assert_eq!(json.content_type.unwrap(), JSON_CT);
+        assert_eq!(json.upstream.as_deref(), Some("rm:8088"));
+        assert!(json.etag.is_some());
+
+        let xml =
+            Reply::from_served(entry(StatusCode::OK, None, b"<x/>"), Expect::Xml, false).await;
+        assert_eq!(xml.content_type.unwrap(), "application/xml");
+        let text =
+            Reply::from_served(entry(StatusCode::OK, None, b"hello"), Expect::Any, false).await;
+        assert_eq!(text.content_type.unwrap(), TEXT_CT);
+        let forced = Reply::from_served(
+            entry(StatusCode::OK, Some("application/json"), b"{}"),
+            Expect::Json,
+            true,
+        )
+        .await;
+        assert_eq!(forced.content_type.unwrap(), TEXT_CT);
+
+        let not_found = Reply::from_served(
+            entry(
+                StatusCode::NOT_FOUND,
+                Some("text/html"),
+                b"<title>Missing</title>",
+            ),
+            Expect::Json,
+            false,
+        )
+        .await;
+        assert_eq!(not_found.content_type.unwrap(), JSON_CT);
+        let (streamed, body) = consume_body(not_found.body).await;
+        assert!(!streamed, "HTML errors are buffered");
+        let envelope: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(envelope["error"]["code"], "not_found");
+
+        let unauthorized = Reply::from_served(
+            entry(
+                StatusCode::UNAUTHORIZED,
+                Some("text/html"),
+                b"<h1>Login</h1>",
+            ),
+            Expect::Json,
+            false,
+        )
+        .await;
+        let (streamed, body) = consume_body(unauthorized.body).await;
+        assert!(!streamed, "HTML error envelopes are buffered");
+        let envelope: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert!(
+            envelope["error"]["hint"]
+                .as_str()
+                .unwrap()
+                .contains("--token")
+        );
+
+        let plain_error = Reply::from_served(
+            entry(StatusCode::BAD_GATEWAY, Some("text/plain"), b"down"),
+            Expect::Json,
+            false,
+        )
+        .await;
+        assert_eq!(plain_error.content_type.unwrap(), "text/plain");
+        assert!(plain_error.etag.is_none());
+        assert!(plain_error.extra.is_empty());
+    }
+
+    #[tokio::test]
+    async fn streamed_replies_preserve_success_streams_and_buffer_error_bodies() {
+        let success = Reply::from_served(
+            Served::Stream {
+                up: Box::new(upstream(
+                    StatusCode::OK,
+                    None,
+                    UpBody::Stream {
+                        prefix: Bytes::from_static(b"{"),
+                        rest: futures_util::stream::iter([Ok(Bytes::from_static(b"}"))]).boxed(),
+                    },
+                )),
+                source: CacheSource::Hit,
+            },
+            Expect::Json,
+            false,
+        )
+        .await;
+        assert_eq!(success.content_type.unwrap(), JSON_CT);
+        assert_eq!(success.upstream, None);
+        let (streamed, body) = consume_body(success.body).await;
+        assert!(streamed, "successful stream responses remain streaming");
+        assert_eq!(&body[..], b"{}");
+
+        let full = Reply::from_served(
+            Served::Stream {
+                up: Box::new(upstream(
+                    StatusCode::OK,
+                    None,
+                    UpBody::Full(Bytes::from_static(b"full body")),
+                )),
+                source: CacheSource::Miss,
+            },
+            Expect::Text,
+            false,
+        )
+        .await;
+        let (streamed, body) = consume_body(full.body).await;
+        assert!(streamed);
+        assert_eq!(&body[..], b"full body");
+
+        let chunks = futures_util::stream::iter([
+            Ok(Bytes::from_static(b"<html><title>")),
+            Ok(Bytes::from_static(b"denied</title></html>")),
+        ])
+        .boxed();
+        let error = Reply::from_served(
+            Served::Stream {
+                up: Box::new(upstream(
+                    StatusCode::FORBIDDEN,
+                    Some("text/html"),
+                    UpBody::Stream {
+                        prefix: Bytes::new(),
+                        rest: chunks,
+                    },
+                )),
+                source: CacheSource::Bypass,
+            },
+            Expect::Json,
+            false,
+        )
+        .await;
+        assert_eq!(error.content_type.unwrap(), JSON_CT);
+        assert_eq!(error.upstream.as_deref(), Some("rm:8088"));
+        let (streamed, body) = consume_body(error.body).await;
+        assert!(!streamed, "HTML errors are buffered into an envelope");
+        let envelope: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(envelope["error"]["code"], "upstream_status");
+        assert!(
+            envelope["error"]["hint"]
+                .as_str()
+                .unwrap()
+                .contains("--token")
+        );
+
+        let failed_stream = futures_util::stream::iter([
+            Ok(Bytes::from_static(b"partial")),
+            Err(std::io::Error::other("broken stream")),
+        ])
+        .boxed();
+        let plain = Reply::from_served(
+            Served::Stream {
+                up: Box::new(upstream(
+                    StatusCode::BAD_GATEWAY,
+                    Some("text/plain"),
+                    UpBody::Stream {
+                        prefix: Bytes::from_static(b"prefix-"),
+                        rest: failed_stream,
+                    },
+                )),
+                source: CacheSource::Stale,
+            },
+            Expect::Text,
+            false,
+        )
+        .await;
+        assert_eq!(plain.upstream, None);
+        assert_eq!(plain.age_ms, None);
+        assert_eq!(plain.etag, None);
+        assert_eq!(
+            match plain.body {
+                ReplyBody::Bytes(body) => body,
+                _ => unreachable!(),
+            },
+            "prefix-partial"
+        );
+    }
+}
+
 fn envelope_for_upstream(status: StatusCode, url: &str, body: &[u8]) -> ApiError {
     let code = if status == StatusCode::NOT_FOUND {
         ErrorCode::NotFound

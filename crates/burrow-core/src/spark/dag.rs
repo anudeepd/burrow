@@ -542,9 +542,10 @@ fn extract(html: &str) -> Result<Page, DagError> {
                 && d == depth
             {
                 let text = &html[start..tag.start];
-                if let Some(c) = cur.as_mut() {
-                    apply_role(c, r, text)?;
-                }
+                let c = cur
+                    .as_mut()
+                    .expect("role divs are always nested inside stage metadata");
+                apply_role(c, r, text)?;
                 role = None;
             }
             if cur.is_some() && cur_depth == depth {
@@ -1166,7 +1167,7 @@ fn resolve_stage_endpoints(parts: &[StageParts], cross: &mut [CrossEdge]) {
                 candidates = sinks;
             }
             e.from_stage = candidates.iter().min().copied();
-        } else if e.to_stage.is_none() {
+        } else {
             let to = e.to;
             let from_stage = e.from_stage;
             e.to_stage = parts
@@ -1372,6 +1373,7 @@ mod tests {
         assert_eq!(java_unescape(r"a\nb"), "a\nb");
         assert_eq!(java_unescape(r#"a\tb\"c\\d"#), "a\tb\"c\\d");
         assert_eq!(java_unescape(r"\u00e9"), "é");
+        assert_eq!(java_unescape(r"\ud83d\uuude00"), "😀");
         // Surrogate pair, as escapeJava writes non-BMP characters.
         assert_eq!(java_unescape(r"\ud83d\ude00"), "😀");
         // Octal escape.
@@ -1491,6 +1493,87 @@ mod tests {
     }
 
     #[test]
+    fn fallback_skips_stages_without_rest_records_when_linking() {
+        let dag = rest_fallback_dag(
+            &serde_json::json!({"jobId": 1, "stageIds": [1, 2, 3]}),
+            &[
+                serde_json::json!({"stageId": 2, "shuffleWriteRecords": 1}),
+                serde_json::json!({"stageId": 3, "shuffleReadRecords": 1}),
+            ],
+        );
+        assert_eq!(dag.stages.len(), 3);
+        assert_eq!(dag.stages[0].status.as_deref(), Some("UNKNOWN"));
+        assert_eq!(dag.edges.len(), 1);
+        assert_eq!(dag.edges[0].from_stage, Some(2));
+        assert_eq!(dag.edges[0].to_stage, Some(3));
+    }
+
+    #[test]
+    fn stage_endpoint_resolution_keeps_complete_edges_and_fills_missing_ends() {
+        let node = |id| DagNode {
+            id,
+            name: format!("RDD {id}"),
+            callsite: String::new(),
+            cached: false,
+            barrier: false,
+            determinism: Determinism::Determinate,
+            cluster_id: None,
+        };
+        let stage = |id, nodes: Vec<DagNode>, edges: Vec<IntraEdge>| DagStage {
+            stage_id: id,
+            attempt: 0,
+            skipped: false,
+            label: format!("Stage {id}"),
+            clusters: Vec::new(),
+            nodes,
+            edges,
+            rdd_ids: None,
+            status: None,
+        };
+        let parts = vec![
+            StageParts {
+                stage: stage(
+                    1,
+                    vec![node(10), node(11)],
+                    vec![IntraEdge { from: 10, to: 11 }],
+                ),
+                incoming: Vec::new(),
+                outgoing: Vec::new(),
+            },
+            StageParts {
+                stage: stage(2, vec![node(20)], Vec::new()),
+                incoming: Vec::new(),
+                outgoing: Vec::new(),
+            },
+        ];
+        let mut edges = vec![
+            CrossEdge {
+                from: Some(10),
+                to: Some(20),
+                from_stage: Some(1),
+                to_stage: Some(2),
+            },
+            CrossEdge {
+                from: Some(10),
+                to: Some(20),
+                from_stage: None,
+                to_stage: Some(2),
+            },
+            CrossEdge {
+                from: Some(10),
+                to: Some(20),
+                from_stage: Some(1),
+                to_stage: None,
+            },
+        ];
+        resolve_stage_endpoints(&parts, &mut edges);
+        assert_eq!(edges[0].from_stage, Some(1));
+        assert_eq!(edges[0].to_stage, Some(2));
+        assert_eq!(edges[1].from_stage, Some(1));
+        assert_eq!(edges[2].to_stage, Some(2));
+    }
+
+    #[test]
     fn pages_without_metadata_are_none_and_no_info_is_an_error() {
         assert_eq!(build_dag("<html></html>", None, None), Ok(None));
         assert_eq!(
@@ -1515,10 +1598,195 @@ mod tests {
     }
 
     #[test]
+    fn html_metadata_skips_non_divs_and_accepts_missing_stage_ids() {
+        let page = extract(
+            r#"<div id="dag-viz-metadata"><span>skip me</span><div class="stage-metadata"><div class="dot-file">graph text</div></div></div>"#,
+        )
+        .unwrap();
+        assert_eq!(page.stages.len(), 1);
+        assert_eq!(page.stages[0].stage_id, None);
+        assert_eq!(page.stages[0].dot, "graph text");
+    }
+
+    #[test]
     fn invalid_utf8_is_an_encoding_error() {
         assert!(matches!(
             parse(b"\xff\xfe\x00<div id=\"dag-viz-metadata\">", None, None),
             Err(DagError::Encoding(_))
         ));
+    }
+
+    #[test]
+    fn html_and_label_helpers_cover_supported_and_malformed_shapes() {
+        assert_eq!(Role::of("dot-file"), Some(Role::DotFile));
+        assert_eq!(Role::of("incoming-edge"), Some(Role::Incoming));
+        assert_eq!(Role::of("outgoing-edge"), Some(Role::Outgoing));
+        assert_eq!(Role::of("cached-rdd"), Some(Role::Cached));
+        assert_eq!(Role::of("barrier-rdd"), Some(Role::Barrier));
+        assert_eq!(Role::of("indeterminate-rdd"), Some(Role::Indeterminate));
+        assert_eq!(Role::of("other"), None);
+        assert!(
+            DagError::Malformed("bad".into())
+                .hint()
+                .contains("incomplete")
+        );
+        assert!(DagError::NoInfo.hint().contains("no information"));
+        assert!(
+            DagError::TooLarge { bytes: 1, cap: 0 }
+                .hint()
+                .contains("far larger")
+        );
+
+        let tags: Vec<_> = Tags {
+            html: "<!-- <x> --><!doctype html><?pi?>< <div title='a > b'>ok</div>",
+            pos: 0,
+        }
+        .collect();
+        assert_eq!(tags.len(), 2);
+        assert_eq!(tags[0].name, "div");
+        assert!(tags[0].attrs.contains("title='a > b'"));
+        assert!(tags[1].closing);
+        assert_eq!(attr(" id='quoted' data=x flag", "id"), Some("quoted"));
+        assert_eq!(attr(" id='quoted' data=x flag", "data"), Some("x"));
+        assert_eq!(attr(" id='quoted' data=x flag", "flag"), Some(""));
+        assert_eq!(
+            attr(" --data   =   spaced-value >", "data"),
+            Some("spaced-value")
+        );
+        assert_eq!(attr(" class='a b'", "missing"), None);
+        assert_eq!(attr(" --- = value", "missing"), None);
+        assert!(has_class(" class='a b'", "b"));
+        assert!(!has_class(" class='a b'", "c"));
+
+        assert_eq!(
+            decode_entities("&apos;&#65;&#x42;&#X43;&nbsp;&wat;&"),
+            "'ABC\u{a0}&wat;&"
+        );
+        assert_eq!(decode_entities("&#x110000;"), "&#x110000;");
+        assert_eq!(xml_unescape("&lt;&gt;&quot;&amp;"), "<>\"&");
+        assert_eq!(
+            java_unescape(r"\b\t\n\f\r\'\/\q\u12"),
+            "\u{8}\t\n\u{c}\r'/q\u{12}"
+        );
+        assert_eq!(java_unescape(r"\uuuu0041"), "A");
+        assert_eq!(java_unescape(r"\ud800!"), "�!");
+        assert_eq!(java_unescape(r"\ud800\u0041"), "�A");
+        assert_eq!(java_unescape(r"\uZZZZ"), "�");
+        assert_eq!(parse_node_label("RDD [1]", 1).callsite, "");
+        assert_eq!(parse_edge(" \n ").unwrap(), None);
+        assert!(parse_edge("1").is_err());
+        assert!(parse_edge("x,2").is_err());
+        assert_eq!(parse_edge("1, 2").unwrap(), Some((1, 2)));
+
+        assert_eq!(
+            split_label_head("RDD [8] [Cached] [Barrier] [Indeterminate] [Unordered]", 8)
+                .unwrap()
+                .0,
+            "RDD"
+        );
+        for malformed in [
+            "RDD []",
+            "RDD [x]",
+            "RDD [999999999999999999999999]",
+            "RDD [8] [unknown]",
+            "RDD [",
+        ] {
+            assert!(split_label_head(malformed, 8).is_none(), "{malformed}");
+        }
+        assert_eq!(parse_stage_label("Stage x"), None);
+        assert_eq!(parse_stage_label("Stage 999999999999999999999999"), None);
+        assert_eq!(parse_stage_label("Stage 1 (attempt )"), None);
+        assert_eq!(parse_stage_label("Stage 1 (attempt 2"), None);
+        assert_eq!(parse_stage_label("Stage 1 trailing"), None);
+    }
+
+    #[test]
+    fn dot_parser_reports_lexical_and_structural_errors() {
+        for malformed in [
+            "digraph G { @ }",
+            "digraph G { label=\"unterminated; }",
+            "digraph G { label=\"trailing\\",
+            "digraph G [label=\"x\"] {}",
+            "digraph {}",
+            "digraph G { label=bad; }",
+            "digraph G { 0->x; subgraph s {} }",
+            "digraph G { 0 [label=bad]; subgraph s {} }",
+            "digraph G { ; }",
+            "digraph G { id=\"graph\"; }",
+            "digraph G { subgraph a {} subgraph b {} }",
+            "digraph G { 0 [label=\"outside\"]; subgraph a {} }",
+        ] {
+            assert!(parse_dot(malformed).is_err(), "accepted: {malformed}");
+        }
+        assert!(parse_dot("digraph G { subgraph s {").is_err());
+        assert!(
+            parse_dot("digraph G { subgraph s { 1 [id=\"node_1\", label=\"RDD [1]\"]; } }").is_ok()
+        );
+        assert_eq!(
+            tokenize("digraph G { 1 -> 2; }").unwrap()[2],
+            Tok::Punct('{')
+        );
+    }
+
+    #[test]
+    fn metadata_edges_and_fallbacks_cover_remaining_dag_shapes() {
+        let html = r#"<div id="job-dag-viz"></div><div id="dag-viz-metadata">
+          <div class="stage-metadata" stage-id="1">
+            <div class="outgoing-edge">1,2</div>
+            <div class="incoming-edge"></div>
+            <div class="cached-rdd"></div><div class="barrier-rdd"></div><div class="indeterminate-rdd"></div>
+            <div class="dot-file">digraph G { subgraph s1 { id="s1"; label="Stage 1"; 1 [label="Source [1] [Indeterminate]&lt;br&gt;call &amp;lt;x&amp;gt;"]; } }</div>
+          </div>
+          <div class="stage-metadata" stage-id="2" skipped="true">
+            <div class="incoming-edge">1,2</div>
+            <div class="outgoing-edge">bad</div>
+            <div class="dot-file">digraph G { subgraph s2 { id="s2"; label="Stage 2 (attempt 3)"; 2 [label="Sink [2] [Unordered]&lt;br&gt;collect"]; } }</div>
+          </div>
+        </div>"#;
+        assert!(matches!(
+            build_dag(html, None, Some(9)),
+            Err(DagError::Malformed(_))
+        ));
+
+        let html = html.replace(
+            "<div class=\"outgoing-edge\">bad</div>",
+            "<div class=\"outgoing-edge\">2,3</div>",
+        );
+        let dag = build_dag(&html, None, Some(9)).unwrap().unwrap();
+        assert_eq!(dag.kind, DagKind::Job);
+        assert_eq!(dag.job_id, Some(9));
+        assert_eq!(dag.edges.len(), 3);
+        assert!(
+            dag.edges
+                .iter()
+                .any(|e| e.from_stage == Some(1) && e.to_stage == Some(2))
+        );
+        assert!(
+            dag.edges
+                .iter()
+                .any(|e| e.from_stage == Some(2) && e.to_stage.is_none())
+        );
+        assert_eq!(dag.stages[1].attempt, 3);
+        assert!(dag.stages[1].skipped);
+        assert_eq!(dag.stages[0].nodes[0].callsite, "call <x>");
+        assert_eq!(
+            dag.stages[0].nodes[0].determinism,
+            Determinism::Indeterminate
+        );
+
+        assert!(build_dag("<div id='dag-viz-metadata'", None, None).is_err());
+        assert!(build_dag("<div id='dag-viz-metadata'><div class='stage-metadata' stage-id='bad'></div></div>", None, None).is_err());
+        assert!(matches!(
+            parse(&vec![b'x'; MAX_PAGE_BYTES + 1], None, None),
+            Err(DagError::TooLarge { .. })
+        ));
+
+        let fallback = rest_fallback_dag(&serde_json::json!({}), &[]);
+        assert_eq!(fallback.job_id, None);
+        assert!(fallback.stages.is_empty());
+        let one = single_stage_fallback(&serde_json::json!({"rddIds": [3, "bad", 1]}), 8, 2);
+        assert_eq!(one.stages[0].status.as_deref(), Some("UNKNOWN"));
+        assert_eq!(one.stages[0].rdd_ids.as_deref(), Some(&[1, 3][..]));
+        assert!(stage_from_job_dag(&fallback, 8).is_none());
     }
 }

@@ -79,6 +79,13 @@ pub struct HadoopDiscovery {
 }
 
 pub fn discover(input: &DiscoverInput) -> HadoopDiscovery {
+    discover_with_reader(input, |path| std::fs::read_to_string(path))
+}
+
+fn discover_with_reader(
+    input: &DiscoverInput,
+    read_to_string: impl Fn(&Path) -> std::io::Result<String>,
+) -> HadoopDiscovery {
     let mut out = HadoopDiscovery::default();
 
     let dir = input
@@ -93,7 +100,7 @@ pub fn discover(input: &DiscoverInput) -> HadoopDiscovery {
             if !p.is_file() {
                 continue;
             }
-            match std::fs::read_to_string(&p) {
+            match read_to_string(&p) {
                 Ok(text) => match parse_site_xml(&text) {
                     Ok(props) => {
                         conf.props.extend(props);
@@ -116,7 +123,7 @@ pub fn discover(input: &DiscoverInput) -> HadoopDiscovery {
     for d in input.spark_dirs(dir.as_deref()) {
         let p = d.join("spark-defaults.conf");
         if p.is_file() {
-            match std::fs::read_to_string(&p) {
+            match read_to_string(&p) {
                 Ok(text) => {
                     let props = parse_spark_defaults(&text);
                     if let Some(addr) = props.get("spark.yarn.historyServer.address") {
@@ -256,7 +263,7 @@ fn derive_yarn(conf: &Conf, out: &mut HadoopDiscovery) {
     if out.rm_urls.is_empty() {
         if let Some(u) = rm_addr("", default_port) {
             out.rm_urls.push(u);
-        } else if conf.raw("yarn.resourcemanager.hostname").is_none() {
+        } else {
             // Hadoop's own default is 0.0.0.0:8088 — i.e. "this machine".
             out.rm_urls.push(format!(
                 "{}://localhost:{default_port}",
@@ -630,10 +637,16 @@ mod tests {
         );
 
         let props = parse_site_xml(
-            "<configuration><property><name>a</name><value>x&amp;y&lt;<![CDATA[z]]></value></property></configuration>",
+            "<configuration><property><name>a</name><value>x&amp;y&lt;<![CDATA[z]]></value><extra><![CDATA[ignored]]>&unknown;</extra></property></configuration>",
         )
         .unwrap();
         assert_eq!(props["a"], "x&y<z");
+
+        let fields = parse_site_xml(
+            "<other><ignored/></other><configuration><other><ignored/></other><property><name><![CDATA[a]]></name><value>one<![CDATA[ two]]>&amp;three</value><extra>x</extra></property></configuration>",
+        )
+        .unwrap();
+        assert_eq!(fields.get("a").map(String::as_str), Some("one two&three"));
     }
 
     #[test]
@@ -654,7 +667,7 @@ mod tests {
             Some("http://shs.example.com:18080")
         );
 
-        let m = parse_spark_defaults("a=b\nc   d e\n  # x\n");
+        let m = parse_spark_defaults("a=b\nc   d e\n  # x\n = ignored\norphan\n");
         assert_eq!(m["a"], "b");
         assert_eq!(m["c"], "d e");
     }
@@ -672,9 +685,225 @@ mod tests {
     }
 
     #[test]
+    fn unreadable_configuration_files_are_skipped_with_warnings() {
+        let hadoop = tmpdir("unreadable-hadoop");
+        let spark = tmpdir("unreadable-spark");
+        write(&hadoop, "yarn-site.xml", &site(&[]));
+        write(&hadoop, "core-site.xml", &site(&[("test.key", "value")]));
+        write(
+            &spark,
+            "spark-defaults.conf",
+            "spark.yarn.historyServer.address shs:18080",
+        );
+        let mut input = input(&hadoop);
+        input.spark_conf_dir = Some(spark);
+
+        let report = discover_with_reader(&input, |path| {
+            if path
+                .file_name()
+                .is_some_and(|name| name == "yarn-site.xml" || name == "spark-defaults.conf")
+            {
+                Err(std::io::Error::from(std::io::ErrorKind::PermissionDenied))
+            } else {
+                std::fs::read_to_string(path)
+            }
+        });
+
+        assert_eq!(report.warnings.len(), 2);
+        assert!(
+            report
+                .warnings
+                .iter()
+                .all(|warning| warning.contains("unreadable"))
+        );
+        assert!(report.spark_history.is_none());
+    }
+
+    #[test]
     fn no_conf_dir_yields_nothing() {
         let r = discover(&DiscoverInput::default());
         assert!(r.conf_dir.is_none());
         assert!(r.rm_urls.is_empty());
+    }
+
+    #[test]
+    fn spark_home_and_yarn_conf_are_discovery_sources() {
+        let yarn = tmpdir("yarn-env");
+        write(&yarn, "yarn-site.xml", &site(&[]));
+        let spark_home = tmpdir("spark-home");
+        std::fs::create_dir_all(spark_home.join("conf")).unwrap();
+        write(
+            &spark_home.join("conf"),
+            "spark-defaults.conf",
+            "spark.yarn.historyServer.address shs.example:18080",
+        );
+        let input = DiscoverInput {
+            yarn_conf_dir: Some(yarn.clone()),
+            spark_home: Some(spark_home.clone()),
+            fallback_dirs: vec![],
+            spark_fallback_dirs: vec![],
+            ..Default::default()
+        };
+        let found = discover(&input);
+        assert_eq!(found.conf_dir.as_deref(), Some(yarn.as_path()));
+        assert_eq!(
+            found.spark_history.as_deref(),
+            Some("http://shs.example:18080")
+        );
+        assert_eq!(
+            found.spark_conf_file.as_deref(),
+            Some(spark_home.join("conf/spark-defaults.conf").as_path())
+        );
+    }
+
+    #[test]
+    fn spark_defaults_without_a_history_address_are_ignored() {
+        let hadoop = tmpdir("spark-no-address-hadoop");
+        let spark = tmpdir("spark-no-address-config");
+        write(&hadoop, "yarn-site.xml", &site(&[]));
+        write(&spark, "spark-defaults.conf", "spark.master yarn\n");
+        let mut input = input(&hadoop);
+        input.spark_conf_dir = Some(spark);
+        assert!(discover(&input).spark_history.is_none());
+    }
+
+    #[test]
+    fn conf_expansion_preserves_unresolved_tokens_and_stops_after_depth_limit() {
+        let conf = Conf::default();
+        assert_eq!(
+            conf.expand("before-${missing}-after ${open", 0),
+            "before-${missing}-after ${open"
+        );
+
+        let mut conf = Conf::default();
+        for depth in 0..22 {
+            conf.props
+                .insert(format!("k{depth}"), format!("${{k{}}}", depth + 1));
+        }
+        conf.props.insert("k22".into(), "done".into());
+        let expanded = conf.expand("${k0}", 0);
+        assert!(
+            expanded.contains("${k"),
+            "depth limit prevents unbounded expansion: {expanded}"
+        );
+    }
+
+    #[test]
+    fn hadoop_derivation_handles_empty_ha_ids_jobhistory_prefixes_and_timeline() {
+        let mut conf = Conf::default();
+        conf.props
+            .insert("yarn.resourcemanager.ha.enabled".into(), "true".into());
+        conf.props.insert(
+            "yarn.log.server.url".into(),
+            "https://jhs.example:19890/proxy/jobhistory/logs".into(),
+        );
+        conf.props.insert(
+            "mapreduce.jobhistory.webapp.https.address".into(),
+            "jhs-web.example".into(),
+        );
+        conf.props
+            .insert("yarn.timeline-service.enabled".into(), "true".into());
+        conf.props.insert(
+            "yarn.timeline-service.webapp.https.address".into(),
+            "[2001:db8::1]:8199".into(),
+        );
+        conf.props
+            .insert("yarn.http.policy".into(), "HTTPS_ONLY".into());
+        let mut found = HadoopDiscovery::default();
+        derive_yarn(&conf, &mut found);
+
+        assert!(found.ha_enabled);
+        assert_eq!(found.rm_urls, vec!["https://localhost:8090"]);
+        assert!(
+            found
+                .warnings
+                .iter()
+                .any(|warning| warning.contains("ha.rm-ids is empty"))
+        );
+        assert_eq!(
+            found.log_server_url.as_deref(),
+            Some("https://jhs.example:19890/proxy/jobhistory/logs")
+        );
+        assert_eq!(
+            found.jhs_url.as_deref(),
+            Some("https://jhs.example:19890/proxy")
+        );
+        assert_eq!(
+            found.timeline_url.as_deref(),
+            Some("https://[2001:db8::1]:8199")
+        );
+
+        let mut defaults = Conf::default();
+        defaults.props.insert(
+            "mapreduce.jobhistory.webapp.address".into(),
+            "jhs-default.example".into(),
+        );
+        defaults
+            .props
+            .insert("yarn.timeline-service.enabled".into(), "true".into());
+        let mut derived = HadoopDiscovery::default();
+        derive_yarn(&defaults, &mut derived);
+        assert_eq!(derived.rm_urls, vec!["http://localhost:8088"]);
+        assert_eq!(
+            derived.jhs_url.as_deref(),
+            Some("http://jhs-default.example:19888")
+        );
+        assert!(derived.timeline_url.is_none());
+
+        let mut malformed_log = Conf::default();
+        malformed_log
+            .props
+            .insert("yarn.log.server.url".into(), "file:///var/logs".into());
+        malformed_log.props.insert(
+            "mapreduce.jobhistory.webapp.address".into(),
+            "jhs-from-webapp.example".into(),
+        );
+        let mut malformed_found = HadoopDiscovery::default();
+        derive_yarn(&malformed_log, &mut malformed_found);
+        assert_eq!(
+            malformed_found.jhs_url.as_deref(),
+            Some("http://jhs-from-webapp.example:19888")
+        );
+
+        let mut https_jhs = Conf::default();
+        https_jhs
+            .props
+            .insert("yarn.http.policy".into(), "HTTPS_ONLY".into());
+        https_jhs.props.insert(
+            "mapreduce.jobhistory.webapp.https.address".into(),
+            "jhs-secure.example".into(),
+        );
+        let mut secure_found = HadoopDiscovery::default();
+        derive_yarn(&https_jhs, &mut secure_found);
+        assert_eq!(
+            secure_found.jhs_url.as_deref(),
+            Some("https://jhs-secure.example:19890")
+        );
+    }
+
+    #[test]
+    fn xml_and_address_parsers_cover_entities_malformed_roots_and_ipv6() {
+        assert!(
+            parse_site_xml("<not-configuration/>")
+                .unwrap_err()
+                .contains("no <configuration>")
+        );
+        let props = parse_site_xml(
+            "<configuration><property><name> escaped </name><description>ignored</description><value>&gt;&quot;&apos;&#65;&unknown;</value></property><property><name>a&amp;b</name><value>value</value></property><property><name></name><value>skip</value></property></configuration>",
+        ).unwrap();
+        assert_eq!(props["escaped"], ">\"'A&unknown;");
+        assert_eq!(props["a&b"], "value");
+        assert_eq!(
+            normalize_addr("  HTTPS://[2001:db8::2]/prefix/  ", false, 443).as_deref(),
+            Some("https://[2001:db8::2]:443/prefix")
+        );
+        assert_eq!(normalize_addr("", false, 80), None);
+        assert_eq!(
+            split_host_port("[2001:db8::1]:8042"),
+            ("[2001:db8::1]", Some(8042))
+        );
+        assert_eq!(split_host_port("[broken"), ("[broken", None));
+        assert_eq!(split_host_port("host:notaport"), ("host", None));
+        assert_eq!(split_host_port("2001:db8::1"), ("2001:db8::1", None));
     }
 }

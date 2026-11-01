@@ -183,3 +183,67 @@ pub fn percent_decode(s: &str) -> String {
     }
     String::from_utf8_lossy(&out).into_owned()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ROUTES: &[Route] = &[
+        rewrite("conf", "/conf", secs(60), Expect::Any),
+        route("apps/{id}", millis(25), Expect::Json),
+    ];
+
+    #[test]
+    fn lookup_rewrites_fixed_paths_and_appends_the_base_for_matches() {
+        let table = RouteTable::new("/ws/v1/cluster/", ROUTES);
+        assert_eq!(table.routes().len(), 2);
+        let conf = table.lookup("conf").unwrap();
+        assert_eq!(conf.upstream_path, "/conf");
+        assert_eq!(conf.route.ttl, secs(60));
+        assert_eq!(conf.route.expect, Expect::Any);
+        let app = table.lookup("apps/application_1_2").unwrap();
+        assert_eq!(app.upstream_path, "/ws/v1/cluster/apps/application_1_2");
+        assert_eq!(app.route.ttl, millis(25));
+        assert!(table.lookup("apps/../conf").is_none());
+        assert!(table.lookup("apps/application_1_2/extra").is_none());
+    }
+
+    #[test]
+    fn route_constructors_preserve_their_inputs_for_runtime_callers() {
+        let plain = route("healthz", secs(3), Expect::Json);
+        assert_eq!(plain.pattern, "healthz");
+        assert_eq!(plain.ttl, TtlPolicy::Fixed(Duration::from_secs(3)));
+        assert_eq!(plain.expect, Expect::Json);
+        assert_eq!(plain.rewrite, None);
+
+        let fixed = rewrite("conf", "/conf", millis(250), Expect::Any);
+        assert_eq!(fixed.pattern, "conf");
+        assert_eq!(fixed.ttl, TtlPolicy::Fixed(Duration::from_millis(250)));
+        assert_eq!(fixed.expect, Expect::Any);
+        assert_eq!(fixed.rewrite, Some("/conf"));
+    }
+
+    #[test]
+    fn segment_and_query_decoding_cover_raw_and_malformed_inputs() {
+        assert!(is_safe_segment("container_1_2_3"));
+        for value in ["", "..", "bad/value", "bad%2Fvalue"] {
+            assert!(!is_safe_segment(value), "{value}");
+        }
+        assert_eq!(query_param(None, "q"), None);
+        assert_eq!(
+            query_param(Some("ignored&x=first&x=second"), "x"),
+            Some("first".into())
+        );
+        assert_eq!(query_param(Some("x=a+b%21"), "x"), Some("a b!".into()));
+        assert_eq!(query_params(Some("x=1&y=2&x=3"), "x"), vec!["1", "3"]);
+        assert_eq!(query_params_raw(None, "x"), Vec::<String>::new());
+        assert_eq!(
+            query_params_raw(Some("x=1&flag&x=two%2Cthree"), "x"),
+            vec!["1", "two%2Cthree"]
+        );
+        assert_eq!(percent_decode("plain"), "plain");
+        assert_eq!(percent_decode("a+b%20c"), "a b c");
+        assert_eq!(percent_decode("%QZ%"), "%QZ%");
+        assert_eq!(percent_decode("%FF"), "�");
+    }
+}

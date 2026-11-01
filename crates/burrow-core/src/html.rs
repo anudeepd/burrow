@@ -233,6 +233,9 @@ mod tests {
         assert!(looks_like_html(None, b"  \n<!DOCTYPE html><html>"));
         assert!(!looks_like_html(None, b"{\"a\":1}"));
         assert!(looks_like_html(None, b"<HTML><BODY>"));
+        assert!(looks_like_html(Some(&h("application/pdf")), b"<html>"));
+        let non_text_header = HeaderValue::from_bytes(b"\xff").unwrap();
+        assert!(looks_like_html(Some(&non_text_header), b"<html>"));
     }
 
     #[test]
@@ -244,6 +247,23 @@ mod tests {
         assert!(m.contains("Problem accessing /nope"), "{m}");
         assert!(!m.contains('<'));
         assert!(html_error_message(b"").contains("empty"));
+    }
+
+    #[test]
+    fn error_page_message_covers_title_only_plain_text_and_truncation() {
+        assert_eq!(
+            html_error_message(b"<head><title>Only title</title></head><script>hidden</script>"),
+            "Only title"
+        );
+        assert_eq!(
+            html_error_message(b"<body>Plain response</body>"),
+            "Plain response"
+        );
+
+        let long = format!("<body>{}</body>", "x".repeat(350));
+        let message = html_error_message(long.as_bytes());
+        assert_eq!(message.chars().count(), 301);
+        assert!(message.ends_with('…'));
     }
 
     #[test]
@@ -298,5 +318,14 @@ mod tests {
         );
         assert_eq!(f.len(), 1);
         assert_eq!(f[0].name, "x.log");
+    }
+
+    #[test]
+    fn listing_ignores_rows_without_links_or_usable_names() {
+        let html = r#"<table>
+            <tr><td>no link</td></tr>
+            <tr><td><a href="../">parent</a></td></tr>
+        </table>"#;
+        assert!(parse_logs_listing(html).is_empty());
     }
 }

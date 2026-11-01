@@ -21,7 +21,7 @@ use crate::core::{Core, GetSpec};
 use crate::error::ApiError;
 use crate::html::parse_logs_listing;
 use crate::reply::{JSON_CT, Reply, ReplyBody};
-use crate::routes::table::{Route, RouteTable, is_safe_segment, rewrite, route, secs};
+use crate::routes::table::{Route, RouteTable, rewrite, route, secs};
 
 /// TTL of the synthesized RM logs **listing** (`/api/rm/logs`): the HTML directory page it parses. Named so the route
 /// table and the handler cannot drift — the SSE hub derives its poll interval from the table.
@@ -83,44 +83,130 @@ pub async fn get(core: &Core, req: ApiRequest<'_>) -> Result<Reply, ApiError> {
     let range_owned: Option<String> = if !req.path.starts_with("logs/") {
         None
     } else {
-        let file = &req.path["logs/".len()..];
-        if !is_safe_segment(file) {
-            return Err(ApiError::bad_request("invalid log file name"));
-        }
-        let parse = |n: &str| -> Result<Option<u64>, ApiError> {
-            query_value(req.query, n)
-                .map(|v| {
-                    v.parse::<u64>().map_err(|_| {
-                        ApiError::bad_request(format!("'{n}' must be a non-negative integer"))
-                    })
-                })
-                .transpose()
-        };
-        let (offset, length) = (parse("offset")?, parse("length")?);
-        let range = match (offset, length) {
-            (None, None) => req.range.map(str::to_string),
-            (o, Some(l)) if l > 0 => {
-                let o = o.unwrap_or(0);
-                let end = o.checked_add(l - 1).ok_or_else(|| {
-                    ApiError::bad_request("requested log byte range exceeds supported limits")
-                })?;
-                Some(format!("bytes={o}-{end}"))
-            }
-            (Some(o), None) => Some(format!("bytes={o}-")),
-            (_, Some(_)) => return Err(ApiError::bad_request("'length' must be positive")),
-        };
         // offset/length are ours, not the daemon's: do not forward them.
         spec.query = None;
-        range
+        requested_range(req.query, req.range)?
     };
     spec.range = range_owned.as_deref();
     core.rm_reply(&spec).await
+}
+
+fn requested_range(
+    query: Option<&str>,
+    client_range: Option<&str>,
+) -> Result<Option<String>, ApiError> {
+    let parse = |name: &str| -> Result<Option<u64>, ApiError> {
+        query_value(query, name)
+            .map(|value| {
+                value.parse::<u64>().map_err(|_| {
+                    ApiError::bad_request(format!("'{name}' must be a non-negative integer"))
+                })
+            })
+            .transpose()
+    };
+    let (offset, length) = (parse("offset")?, parse("length")?);
+    match (offset, length) {
+        (None, None) => Ok(client_range.map(str::to_string)),
+        (offset, Some(length)) if length > 0 => {
+            let offset = offset.unwrap_or(0);
+            let end = offset.checked_add(length - 1).ok_or_else(|| {
+                ApiError::bad_request("requested log byte range exceeds supported limits")
+            })?;
+            Ok(Some(format!("bytes={offset}-{end}")))
+        }
+        (Some(offset), None) => Ok(Some(format!("bytes={offset}-"))),
+        (_, Some(_)) => Err(ApiError::bad_request("'length' must be positive")),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn core() -> std::sync::Arc<Core> {
+        Core::new(crate::config::Config::for_rm("http://127.0.0.1:8088").unwrap()).unwrap()
+    }
+
+    #[tokio::test]
+    async fn unsuccessful_listing_is_forwarded_as_an_upstream_reply() {
+        let entry = crate::cache::Entry {
+            status: StatusCode::SERVICE_UNAVAILABLE,
+            content_type: None,
+            extra: Default::default(),
+            body: Bytes::from_static(b"unavailable"),
+            etag: String::new(),
+            fetched_at: std::time::Instant::now(),
+            ttl: std::time::Duration::ZERO,
+            served_by: std::sync::Arc::from("rm.example:8088"),
+            url: "http://rm.example:8088/logs/".into(),
+        };
+        let reply = listing_reply(Served::Entry {
+            entry: std::sync::Arc::new(entry),
+            source: crate::cache::CacheSource::Miss,
+        })
+        .await
+        .unwrap();
+        assert_eq!(reply.status, StatusCode::SERVICE_UNAVAILABLE);
+        assert!(matches!(reply.body, ReplyBody::Bytes(body) if body == "unavailable"));
+    }
+
+    #[tokio::test]
+    async fn log_ranges_reject_overflowing_offsets() {
+        assert_eq!(
+            requested_range(Some("offset=5"), None).unwrap().as_deref(),
+            Some("bytes=5-")
+        );
+        assert_eq!(
+            requested_range(Some("length=3"), None).unwrap().as_deref(),
+            Some("bytes=0-2")
+        );
+        assert_eq!(
+            requested_range(None, Some("bytes=1-2")).unwrap().as_deref(),
+            Some("bytes=1-2")
+        );
+        assert_eq!(requested_range(None, None).unwrap(), None);
+        assert_eq!(
+            requested_range(Some("length=0"), None)
+                .err()
+                .unwrap()
+                .message,
+            "'length' must be positive"
+        );
+        assert_eq!(
+            requested_range(Some("offset=bad"), None)
+                .err()
+                .unwrap()
+                .status,
+            StatusCode::BAD_REQUEST
+        );
+
+        let core = core();
+        let overflow = get(
+            &core,
+            ApiRequest {
+                query: Some("offset=18446744073709551615&length=2"),
+                ..ApiRequest::new("logs/server.log")
+            },
+        )
+        .await
+        .err()
+        .unwrap();
+        assert_eq!(overflow.status, StatusCode::BAD_REQUEST);
+        assert_eq!(
+            overflow.message,
+            "requested log byte range exceeds supported limits"
+        );
+    }
 }
 
 async fn logs_listing(core: &Core, req: &ApiRequest<'_>) -> Result<Reply, ApiError> {
     let mut spec = GetSpec::new("/logs/", LOGS_LISTING_TTL, Any);
     spec.bypass = req.bypass;
     let served = core.served(&core.rm, &spec).await?;
+    listing_reply(served).await
+}
+
+async fn listing_reply(served: Served) -> Result<Reply, ApiError> {
     match served {
         Served::Entry { entry, source } if entry.status.is_success() => {
             let html = String::from_utf8_lossy(&entry.body);

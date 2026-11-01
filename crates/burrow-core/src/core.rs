@@ -198,10 +198,13 @@ impl Core {
         Ok(core)
     }
 
-    /// A strong handle to this `Core` when it was built by [`Core::new`]. Long-lived tasks (the SSE hub's
-    /// poller, a log tailer) need it to keep polling after the request that started them has returned.
-    pub fn shared(&self) -> Option<Arc<Core>> {
-        self.self_ref.get().and_then(Weak::upgrade)
+    /// A strong handle for long-lived tasks (the SSE hub's poller, a log tailer) after the request that
+    /// started them has returned. [`Core::new`] always initializes this weak self-reference.
+    pub fn shared(&self) -> Arc<Core> {
+        self.self_ref
+            .get()
+            .and_then(Weak::upgrade)
+            .expect("Core::new initializes the weak self-reference")
     }
 
     pub fn rm_pool(&self) -> &RmPool {
@@ -348,4 +351,34 @@ fn parse_node_authorities(body: &[u8]) -> std::collections::HashSet<String> {
         }
     }
     set
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn memo_get_or_computes_and_reuses_values() {
+        let memo = Memo::<usize>::default();
+        let first = memo
+            .get_or("key", Duration::from_secs(1), || async { 7 })
+            .await;
+        let second = memo
+            .get_or("key", Duration::from_secs(1), || async { 9 })
+            .await;
+        assert_eq!((first, second), (7, 7));
+    }
+
+    #[test]
+    fn node_authority_parser_handles_invalid_shapes_and_id_fallbacks() {
+        assert!(parse_node_authorities(b"not JSON").is_empty());
+        assert!(parse_node_authorities(br#"{"nodes":{}}"#).is_empty());
+        let authorities = parse_node_authorities(
+            br#"{"nodes":{"node":[{"nodeHTTPAddress":"  ","id":"HOST:8041"},{"nodeHTTPAddress":"WEB:8042","id":"rpc:8041"}]}}"#,
+        );
+        assert_eq!(authorities.len(), 2);
+        assert!(authorities.contains("host:8041"));
+        assert!(authorities.contains("web:8042"));
+        assert_eq!(header("x-test"), HeaderName::from_static("x-test"));
+    }
 }

@@ -55,7 +55,7 @@ struct SparkRoute {
     app_doc: bool,
 }
 
-const fn sr_app(
+fn sr_app(
     pattern: &'static str,
     live: TtlPolicy,
     history: TtlPolicy,
@@ -70,12 +70,7 @@ const fn sr_app(
     }
 }
 
-const fn sr(
-    pattern: &'static str,
-    live: TtlPolicy,
-    history: TtlPolicy,
-    expect: Expect,
-) -> SparkRoute {
+fn sr(pattern: &'static str, live: TtlPolicy, history: TtlPolicy, expect: Expect) -> SparkRoute {
     SparkRoute {
         pattern,
         live,
@@ -86,41 +81,43 @@ const fn sr(
 }
 
 /// One line per exposed Spark REST resource. TTLs: `docs/spark-rest-and-dag.md` §10.
-static ROUTES: &[SparkRoute] = &[
-    // The contract's `/application` is Spark's bare application document (see `app_doc`).
-    sr_app("/application", millis(1000), secs(60), Json),
-    sr("/jobs", millis(1000), secs(300), Json),
-    sr("/jobs/{id}", millis(1000), secs(300), Json),
-    sr("/stages", millis(1000), secs(300), Json),
-    sr("/stages/{id}", millis(1000), secs(300), Json),
-    sr("/stages/{id}/{id}", secs(2), secs(300), Json),
-    sr("/stages/{id}/{id}/taskSummary", secs(2), secs(300), Json),
-    sr("/stages/{id}/{id}/taskList", secs(2), secs(300), Json),
-    sr("/executors", secs(2), secs(300), Json),
-    sr("/allexecutors", secs(2), secs(300), Json),
-    sr("/executors/{id}/threads", millis(1000), secs(60), Json),
-    sr("/storage/rdd", secs(2), secs(300), Json),
-    sr("/storage/rdd/{id}", secs(2), secs(300), Json),
-    sr("/environment", secs(10), secs(3600), Json),
-    sr("/sql", millis(1000), secs(300), Json),
-    sr("/sql/{id}", millis(1000), secs(300), Json),
-    sr("/streaming/statistics", millis(1000), secs(300), Json),
-    sr("/streaming/receivers", millis(1000), secs(300), Json),
-    sr("/streaming/batches", millis(1000), secs(300), Json),
-    sr("/streaming/batches/{id}", millis(1000), secs(300), Json),
-    sr(
-        "/streaming/batches/{id}/operations",
-        millis(1000),
-        secs(300),
-        Json,
-    ),
-    sr(
-        "/streaming/batches/{id}/operations/{id}",
-        millis(1000),
-        secs(300),
-        Json,
-    ),
-];
+static ROUTES: LazyLock<Vec<SparkRoute>> = LazyLock::new(|| {
+    vec![
+        // The contract's `/application` is Spark's bare application document (see `app_doc`).
+        sr_app("/application", millis(1000), secs(60), Json),
+        sr("/jobs", millis(1000), secs(300), Json),
+        sr("/jobs/{id}", millis(1000), secs(300), Json),
+        sr("/stages", millis(1000), secs(300), Json),
+        sr("/stages/{id}", millis(1000), secs(300), Json),
+        sr("/stages/{id}/{id}", secs(2), secs(300), Json),
+        sr("/stages/{id}/{id}/taskSummary", secs(2), secs(300), Json),
+        sr("/stages/{id}/{id}/taskList", secs(2), secs(300), Json),
+        sr("/executors", secs(2), secs(300), Json),
+        sr("/allexecutors", secs(2), secs(300), Json),
+        sr("/executors/{id}/threads", millis(1000), secs(60), Json),
+        sr("/storage/rdd", secs(2), secs(300), Json),
+        sr("/storage/rdd/{id}", secs(2), secs(300), Json),
+        sr("/environment", secs(10), secs(3600), Json),
+        sr("/sql", millis(1000), secs(300), Json),
+        sr("/sql/{id}", millis(1000), secs(300), Json),
+        sr("/streaming/statistics", millis(1000), secs(300), Json),
+        sr("/streaming/receivers", millis(1000), secs(300), Json),
+        sr("/streaming/batches", millis(1000), secs(300), Json),
+        sr("/streaming/batches/{id}", millis(1000), secs(300), Json),
+        sr(
+            "/streaming/batches/{id}/operations",
+            millis(1000),
+            secs(300),
+            Json,
+        ),
+        sr(
+            "/streaming/batches/{id}/operations/{id}",
+            millis(1000),
+            secs(300),
+            Json,
+        ),
+    ]
+});
 
 struct SparkTable {
     compiled: Vec<Regex>,

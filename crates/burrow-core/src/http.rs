@@ -343,14 +343,22 @@ fn error_text(e: &reqwest::Error) -> String {
         }
         cur = c.source();
     }
+    error_text_parts(&parts, &e.to_string(), e.url().map(url::Url::as_str))
+}
+
+fn error_text_parts(parts: &[String], display: &str, url: Option<&str>) -> String {
     if parts.is_empty() {
-        let mut s = e.to_string();
-        if let Some(u) = e.url() {
-            s = s.replace(u.as_str(), "<url>");
-        }
-        return s;
+        return error_text_fallback(display, url);
     }
     parts.join(": ")
+}
+
+fn error_text_fallback(display: &str, url: Option<&str>) -> String {
+    let mut message = display.to_string();
+    if let Some(url) = url {
+        message = message.replace(url, "<url>");
+    }
+    message
 }
 
 pub fn map_err(e: &reqwest::Error, url: &str) -> RawErr {
@@ -382,4 +390,268 @@ fn display_host(url: &str) -> String {
             }
         })
         .unwrap_or_else(|| url.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use http::header::{ACCEPT_RANGES, CONTENT_RANGE};
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
+
+    fn settings() -> HttpSettings {
+        HttpSettings {
+            connect_timeout: Duration::from_millis(100),
+            request_timeout: Duration::from_millis(200),
+            headers: Vec::new(),
+            token: None,
+            user: None,
+            ca_cert: None,
+            insecure: false,
+        }
+    }
+
+    async fn body_bytes(body: UpBody) -> Bytes {
+        match body {
+            UpBody::Full(bytes) => bytes,
+            UpBody::Stream { prefix, mut rest } => {
+                let mut bytes = BytesMut::from(&prefix[..]);
+                while let Some(Ok(chunk)) = rest.next().await {
+                    bytes.extend_from_slice(&chunk);
+                }
+                bytes.freeze()
+            }
+        }
+    }
+
+    async fn response_server(response: &'static [u8]) -> (String, tokio::task::JoinHandle<String>) {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let task = tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut request = Vec::new();
+            let mut byte = [0; 1];
+            while !request.ends_with(b"\r\n\r\n") {
+                if stream.read_exact(&mut byte).await.is_err() {
+                    break;
+                }
+                request.extend_from_slice(&byte);
+            }
+            stream.write_all(response).await.unwrap();
+            String::from_utf8_lossy(&request).into_owned()
+        });
+        (format!("http://{address}"), task)
+    }
+
+    #[test]
+    fn ca_bundle_errors_are_reported_with_the_configured_path() {
+        let dir = std::env::temp_dir().join(format!("burrow-ca-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let missing = dir.join("missing.pem");
+        assert!(load_ca(&missing).unwrap_err().0.contains("missing.pem"));
+
+        let invalid = dir.join("invalid.pem");
+        std::fs::write(
+            &invalid,
+            b"-----BEGIN CERTIFICATE-----\nnot base64\n-----END CERTIFICATE-----\n",
+        )
+        .unwrap();
+        assert!(load_ca(&invalid).unwrap_err().0.contains("not valid PEM"));
+
+        let empty = dir.join("empty.pem");
+        std::fs::write(&empty, b"").unwrap();
+        let result = load_ca(&empty);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().0.contains("empty.pem"));
+
+        let valid = dir.join("valid.pem");
+        std::fs::write(&valid, include_bytes!("testdata/test-ca.pem")).unwrap();
+        assert_eq!(load_ca(&valid).unwrap().len(), 1);
+        let mut settings = settings();
+        settings.ca_cert = Some(valid);
+        assert!(HttpClient::new(&settings).is_ok());
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn client_rejects_invalid_credentials_and_header_values() {
+        let mut s = settings();
+        s.headers.push(("bad name".into(), "value".into()));
+        assert!(
+            HttpClient::new(&s)
+                .err()
+                .unwrap()
+                .0
+                .contains("invalid header name")
+        );
+
+        let mut s = settings();
+        s.headers.push(("X-Test".into(), "bad\nvalue".into()));
+        assert!(
+            HttpClient::new(&s)
+                .err()
+                .unwrap()
+                .0
+                .contains("invalid value")
+        );
+
+        let mut s = settings();
+        s.token = Some("bad\nvalue".into());
+        assert!(
+            HttpClient::new(&s)
+                .err()
+                .unwrap()
+                .0
+                .contains("invalid --token")
+        );
+    }
+
+    #[tokio::test]
+    async fn endpoint_buffers_or_streams_and_only_forwards_safe_headers() {
+        let (base, server) = response_server(
+            b"HTTP/1.1 206 Partial Content\r\nContent-Type: text/plain\r\nContent-Length: 5\r\nContent-Range: bytes 0-4/10\r\nAccept-Ranges: bytes\r\nLocation: /next\r\nX-Private: secret\r\nConnection: close\r\n\r\nhello",
+        ).await;
+        let mut s = settings();
+        s.user = Some("alice".into());
+        s.headers.push(("X-Client".into(), "present".into()));
+        let http = HttpClient::new(&s).unwrap();
+        let endpoint = Endpoint::new(base, "rm:8088".into(), http, 1);
+        let mut req = FetchReq::get("/logs?x=1", BodyMode::Buffer { cap: 2 });
+        req.accept = Some("application/json");
+        req.headers
+            .insert("range", HeaderValue::from_static("bytes=0-4"));
+        let attempt = endpoint.attempt(&req).await.unwrap();
+        assert_eq!(attempt.location(), Some("/next"));
+        let up = attempt.into_up(req.mode).await.unwrap();
+        assert_eq!(up.status, StatusCode::PARTIAL_CONTENT);
+        assert!(up.extra.contains_key(CONTENT_RANGE));
+        assert!(up.extra.contains_key(ACCEPT_RANGES));
+        assert!(!up.extra.contains_key("x-private"));
+        assert_eq!(body_bytes(up.body).await, Bytes::from_static(b"hello"));
+        assert_eq!(
+            body_bytes(UpBody::Stream {
+                prefix: Bytes::from_static(b"p"),
+                rest: futures_util::stream::iter([Ok(Bytes::from_static(b"chunk"))]).boxed(),
+            })
+            .await,
+            Bytes::from_static(b"pchunk")
+        );
+        let captured = server.await.unwrap();
+        assert!(captured.contains("user.name=alice"));
+        assert!(captured.to_ascii_lowercase().contains("x-client: present"));
+        assert!(captured.to_ascii_lowercase().contains("range: bytes=0-4"));
+        assert!(
+            captured
+                .to_ascii_lowercase()
+                .contains("accept: application/json")
+        );
+
+        let (base, server) =
+            response_server(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nhi")
+                .await;
+        let endpoint = Endpoint::new(
+            base,
+            "rm:8088".into(),
+            HttpClient::new(&settings()).unwrap(),
+            1,
+        );
+        let up = endpoint
+            .attempt(&FetchReq::get("/", BodyMode::Buffer { cap: 8 }))
+            .await
+            .unwrap()
+            .into_up(BodyMode::Buffer { cap: 8 })
+            .await
+            .unwrap();
+        assert_eq!(body_bytes(up.body).await, Bytes::from_static(b"hi"));
+        assert!(server.await.unwrap().starts_with("GET / HTTP/1.1"));
+    }
+
+    #[tokio::test]
+    async fn endpoint_reports_closed_limiters_and_connect_failures() {
+        let (base, server) =
+            response_server(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+                .await;
+        let endpoint = Endpoint::new(
+            base,
+            "rm:8088".into(),
+            HttpClient::new(&settings()).unwrap(),
+            1,
+        );
+        endpoint.sem.close();
+        let error = endpoint
+            .attempt(&FetchReq::get("/", BodyMode::Stream))
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(error.api.code, crate::error::ErrorCode::Internal);
+        server.abort();
+
+        let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let address = listener.local_addr().unwrap();
+        drop(listener);
+        let error = HttpClient::new(&settings())
+            .unwrap()
+            .client
+            .get(format!("http://{address}/"))
+            .send()
+            .await
+            .unwrap_err();
+        let mapped = map_err(&error, &format!("http://127.0.0.1:{}/", address.port()));
+        assert!(mapped.connect);
+        assert!(mapped.api.message.contains("cannot connect to"));
+        assert!(display_host("not a URL").starts_with("not a URL"));
+        assert_eq!(display_host("http://example.test/path"), "example.test");
+        assert_eq!(
+            error_text_fallback(
+                "request failed for https://user:secret@example.test/path?user.name=alice",
+                Some("https://user:secret@example.test/path?user.name=alice")
+            ),
+            "request failed for <url>"
+        );
+        assert_eq!(
+            error_text_parts(
+                &[],
+                "request failed for https://host/path",
+                Some("https://host/path")
+            ),
+            "request failed for <url>"
+        );
+
+        let invalid = HttpClient::new(&settings())
+            .unwrap()
+            .client
+            .get("not a URL")
+            .send()
+            .await
+            .unwrap_err();
+        assert!(!error_text(&invalid).is_empty());
+    }
+
+    #[tokio::test]
+    async fn response_timeout_is_mapped_and_server_handles_a_closed_request() {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let task = tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            tokio::time::sleep(Duration::from_millis(100)).await;
+            drop(stream);
+        });
+        let mut settings = settings();
+        settings.request_timeout = Duration::from_millis(20);
+        let error = HttpClient::new(&settings)
+            .unwrap()
+            .client
+            .get(format!("http://{address}/"))
+            .send()
+            .await
+            .unwrap_err();
+        let mapped = map_err(&error, &format!("http://{address}/"));
+        assert!(mapped.api.message.contains("timed out talking to"));
+        task.await.unwrap();
+
+        let (base, server) = response_server(b"").await;
+        let authority = base.strip_prefix("http://").unwrap();
+        drop(tokio::net::TcpStream::connect(authority).await.unwrap());
+        assert!(server.await.unwrap().is_empty());
+    }
 }

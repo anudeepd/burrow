@@ -283,14 +283,18 @@ pub async fn run(cli: Cli, matches: ArgMatches) -> ExitCode {
     drop(bootstrap);
     let cfg = apply_runtime_config(cfg, &runtime_discovery);
     match cli.command.unwrap_or(Command::Serve) {
-        Command::Serve => match app::serve(cfg).await {
-            Ok(()) => ExitCode::SUCCESS,
-            Err(e) => {
-                eprintln!("burrow: {e:#}");
-                ExitCode::FAILURE
-            }
-        },
+        Command::Serve => serve_exit(app::serve(cfg).await),
         Command::Doctor => doctor(cfg, runtime_discovery).await,
+    }
+}
+
+fn serve_exit(result: anyhow::Result<()>) -> ExitCode {
+    match result {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("burrow: {error:#}");
+            ExitCode::FAILURE
+        }
     }
 }
 
@@ -493,26 +497,7 @@ async fn doctor(cfg: Config, runtime_discovery: DiscoveryReport) -> ExitCode {
             }))
             .await;
             for (authority, probe) in probes {
-                match probe {
-                    Ok(up) if up.status.is_success() => {
-                        let version = match &up.body {
-                            burrow_core::http::UpBody::Full(b) => {
-                                serde_json::from_slice::<serde_json::Value>(b)
-                                    .ok()
-                                    .and_then(|v| {
-                                        v["nodeInfo"]["nodeManagerVersion"]
-                                            .as_str()
-                                            .map(str::to_string)
-                                    })
-                                    .unwrap_or_else(|| "-".into())
-                            }
-                            _ => "-".into(),
-                        };
-                        println!("  {authority:<32} ok    NodeManager {version}");
-                    }
-                    Ok(up) => println!("  {authority:<32} HTTP {}", up.status),
-                    Err(e) => println!("  {authority:<32} DOWN  {}", e.message),
-                }
+                print_node_probe(&authority, probe);
             }
         }
         Err(e) => println!("  cannot read the node list: {}", e.message),
@@ -520,36 +505,7 @@ async fn doctor(cfg: Config, runtime_discovery: DiscoveryReport) -> ExitCode {
 
     println!("\nservices");
     let (meta, _) = core.meta_document().await;
-    for (name, svc) in meta["services"].as_object().into_iter().flatten() {
-        if svc["configured"].as_bool() == Some(true) {
-            if let Some(candidates) = svc["candidates"].as_array() {
-                for (index, candidate) in candidates.iter().enumerate() {
-                    println!(
-                        "  {:<15} {:<28} {}",
-                        if index == 0 { name.as_str() } else { "" },
-                        candidate["url"].as_str().unwrap_or("-"),
-                        if candidate["reachable"].as_bool() == Some(true) {
-                            "reachable"
-                        } else {
-                            candidate["reason"].as_str().unwrap_or("unreachable")
-                        }
-                    );
-                }
-            } else {
-                println!(
-                    "  {name:<15} {:<28} {}",
-                    svc["url"].as_str().unwrap_or("-"),
-                    if svc["reachable"].as_bool() == Some(true) {
-                        "reachable".to_string()
-                    } else {
-                        format!("unreachable: {}", svc["reason"].as_str().unwrap_or("?"))
-                    }
-                );
-            }
-        } else {
-            println!("  {name:<15} not configured");
-        }
-    }
+    print_services(&meta["services"]);
     println!(
         "\nyarn              scheduler={} · logServer={}",
         meta["yarn"]["scheduler"].as_str().unwrap_or("unknown"),
@@ -581,16 +537,166 @@ async fn doctor(cfg: Config, runtime_discovery: DiscoveryReport) -> ExitCode {
     }
 }
 
+fn print_node_probe(
+    authority: &str,
+    probe: Result<burrow_core::http::UpResp, burrow_core::error::ApiError>,
+) {
+    match probe {
+        Ok(up) if up.status.is_success() => {
+            let version = match &up.body {
+                burrow_core::http::UpBody::Full(body) => {
+                    serde_json::from_slice::<serde_json::Value>(body)
+                        .ok()
+                        .and_then(|value| {
+                            value["nodeInfo"]["nodeManagerVersion"]
+                                .as_str()
+                                .map(str::to_string)
+                        })
+                        .unwrap_or_else(|| "-".into())
+                }
+                burrow_core::http::UpBody::Stream { .. } => "-".into(),
+            };
+            println!("  {authority:<32} ok    NodeManager {version}");
+        }
+        Ok(up) => println!("  {authority:<32} HTTP {}", up.status),
+        Err(error) => println!("  {authority:<32} DOWN  {}", error.message),
+    }
+}
+
+fn print_services(services: &serde_json::Value) {
+    for (name, svc) in services.as_object().into_iter().flatten() {
+        if svc["configured"].as_bool() == Some(true) {
+            if let Some(candidates) = svc["candidates"].as_array() {
+                for (index, candidate) in candidates.iter().enumerate() {
+                    println!(
+                        "  {:<15} {:<28} {}",
+                        if index == 0 { name.as_str() } else { "" },
+                        candidate["url"].as_str().unwrap_or("-"),
+                        if candidate["reachable"].as_bool() == Some(true) {
+                            "reachable"
+                        } else {
+                            candidate["reason"].as_str().unwrap_or("unreachable")
+                        }
+                    );
+                }
+            } else {
+                println!(
+                    "  {name:<15} {:<28} {}",
+                    svc["url"].as_str().unwrap_or("-"),
+                    if svc["reachable"].as_bool() == Some(true) {
+                        "reachable".to_string()
+                    } else {
+                        format!("unreachable: {}", svc["reason"].as_str().unwrap_or("?"))
+                    }
+                );
+            }
+        } else {
+            println!("  {name:<15} not configured");
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use futures_util::StreamExt;
+    use std::ffi::OsString;
+    use std::sync::Mutex;
     use tokio::{
         io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
-        net::TcpListener,
+        net::{TcpListener, TcpStream},
         task::JoinHandle,
     };
 
+    static CLI_ENV_LOCK: Mutex<()> = Mutex::new(());
+
+    #[test]
+    fn command_exit_mapping_and_doctor_formatters_cover_all_result_shapes() {
+        assert_eq!(serve_exit(Ok(())), ExitCode::SUCCESS);
+        assert_eq!(
+            serve_exit(Err(anyhow::anyhow!("bind failed"))),
+            ExitCode::FAILURE
+        );
+
+        let response = |status, body| burrow_core::http::UpResp {
+            status,
+            content_type: None,
+            extra: http::HeaderMap::new(),
+            body: burrow_core::http::UpBody::Full(bytes::Bytes::from(body)),
+            served_by: "nm:8042".into(),
+            url: "http://nm:8042/ws/v1/node/info".into(),
+        };
+        print_node_probe(
+            "nm:8042",
+            Ok(response(
+                http::StatusCode::OK,
+                br#"{"nodeInfo":{"nodeManagerVersion":"3.4.0"}}"#.to_vec(),
+            )),
+        );
+        print_node_probe(
+            "nm:8042",
+            Ok(response(http::StatusCode::OK, b"bad json".to_vec())),
+        );
+        print_node_probe(
+            "nm:8042",
+            Ok(burrow_core::http::UpResp {
+                body: burrow_core::http::UpBody::Stream {
+                    prefix: bytes::Bytes::new(),
+                    rest: futures_util::stream::empty().boxed(),
+                },
+                ..response(http::StatusCode::OK, Vec::new())
+            }),
+        );
+        print_node_probe(
+            "nm:8042",
+            Ok(response(http::StatusCode::SERVICE_UNAVAILABLE, Vec::new())),
+        );
+        print_node_probe(
+            "nm:8042",
+            Err(burrow_core::error::ApiError::unreachable(
+                "http://nm:8042",
+                "connection refused",
+            )),
+        );
+
+        print_services(&serde_json::json!({
+            "configuredCandidates": {
+                "configured": true,
+                "candidates": [
+                    {"url":"http://one", "reachable":true},
+                    {"url":"http://two", "reachable":false},
+                    {"reachable":false, "reason":"timeout"}
+                ]
+            },
+            "singleReachable": {"configured":true, "url":"http://jhs", "reachable":true},
+            "singleUnknown": {"configured":true, "reachable":false},
+            "disabled": {"configured":false}
+        }));
+    }
+
+    #[test]
+    fn environment_guard_restores_a_preexisting_value() {
+        let _lock = CLI_ENV_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let restore = EnvGuard::set(&[("BURROW_TEST_USER", "preexisting")]);
+        let changed = EnvGuard::set(&[("BURROW_TEST_USER", "temporary")]);
+        drop(changed);
+        assert_eq!(
+            std::env::var("BURROW_TEST_USER").as_deref(),
+            Ok("preexisting")
+        );
+        drop(restore);
+    }
+
     fn parse_cli(args: impl IntoIterator<Item = String>) -> (Cli, ArgMatches) {
+        let _guard = CLI_ENV_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        parse_cli_without_lock(args)
+    }
+
+    fn parse_cli_without_lock(args: impl IntoIterator<Item = String>) -> (Cli, ArgMatches) {
         let mut command = Cli::command();
         for (id, env) in [
             ("rm", "BURROW_TEST_RM"),
@@ -627,6 +733,34 @@ mod tests {
             url: url.into(),
             evidence: "test evidence".into(),
             operator_configured,
+        }
+    }
+
+    struct EnvGuard(Vec<(&'static str, Option<OsString>)>);
+
+    impl EnvGuard {
+        fn set(values: &[(&'static str, &'static str)]) -> Self {
+            let old = values
+                .iter()
+                .map(|(key, _)| (*key, std::env::var_os(key)))
+                .collect();
+            for (key, value) in values {
+                // This test holds CLI_ENV_LOCK; every test in this module reads clap env values via
+                // parse_cli, which takes the same lock.
+                unsafe { std::env::set_var(key, value) };
+            }
+            Self(old)
+        }
+    }
+
+    impl Drop for EnvGuard {
+        fn drop(&mut self) {
+            for (key, value) in self.0.drain(..) {
+                match value {
+                    Some(value) => unsafe { std::env::set_var(key, value) },
+                    None => unsafe { std::env::remove_var(key) },
+                }
+            }
         }
     }
 
@@ -750,6 +884,44 @@ base_path = "/from-file"
     }
 
     #[test]
+    fn config_sources_report_environment_variables_by_public_name() {
+        let _guard = CLI_ENV_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let _env = EnvGuard::set(&[
+            ("BURROW_TEST_RM", "http://rm.example:8088"),
+            ("BURROW_TEST_SPARK_HISTORY", "http://shs.example:18080"),
+            ("BURROW_TEST_JHS", "http://jhs.example:19888"),
+            ("BURROW_TEST_TIMELINE", "http://timeline.example:8188"),
+            ("BURROW_TEST_USER", "alice"),
+            ("BURROW_TEST_HEADER", "X-Trace: secret: yes"),
+            ("BURROW_TEST_CA_CERT", "/tmp/test-ca.pem"),
+            ("BURROW_TEST_INSECURE", "true"),
+            ("BURROW_TEST_TOKEN", "secret-token"),
+            ("BURROW_TEST_ALLOWED_HOST", "dashboard.example:9443"),
+            ("BURROW_TEST_ASSETS_DIR", "/tmp/assets"),
+            ("BURROW_TEST_BASE_PATH", "/burrow"),
+            ("BURROW_TEST_BIND", "127.0.0.1"),
+            ("BURROW_TEST_PORT", "9000"),
+            ("BURROW_TEST_NO_OPEN", "true"),
+        ]);
+        let (cli, matches) = parse_cli_without_lock(["burrow", "doctor"].map(str::to_owned));
+
+        let config = config_from(&cli, &matches).unwrap();
+        assert_eq!(config.source("rm"), "env BURROW_RM");
+        assert_eq!(config.source("spark_history"), "env BURROW_SPARK_HISTORY");
+        assert_eq!(config.source("jhs"), "env BURROW_JHS");
+        assert_eq!(config.source("timeline"), "env BURROW_TIMELINE");
+        assert_eq!(config.source("headers"), "env BURROW_HEADER");
+        assert_eq!(config.source("allowed_hosts"), "env BURROW_ALLOWED_HOST");
+        assert_eq!(config.source("user"), "env BURROW_USER");
+        assert_eq!(config.source("ca_cert"), "env BURROW_CA_CERT");
+        assert_eq!(config.token.as_deref(), Some("secret-token"));
+        assert_eq!(config.source("port"), "env BURROW_PORT");
+        assert!(config.insecure && config.no_open);
+    }
+
+    #[test]
     fn config_from_reports_a_missing_config_file() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("absent.toml");
@@ -833,18 +1005,24 @@ base_path = "/from-file"
 
     struct MockRm {
         base: String,
-        task: JoinHandle<()>,
+        task: Option<JoinHandle<()>>,
+        stop: Option<tokio::sync::oneshot::Sender<()>>,
     }
 
     impl MockRm {
         async fn start(reachable: bool) -> std::io::Result<Self> {
             let listener = TcpListener::bind(("127.0.0.1", 0)).await?;
             let addr = listener.local_addr().unwrap();
+            let node_authority = addr.to_string();
+            let (stop, mut stop_rx) = tokio::sync::oneshot::channel();
             let task = tokio::spawn(async move {
                 loop {
-                    let Ok((stream, _)) = listener.accept().await else {
-                        break;
+                    let accepted = tokio::select! {
+                        _ = &mut stop_rx => break,
+                        accepted = listener.accept() => accepted,
                     };
+                    let (stream, _) = accepted.expect("test listener remains available");
+                    let node_authority = node_authority.clone();
                     tokio::spawn(async move {
                         let mut reader = BufReader::new(stream);
                         let mut request_line = String::new();
@@ -868,15 +1046,25 @@ base_path = "/from-file"
                             }
                         }
                         let (status, body) = match path.as_str() {
-                            "/conf" => (200, r#"{"properties":[]}"#),
-                            "/ws/v1/cluster/apps" => (200, r#"{"apps":{"app":[]}}"#),
+                            "/conf" => (200, r#"{"properties":[]}"#.to_string()),
+                            "/ws/v1/cluster/apps" => (200, r#"{"apps":{"app":[]}}"#.to_string()),
                             "/ws/v1/cluster/info" if reachable => (
                                 200,
-                                r#"{"clusterInfo":{"haState":"ACTIVE","hadoopVersion":"3.4.0","state":"STARTED"}}"#,
+                                r#"{"clusterInfo":{"haState":"ACTIVE","hadoopVersion":"3.4.0","state":"STARTED"}}"#.to_string(),
                             ),
-                            "/ws/v1/cluster/info" => (503, "{}"),
-                            "/ws/v1/cluster/nodes" => (200, r#"{"nodes":{"node":[]}}"#),
-                            _ => (200, "{}"),
+                            "/ws/v1/cluster/info" => (503, "{}".to_string()),
+                            "/ws/v1/cluster/nodes" if reachable => (
+                                200,
+                                format!(
+                                    r#"{{"nodes":{{"node":[{{"nodeHTTPAddress":"{node_authority}"}}]}}}}"#
+                                ),
+                            ),
+                            "/ws/v1/cluster/nodes" => (503, "{}".to_string()),
+                            "/ws/v1/node/info" => (
+                                200,
+                                r#"{"nodeInfo":{"nodeManagerVersion":"3.4.0"}}"#.to_string(),
+                            ),
+                            _ => (200, "{}".to_string()),
                         };
                         let wire = format!(
                             "HTTP/1.1 {status} Test\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
@@ -888,41 +1076,98 @@ base_path = "/from-file"
             });
             Ok(Self {
                 base: format!("http://{addr}"),
-                task,
+                task: Some(task),
+                stop: Some(stop),
             })
+        }
+
+        async fn close_without_request(&self) {
+            let authority = self.base.strip_prefix("http://").unwrap();
+            drop(TcpStream::connect(authority).await.unwrap());
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+
+        async fn shutdown(mut self) {
+            self.stop
+                .take()
+                .expect("mock RM has a stop sender")
+                .send(())
+                .expect("mock RM task is listening");
+            self.task.take().expect("mock RM has a task").await.unwrap();
         }
     }
 
     impl Drop for MockRm {
         fn drop(&mut self) {
-            self.task.abort();
+            if let Some(task) = &self.task {
+                task.abort();
+            }
         }
+    }
+
+    #[tokio::test]
+    async fn mock_rm_exits_after_a_client_closes_without_a_request() {
+        let rm = MockRm::start(true).await.unwrap();
+        rm.close_without_request().await;
+        rm.shutdown().await;
     }
 
     #[tokio::test]
     async fn doctor_exit_code_tracks_resource_manager_reachability() {
         for (reachable, expected) in [(true, ExitCode::SUCCESS), (false, ExitCode::FAILURE)] {
-            let rm = match MockRm::start(reachable).await {
-                Ok(rm) => rm,
-                Err(error) if error.kind() == std::io::ErrorKind::PermissionDenied => return,
-                Err(error) => panic!("could not start mock RM: {error}"),
-            };
-            let command = vec![
-                "burrow".to_string(),
-                "--rm".to_string(),
-                rm.base.clone(),
-                "--spark-history".to_string(),
-                String::new(),
-                "--jhs".to_string(),
-                String::new(),
-                "--timeline".to_string(),
-                String::new(),
-                "doctor".to_string(),
-            ];
+            let rm = MockRm::start(reachable)
+                .await
+                .expect("the test RM can bind a loopback listener");
+            let mut command = vec!["burrow".to_string(), "--rm".to_string(), rm.base.clone()];
+            if reachable {
+                command.extend([
+                    "--spark-history".to_string(),
+                    rm.base.clone(),
+                    "--jhs".to_string(),
+                    rm.base.clone(),
+                    "--timeline".to_string(),
+                    rm.base.clone(),
+                ]);
+            } else {
+                command.extend([
+                    "--spark-history".to_string(),
+                    String::new(),
+                    "--jhs".to_string(),
+                    String::new(),
+                    "--timeline".to_string(),
+                    String::new(),
+                ]);
+            }
+            command.push("doctor".into());
             let (cli, matches) = parse_cli(command);
 
             assert_eq!(run(cli, matches).await, expected);
         }
+    }
+
+    #[tokio::test]
+    async fn doctor_reports_runtime_service_candidates_and_probe_details() {
+        let rm = MockRm::start(true)
+            .await
+            .expect("the test RM can bind a loopback listener");
+        let mut cfg = Config::for_rm(&rm.base).unwrap();
+        cfg.jhs.clear();
+        cfg.sources.insert("jhs", "flag (disabled)".into());
+        cfg.timeline = Some(config::parse_service_url(&rm.base, false, Some(8188)).unwrap());
+        cfg.discovery.http_policy = Some(config::HttpPolicy::HttpsOnly);
+        cfg.discovery.warnings.push("Hadoop conf warning".into());
+        let report = DiscoveryReport {
+            candidates: vec![
+                candidate(ServiceKind::JobHistory, &rm.base, true),
+                candidate(ServiceKind::SparkHistory, &rm.base, true),
+                candidate(ServiceKind::JobHistory, &rm.base, false),
+            ],
+            warnings: vec!["runtime warning".into()],
+            log_server_url: Some(format!("{}/jobhistory/logs", rm.base)),
+        };
+        let cfg = apply_runtime_config(cfg, &report);
+
+        assert_eq!(doctor(cfg, report).await, ExitCode::SUCCESS);
     }
 
     #[tokio::test]
@@ -937,5 +1182,57 @@ base_path = "/from-file"
         ]);
 
         assert_eq!(run(cli, matches).await, ExitCode::from(2));
+    }
+
+    #[tokio::test]
+    async fn doctor_returns_exit_two_when_the_core_cannot_be_created() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.ca_cert = Some(dir.path().join("missing.pem"));
+        assert_eq!(
+            doctor(cfg, DiscoveryReport::default()).await,
+            ExitCode::from(2)
+        );
+    }
+
+    #[tokio::test]
+    async fn run_returns_exit_two_when_core_cannot_load_a_ca_bundle() {
+        let dir = tempfile::tempdir().unwrap();
+        let (cli, matches) = parse_cli(
+            [
+                "burrow",
+                "--rm",
+                "http://rm.example:8088",
+                "--ca-cert",
+                dir.path().join("missing.pem").to_str().unwrap(),
+                "doctor",
+            ]
+            .map(str::to_owned),
+        );
+
+        assert_eq!(run(cli, matches).await, ExitCode::from(2));
+    }
+
+    #[tokio::test]
+    async fn run_reports_a_serve_bind_failure_as_exit_one() {
+        let listener = TcpListener::bind(("127.0.0.1", 0))
+            .await
+            .expect("the test can reserve a loopback port");
+        let port = listener.local_addr().unwrap().port();
+        let (cli, matches) = parse_cli(
+            [
+                "burrow",
+                "--rm",
+                "http://127.0.0.1:0",
+                "--bind",
+                "127.0.0.1",
+                "--port",
+                &port.to_string(),
+                "serve",
+            ]
+            .map(str::to_owned),
+        );
+        assert_eq!(run(cli, matches).await, ExitCode::FAILURE);
+        drop(listener);
     }
 }

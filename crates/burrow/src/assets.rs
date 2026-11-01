@@ -13,12 +13,8 @@
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 
+use crate::embedded::Embedded;
 use burrow_core::config::Config;
-use rust_embed::Embed;
-
-#[derive(Embed)]
-#[folder = "$OUT_DIR/burrow-assets"]
-struct Embedded;
 
 /// The SPA shell TanStack Start's SPA mode emits; `index.html` is accepted as an alias.
 const SHELL_NAMES: [&str; 2] = ["_shell.html", "index.html"];
@@ -164,11 +160,12 @@ impl Assets {
                 let plain = Embedded::get(path)?;
                 let variant = |coding: Coding| Embedded::get(&format!("{path}{}", coding.suffix()));
                 let (br, gz) = (variant(Coding::Br), variant(Coding::Gzip));
-                match pick_encoding(accept_encoding, br.is_some(), gz.is_some()) {
-                    Some(Coding::Br) => br.map(|f| (f.data, Some(Coding::Br))),
-                    Some(Coding::Gzip) => gz.map(|f| (f.data, Some(Coding::Gzip))),
-                    None => Some((plain.data, None)),
-                }
+                select_variant(
+                    accept_encoding,
+                    plain.data,
+                    br.map(|f| f.data),
+                    gz.map(|f| f.data),
+                )
             }
             Source::Dir { root, canonical } => {
                 let file = resolve_dir(root, canonical, path)?;
@@ -178,13 +175,27 @@ impl Assets {
                     std::fs::read(file.with_file_name(format!("{name}{}", coding.suffix()))).ok()
                 };
                 let (br, gz) = (variant(Coding::Br), variant(Coding::Gzip));
-                match pick_encoding(accept_encoding, br.is_some(), gz.is_some()) {
-                    Some(Coding::Br) => Some((Cow::Owned(br?), Some(Coding::Br))),
-                    Some(Coding::Gzip) => Some((Cow::Owned(gz?), Some(Coding::Gzip))),
-                    None => Some((Cow::Owned(plain), None)),
-                }
+                select_variant(
+                    accept_encoding,
+                    Cow::Owned(plain),
+                    br.map(Cow::Owned),
+                    gz.map(Cow::Owned),
+                )
             }
         }
+    }
+}
+
+fn select_variant(
+    accept: Option<&str>,
+    plain: Cow<'static, [u8]>,
+    br: Option<Cow<'static, [u8]>>,
+    gzip: Option<Cow<'static, [u8]>>,
+) -> Option<(Cow<'static, [u8]>, Option<Coding>)> {
+    match pick_encoding(accept, br.is_some(), gzip.is_some()) {
+        Some(Coding::Br) => br.map(|bytes| (bytes, Some(Coding::Br))),
+        Some(Coding::Gzip) => gzip.map(|bytes| (bytes, Some(Coding::Gzip))),
+        None => Some((plain, None)),
     }
 }
 
@@ -292,18 +303,24 @@ fn collect_files(dir: &Path, count: &mut usize) {
         return;
     };
     for entry in entries.flatten() {
-        let Ok(kind) = entry.file_type() else {
-            continue;
-        };
-        if kind.is_dir() {
+        let kind = entry.file_type();
+        if kind.as_ref().is_ok_and(std::fs::FileType::is_dir) {
             collect_files(&entry.path(), count);
-        } else if kind.is_file() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if !name.starts_with('.') && !is_variant(&name) {
-                *count += 1;
-            }
+        } else {
+            count_file_kind(kind, &entry.file_name(), count);
         }
+    }
+}
+
+fn count_file_kind(
+    kind: std::io::Result<std::fs::FileType>,
+    name: &std::ffi::OsStr,
+    count: &mut usize,
+) {
+    let Ok(kind) = kind else { return };
+    let name = name.to_string_lossy();
+    if kind.is_file() && !name.starts_with('.') && !is_variant(&name) {
+        *count += 1;
     }
 }
 
@@ -355,6 +372,16 @@ mod tests {
         assert_eq!(Coding::Gzip.http(), "gzip");
         assert_eq!(Coding::Gzip.suffix(), ".gz");
         assert_eq!(Coding::Br.http(), "br");
+
+        let (bytes, encoding) = select_variant(
+            Some("gzip"),
+            Cow::Borrowed(b"plain"),
+            Some(Cow::Borrowed(b"brotli")),
+            Some(Cow::Borrowed(b"compressed")),
+        )
+        .unwrap();
+        assert_eq!(&*bytes, b"compressed");
+        assert_eq!(encoding, Some(Coding::Gzip));
     }
 
     #[test]
@@ -370,5 +397,56 @@ mod tests {
         assert!(assets.get("assets/a.js.br", Some("br")).is_none());
         assert!(assets.get("assets/a.js.gz", Some("gzip")).is_none());
         assert!(!assets.has_shell());
+    }
+
+    #[test]
+    fn directory_assets_select_variants_count_files_and_block_symlink_escape() {
+        let root = tempfile::tempdir().unwrap();
+        let assets = root.path().join("assets");
+        std::fs::create_dir_all(&assets).unwrap();
+        let shell = "<html>".to_string() + &"s".repeat(600);
+        std::fs::write(root.path().join("index.html"), &shell).unwrap();
+        std::fs::write(root.path().join("index.html.gz"), "gzip shell").unwrap();
+        std::fs::write(assets.join("app.js"), "source").unwrap();
+        std::fs::write(assets.join("app.js.br"), "brotli").unwrap();
+        std::fs::write(assets.join("app.js.gz"), "gzip").unwrap();
+        std::fs::write(assets.join(".hidden"), "hidden").unwrap();
+        let external = tempfile::NamedTempFile::new().unwrap();
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(external.path(), assets.join("escape.js")).unwrap();
+
+        let root_assets = Assets::dir(root.path().to_path_buf());
+        assert!(root_assets.origin().contains("(2 files)"));
+        assert!(root_assets.has_shell());
+        assert_eq!(
+            root_assets.shell(Some("gzip")).unwrap().encoding,
+            Some(Coding::Gzip)
+        );
+        let app = root_assets.get("assets/app.js", Some("gzip")).unwrap();
+        assert_eq!(app.encoding, Some(Coding::Gzip));
+        assert_eq!(&*app.bytes, b"gzip");
+        let br = root_assets
+            .get("assets/app.js", Some("br, gzip;q=0.5"))
+            .unwrap();
+        assert_eq!(br.encoding, Some(Coding::Br));
+        assert_eq!(&*br.bytes, b"brotli");
+        assert!(root_assets.get("assets/.hidden", None).is_some());
+        assert!(root_assets.get("assets/%2e%2e/index.html", None).is_none());
+        #[cfg(unix)]
+        assert!(root_assets.get("assets/escape.js", None).is_none());
+
+        let no_shell = root.path().join("empty");
+        std::fs::create_dir(&no_shell).unwrap();
+        std::fs::write(no_shell.join("_shell.html.gz"), "only variant").unwrap();
+        assert!(!Assets::dir(no_shell).has_shell());
+        assert_eq!(Assets::embedded().origin().starts_with("embedded ("), true);
+
+        let mut count = 0;
+        count_file_kind(
+            Err(std::io::Error::other("entry disappeared")),
+            std::ffi::OsStr::new("file.js"),
+            &mut count,
+        );
+        assert_eq!(count, 0);
     }
 }

@@ -46,7 +46,9 @@ impl<'a> ApiRequest<'a> {
 
     /// First path segment: the route group (`yarn`, `rm`, `nm`, `meta`, `healthz`).
     pub fn group(&self) -> &'a str {
-        self.path.split('/').next().unwrap_or("")
+        self.path
+            .split_once('/')
+            .map_or(self.path, |(group, _)| group)
     }
 
     /// The request with its first segment removed: `yarn/apps` → `apps`.
@@ -87,4 +89,63 @@ async fn healthz(_core: &Core, req: ApiRequest<'_>) -> Result<Reply, ApiError> {
     let mut reply = Reply::synthesized(StatusCode::OK, TEXT_CT, "ok");
     reply.cache = Some(CacheSource::Bypass);
     Ok(reply)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::Config;
+
+    fn core() -> std::sync::Arc<Core> {
+        Core::new(Config::for_rm("http://127.0.0.1:8088").unwrap()).unwrap()
+    }
+
+    #[test]
+    fn request_helpers_preserve_request_options_and_handle_root_paths() {
+        let mut req = ApiRequest::new("yarn/apps");
+        req.query = Some("states=RUNNING");
+        req.bypass = true;
+        req.if_none_match = Some("W/\"etag\"");
+        req.range = Some("bytes=1-2");
+
+        assert_eq!(req.group(), "yarn");
+        let rest = req.rest();
+        assert_eq!(rest.path, "apps");
+        assert_eq!(rest.query, req.query);
+        assert!(rest.bypass);
+        assert_eq!(rest.if_none_match, req.if_none_match);
+        assert_eq!(rest.range, req.range);
+
+        let root = ApiRequest::new("");
+        assert_eq!(root.group(), "");
+        assert_eq!(root.rest().path, "");
+        assert_eq!(ApiRequest::new("meta").rest().path, "");
+    }
+
+    #[tokio::test]
+    async fn healthz_rejects_nested_resources() {
+        let core = core();
+        let error = dispatch(&core, ApiRequest::new("healthz/extra"))
+            .await
+            .err()
+            .unwrap();
+
+        assert_eq!(error.status, StatusCode::NOT_FOUND);
+        assert_eq!(error.message, "'/api/healthz/extra' does not exist");
+    }
+
+    #[tokio::test]
+    async fn dispatch_reports_empty_and_unknown_groups() {
+        let core = core();
+        let empty = dispatch(&core, ApiRequest::new("")).await.err().unwrap();
+        assert_eq!(empty.status, StatusCode::NOT_FOUND);
+        assert_eq!(empty.message, "no /api resource requested");
+
+        let unknown = dispatch(&core, ApiRequest::new("unknown/resource"))
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(unknown.status, StatusCode::NOT_FOUND);
+        assert_eq!(unknown.message, "unknown API group '/api/unknown'");
+    }
 }

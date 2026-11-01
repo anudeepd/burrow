@@ -8,6 +8,7 @@
 //! * the Host-header allowlist, the security headers every response carries, and compression;
 //! * static delivery from [`crate::assets`] with the SPA shell fallback.
 
+use std::future::Future;
 use std::io::ErrorKind;
 use std::net::IpAddr;
 use std::sync::Arc;
@@ -53,13 +54,23 @@ fn csp_with_nonce(nonce: &str) -> HeaderValue {
 
 /// 128 bits of OS randomness, hex-encoded — enough to make the nonce unguessable per response.
 fn fresh_nonce() -> String {
+    fresh_nonce_with(|buf| getrandom::fill(buf).is_ok(), nonce_fallback_time)
+}
+
+fn nonce_fallback_time() -> Result<u128, std::time::SystemTimeError> {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+}
+
+fn fresh_nonce_with(
+    fill_random: impl FnOnce(&mut [u8; 16]) -> bool,
+    fallback_time: impl FnOnce() -> Result<u128, std::time::SystemTimeError>,
+) -> String {
     let mut buf = [0u8; 16];
-    if getrandom::fill(&mut buf).is_err() {
+    if !fill_random(&mut buf) {
         // Extremely unlikely; a time-seeded fallback is still better than a blocked page.
-        let t = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
+        let t = fallback_time().unwrap_or(0);
         buf[..16].copy_from_slice(&t.to_le_bytes()[..16.min(size_of::<u128>())]);
     }
     let mut out = String::with_capacity(32);
@@ -412,13 +423,11 @@ fn api_response(reply: Reply, if_none_match: Option<&str>) -> Response {
 
 fn api_error(err: ApiError) -> Response {
     if err.status.is_server_error() {
-        tracing::warn!(
-            status = err.status.as_u16(),
-            code = err.code.as_str(),
-            upstream = err.upstream.as_ref().map(|u| u.url.as_str()).unwrap_or("-"),
-            "{}",
-            err.message
-        );
+        let status = err.status.as_u16();
+        let code = err.code.as_str();
+        let upstream = err.upstream.as_ref().map(|u| u.url.as_str()).unwrap_or("-");
+        let message = &err.message;
+        tracing::warn!(status, code, upstream, "{}", message);
     }
     let reply = Reply::error_envelope(err.status, &err);
     api_response(reply, None)
@@ -539,13 +548,24 @@ fn looks_like_static_file(rel: &str) -> bool {
 
 /// Bind `--port`, falling back to the next free port unless the port was given explicitly.
 async fn bind(cfg: &Config) -> anyhow::Result<(TcpListener, u16, bool)> {
+    bind_with(cfg, |bind, port| TcpListener::bind((bind, port))).await
+}
+
+async fn bind_with<F, Fut>(
+    cfg: &Config,
+    mut try_bind: F,
+) -> anyhow::Result<(TcpListener, u16, bool)>
+where
+    F: FnMut(IpAddr, u16) -> Fut,
+    Fut: Future<Output = std::io::Result<TcpListener>>,
+{
     let attempts = if cfg.port_explicit { 1 } else { 20 };
     let mut tried = Vec::new();
     for offset in 0..attempts {
         let Some(port) = cfg.port.checked_add(offset) else {
             break;
         };
-        match TcpListener::bind((cfg.bind, port)).await {
+        match try_bind(cfg.bind, port).await {
             Ok(listener) => {
                 let actual_port = listener.local_addr()?.port();
                 return Ok((listener, actual_port, offset > 0));
@@ -582,6 +602,13 @@ fn display_url(cfg: &Config, port: u16) -> String {
 
 /// Bind, banner, open the browser and serve until Ctrl-C/SIGTERM.
 pub async fn serve(cfg: Config) -> anyhow::Result<()> {
+    serve_until(cfg, shutdown()).await
+}
+
+async fn serve_until(
+    cfg: Config,
+    shutdown: impl Future<Output = ()> + Send + 'static,
+) -> anyhow::Result<()> {
     let assets = Assets::from_config(&cfg);
     let shell = assets.has_shell();
     let assets_origin = assets.origin().to_string();
@@ -589,28 +616,37 @@ pub async fn serve(cfg: Config) -> anyhow::Result<()> {
     let state = Arc::new(AppState::new(core, assets));
     let (listener, port, moved) = bind(&state.core.config).await?;
     let url = display_url(&state.core.config, port);
-    if moved {
-        println!(
-            "burrow: port {} was in use; listening on {port} instead",
-            state.core.config.port
-        );
-    }
+    print_moved_port(state.core.config.port, port, moved);
     print_banner(&state, &url, &assets_origin, shell);
-    if !state.core.config.no_open {
-        open_browser(&url);
-    }
+    maybe_open_browser(state.core.config.no_open, &url, webbrowser::open);
     let probe_state = state.clone();
     tokio::spawn(async move { print_cluster(&probe_state, "  ").await });
 
     axum::serve(listener, router(state))
-        .with_graceful_shutdown(shutdown())
+        .with_graceful_shutdown(shutdown)
         .await?;
     println!("\nburrow: stopped");
     Ok(())
 }
 
-fn open_browser(url: &str) {
-    match webbrowser::open(url) {
+fn print_moved_port(configured: u16, port: u16, moved: bool) {
+    if moved {
+        println!(
+            "burrow: port {} was in use; listening on {port} instead",
+            configured
+        );
+    }
+}
+
+fn maybe_open_browser<E: std::fmt::Display>(
+    no_open: bool,
+    url: &str,
+    open: impl FnOnce(&str) -> Result<(), E>,
+) {
+    if no_open {
+        return;
+    }
+    match open(url) {
         Ok(()) => {}
         Err(e) => {
             println!("  (could not open a browser: {e}; open {url} yourself, or pass --no-open)")
@@ -663,22 +699,7 @@ fn print_banner(state: &AppState, url: &str, assets_origin: &str, shell: bool) {
     } else {
         println!("  {:<17} not configured", "Timeline");
     }
-    let mut auth = Vec::new();
-    if let Some(user) = &cfg.user {
-        auth.push(format!("user.name={user}"));
-    }
-    if cfg.token.is_some() {
-        auth.push("bearer token".into());
-    }
-    if !cfg.headers.is_empty() {
-        auth.push(format!("{} custom header(s)", cfg.headers.len()));
-    }
-    if cfg.insecure {
-        auth.push("TLS verification off".into());
-    }
-    if let Some(ca) = &cfg.ca_cert {
-        auth.push(format!("CA {}", ca.display()));
-    }
+    let auth = auth_display(cfg);
     if !auth.is_empty() {
         println!("  auth              {}", auth.join(", "));
     }
@@ -706,10 +727,34 @@ fn print_banner(state: &AppState, url: &str, assets_origin: &str, shell: bool) {
     println!("  read-only · press Ctrl-C to stop");
 }
 
+fn auth_display(cfg: &Config) -> Vec<String> {
+    let mut auth = Vec::new();
+    if let Some(user) = &cfg.user {
+        auth.push(format!("user.name={user}"));
+    }
+    if cfg.token.is_some() {
+        auth.push("bearer token".into());
+    }
+    if !cfg.headers.is_empty() {
+        auth.push(format!("{} custom header(s)", cfg.headers.len()));
+    }
+    if cfg.insecure {
+        auth.push("TLS verification off".into());
+    }
+    if let Some(ca) = &cfg.ca_cert {
+        auth.push(format!("CA {}", ca.display()));
+    }
+    auth
+}
+
 /// One-line cluster summary used by both the startup banner and `doctor` (memoized, so a SPA's first
 /// `/api/meta` pays nothing for it).
 pub async fn cluster_summary(core: &Core) -> String {
     let (doc, _) = core.meta_document().await;
+    cluster_summary_doc(&doc)
+}
+
+fn cluster_summary_doc(doc: &serde_json::Value) -> String {
     let rm = &doc["rm"];
     let reachable = rm["reachable"].as_bool().unwrap_or(false);
     let urls = rm["urls"]
@@ -754,23 +799,30 @@ pub async fn cluster_summary(core: &Core) -> String {
 
 async fn print_cluster(state: &AppState, indent: &str) {
     let summary = cluster_summary(&state.core).await;
+    log_cluster_summary(&summary, indent);
+    let doc = state.core.meta_document().await.0;
+    log_configured_services(&doc["services"], indent);
+}
+
+fn log_cluster_summary(summary: &str, indent: &str) {
     if summary.contains("UNREACHABLE") {
         tracing::warn!("{indent}{summary}");
     } else {
         tracing::info!("{indent}{summary}");
     }
-    if let serde_json::Value::Object(services) = &state.core.meta_document().await.0["services"] {
+}
+
+fn log_configured_services(services: &serde_json::Value, indent: &str) {
+    if let serde_json::Value::Object(services) = services {
         for (name, svc) in services {
             if svc["configured"].as_bool() == Some(true) {
-                tracing::info!(
-                    "{indent}{name}: {} ({})",
-                    svc["url"].as_str().unwrap_or("-"),
-                    if svc["reachable"].as_bool() == Some(true) {
-                        "reachable"
-                    } else {
-                        svc["reason"].as_str().unwrap_or("unreachable")
-                    }
-                );
+                let status = if svc["reachable"].as_bool() == Some(true) {
+                    "reachable"
+                } else {
+                    svc["reason"].as_str().unwrap_or("unreachable")
+                };
+                let url = svc["url"].as_str().unwrap_or("-");
+                tracing::info!("{indent}{name}: {url} ({status})");
             }
         }
     }
@@ -779,23 +831,52 @@ async fn print_cluster(state: &AppState, indent: &str) {
 async fn shutdown() {
     #[cfg(unix)]
     {
-        let mut term =
-            match tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
-                Ok(s) => s,
-                Err(_) => {
-                    let _ = tokio::signal::ctrl_c().await;
-                    return;
-                }
-            };
-        tokio::select! {
-            _ = tokio::signal::ctrl_c() => {}
-            _ = term.recv() => {}
-        }
+        shutdown_with(
+            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()),
+            tokio::signal::ctrl_c(),
+        )
+        .await;
     }
     #[cfg(not(unix))]
     {
         let _ = tokio::signal::ctrl_c().await;
     }
+}
+
+#[cfg(unix)]
+async fn shutdown_with(
+    term_signal: std::io::Result<tokio::signal::unix::Signal>,
+    ctrl_c: impl Future<Output = std::io::Result<()>>,
+) {
+    let mut term = match term_signal {
+        Ok(signal) => signal,
+        Err(_) => {
+            let _ = ctrl_c.await;
+            return;
+        }
+    };
+    tokio::select! {
+        _ = ctrl_c => {}
+        _ = term.recv() => {}
+    }
+}
+
+fn log_ephemeral_server_result<E: std::fmt::Display>(result: Result<(), E>) {
+    if let Err(error) = result {
+        tracing::debug!("test server stopped: {error}");
+    }
+}
+
+async fn run_ephemeral_server(
+    listener: TcpListener,
+    app: Router,
+    shutdown: impl std::future::Future<Output = ()> + Send + 'static,
+) {
+    log_ephemeral_server_result(
+        axum::serve(listener, app)
+            .with_graceful_shutdown(shutdown)
+            .await,
+    );
 }
 
 /// The address a test harness should talk to (used by integration tests).
@@ -811,11 +892,7 @@ pub async fn serve_ephemeral(
     let listener = TcpListener::bind((IpAddr::from([127, 0, 0, 1]), 0)).await?;
     let port = listener.local_addr()?.port();
     let app = router(state);
-    let handle = tokio::spawn(async move {
-        if let Err(e) = axum::serve(listener, app).await {
-            tracing::debug!("test server stopped: {e}");
-        }
-    });
+    let handle = tokio::spawn(run_ephemeral_server(listener, app, std::future::pending()));
     Ok((port, handle))
 }
 
@@ -825,6 +902,7 @@ mod tests {
     use burrow_core::cache::CacheSource;
     use futures_util::stream;
     use std::time::Duration;
+    use tower::ServiceExt;
 
     #[test]
     fn nonce_injection_handles_inline_external_existing_and_malformed_scripts() {
@@ -853,6 +931,46 @@ mod tests {
                 .contains("nonce-nonce-value")
         );
         assert_eq!(fresh_nonce().len(), 32);
+        assert_eq!(
+            fresh_nonce_with(|_| false, || Ok(42)).len(),
+            32,
+            "the time fallback still produces a full nonce"
+        );
+        assert_eq!(
+            fresh_nonce_with(
+                |_| false,
+                || {
+                    std::time::SystemTime::UNIX_EPOCH
+                        .duration_since(std::time::SystemTime::now())
+                        .map(|d| d.as_nanos())
+                }
+            )
+            .len(),
+            32,
+            "a clock error uses the documented zero fallback"
+        );
+        assert!(nonce_fallback_time().is_ok());
+        assert_eq!(csp_with_nonce("invalid\nnonce").to_str().unwrap(), CSP);
+        maybe_open_browser(false, "http://localhost:8787", |_| Ok::<(), &str>(()));
+        maybe_open_browser(false, "http://localhost:8787", |_| {
+            Err("no browser available")
+        });
+        maybe_open_browser(true, "x", |_| Err::<(), &str>("x"));
+        log_ephemeral_server_result::<&str>(Ok(()));
+        log_ephemeral_server_result(Err("server stopped"));
+    }
+
+    #[tokio::test]
+    async fn ephemeral_server_returns_after_a_graceful_shutdown_signal() {
+        let listener = TcpListener::bind((IpAddr::from([127, 0, 0, 1]), 0))
+            .await
+            .unwrap();
+        let (stop, stopped) = tokio::sync::oneshot::channel();
+        let server = tokio::spawn(run_ephemeral_server(listener, Router::new(), async move {
+            let _ = stopped.await;
+        }));
+        stop.send(()).unwrap();
+        server.await.unwrap();
     }
 
     #[test]
@@ -866,6 +984,8 @@ mod tests {
             Some("localhost"),
             Some("localhost:8787"),
             Some("127.0.0.1:8787"),
+            Some("127.0.0.2:8787"),
+            Some("[::1]:8787"),
             Some("dashboard.example"),
             Some("dashboard.example:9000"),
             Some("other.example:9443"),
@@ -983,6 +1103,13 @@ mod tests {
         let error = api_error(ApiError::forbidden("not allowed"));
         assert_eq!(error.status(), StatusCode::FORBIDDEN);
         assert_eq!(error.headers()["x-burrow-cache"], "bypass");
+        let server_error = api_error(ApiError::unavailable("upstream down"));
+        assert_eq!(server_error.status(), StatusCode::SERVICE_UNAVAILABLE);
+        let server_error_with_origin = api_error(ApiError::unreachable(
+            "http://rm.internal:8088",
+            "connection refused",
+        ));
+        assert_eq!(server_error_with_origin.status(), StatusCode::BAD_GATEWAY);
     }
 
     #[tokio::test]
@@ -1018,18 +1145,7 @@ mod tests {
         cfg.bind = "127.0.0.1".parse().unwrap();
         cfg.port = 0;
         cfg.port_explicit = true;
-        let (listener, port, moved) = match bind(&cfg).await {
-            Ok(bound) => bound,
-            Err(error)
-                if error
-                    .downcast_ref::<std::io::Error>()
-                    .is_some_and(|e| e.kind() == ErrorKind::PermissionDenied) =>
-            {
-                // Some sandboxed runners prohibit opening loopback sockets entirely.
-                return;
-            }
-            Err(error) => panic!("unexpected bind failure: {error:#}"),
-        };
+        let (listener, port, moved) = bind(&cfg).await.expect("ephemeral loopback bind succeeds");
         assert_ne!(port, 0);
         assert!(!moved);
         drop(listener);
@@ -1046,6 +1162,59 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn bind_reports_port_overflow_and_non_address_errors() {
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.port = u16::MAX;
+        let mut calls = 0;
+        let exhausted = bind_with(&cfg, |_, _| {
+            calls += 1;
+            async { Err(std::io::Error::from(ErrorKind::AddrInUse)) }
+        })
+        .await
+        .unwrap_err();
+        assert_eq!(calls, 1);
+        assert!(exhausted.to_string().contains("65535"));
+
+        cfg.port = 8787;
+        cfg.port_explicit = true;
+        let error = bind_with(&cfg, |_, _| async {
+            Err(std::io::Error::from(ErrorKind::PermissionDenied))
+        })
+        .await
+        .unwrap_err();
+        assert!(error.to_string().contains("cannot bind"));
+    }
+
+    #[test]
+    fn startup_logging_formats_reachability_and_only_configured_services() {
+        print_moved_port(8787, 8788, true);
+        print_moved_port(8787, 8787, false);
+        log_cluster_summary("ResourceManager http://rm UNREACHABLE", "  ");
+        log_cluster_summary("ResourceManager http://rm · active", "  ");
+        log_configured_services(
+            &serde_json::json!({
+                "timeline": {"configured": true, "url": "http://ts:8188", "reachable": true},
+                "jhs": {"configured": true, "reachable": false, "reason": "connection refused"},
+                "history": {"configured": false}
+            }),
+            "  ",
+        );
+        log_configured_services(&serde_json::json!([]), "  ");
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn shutdown_waits_for_ctrl_c_when_terminate_signal_registration_fails() {
+        shutdown_with(Err(std::io::Error::other("signals unavailable")), async {
+            Ok(())
+        })
+        .await;
+        let terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("test can register SIGTERM");
+        shutdown_with(Ok(terminate), async { Ok(()) }).await;
+    }
+
+    #[tokio::test]
     async fn cluster_summary_describes_an_unreachable_resource_manager() {
         let mut cfg = Config::for_rm("http://127.0.0.1:0").unwrap();
         cfg.tuning.connect_timeout = Duration::from_millis(1);
@@ -1054,5 +1223,276 @@ mod tests {
         let summary = cluster_summary(&core).await;
         assert!(summary.contains("ResourceManager http://127.0.0.1:0 UNREACHABLE"));
         assert!(summary.contains("services: "));
+    }
+
+    #[tokio::test]
+    async fn handle_serves_api_static_deep_links_and_method_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("assets")).unwrap();
+        std::fs::write(
+            dir.path().join("_shell.html"),
+            "<head><script>boot()</script></head><main>burrow</main>",
+        )
+        .unwrap();
+        std::fs::write(dir.path().join("assets/app.js"), "console.log('burrow')").unwrap();
+        std::fs::write(dir.path().join("assets/app.js.gz"), "compressed").unwrap();
+
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.base_path = "/burrow".into();
+        let core = Core::new(cfg).unwrap();
+        let state = state_for(core, Assets::dir(dir.path().to_path_buf()));
+
+        let post = Request::builder()
+            .method(Method::POST)
+            .uri("/burrow/api/healthz")
+            .body(Body::empty())
+            .unwrap();
+        let response = handle(State(state.clone()), post).await;
+        assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
+        assert_eq!(response.headers()[header::ALLOW], "GET");
+
+        let outside = Request::builder()
+            .uri("/outside/apps")
+            .body(Body::empty())
+            .unwrap();
+        assert_eq!(
+            handle(State(state.clone()), outside).await.status(),
+            StatusCode::NOT_FOUND
+        );
+
+        for uri in ["/burrow/api/healthz", "/burrow/api/healthz/"] {
+            let request = Request::builder().uri(uri).body(Body::empty()).unwrap();
+            assert_eq!(
+                handle(State(state.clone()), request).await.status(),
+                StatusCode::OK
+            );
+        }
+
+        let api_error_req = Request::builder()
+            .uri("/burrow/api/unknown/resource")
+            .body(Body::empty())
+            .unwrap();
+        assert_eq!(
+            handle(State(state.clone()), api_error_req).await.status(),
+            StatusCode::NOT_FOUND
+        );
+
+        let compressed = Request::builder()
+            .uri("/burrow/assets/app.js")
+            .header(header::ACCEPT_ENCODING, "gzip")
+            .body(Body::empty())
+            .unwrap();
+        let compressed = handle(State(state.clone()), compressed).await;
+        assert_eq!(compressed.status(), StatusCode::OK);
+        assert_eq!(compressed.headers()[header::CONTENT_ENCODING], "gzip");
+        assert!(
+            compressed.headers()[header::CACHE_CONTROL]
+                .to_str()
+                .unwrap()
+                .contains("immutable")
+        );
+
+        for uri in ["/burrow/apps/42", "/burrow/no-extension", "/burrow"] {
+            let request = Request::builder().uri(uri).body(Body::empty()).unwrap();
+            let response = handle(State(state.clone()), request).await;
+            assert_eq!(response.status(), StatusCode::OK);
+            assert!(
+                response
+                    .headers()
+                    .contains_key(header::CONTENT_SECURITY_POLICY)
+            );
+        }
+        let forbidden_api = router(state.clone())
+            .oneshot(
+                Request::builder()
+                    .uri("/burrow/api/healthz")
+                    .header(header::HOST, "attacker.example")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(forbidden_api.status(), StatusCode::FORBIDDEN);
+        let forbidden_static = router(state.clone())
+            .oneshot(
+                Request::builder()
+                    .uri("/burrow/apps")
+                    .header(header::HOST, "attacker.example")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(forbidden_static.status(), StatusCode::FORBIDDEN);
+        let allowed = router(state.clone())
+            .oneshot(
+                Request::builder()
+                    .uri("/burrow/api/healthz")
+                    .header(header::HOST, "localhost")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(allowed.status(), StatusCode::OK);
+
+        let missing = Request::builder()
+            .uri("/burrow/assets/missing.js")
+            .body(Body::empty())
+            .unwrap();
+        assert_eq!(
+            handle(State(state), missing).await.status(),
+            StatusCode::NOT_FOUND
+        );
+
+        let empty = tempfile::tempdir().unwrap();
+        let no_shell = AppState::new(
+            Core::new(Config::for_rm("http://rm.example:8088").unwrap()).unwrap(),
+            Assets::dir(empty.path().to_path_buf()),
+        );
+        let placeholder = Request::builder().uri("/").body(Body::empty()).unwrap();
+        let response = handle(State(Arc::new(no_shell)), placeholder).await;
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+    }
+
+    #[test]
+    fn banner_lists_configured_and_missing_services_and_authentication() {
+        let mut cfg = Config::for_rm("http://rm.example:8088").unwrap();
+        cfg.discovery.warnings.push("test warning".into());
+        let core = Core::new(cfg.clone()).unwrap();
+        print_banner(
+            &AppState::new(core, Assets::embedded()),
+            "http://localhost:8787",
+            "embedded (0 files)",
+            false,
+        );
+
+        cfg.spark_history
+            .push(url::Url::parse("http://shs.example:18080").unwrap());
+        cfg.jhs
+            .push(url::Url::parse("http://jhs.example:19888").unwrap());
+        cfg.timeline = Some(url::Url::parse("http://timeline.example:8188").unwrap());
+        cfg.user = Some("alice".into());
+        cfg.token = Some("secret".into());
+        cfg.headers.push(("X-Test".into(), "value".into()));
+        cfg.insecure = true;
+        cfg.base_path = "/burrow".into();
+        cfg.ca_cert = Some(std::path::PathBuf::from("/tmp/custom-ca.pem"));
+        assert!(
+            auth_display(&cfg)
+                .iter()
+                .any(|auth| auth == "CA /tmp/custom-ca.pem")
+        );
+        cfg.ca_cert = None;
+        let core = Core::new(cfg).unwrap();
+        print_banner(
+            &AppState::new(core, Assets::embedded()),
+            "http://localhost:8787/burrow",
+            "embedded (0 files)",
+            true,
+        );
+    }
+
+    #[test]
+    fn standalone_asset_responses_cover_borrowed_and_invalid_type_fallbacks() {
+        let html = html_response(Asset {
+            bytes: std::borrow::Cow::Borrowed(b"<head><script>x</script></head>"),
+            content_type: "text/html".into(),
+            encoding: None,
+            immutable: false,
+        });
+        assert_eq!(html.status(), StatusCode::OK);
+        let file = file_response(Asset {
+            bytes: std::borrow::Cow::Borrowed(b"bytes"),
+            content_type: "not\na header".into(),
+            encoding: Some(crate::assets::Coding::Br),
+            immutable: true,
+        });
+        assert_eq!(
+            file.headers()[header::CONTENT_TYPE],
+            "application/octet-stream"
+        );
+        assert_eq!(file.headers()[header::CONTENT_ENCODING], "br");
+        assert!(
+            file.headers()[header::CACHE_CONTROL]
+                .to_str()
+                .unwrap()
+                .contains("immutable")
+        );
+        let plain_file = file_response(Asset {
+            bytes: std::borrow::Cow::Owned(b"bytes".to_vec()),
+            content_type: "text/plain".into(),
+            encoding: None,
+            immutable: false,
+        });
+        assert_eq!(plain_file.headers()[header::CONTENT_TYPE], "text/plain");
+        assert_eq!(plain_file.headers()[header::CACHE_CONTROL], "no-cache");
+    }
+
+    #[tokio::test]
+    async fn serve_starts_and_stops_cleanly_with_an_injected_shutdown() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut cfg = Config::for_rm("http://127.0.0.1:0").unwrap();
+        cfg.bind = "127.0.0.1".parse().unwrap();
+        cfg.port = 0;
+        cfg.port_explicit = true;
+        cfg.no_open = true;
+        cfg.assets_dir = Some(dir.path().to_path_buf());
+        serve_until(cfg, async {}).await.unwrap();
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn serve_handles_sigterm_as_a_graceful_shutdown() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut cfg = Config::for_rm("http://127.0.0.1:0").unwrap();
+        cfg.bind = "127.0.0.1".parse().unwrap();
+        cfg.port = 0;
+        cfg.port_explicit = true;
+        cfg.no_open = true;
+        cfg.assets_dir = Some(dir.path().to_path_buf());
+
+        let server = tokio::spawn(serve(cfg));
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        let pid = std::process::id().to_string();
+        let sent = std::process::Command::new("kill")
+            .args(["-TERM", &pid])
+            .status()
+            .expect("send SIGTERM to the test process");
+        assert!(sent.success());
+        tokio::time::timeout(Duration::from_secs(3), server)
+            .await
+            .expect("server observes SIGTERM")
+            .expect("server task joins")
+            .unwrap();
+    }
+
+    #[test]
+    fn cluster_summary_formats_reachable_and_unreachable_metadata() {
+        let reachable = serde_json::json!({
+            "rm": { "reachable": true, "urls": ["http://rm:8088"], "active": "rm:8088", "haState": "ACTIVE", "hadoopVersion": "3.4", "scheduler": "capacity" },
+            "yarn": { "scheduler": "capacity" }
+        });
+        let summary = cluster_summary_doc(&reachable);
+        assert!(summary.contains("rm:8088 · ACTIVE · Hadoop 3.4 · scheduler capacity"));
+
+        let unreachable = serde_json::json!({
+            "rm": { "reachable": false, "urls": ["http://rm:8088"] },
+            "services": {
+                "jhs": { "configured": true, "reachable": false },
+                "shs": { "configured": true, "reachable": true },
+                "timeline": { "configured": false, "reachable": false }
+            }
+        });
+        let summary = cluster_summary_doc(&unreachable);
+        assert!(summary.contains("jhs=unreachable"));
+        assert!(summary.contains("shs=reachable"));
+        assert!(!summary.contains("timeline"));
+    }
+
+    #[test]
+    fn invalid_browser_url_is_reported_without_opening_a_real_browser() {
+        maybe_open_browser(false, "not a browser URL", |_| Err("invalid browser URL"));
     }
 }

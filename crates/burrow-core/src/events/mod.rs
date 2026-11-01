@@ -305,29 +305,7 @@ impl Hub {
             {
                 return;
             }
-            let mut hb = tokio::time::interval(heartbeat);
-            hb.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
-            hb.tick().await; // the first tick is immediate
-            let mut ev_rx = ev_rx;
-            loop {
-                tokio::select! {
-                    _ = out_tx.closed() => break,
-                    _ = hb.tick() => {
-                        if out_tx.send(Bytes::from_static(b": heartbeat\n\n")).await.is_err() {
-                            break;
-                        }
-                    }
-                    ev = ev_rx.recv() => match ev {
-                        Some(HubEvent::Invalidate(inv)) => {
-                            let data = serde_json::to_string(&inv).unwrap_or_else(|_| "{}".to_string());
-                            if out_tx.send(sse_frame("invalidate", &data)).await.is_err() {
-                                break;
-                            }
-                        }
-                        None => break,
-                    },
-                }
-            }
+            forward_frames(ev_rx, out_tx, heartbeat).await;
         });
         Ok(Subscription { rx: out_rx })
     }
@@ -366,6 +344,32 @@ impl Hub {
     }
 }
 
+async fn forward_frames(
+    mut ev_rx: mpsc::Receiver<HubEvent>,
+    out_tx: mpsc::Sender<Bytes>,
+    heartbeat: Duration,
+) {
+    let mut hb = tokio::time::interval(heartbeat);
+    hb.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+    hb.tick().await; // the first tick is immediate
+    loop {
+        tokio::select! {
+            biased;
+            ev = ev_rx.recv() => match ev {
+                Some(HubEvent::Invalidate(inv)) => {
+                    let data = serde_json::to_string(&inv).unwrap_or_else(|_| "{}".to_string());
+                    if out_tx.send(sse_frame("invalidate", &data)).await.is_err() { break; }
+                }
+                None => break,
+            },
+            _ = hb.tick() => {
+                if out_tx.send(Bytes::from_static(b": heartbeat\n\n")).await.is_err() { break; }
+            }
+            _ = out_tx.closed() => break,
+        }
+    }
+}
+
 /// One poll of one topic: dispatch through the shared cache, hash the body, emit on change.
 async fn poll_one(core: &Arc<Core>, state: &Arc<TopicState>) {
     *state.last_poll.lock() = Instant::now();
@@ -379,6 +383,10 @@ async fn poll_one(core: &Arc<Core>, state: &Arc<TopicState>) {
     let Ok(reply) = api::dispatch(core, req).await else {
         return;
     };
+    update_topic_from_reply(state, reply).await;
+}
+
+async fn update_topic_from_reply(state: &Arc<TopicState>, reply: Reply) {
     let Some(etag) = reply_hash(reply).await else {
         return; // errors are not invalidations
     };
@@ -464,6 +472,10 @@ pub fn next_connection_id() -> u64 {
 mod tests {
     use super::*;
 
+    fn core() -> Arc<Core> {
+        Core::new(crate::config::Config::for_rm("http://127.0.0.1:8088").unwrap()).unwrap()
+    }
+
     #[test]
     fn topics_are_canonical_and_validated() {
         let t = parse_topic("yarn/apps?states=RUNNING&limit=5").unwrap();
@@ -484,5 +496,267 @@ mod tests {
             std::str::from_utf8(&f).unwrap(),
             "event: invalidate\ndata: {\"topic\":\"yarn/metrics\"}\n\n"
         );
+    }
+
+    #[test]
+    fn topic_state_broadcast_handles_full_and_closed_subscribers() {
+        let state = Arc::new(TopicState::new(
+            parse_topic("yarn/metrics").unwrap(),
+            Duration::from_secs(1),
+        ));
+        let (tx, mut rx) = mpsc::channel(1);
+        state.senders.lock().push(tx.clone());
+        let event = HubEvent::Invalidate(Invalidate {
+            topic: "yarn/metrics".into(),
+            etag: "W/\"1\"".into(),
+            at: 1,
+        });
+        state.broadcast(event.clone());
+        state.broadcast(event.clone());
+        assert!(rx.try_recv().is_ok());
+        assert_eq!(state.senders.lock().len(), 1);
+        drop(rx);
+        state.broadcast(event);
+        assert!(state.senders.lock().is_empty());
+
+        let (tx, _rx) = mpsc::channel(1);
+        state.subscribers.store(1, Ordering::Relaxed);
+        state.senders.lock().push(tx.clone());
+        drop(SubGuard {
+            state: state.clone(),
+            sender: tx,
+        });
+        assert_eq!(state.subscribers.load(Ordering::Relaxed), 0);
+        assert!(state.senders.lock().is_empty());
+        assert!(state.due());
+    }
+
+    #[tokio::test]
+    async fn subscription_validates_caps_emits_hello_and_heartbeat() {
+        let core = core();
+        let hub = Hub::new();
+        hub.set_heartbeat(Duration::from_millis(2));
+        assert_eq!(hub.heartbeat(), Duration::from_millis(2));
+        assert_eq!(
+            hub.subscribe(&core, &[]).err().unwrap().status,
+            http::StatusCode::BAD_REQUEST
+        );
+        let topic = parse_topic("yarn/metrics").unwrap();
+        assert_eq!(
+            hub.subscribe(&core, &[parse_topic("unknown/path").unwrap()])
+                .err()
+                .unwrap()
+                .status,
+            http::StatusCode::BAD_REQUEST
+        );
+        assert_eq!(
+            hub.subscribe(&core, &vec![topic.clone(); MAX_TOPICS_PER_CONNECTION + 1])
+                .err()
+                .unwrap()
+                .status,
+            http::StatusCode::BAD_REQUEST
+        );
+
+        let sub = hub.subscribe(&core, &[topic.clone(), topic]).unwrap();
+        assert_eq!(
+            hub.stats(),
+            HubStats {
+                topics: 1,
+                subscribers: 1
+            }
+        );
+        let mut frames = sub.into_stream();
+        let hello = tokio::time::timeout(Duration::from_millis(100), frames.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        assert!(
+            std::str::from_utf8(&hello)
+                .unwrap()
+                .contains("event: hello")
+        );
+        let heartbeat = tokio::time::timeout(Duration::from_millis(100), frames.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        assert_eq!(heartbeat, ": heartbeat\n\n");
+        drop(frames);
+        tokio::time::timeout(Duration::from_millis(100), async {
+            while hub.subscriber_count() != 0 {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(hub.subscriber_count(), 0);
+        assert!(next_connection_id() < next_connection_id());
+    }
+
+    #[test]
+    fn subscription_refuses_a_new_topic_after_the_process_wide_cap() {
+        let core = core();
+        let hub = Hub::new();
+        {
+            let mut topics = hub.inner.topics.lock();
+            for i in 0..MAX_TOPICS {
+                let topic = parse_topic(&format!("yarn/metrics?probe={i}")).unwrap();
+                topics.insert(
+                    topic.raw.clone(),
+                    Arc::new(TopicState::new(topic, Duration::from_secs(1))),
+                );
+            }
+        }
+
+        let error = hub
+            .subscribe(
+                &core,
+                &[parse_topic("yarn/metrics?probe=overflow").unwrap()],
+            )
+            .err()
+            .expect("the process-wide cap must reject one more topic");
+        assert_eq!(error.status, http::StatusCode::SERVICE_UNAVAILABLE);
+        assert!(error.message.contains("maximum of 256 topics"));
+        assert_eq!(hub.topic_count(), MAX_TOPICS);
+    }
+
+    #[tokio::test]
+    async fn polling_healthz_tracks_baselines_changes_and_reply_hashes() {
+        let core = core();
+        let topic = parse_topic("healthz").unwrap();
+        let state = Arc::new(TopicState::new(topic, Duration::from_millis(1)));
+        let (tx, mut rx) = mpsc::channel(4);
+        state.senders.lock().push(tx);
+        poll_one(&core, &state).await;
+        assert!(state.last_etag.lock().is_some());
+        assert!(rx.try_recv().is_err()); // first response establishes the baseline
+        poll_one(&core, &state).await;
+        assert!(rx.try_recv().is_err()); // unchanged response is quiet
+        *state.last_etag.lock() = Some("old-etag".into());
+        poll_one(&core, &state).await;
+        assert!(matches!(rx.try_recv(), Ok(HubEvent::Invalidate(_))));
+
+        let failed = Reply::synthesized(http::StatusCode::BAD_GATEWAY, "text/plain", "down");
+        assert_eq!(reply_hash(failed).await, None);
+        let explicit = Reply {
+            status: http::StatusCode::OK,
+            content_type: None,
+            extra: Default::default(),
+            body: ReplyBody::Bytes(Bytes::from_static(b"ignored")),
+            cache: None,
+            upstream: None,
+            age_ms: None,
+            etag: Some("W/\"custom\"".into()),
+        };
+        assert_eq!(reply_hash(explicit).await.as_deref(), Some("W/\"custom\""));
+        let streamed = Reply {
+            status: http::StatusCode::OK,
+            content_type: None,
+            extra: Default::default(),
+            body: ReplyBody::Stream {
+                prefix: Bytes::from_static(b"a"),
+                rest: stream::iter([
+                    Ok(Bytes::from_static(b"b")),
+                    Err(io::Error::other("stream ended")),
+                    Ok(Bytes::from_static(b"ignored")),
+                ])
+                .boxed(),
+            },
+            cache: None,
+            upstream: None,
+            age_ms: None,
+            etag: None,
+        };
+        assert_eq!(reply_hash(streamed).await, Some(weak_etag(b"ab")));
+
+        let unknown = Arc::new(TopicState::new(
+            Topic {
+                raw: "unknown/resource".into(),
+                path: "unknown/resource".into(),
+                query: None,
+            },
+            Duration::from_secs(1),
+        ));
+        poll_one(&core, &unknown).await;
+        assert!(unknown.last_etag.lock().is_none());
+        update_topic_from_reply(
+            &unknown,
+            Reply::synthesized(http::StatusCode::BAD_GATEWAY, "text/plain", "offline"),
+        )
+        .await;
+        assert!(unknown.last_etag.lock().is_none());
+    }
+
+    #[tokio::test]
+    async fn frame_forwarder_stops_when_its_event_channel_closes() {
+        let (event_tx, event_rx) = mpsc::channel(1);
+        drop(event_tx);
+        let (out_tx, mut out_rx) = mpsc::channel(1);
+        forward_frames(event_rx, out_tx, Duration::from_secs(60)).await;
+        assert!(out_rx.try_recv().is_err());
+    }
+
+    #[tokio::test]
+    async fn disconnected_subscribers_stop_hello_heartbeat_and_invalidation_sends() {
+        let topic = parse_topic("yarn/metrics").unwrap();
+
+        let core_a = core();
+        let hub = Hub::new();
+        let sub = hub
+            .subscribe(&core_a, std::slice::from_ref(&topic))
+            .unwrap();
+        drop(sub);
+        tokio::task::yield_now().await;
+        assert_eq!(hub.subscriber_count(), 0);
+
+        let core_b = core();
+        let hub = Hub::new();
+        hub.set_heartbeat(Duration::from_millis(1));
+        let sub = hub
+            .subscribe(&core_b, std::slice::from_ref(&topic))
+            .unwrap();
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        drop(sub);
+        tokio::time::timeout(Duration::from_millis(100), async {
+            while hub.subscriber_count() != 0 {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+
+        let core_c = core();
+        let hub = Hub::new();
+        hub.set_heartbeat(Duration::from_secs(10));
+        let sub = hub
+            .subscribe(&core_c, std::slice::from_ref(&topic))
+            .unwrap();
+        let state = hub.inner.topics.lock()["yarn/metrics"].clone();
+        hub.ensure_poller(&core_c); // the shared poller is started only once
+        let mut frames = sub.into_stream();
+        assert!(
+            frames
+                .next()
+                .await
+                .unwrap()
+                .unwrap()
+                .starts_with(b"event: hello")
+        );
+        drop(frames);
+        state.broadcast(HubEvent::Invalidate(Invalidate {
+            topic: "yarn/metrics".into(),
+            etag: "W/\"change\"".into(),
+            at: 1,
+        }));
+        tokio::time::timeout(Duration::from_millis(500), async {
+            while hub.subscriber_count() != 0 {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+        drop(core_c);
+        tokio::time::sleep(TICK + Duration::from_millis(50)).await;
     }
 }

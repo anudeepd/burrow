@@ -616,4 +616,20 @@ mod tests {
         assert_eq!(err.message, "no history server");
         assert!(err.hint.is_some());
     }
+
+    #[test]
+    fn unavailable_error_supplies_default_reason_and_hint() {
+        let source = Source {
+            mode: Mode::None,
+            base_url: None,
+            spark_app_id: "application_1_1".into(),
+            attempt: None,
+            available: false,
+            reason: None,
+            hint: None,
+        };
+        let error = unavailable_error(&source);
+        assert!(error.message.contains("no Spark REST base is available"));
+        assert!(error.hint.unwrap().contains("--spark-history"));
+    }
 }

@@ -9,7 +9,7 @@ use std::path::Path;
 
 use burrow_core::config::Config;
 use burrow_core::spark::dag;
-use common::{Canned, Harness};
+use common::{Canned, Harness, Mock};
 use serde_json::Value;
 
 const APP: &str = "application_1_0001";
@@ -687,6 +687,33 @@ async fn dag_uses_the_rest_fallback_for_a_live_stage_with_no_graph() {
 }
 
 #[tokio::test]
+async fn dag_stage_parses_the_stage_page_directly() {
+    let mock = mock_with_app("FINISHED").await;
+    let mut config = cfg(&mock.base());
+    config.spark_history = vec![mock.base().parse().unwrap()];
+    mock.json(
+        &format!("/api/v1/applications/{APP}"),
+        &format!(r#"{{"id":"{APP}","attempts":[{{"completed":true}}]}}"#),
+    )
+    .await;
+    mock.set(
+        &format!("/history/{APP}/stages/stage/?id=0&attempt=0"),
+        Canned::new(
+            200,
+            "text/html",
+            fixture("4.2.0/rdd-wordcount/html/final.stage-0-0.html"),
+        ),
+    )
+    .await;
+    let h = Harness::start(config).await;
+    let r = h.get(&format!("/api/spark/{APP}/dag/stages/0/0")).await;
+    assert_eq!(r.status, 200, "{}", r.text());
+    assert_eq!(r.json()["kind"], "stage");
+    assert_eq!(r.json()["stages"][0]["stageId"], 0);
+    assert_eq!(r.json()["granularity"], "rdd");
+}
+
+#[tokio::test]
 async fn dag_on_an_unavailable_source_is_503() {
     let mock = mock_with_app("FINISHED").await;
     let h = Harness::start(cfg(&mock.base())).await;
@@ -793,4 +820,492 @@ async fn spark_24_sql_rest_404_uses_the_html_execution_and_plan_adapter() {
             .any(|node| node["nodeName"] == "BroadcastHashJoin")
     );
     assert_eq!(mock.hits(&format!("{proxy}/SQL/execution/?id=2")).await, 1);
+}
+
+#[tokio::test]
+async fn spark_24_sql_adapter_reports_list_id_and_detail_failures() {
+    let mock = mock_with_app("RUNNING").await;
+    let proxy = format!("/proxy/{APP}");
+    mock.json(
+        &format!("{proxy}/api/v1/applications/{APP}"),
+        &format!(
+            r#"{{"id":"{APP}","attempts":[{{"attemptId":"2","appSparkVersion":"2.4.0"}},{{"attemptId":"3","appSparkVersion":"3.5.0"}}]}}"#
+        ),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/api/v1/applications/{APP}/2/sql/999"),
+        Canned::new(404, "text/plain", "Unknown resource: sql"),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/api/v1/applications/{APP}/2/sql/2"),
+        Canned::new(404, "text/plain", "Unknown resource: sql"),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/SQL/"),
+        Canned::new(200, "text/html", fixture("2.4.0/sql-demo/sql.html")),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/SQL/execution/"),
+        Canned::new(
+            200,
+            "text/html",
+            "<html><body>details were evicted</body></html>",
+        ),
+    )
+    .await;
+    let h = Harness::start(cfg(&mock.base())).await;
+
+    let malformed_id = h.get(&format!("/api/spark/{APP}/sql/nope?attempt=2")).await;
+    assert_eq!(malformed_id.status, 400, "{}", malformed_id.text());
+    assert_eq!(malformed_id.error_code(), "bad_request");
+
+    let evicted = h.get(&format!("/api/spark/{APP}/sql/999?attempt=2")).await;
+    assert_eq!(evicted.status, 404, "{}", evicted.text());
+    assert!(evicted.text().contains("no SQL execution 999"));
+
+    let missing_details = h.get(&format!("/api/spark/{APP}/sql/2?attempt=2")).await;
+    assert_eq!(missing_details.status, 404, "{}", missing_details.text());
+    assert!(
+        missing_details
+            .text()
+            .contains("no details for execution 2")
+    );
+    assert_eq!(
+        mock.hits_of_path(&format!("{proxy}/api/v1/applications/{APP}/2/sql/999"))
+            .await,
+        1
+    );
+    assert_eq!(
+        mock.hits_of_path(&format!("{proxy}/api/v1/applications/{APP}/2/sql/2"))
+            .await,
+        1
+    );
+}
+
+#[tokio::test]
+async fn spark_24_sql_adapter_maps_unreadable_and_failed_pages() {
+    let mock = mock_with_app("RUNNING").await;
+    let proxy = format!("/proxy/{APP}");
+    mock.json(
+        &format!("{proxy}/api/v1/applications/{APP}"),
+        &format!(r#"{{"id":"{APP}","attempts":[{{"attemptId":"1","appSparkVersion":"2.4.0"}}]}}"#),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/api/v1/applications/{APP}/sql"),
+        Canned::new(404, "text/plain", "Unknown resource: sql"),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/SQL/"),
+        Canned::new(200, "text/html", "<html><body>not a SQL list</body></html>"),
+    )
+    .await;
+    let h = Harness::start(cfg(&mock.base())).await;
+
+    let no_list = h.get(&format!("/api/spark/{APP}/sql")).await;
+    assert_eq!(no_list.status, 503, "{}", no_list.text());
+    assert!(no_list.text().contains("did not contain an execution list"));
+    let no_detail_list = h.get(&format!("/api/spark/{APP}/sql/1")).await;
+    assert_eq!(no_detail_list.status, 503, "{}", no_detail_list.text());
+    assert!(
+        no_detail_list
+            .text()
+            .contains("did not contain an execution list")
+    );
+    let no_detail_list = h.get(&format!("/api/spark/{APP}/sql/1")).await;
+    assert_eq!(no_detail_list.status, 503, "{}", no_detail_list.text());
+    assert!(
+        no_detail_list
+            .text()
+            .contains("did not contain an execution list")
+    );
+
+    mock.set(
+        &format!("{proxy}/SQL/"),
+        Canned::new(
+            404,
+            "text/html",
+            "<html><head><title>missing SQL page</title></head><body><h2>SQL tab unavailable</h2></body></html>",
+        ),
+    )
+    .await;
+    let html_error = h
+        .get_with(
+            &format!("/api/spark/{APP}/sql"),
+            &[("cache-control", "no-cache")],
+        )
+        .await;
+    assert_eq!(html_error.status, 404);
+    assert!(html_error.text().contains("SQL tab unavailable"));
+    assert_eq!(html_error.error_code(), "not_found");
+
+    mock.set(&format!("{proxy}/SQL/"), Canned::new(502, "text/plain", ""))
+        .await;
+    let empty_error = h
+        .get_with(
+            &format!("/api/spark/{APP}/sql"),
+            &[("cache-control", "no-cache")],
+        )
+        .await;
+    assert_eq!(empty_error.status, 502);
+    assert!(
+        empty_error
+            .text()
+            .contains("Spark SQL UI answered 502 for /proxy/")
+    );
+}
+
+#[tokio::test]
+async fn oversized_spark_pages_return_parseable_size_errors() {
+    let mock = mock_with_app("RUNNING").await;
+    let proxy = format!("/proxy/{APP}");
+    mock.json(
+        &format!("{proxy}/api/v1/applications/{APP}"),
+        &format!(r#"{{"id":"{APP}","attempts":[{{"attemptId":"1","appSparkVersion":"2.4.0"}}]}}"#),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/api/v1/applications/{APP}/sql"),
+        Canned::new(404, "text/plain", "Unknown resource: sql"),
+    )
+    .await;
+    mock.set(
+        &format!("{proxy}/SQL/"),
+        Canned::new(200, "text/html", vec![b'x'; 4096]),
+    )
+    .await;
+    let mut config = cfg(&mock.base());
+    config.cache.max_body_bytes = 512;
+    let h = Harness::start(config).await;
+
+    let sql = h.get(&format!("/api/spark/{APP}/sql")).await;
+    assert_eq!(sql.status, 503, "{}", sql.text());
+    assert!(sql.text().contains("too large to parse safely"));
+}
+
+#[tokio::test]
+async fn history_resolver_skips_missing_servers_and_uses_a_fallback_candidate() {
+    let rm = Mock::start().await;
+    let missing = Mock::start().await;
+    let selected = Mock::start().await;
+    rm_app(&rm, APP, "FINISHED", "").await;
+    missing
+        .set(
+            &format!("/api/v1/applications/{APP}"),
+            Canned::new(404, "text/plain", "application not found"),
+        )
+        .await;
+    selected
+        .json(
+            &format!("/api/v1/applications/{APP}"),
+            &format!(r#"{{"id":"{APP}","attempts":[{{"attemptId":"4"}}]}}"#),
+        )
+        .await;
+    let mut config = cfg(&rm.base());
+    config.spark_history = vec![missing.base(), selected.base()]
+        .into_iter()
+        .map(|url| url.parse().unwrap())
+        .collect();
+    let h = Harness::start(config).await;
+
+    let source = h.get(&format!("/api/spark/{APP}/source")).await.json();
+    assert_eq!(source["mode"], "history");
+    assert_eq!(source["attempt"], "4");
+    assert_eq!(source["baseUrl"], selected.base());
+    assert_eq!(source["available"], true);
+    assert_eq!(
+        missing.hits(&format!("/api/v1/applications/{APP}")).await,
+        1
+    );
+    assert_eq!(
+        selected.hits(&format!("/api/v1/applications/{APP}")).await,
+        1
+    );
+}
+
+#[tokio::test]
+async fn history_resolver_marks_all_missing_servers_unavailable_and_keeps_the_override() {
+    let rm = Mock::start().await;
+    let first = Mock::start().await;
+    let second = Mock::start().await;
+    rm_app(&rm, APP, "FINISHED", "").await;
+    first
+        .set(
+            &format!("/api/v1/applications/{APP}"),
+            Canned::new(404, "text/plain", "missing"),
+        )
+        .await;
+    second
+        .set(
+            &format!("/api/v1/applications/{APP}"),
+            Canned::new(404, "text/plain", "missing"),
+        )
+        .await;
+    let mut config = cfg(&rm.base());
+    config.spark_history = vec![first.base(), second.base()]
+        .into_iter()
+        .map(|url| url.parse().unwrap())
+        .collect();
+    let h = Harness::start(config).await;
+
+    let source = h
+        .get(&format!("/api/spark/{APP}/source?attempt=7"))
+        .await
+        .json();
+    assert_eq!(source["mode"], "history");
+    assert_eq!(source["attempt"], "7");
+    assert_eq!(source["baseUrl"], first.base());
+    assert_eq!(source["available"], false);
+    assert!(
+        source["reason"]
+            .as_str()
+            .unwrap()
+            .contains("none of the configured")
+    );
+}
+
+#[tokio::test]
+async fn history_resolver_uses_the_first_unknown_candidate_as_a_safe_fallback() {
+    let rm = Mock::start().await;
+    let unknown = Mock::start().await;
+    let missing = Mock::start().await;
+    rm_app(&rm, APP, "FINISHED", "").await;
+    unknown
+        .set(
+            &format!("/api/v1/applications/{APP}"),
+            Canned::new(200, "application/json", "not JSON"),
+        )
+        .await;
+    missing
+        .set(
+            &format!("/api/v1/applications/{APP}"),
+            Canned::new(404, "text/plain", "missing"),
+        )
+        .await;
+    let mut config = cfg(&rm.base());
+    config.spark_history = vec![unknown.base(), missing.base()]
+        .into_iter()
+        .map(|url| url.parse().unwrap())
+        .collect();
+    let h = Harness::start(config).await;
+
+    let source = h.get(&format!("/api/spark/{APP}/source")).await.json();
+    assert_eq!(source["baseUrl"], unknown.base());
+    assert_eq!(source["available"], true);
+    assert_eq!(source["attempt"], serde_json::Value::Null);
+}
+
+#[tokio::test]
+async fn sql_rest_404_is_preserved_when_spark_version_is_new_unknown_or_unavailable() {
+    for version_doc in [
+        format!(r#"{{"attempts":[{{"appSparkVersion":"3.5.0"}}]}}"#),
+        format!(r#"{{"attempts":[{{"appSparkVersion":"dev-build"}}]}}"#),
+        "not json".to_string(),
+    ] {
+        let mock = mock_with_app("RUNNING").await;
+        let proxy = format!("/proxy/{APP}");
+        mock.set(
+            &format!("{proxy}/api/v1/applications/{APP}/sql"),
+            Canned::new(404, "text/plain", "Unknown resource: sql"),
+        )
+        .await;
+        mock.set(
+            &format!("{proxy}/api/v1/applications/{APP}"),
+            Canned::new(200, "application/json", version_doc),
+        )
+        .await;
+        let h = Harness::start(cfg(&mock.base())).await;
+        let r = h.get(&format!("/api/spark/{APP}/sql")).await;
+        assert_eq!(r.status, 404, "{}", r.text());
+        assert!(r.text().contains("Unknown resource: sql"));
+        assert_eq!(mock.hits_of_path(&format!("{proxy}/SQL/")).await, 0);
+    }
+}
+
+#[tokio::test]
+async fn spark_route_handles_root_paths_dag_failures_and_oversized_payloads() {
+    let mock = mock_with_app("FINISHED").await;
+    mock.json(
+        &format!("/api/v1/applications/{APP}"),
+        &format!(r#"{{"id":"{APP}","attempts":[{{"completed":true}}]}}"#),
+    )
+    .await;
+    let ui = |id: &str| format!("/history/{APP}/jobs/job/?id={id}");
+    for id in ["1", "2", "3", "4", "5"] {
+        mock.set(&ui(id), Canned::new(404, "text/plain", "not found"))
+            .await;
+    }
+    mock.set(&ui("6"), Canned::new(200, "text/html", vec![b'x'; 4096]))
+        .await;
+    mock.set(
+        &ui("7"),
+        Canned::new(200, "text/html", "<span id=\"no-info\"></span>"),
+    )
+    .await;
+    mock.set(
+        &format!("/history/{APP}/stages/stage/?id=7&attempt=0"),
+        Canned::new(200, "text/html", "<span id='no-info'></span>"),
+    )
+    .await;
+    mock.set(
+        &format!("/history/{APP}/stages/stage/?id=8&attempt=0"),
+        Canned::new(404, "text/plain", "no page"),
+    )
+    .await;
+
+    mock.set(
+        &format!("/api/v1/applications/{APP}/jobs/1"),
+        Canned::new(
+            404,
+            "text/html",
+            "<html><head><title>Unknown job</title></head><body><h2>Unknown job</h2></body></html>",
+        ),
+    )
+    .await;
+    mock.set(
+        &format!("/api/v1/applications/{APP}/jobs/2"),
+        Canned::new(502, "text/plain", "Spark REST is unavailable"),
+    )
+    .await;
+    mock.set(
+        &format!("/api/v1/applications/{APP}/jobs/3"),
+        Canned::new(502, "text/plain", ""),
+    )
+    .await;
+    mock.set(
+        &format!("/api/v1/applications/{APP}/jobs/4"),
+        Canned::new(200, "application/json", "not JSON"),
+    )
+    .await;
+    mock.set(
+        &format!("/api/v1/applications/{APP}/jobs/5"),
+        Canned::new(200, "application/json", vec![b' '; 4096]),
+    )
+    .await;
+    mock.json(
+        &format!("/api/v1/applications/{APP}/stages/8/0"),
+        r#"{"stageId":8,"attemptId":0,"status":"SKIPPED","rddIds":[]}"#,
+    )
+    .await;
+    mock.set(
+        &format!("/api/v1/applications/{APP}/jobs"),
+        Canned::json(format!(r#"[{{"jobId":8,"stageIds":[8]}}]"#)),
+    )
+    .await;
+
+    let mut config = cfg(&mock.base());
+    config.spark_history = vec![mock.base().parse().unwrap()];
+    config.cache.max_body_bytes = 512;
+    let h = Harness::start(config).await;
+
+    assert_eq!(h.get(&format!("/api/spark/{APP}")).await.status, 404);
+    assert_eq!(h.get(&format!("/api/spark/{APP}/")).await.status, 404);
+
+    let html_error = h.get(&format!("/api/spark/{APP}/dag/jobs/1")).await;
+    assert_eq!(html_error.status, 404);
+    assert!(html_error.text().contains("Unknown job"));
+    let text_error = h.get(&format!("/api/spark/{APP}/dag/jobs/2")).await;
+    assert_eq!(text_error.status, 502);
+    assert!(text_error.text().contains("Spark REST is unavailable"));
+    let empty_error = h.get(&format!("/api/spark/{APP}/dag/jobs/3")).await;
+    assert_eq!(empty_error.status, 502);
+    assert!(
+        empty_error
+            .text()
+            .contains("Spark answered 502 for /jobs/3")
+    );
+    let invalid_json = h.get(&format!("/api/spark/{APP}/dag/jobs/4")).await;
+    assert_eq!(invalid_json.status, 500);
+    assert!(
+        invalid_json
+            .text()
+            .contains("cannot parse the Spark REST response")
+    );
+    let large_rest = h.get(&format!("/api/spark/{APP}/dag/jobs/5")).await;
+    assert_eq!(large_rest.status, 500);
+    assert!(large_rest.text().contains("too large to parse"));
+    let large_page = h.get(&format!("/api/spark/{APP}/dag/jobs/6")).await;
+    assert_eq!(large_page.status, 503);
+    assert!(large_page.text().contains("too large to extract a DAG"));
+
+    let no_job = h.get(&format!("/api/spark/{APP}/dag/jobs/7")).await;
+    assert_eq!(no_job.status, 404);
+    assert!(no_job.text().contains("no job 7"));
+    let no_stage = h.get(&format!("/api/spark/{APP}/dag/stages/7/0")).await;
+    assert_eq!(no_stage.status, 404);
+    assert!(no_stage.text().contains("no stage 7 attempt 0"));
+    let skipped_without_job_page = h.get(&format!("/api/spark/{APP}/dag/stages/8/0")).await;
+    assert_eq!(skipped_without_job_page.status, 200);
+    assert_eq!(skipped_without_job_page.json()["stages"][0]["stageId"], 8);
+
+    mock.json(
+        &format!("/api/v1/applications/{APP}/stages/9/0"),
+        r#"{"stageId":9,"attemptId":0,"status":"SKIPPED","rddIds":[]}"#,
+    )
+    .await;
+    let skipped_without_enclosing_job = h.get(&format!("/api/spark/{APP}/dag/stages/9/0")).await;
+    assert_eq!(skipped_without_enclosing_job.status, 200);
+    assert_eq!(
+        skipped_without_enclosing_job.json()["stages"][0]["stageId"],
+        9
+    );
+}
+
+#[tokio::test]
+async fn resource_manager_application_document_errors_are_reported_precisely() {
+    for (canned, status) in [
+        (Canned::new(503, "text/plain", "RM is unavailable"), 503),
+        (Canned::new(200, "application/json", "not JSON"), 500),
+        (
+            Canned::new(200, "application/json", r#"{"clusterInfo":{}}"#),
+            404,
+        ),
+        (Canned::new(200, "application/json", vec![b'x'; 4096]), 500),
+    ] {
+        let mock = Mock::start().await;
+        mock.set(&format!("/ws/v1/cluster/apps/{APP}"), canned)
+            .await;
+        let mut config = cfg(&mock.base());
+        config.cache.max_body_bytes = 512;
+        let h = Harness::start(config).await;
+        let r = h.get(&format!("/api/spark/{APP}/source")).await;
+        assert_eq!(r.status, status, "{}", r.text());
+        assert!(r.json()["error"]["message"].is_string());
+    }
+}
+
+#[tokio::test]
+async fn spark_version_lookup_falls_back_when_the_app_document_is_unreadable() {
+    for document in [
+        Canned::new(502, "text/plain", "app document failed"),
+        Canned::new(
+            200,
+            "application/json",
+            format!(
+                r#"{{"attempts":[{{"appSparkVersion":"{}"}}]}}"#,
+                "2.4.0".repeat(200)
+            ),
+        ),
+    ] {
+        let mock = mock_with_app("RUNNING").await;
+        let proxy = format!("/proxy/{APP}");
+        mock.set(
+            &format!("{proxy}/api/v1/applications/{APP}/sql"),
+            Canned::new(404, "text/plain", "Unknown resource: sql"),
+        )
+        .await;
+        mock.set(&format!("{proxy}/api/v1/applications/{APP}"), document)
+            .await;
+        let mut config = cfg(&mock.base());
+        config.cache.max_body_bytes = 512;
+        let h = Harness::start(config).await;
+        let r = h.get(&format!("/api/spark/{APP}/sql")).await;
+        assert_eq!(r.status, 404, "{}", r.text());
+        assert!(r.text().contains("Unknown resource: sql"));
+    }
 }

@@ -8,7 +8,7 @@
 //!   `text/event-stream` (`event: chunk|eof|error`).
 
 use bytes::Bytes;
-use futures_util::stream::{self, StreamExt};
+use futures_util::stream::{self, BoxStream, StreamExt};
 use http::StatusCode;
 use http::header::{HeaderMap, HeaderName, HeaderValue};
 
@@ -98,17 +98,7 @@ async fn read(core: &Core, req: &ApiRequest<'_>, cid: &str, name: &str) -> Resul
     let loc = &resolved.location;
     let entry = loc
         .file(name)
-        .ok_or_else(|| {
-            ApiError::not_found(format!("'{name}' is not a log file of {cid}")).with_hint(format!(
-                "{} lists: {}",
-                loc.source(),
-                loc.files
-                    .iter()
-                    .map(|f| f.name.as_str())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ))
-        })?
+        .ok_or_else(|| missing_file_error(loc, name, cid))?
         .clone();
 
     let (start, end) = logs::window(entry.size, offset, length, tail)?;
@@ -147,16 +137,8 @@ async fn stream(
     let offset = number(req, "offset")?.unwrap_or(0);
     let resolved = resolve(core, req, cid).await?;
     let loc = resolved.location;
-    if loc.file(name).is_none() {
-        return Err(ApiError::not_found(format!(
-            "'{name}' is not a log file of {cid}"
-        )));
-    }
-    let shared = core.shared().ok_or_else(|| {
-        ApiError::internal(
-            "the log tailer has no shared core handle (Core was not built by Core::new)",
-        )
-    })?;
+    require_file(&loc, name, cid)?;
+    let shared = core.shared();
     let (rx, _handle) = tail::follow(
         shared,
         tail::TailSpec {
@@ -165,18 +147,7 @@ async fn stream(
             start: offset,
         },
     );
-    let rest = stream::unfold(Some(rx), |state| async move {
-        let mut rx = state?;
-        match rx.recv().await {
-            Some(ev) => {
-                let done = matches!(ev, tail::TailEvent::Eof | tail::TailEvent::Failed { .. });
-                let frame = tail::frame(ev);
-                Some((Ok(frame), if done { None } else { Some(rx) }))
-            }
-            None => None,
-        }
-    })
-    .boxed();
+    let rest = tail_stream(rx);
     Ok(Reply {
         status: StatusCode::OK,
         content_type: Some(HeaderValue::from_static(EVENT_STREAM_CT)),
@@ -190,6 +161,43 @@ async fn stream(
         age_ms: None,
         etag: None,
     })
+}
+
+fn missing_file_error(loc: &logs::source::LogLocation, name: &str, cid: &str) -> ApiError {
+    ApiError::not_found(format!("'{name}' is not a log file of {cid}")).with_hint(format!(
+        "{} lists: {}",
+        loc.source(),
+        loc.files
+            .iter()
+            .map(|f| f.name.as_str())
+            .collect::<Vec<_>>()
+            .join(", ")
+    ))
+}
+
+fn require_file(loc: &logs::source::LogLocation, name: &str, cid: &str) -> Result<(), ApiError> {
+    if loc.file(name).is_some() {
+        Ok(())
+    } else {
+        Err(missing_file_error(loc, name, cid))
+    }
+}
+
+fn tail_stream(
+    rx: tokio::sync::mpsc::Receiver<tail::TailEvent>,
+) -> BoxStream<'static, std::io::Result<Bytes>> {
+    stream::unfold(Some(rx), |state| async move {
+        let mut rx = state?;
+        match rx.recv().await {
+            Some(ev) => {
+                let done = matches!(ev, tail::TailEvent::Eof | tail::TailEvent::Failed { .. });
+                let frame = tail::frame(ev);
+                Some((Ok(frame), if done { None } else { Some(rx) }))
+            }
+            None => None,
+        }
+    })
+    .boxed()
 }
 
 /// A non-negative integer query parameter (`?offset=`, `?length=`, `?tail=`).
@@ -212,4 +220,74 @@ fn safe_file_name(name: &str) -> Result<&str, ApiError> {
         )));
     }
     Ok(name)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn core() -> std::sync::Arc<Core> {
+        Core::new(crate::config::Config::for_rm("http://127.0.0.1:8088").unwrap()).unwrap()
+    }
+
+    #[tokio::test]
+    async fn route_rejects_unknown_paths_and_container_ids() {
+        let core = core();
+        let unknown = get(&core, ApiRequest::new("unknown")).await.err().unwrap();
+        assert_eq!(unknown.status, StatusCode::NOT_FOUND);
+
+        let invalid = get(&core, ApiRequest::new("containers/not-a-container"))
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(invalid.status, StatusCode::BAD_REQUEST);
+        assert!(invalid.message.contains("is not a container id"));
+    }
+
+    #[test]
+    fn file_names_and_numeric_windows_are_validated() {
+        let invalid_name = safe_file_name("..").err().unwrap();
+        assert_eq!(invalid_name.status, StatusCode::BAD_REQUEST);
+
+        let invalid_number = number(
+            &ApiRequest {
+                query: Some("offset=abc"),
+                ..ApiRequest::new("")
+            },
+            "offset",
+        )
+        .err()
+        .unwrap();
+        assert_eq!(invalid_number.status, StatusCode::BAD_REQUEST);
+    }
+
+    #[test]
+    fn missing_log_files_include_the_available_source_hint() {
+        let location = logs::source::LogLocation {
+            kind: logs::source::LogSourceKind::Nm,
+            base_path: "/containerlogs/container_1_2_3/user/".into(),
+            node: Some("nm:8042".into()),
+            upstream_url: None,
+            user: "user".into(),
+            container_id: "container_1_2_3".into(),
+            files: vec![logs::source::LogFileEntry {
+                name: "stderr".into(),
+                size: 0,
+                last_modified: None,
+            }],
+        };
+        let error = require_file(&location, "stdout", "container_1_2_3")
+            .err()
+            .unwrap();
+        assert_eq!(error.status, StatusCode::NOT_FOUND);
+        assert!(error.hint.unwrap().contains("stderr"));
+        require_file(&location, "stderr", "container_1_2_3").unwrap();
+    }
+
+    #[tokio::test]
+    async fn tail_stream_finishes_when_the_tail_channel_closes() {
+        let (tx, rx) = tokio::sync::mpsc::channel(1);
+        drop(tx);
+        assert!(tail_stream(rx).next().await.is_none());
+    }
 }

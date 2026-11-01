@@ -305,22 +305,22 @@ impl RmPool {
             }
             match self.step(i, req).await {
                 Step::Done(up) => {
-                    if is_info && self.is_ha() {
-                        if let UpBody::Full(body) = &up.body {
-                            let info = serde_json::from_slice::<InfoEnvelope>(body)
+                    let inspect_info = is_info && self.is_ha();
+                    let info = inspect_info
+                        .then(|| match &up.body {
+                            UpBody::Full(body) => serde_json::from_slice::<InfoEnvelope>(body)
                                 .ok()
-                                .and_then(|e| e.cluster_info);
-                            if let Some(ci) = info {
-                                self.absorb_info(i, &ci);
-                                if ci.ha_state.as_deref().map(HaState::parse)
-                                    == Some(HaState::Standby)
-                                {
-                                    fallback.get_or_insert(up);
-                                    continue;
-                                }
-                            }
+                                .and_then(|e| e.cluster_info),
+                            UpBody::Stream { .. } => None,
+                        })
+                        .flatten();
+                    if let Some(ci) = info {
+                        self.absorb_info(i, &ci);
+                        if ci.ha_state.as_deref().map(HaState::parse) == Some(HaState::Standby) {
+                            fallback.get_or_insert(up);
+                            continue;
                         }
-                    } else if is_cluster && up.status.is_success() {
+                    } else if !inspect_info && is_cluster && up.status.is_success() {
                         self.mark_active(i);
                     }
                     return Ok(up);
@@ -539,5 +539,568 @@ impl RmPool {
     pub async fn probe_all(&self, force: bool) -> Vec<RmProbe> {
         let futs = (0..self.eps.len()).map(|i| self.probe(i, force));
         futures_util::future::join_all(futs).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::Config;
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    use tokio::net::TcpListener;
+
+    fn core(urls: &[&str]) -> Arc<crate::core::Core> {
+        let mut config = Config::for_rm("http://127.0.0.1:8088").unwrap();
+        config.rm_urls = urls.iter().map(|u| url::Url::parse(u).unwrap()).collect();
+        config.ha.backoff_base = std::time::Duration::from_secs(10);
+        config.ha.backoff_max = std::time::Duration::from_secs(10);
+        crate::core::Core::new(config).unwrap()
+    }
+
+    #[test]
+    fn ha_state_and_pool_snapshots_follow_active_standby_and_failure_changes() {
+        assert_eq!(HaState::parse(" active "), HaState::Active);
+        assert_eq!(HaState::parse("STANDBY"), HaState::Standby);
+        assert_eq!(HaState::parse("something"), HaState::Other);
+        assert_eq!(HaState::Active.as_str(), "ACTIVE");
+        assert_eq!(HaState::Standby.as_str(), "STANDBY");
+        assert_eq!(HaState::Other.as_str(), "OTHER");
+
+        let core = core(&["http://one.example:8088", "http://two.example:8088"]);
+        let pool = core.rm_pool();
+        assert_eq!(pool.len(), 2);
+        assert!(!pool.is_empty());
+        assert!(pool.is_ha());
+        assert_eq!(pool.urls().len(), 2);
+        assert_eq!(pool.active_url(), None);
+        assert_eq!(pool.active_ha_state(), None);
+        assert!(pool.snapshot().iter().all(|p| !p.reachable));
+        assert_eq!(
+            pool.candidates(Instant::now(), "/test").unwrap(),
+            vec![0, 1]
+        );
+        assert_eq!(pool.find_by_authority("not a URL"), None);
+        assert_eq!(
+            pool.find_by_authority("http://missing.example:8088/x"),
+            None
+        );
+        assert_eq!(pool.find_by_authority("http://TWO.example:8088/x"), Some(1));
+
+        pool.mark_standby(0);
+        assert_eq!(
+            pool.candidates(Instant::now(), "/test").unwrap(),
+            vec![1, 0]
+        );
+        pool.mark_active(0);
+        assert_eq!(
+            pool.active_url().as_deref(),
+            Some("http://one.example:8088")
+        );
+        assert_eq!(pool.active_ha_state(), Some(HaState::Active));
+        pool.mark_standby(0);
+        assert_eq!(pool.active_url(), None);
+        pool.mark_active(0);
+        pool.absorb_info(
+            0,
+            &ClusterInfo {
+                ha_state: Some("STANDBY".into()),
+                hadoop_version: Some("3.4.3".into()),
+                state: Some("RUNNING".into()),
+            },
+        );
+        assert_eq!(pool.active_url(), None);
+        assert_eq!(pool.snapshot()[0].hadoop_version.as_deref(), Some("3.4.3"));
+        assert_eq!(pool.snapshot()[0].rm_state.as_deref(), Some("RUNNING"));
+        assert_eq!(pool.active_ha_state(), None);
+        pool.absorb_info(
+            1,
+            &ClusterInfo {
+                ha_state: Some("ACTIVE".into()),
+                ..Default::default()
+            },
+        );
+        assert_eq!(
+            pool.active_url().as_deref(),
+            Some("http://two.example:8088")
+        );
+        pool.absorb_info(
+            0,
+            &ClusterInfo {
+                ha_state: Some("OTHER".into()),
+                ..Default::default()
+            },
+        );
+        assert_eq!(
+            pool.active_url().as_deref(),
+            Some("http://two.example:8088")
+        );
+
+        pool.mark_failure(1, "connection refused");
+        assert_eq!(pool.candidates(Instant::now(), "/test").unwrap(), vec![0]);
+        let snap = pool.snapshot();
+        assert!(!snap[1].reachable);
+        assert_eq!(snap[1].error.as_deref(), Some("connection refused"));
+        assert!(pool.candidates(Instant::now(), "/test").is_ok());
+    }
+
+    #[tokio::test]
+    async fn an_empty_pool_and_backoff_probes_report_consistent_status() {
+        let empty = core(&[]);
+        assert_eq!(empty.rm_pool().len(), 0);
+        assert!(empty.rm_pool().is_empty());
+        assert!(!empty.rm_pool().is_ha());
+        assert!(empty.rm_pool().urls().is_empty());
+        assert!(empty.rm_pool().snapshot().is_empty());
+
+        let core = core(&["http://127.0.0.1:0"]);
+        let pool = core.rm_pool();
+        pool.mark_failure(0, "offline");
+        let error = pool
+            .candidates(Instant::now(), "/ws/v1/cluster/apps")
+            .unwrap_err();
+        assert!(error.message.contains("backing off"));
+        assert!(error.message.contains("offline"));
+        assert!(error.message.contains("127.0.0.1:0"));
+        let probe = pool.probe(0, false).await;
+        assert!(!probe.reachable);
+        assert!(probe.error.unwrap().contains("offline"));
+        let all = pool.probe_all(false).await;
+        assert_eq!(all.len(), 1);
+        assert!(!all[0].reachable);
+        let forced = pool.probe(0, true).await;
+        assert!(!forced.reachable);
+        assert!(forced.error.unwrap().contains("cannot connect"));
+    }
+
+    struct TestRm {
+        base: String,
+        task: Option<tokio::task::JoinHandle<()>>,
+        stop: Option<tokio::sync::oneshot::Sender<()>>,
+    }
+
+    impl TestRm {
+        async fn start(status: u16, location: Option<String>, body: &'static str) -> Self {
+            Self::start_with_length(status, location, body, body.len()).await
+        }
+
+        async fn start_truncated(status: u16, body: &'static str) -> Self {
+            Self::start_with_length(status, None, body, body.len() + 32).await
+        }
+
+        async fn start_with_length(
+            status: u16,
+            location: Option<String>,
+            body: &'static str,
+            content_length: usize,
+        ) -> Self {
+            Self::start_shared_location(
+                status,
+                Arc::new(Mutex::new(location)),
+                body,
+                content_length,
+            )
+            .await
+        }
+
+        async fn start_dynamic(
+            status: u16,
+            body: &'static str,
+        ) -> (Self, Arc<Mutex<Option<String>>>) {
+            let location = Arc::new(Mutex::new(None));
+            let rm = Self::start_shared_location(status, location.clone(), body, body.len()).await;
+            (rm, location)
+        }
+
+        async fn start_shared_location(
+            status: u16,
+            location: Arc<Mutex<Option<String>>>,
+            body: &'static str,
+            content_length: usize,
+        ) -> Self {
+            let listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+            let base = format!("http://{}", listener.local_addr().unwrap());
+            let (stop, mut stop_rx) = tokio::sync::oneshot::channel();
+            let task = tokio::spawn(async move {
+                loop {
+                    let accepted = tokio::select! {
+                        _ = &mut stop_rx => break,
+                        accepted = listener.accept() => accepted,
+                    };
+                    let (stream, _) = accepted.expect("test listener remains available");
+                    let location = location.clone();
+                    tokio::spawn(async move {
+                        let mut reader = BufReader::new(stream);
+                        let mut line = String::new();
+                        while reader.read_line(&mut line).await.unwrap_or(0) > 0 && line != "\r\n" {
+                            line.clear();
+                        }
+                        let location = location
+                            .lock()
+                            .clone()
+                            .as_deref()
+                            .map(|value| format!("Location: {value}\r\n"))
+                            .unwrap_or_default();
+                        let wire = format!(
+                            "HTTP/1.1 {status} Test Response\r\nContent-Type: application/json\r\nContent-Length: {content_length}\r\n{location}Connection: close\r\n\r\n{body}"
+                        );
+                        let _ = reader.get_mut().write_all(wire.as_bytes()).await;
+                    });
+                }
+            });
+            Self {
+                base,
+                task: Some(task),
+                stop: Some(stop),
+            }
+        }
+
+        async fn shutdown(mut self) {
+            self.stop
+                .take()
+                .expect("test RM has a stop sender")
+                .send(())
+                .expect("test RM task is listening");
+            self.task.take().expect("test RM has a task").await.unwrap();
+        }
+    }
+
+    impl Drop for TestRm {
+        fn drop(&mut self) {
+            if let Some(task) = &self.task {
+                task.abort();
+            }
+        }
+    }
+
+    fn pool(urls: &[&str]) -> Arc<crate::core::Core> {
+        core(urls)
+    }
+
+    fn info(state: &str) -> &'static str {
+        match state {
+            "ACTIVE" => {
+                r#"{"clusterInfo":{"haState":"ACTIVE","hadoopVersion":"3.4.0","state":"STARTED"}}"#
+            }
+            "STANDBY" => {
+                r#"{"clusterInfo":{"haState":"STANDBY","hadoopVersion":"3.4.0","state":"STARTED"}}"#
+            }
+            _ => r#"{"clusterInfo":{"haState":"OTHER","state":"INITIALIZING"}}"#,
+        }
+    }
+
+    #[tokio::test]
+    async fn fetch_follows_only_configured_redirects_and_remembers_active_rm() {
+        let active = TestRm::start(200, None, info("ACTIVE")).await;
+        let standby =
+            TestRm::start(307, Some(format!("{}/ws/v1/cluster/info", active.base)), "").await;
+        let core = pool(&[&standby.base, &active.base]);
+        let mut req = FetchReq::get(INFO_PATH, BodyMode::Buffer { cap: 1024 });
+        req.accept = Some("application/json");
+        let up = core.rm_pool().fetch(&req).await.unwrap();
+        assert_eq!(up.status, StatusCode::OK);
+        assert_eq!(
+            core.rm_pool().active_url().as_deref(),
+            Some(active.base.as_str())
+        );
+        assert_eq!(core.rm_pool().active_ha_state(), Some(HaState::Active));
+
+        let ordinary = TestRm::start(200, None, "{}").await;
+        let ordinary_core = pool(&[&ordinary.base]);
+        let reply = ordinary_core
+            .rm_pool()
+            .fetch(&FetchReq::get(
+                "/ws/v1/cluster/apps",
+                BodyMode::Buffer { cap: 100 },
+            ))
+            .await
+            .unwrap();
+        assert_eq!(reply.status, StatusCode::OK);
+        assert_eq!(
+            ordinary_core.rm_pool().active_url().as_deref(),
+            Some(ordinary.base.as_str())
+        );
+
+        let standby_one = TestRm::start(200, None, info("STANDBY")).await;
+        let active_two = TestRm::start(200, None, info("ACTIVE")).await;
+        let standby_core = pool(&[&standby_one.base, &active_two.base]);
+        standby_core.rm_pool().fetch(&req).await.unwrap();
+        assert_eq!(
+            standby_core.rm_pool().active_url().as_deref(),
+            Some(active_two.base.as_str())
+        );
+
+        let streamed = standby_core
+            .rm_pool()
+            .fetch(&FetchReq::get(INFO_PATH, BodyMode::Stream))
+            .await
+            .unwrap();
+        assert!(matches!(streamed.body, UpBody::Stream { .. }));
+    }
+
+    #[tokio::test]
+    async fn fetch_returns_only_a_safe_fallback_for_unready_or_unknown_redirects() {
+        let first = TestRm::start(503, None, "standby").await;
+        let second = TestRm::start(503, None, "also standby").await;
+        let core = pool(&[&first.base, &second.base]);
+        let reply = core
+            .rm_pool()
+            .fetch(&FetchReq::get("/apps", BodyMode::Buffer { cap: 100 }))
+            .await
+            .unwrap();
+        assert_eq!(reply.status, StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(
+            core.rm_pool()
+                .snapshot()
+                .iter()
+                .filter(|p| p.ha_state == Some(HaState::Standby))
+                .count(),
+            2
+        );
+
+        let outside = TestRm::start(
+            307,
+            Some("http://other.example:8088/ws/v1/cluster/apps".into()),
+            "",
+        )
+        .await;
+        let core = pool(&[&outside.base]);
+        let error = core
+            .rm_pool()
+            .fetch(&FetchReq::get("/ws/v1/cluster/apps", BodyMode::Stream))
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(error.status, StatusCode::BAD_GATEWAY);
+        assert!(error.message.contains("not one of the configured"));
+        assert!(error.hint.unwrap().contains("every ResourceManager"));
+
+        let no_location = TestRm::start(302, None, "").await;
+        let core = pool(&[&no_location.base]);
+        let error = core
+            .rm_pool()
+            .fetch(&FetchReq::get("/apps", BodyMode::Buffer { cap: 100 }))
+            .await
+            .err()
+            .expect("a redirect without Location cannot serve the request");
+        assert!(error.message.contains("(no Location)"));
+
+        let one = TestRm::start(200, None, info("ACTIVE")).await;
+        let two = TestRm::start(200, None, info("ACTIVE")).await;
+        let core = pool(&[&one.base, &two.base]);
+        core.rm_pool().mark_failure(0, "down one");
+        core.rm_pool().mark_failure(1, "down two");
+        let error = core
+            .rm_pool()
+            .fetch(&FetchReq::get("/apps", BodyMode::Buffer { cap: 100 }))
+            .await
+            .err()
+            .expect("all endpoints are in backoff");
+        assert!(error.message.contains("backing off"));
+        assert!(error.message.contains("every configured ResourceManager"));
+    }
+
+    #[tokio::test]
+    async fn inspect_redirect_only_returns_observed_history_or_external_locations() {
+        let history = TestRm::start(
+            307,
+            Some("http://jhs.example:19888/jobhistory/logs/node/container/user".into()),
+            "",
+        )
+        .await;
+        let core = pool(&[&history.base]);
+        let observed = core
+            .rm_pool()
+            .inspect_redirect("/tracking")
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(observed.contains("/jobhistory/logs/"));
+
+        let external = TestRm::start(307, Some("http://outside.example/path".into()), "").await;
+        let core = pool(&[&external.base]);
+        assert_eq!(
+            core.rm_pool()
+                .inspect_redirect("/tracking")
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("http://outside.example/path")
+        );
+
+        let regular = TestRm::start(200, None, "{}").await;
+        let core = pool(&[&regular.base]);
+        assert_eq!(
+            core.rm_pool().inspect_redirect("/tracking").await.unwrap(),
+            None
+        );
+
+        let reachable = TestRm::start(200, None, "{}").await;
+        let core = pool(&["http://127.0.0.1:0", &reachable.base]);
+        assert_eq!(
+            core.rm_pool().inspect_redirect("/tracking").await.unwrap(),
+            None
+        );
+
+        let standby1 = TestRm::start(503, None, "{}").await;
+        let standby2 = TestRm::start(503, None, "{}").await;
+        let core = pool(&[&standby1.base, &standby2.base]);
+        assert_eq!(
+            core.rm_pool().inspect_redirect("/tracking").await.unwrap(),
+            None
+        );
+        TestRm::start(200, None, "{}").await.shutdown().await;
+
+        let history = TestRm::start(
+            302,
+            Some("http://jhs.example:19888/jobhistory/logs".into()),
+            "",
+        )
+        .await;
+        let active = TestRm::start(302, Some(history.base.clone()), "").await;
+        let core = pool(&[&active.base, &history.base]);
+        assert_eq!(
+            core.rm_pool()
+                .inspect_redirect("/tracking")
+                .await
+                .unwrap()
+                .as_deref(),
+            Some("http://jhs.example:19888/jobhistory/logs")
+        );
+
+        let no_location = TestRm::start(302, None, "").await;
+        let core = pool(&[&no_location.base]);
+        assert_eq!(
+            core.rm_pool().inspect_redirect("/tracking").await.unwrap(),
+            None
+        );
+
+        let fallback = TestRm::start(503, None, "").await;
+        let other = TestRm::start(200, None, "{}").await;
+        let core = pool(&[&fallback.base, &other.base]);
+        assert_eq!(
+            core.rm_pool().inspect_redirect("/tracking").await.unwrap(),
+            None
+        );
+    }
+
+    #[tokio::test]
+    async fn direct_probes_cover_redirect_http_json_backoff_and_forced_retry() {
+        let redirect = TestRm::start(302, Some("http://active.example:8088/".into()), "").await;
+        let core = pool(&[&redirect.base]);
+        let probe = core.rm_pool().probe(0, false).await;
+        assert!(probe.reachable);
+        assert_eq!(probe.ha_state, Some(HaState::Standby));
+
+        let failure = TestRm::start(500, None, "error").await;
+        let core = pool(&[&failure.base]);
+        let probe = core.rm_pool().probe(0, false).await;
+        assert!(!probe.reachable);
+        assert!(probe.error.unwrap().contains("HTTP 500"));
+
+        let invalid = TestRm::start(200, None, "not json").await;
+        let core = pool(&[&invalid.base]);
+        let probe = core.rm_pool().probe(0, false).await;
+        assert!(!probe.reachable);
+        assert!(
+            probe
+                .error
+                .unwrap()
+                .contains("did not return a clusterInfo")
+        );
+
+        let good = TestRm::start(200, None, info("OTHER")).await;
+        let core = pool(&[&good.base]);
+        let probe = core.rm_pool().probe(0, false).await;
+        assert!(probe.reachable);
+        assert_eq!(probe.ha_state, Some(HaState::Other));
+        assert_eq!(probe.rm_state.as_deref(), Some("INITIALIZING"));
+        assert_eq!(
+            core.rm_pool().snapshot()[0].rm_state.as_deref(),
+            Some("INITIALIZING")
+        );
+
+        core.rm_pool().mark_failure(0, "backoff");
+        assert!(
+            core.rm_pool()
+                .probe(0, false)
+                .await
+                .error
+                .unwrap()
+                .contains("backoff")
+        );
+        let forced = core.rm_pool().probe(0, true).await;
+        assert!(forced.reachable);
+    }
+
+    #[tokio::test]
+    async fn truncated_bodies_and_redirect_cycles_are_reported_without_replay() {
+        let unavailable = TestRm::start_truncated(503, "standby").await;
+        let backup = TestRm::start(200, None, "ok").await;
+        let ha = pool(&[&unavailable.base, &backup.base]);
+        let error = ha
+            .rm_pool()
+            .fetch(&FetchReq::get("/apps", BodyMode::Buffer { cap: 100 }))
+            .await
+            .err()
+            .expect("a truncated standby response is an upstream failure");
+        assert_eq!(error.status, StatusCode::BAD_GATEWAY);
+
+        let truncated = TestRm::start_truncated(200, "partial").await;
+        let other = TestRm::start(200, None, "ok").await;
+        let core = pool(&[&truncated.base, &other.base]);
+        assert!(
+            core.rm_pool()
+                .fetch(&FetchReq::get("/apps", BodyMode::Buffer { cap: 100 }))
+                .await
+                .is_err()
+        );
+        assert!(
+            pool(&[&truncated.base])
+                .rm_pool()
+                .inspect_redirect("/tracking")
+                .await
+                .is_err()
+        );
+        assert!(
+            !pool(&[&truncated.base])
+                .rm_pool()
+                .probe(0, true)
+                .await
+                .reachable
+        );
+
+        let large_body: &'static str = Box::leak("x".repeat((1 << 20) + 1).into_boxed_str());
+        let large = TestRm::start(200, None, large_body).await;
+        assert!(
+            !pool(&[&large.base])
+                .rm_pool()
+                .probe(0, true)
+                .await
+                .reachable
+        );
+
+        let (first, first_location) = TestRm::start_dynamic(302, "").await;
+        let (second, second_location) = TestRm::start_dynamic(302, "").await;
+        *first_location.lock() = Some(format!("{}/next", second.base));
+        *second_location.lock() = Some(format!("{}/next", first.base));
+        let cycle = pool(&[&first.base, &second.base]);
+        let error = cycle
+            .rm_pool()
+            .fetch(&FetchReq::get("/cycle", BodyMode::Buffer { cap: 100 }))
+            .await
+            .err()
+            .expect("a redirect cycle has no serving RM");
+        assert!(error.message.contains("no ResourceManager could serve"));
+        assert!(cycle.rm_pool().inspect_redirect("/cycle").await.is_ok());
+
+        let (self_redirect, location) = TestRm::start_dynamic(302, "").await;
+        *location.lock() = Some(format!("{}/again", self_redirect.base));
+        let core = pool(&[&self_redirect.base]);
+        assert!(
+            core.rm_pool()
+                .fetch(&FetchReq::get("/self", BodyMode::Buffer { cap: 10 }))
+                .await
+                .is_err()
+        );
     }
 }

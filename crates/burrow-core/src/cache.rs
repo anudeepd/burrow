@@ -275,6 +275,32 @@ impl Cache {
         expect: Expect,
         bypass: bool,
     ) -> Result<Served, ApiError> {
+        self.get_inner(key, fetch, policy, expect, bypass, true)
+            .await
+    }
+
+    #[cfg(test)]
+    async fn get_after_initial_miss(
+        &self,
+        key: &str,
+        fetch: Fetcher,
+        policy: TtlPolicy,
+        expect: Expect,
+        bypass: bool,
+    ) -> Result<Served, ApiError> {
+        self.get_inner(key, fetch, policy, expect, bypass, false)
+            .await
+    }
+
+    async fn get_inner(
+        &self,
+        key: &str,
+        fetch: Fetcher,
+        policy: TtlPolicy,
+        expect: Expect,
+        bypass: bool,
+        check_fresh_first: bool,
+    ) -> Result<Served, ApiError> {
         let inner = &self.inner;
         let stats = &inner.stats;
         let direct_source = if bypass {
@@ -303,7 +329,8 @@ impl Cache {
         }
 
         let cached = inner.entries.get(&key);
-        if !bypass
+        if check_fresh_first
+            && !bypass
             && let Some(e) = &cached
             && e.fresh()
         {
@@ -314,28 +341,11 @@ impl Cache {
             });
         }
 
-        let (flight, leader) = {
-            let mut map = inner.inflight.lock();
-            if let Some(f) = map.get(&key) {
-                (f.clone(), false)
-            } else {
-                // The entry is stored before the flight record is removed, so re-checking while holding
-                // the map lock closes the window between our first look and now.
-                if !bypass
-                    && let Some(e) = inner.entries.get(&key)
-                    && e.fresh()
-                {
-                    stats.hits.fetch_add(1, Ordering::Relaxed);
-                    return Ok(Served::Entry {
-                        entry: e,
-                        source: CacheSource::Hit,
-                    });
-                }
-                let f = self.spawn_flight(key.clone(), fetch.clone(), policy, expect);
-                map.insert(key.clone(), f.clone());
-                (f, true)
-            }
-        };
+        let (flight, leader) =
+            match self.flight_or_hit(key.clone(), fetch.clone(), policy, expect, bypass) {
+                Ok(flight) => flight,
+                Err(hit) => return Ok(hit),
+            };
 
         let source = match (bypass, leader) {
             (true, _) => CacheSource::Bypass,
@@ -396,6 +406,43 @@ impl Cache {
                 })
             }
         }
+    }
+
+    fn fresh_hit(&self, key: &str, bypass: bool) -> Option<Served> {
+        if !bypass
+            && let Some(entry) = self.inner.entries.get(key)
+            && entry.fresh()
+        {
+            self.inner.stats.hits.fetch_add(1, Ordering::Relaxed);
+            Some(Served::Entry {
+                entry,
+                source: CacheSource::Hit,
+            })
+        } else {
+            None
+        }
+    }
+
+    fn flight_or_hit(
+        &self,
+        key: Arc<str>,
+        fetch: Fetcher,
+        policy: TtlPolicy,
+        expect: Expect,
+        bypass: bool,
+    ) -> Result<(Flight, bool), Served> {
+        let mut map = self.inner.inflight.lock();
+        if let Some(flight) = map.get(&key) {
+            return Ok((flight.clone(), false));
+        }
+        // The entry is stored before the flight record is removed, so re-checking while holding the
+        // map lock closes the window between our first look and now.
+        if let Some(hit) = self.fresh_hit(&key, bypass) {
+            return Err(hit);
+        }
+        let flight = self.spawn_flight(key.clone(), fetch, policy, expect);
+        map.insert(key, flight.clone());
+        Ok((flight, true))
     }
 
     fn spawn_flight(
@@ -494,6 +541,40 @@ impl Cache {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use futures_util::StreamExt;
+    use std::sync::atomic::AtomicUsize;
+
+    fn response(status: StatusCode, body: UpBody) -> UpResp {
+        UpResp {
+            status,
+            content_type: None,
+            extra: HeaderMap::new(),
+            body,
+            served_by: Arc::from("rm.example:8088"),
+            url: "http://rm.example:8088/test".into(),
+        }
+    }
+
+    fn full_fetcher(status: StatusCode, bytes: &'static [u8]) -> Fetcher {
+        Arc::new(move |_| {
+            let up = response(status, UpBody::Full(Bytes::from_static(bytes)));
+            async move { Ok(up) }.boxed()
+        })
+    }
+
+    fn stream_fetcher(calls: Arc<AtomicUsize>) -> Fetcher {
+        Arc::new(move |_| {
+            calls.fetch_add(1, Ordering::Relaxed);
+            let up = response(
+                StatusCode::OK,
+                UpBody::Stream {
+                    prefix: Bytes::from_static(b"prefix"),
+                    rest: futures_util::stream::empty().boxed(),
+                },
+            );
+            async move { Ok(up) }.boxed()
+        })
+    }
 
     #[test]
     fn canonical_query_sorts_names_only() {
@@ -534,5 +615,284 @@ mod tests {
         assert!(is_terminal_app(br#"{"app":{"state":"KILLED"}}"#));
         assert!(!is_terminal_app(br#"{"app":{"state":"RUNNING"}}"#));
         assert!(!is_terminal_app(b"not json"));
+    }
+
+    #[tokio::test]
+    async fn ttl_fresh_hit_and_stale_refresh_paths_are_accounted_for() {
+        let mut cfg = CacheConfig::default();
+        cfg.ttl_scale = 0.5;
+        let cache = Cache::new(cfg);
+        assert_eq!(cache.config().ttl_scale, 0.5);
+        assert_eq!(cache.ttl_for(TtlPolicy::None, b""), Duration::ZERO);
+        assert_eq!(
+            cache.ttl_for(TtlPolicy::Fixed(Duration::from_secs(4)), b""),
+            Duration::from_secs(2)
+        );
+        let app_ttl = TtlPolicy::AppState {
+            live: Duration::from_secs(2),
+            terminal: Duration::from_secs(10),
+        };
+        assert_eq!(
+            cache.ttl_for(app_ttl, br#"{"app":{"state":"RUNNING"}}"#),
+            Duration::from_secs(1)
+        );
+        assert_eq!(
+            cache.ttl_for(app_ttl, br#"{"app":{"state":"FINISHED"}}"#),
+            Duration::from_secs(5)
+        );
+
+        let first = cache
+            .get(
+                "fresh",
+                full_fetcher(StatusCode::OK, b"fresh"),
+                TtlPolicy::Fixed(Duration::from_secs(60)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            first,
+            Served::Entry {
+                source: CacheSource::Miss,
+                ..
+            }
+        ));
+        let hit = cache
+            .get(
+                "fresh",
+                full_fetcher(StatusCode::OK, b"unused"),
+                TtlPolicy::Fixed(Duration::from_secs(60)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            hit,
+            Served::Entry {
+                source: CacheSource::Hit,
+                ..
+            }
+        ));
+        let rechecked = cache
+            .get_after_initial_miss(
+                "fresh",
+                full_fetcher(StatusCode::OK, b"unused"),
+                TtlPolicy::Fixed(Duration::from_secs(60)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            rechecked,
+            Served::Entry {
+                source: CacheSource::Hit,
+                ..
+            }
+        ));
+
+        let stale_key = "stale";
+        cache
+            .get(
+                stale_key,
+                full_fetcher(StatusCode::OK, b"cached"),
+                TtlPolicy::Fixed(Duration::from_millis(1)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        tokio::time::sleep(Duration::from_millis(5)).await;
+        let stale = cache
+            .get(
+                stale_key,
+                full_fetcher(StatusCode::SERVICE_UNAVAILABLE, b"down"),
+                TtlPolicy::Fixed(Duration::from_millis(1)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            stale,
+            Served::Entry {
+                source: CacheSource::Stale,
+                ..
+            }
+        ));
+        assert_eq!(cache.stats().hits.load(Ordering::Relaxed), 2);
+        assert_eq!(cache.stats().stale.load(Ordering::Relaxed), 1);
+        assert!(cache.usage().0 >= 1);
+
+        assert!(matches!(
+            cache.fresh_hit("fresh", false),
+            Some(Served::Entry { .. })
+        ));
+        assert!(cache.fresh_hit("fresh", true).is_none());
+
+        cache
+            .get(
+                "stale-transport-error",
+                full_fetcher(StatusCode::OK, b"kept on transport error"),
+                TtlPolicy::Fixed(Duration::from_millis(1)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        tokio::time::sleep(Duration::from_millis(5)).await;
+        let failed_fetch: Fetcher = Arc::new(|_| {
+            async {
+                Err(ApiError::unreachable(
+                    "http://rm.example:8088",
+                    "connection refused",
+                ))
+            }
+            .boxed()
+        });
+        let stale = cache
+            .get(
+                "stale-transport-error",
+                failed_fetch,
+                TtlPolicy::Fixed(Duration::from_millis(1)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            stale,
+            Served::Entry {
+                source: CacheSource::Stale,
+                ..
+            }
+        ));
+        assert_eq!(cache.stats().stale.load(Ordering::Relaxed), 2);
+    }
+
+    #[tokio::test]
+    async fn concurrent_stream_waiters_refetch_after_the_first_takes_the_stream() {
+        let cache = Cache::new(CacheConfig::default());
+        let calls = Arc::new(AtomicUsize::new(0));
+        let fetch: Fetcher = {
+            let calls = calls.clone();
+            Arc::new(move |_| {
+                calls.fetch_add(1, Ordering::Relaxed);
+                async {
+                    tokio::task::yield_now().await;
+                    Ok(response(
+                        StatusCode::OK,
+                        UpBody::Stream {
+                            prefix: Bytes::from_static(b"large"),
+                            rest: futures_util::stream::empty().boxed(),
+                        },
+                    ))
+                }
+                .boxed()
+            })
+        };
+        let policy = TtlPolicy::Fixed(Duration::from_secs(30));
+        let (first, second) = tokio::join!(
+            cache.get("shared-stream", fetch.clone(), policy, Expect::Any, false),
+            cache.get("shared-stream", fetch, policy, Expect::Any, false),
+        );
+        assert!(matches!(first.unwrap(), Served::Stream { .. }));
+        assert!(matches!(second.unwrap(), Served::Stream { .. }));
+        assert_eq!(calls.load(Ordering::Relaxed), 2);
+    }
+
+    #[tokio::test]
+    async fn a_panicking_fetch_task_is_returned_as_an_internal_error() {
+        let cache = Cache::new(CacheConfig::default());
+        let panic_fetch: Fetcher = Arc::new(|_| async { panic!("simulated task failure") }.boxed());
+        let error = cache
+            .get(
+                "panicking-fetch",
+                panic_fetch,
+                TtlPolicy::Fixed(Duration::from_secs(1)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .err()
+            .expect("a failed spawned fetch is returned to its caller");
+        assert_eq!(error.status, StatusCode::INTERNAL_SERVER_ERROR);
+        assert!(error.message.contains("upstream fetch task failed"));
+    }
+
+    #[tokio::test]
+    async fn uncached_oversize_and_html_as_json_use_stream_and_error_paths() {
+        let cache = Cache::new(CacheConfig::default());
+        let none = cache
+            .get(
+                "none",
+                full_fetcher(StatusCode::OK, b"direct"),
+                TtlPolicy::None,
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            none,
+            Served::Stream {
+                source: CacheSource::Miss,
+                ..
+            }
+        ));
+
+        let calls = Arc::new(AtomicUsize::new(0));
+        let fetch = stream_fetcher(calls.clone());
+        let first = cache
+            .get(
+                "large",
+                fetch.clone(),
+                TtlPolicy::Fixed(Duration::from_secs(30)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            first,
+            Served::Stream {
+                source: CacheSource::Miss,
+                ..
+            }
+        ));
+        let second = cache
+            .get(
+                "large",
+                fetch,
+                TtlPolicy::Fixed(Duration::from_secs(30)),
+                Expect::Any,
+                false,
+            )
+            .await
+            .unwrap();
+        assert!(matches!(
+            second,
+            Served::Stream {
+                source: CacheSource::Miss,
+                ..
+            }
+        ));
+        assert_eq!(calls.load(Ordering::Relaxed), 2);
+
+        let html = cache
+            .get(
+                "html-json",
+                full_fetcher(StatusCode::OK, b"<html><title>login</title></html>"),
+                TtlPolicy::Fixed(Duration::from_secs(30)),
+                Expect::Json,
+                false,
+            )
+            .await
+            .err()
+            .unwrap();
+        assert_eq!(html.status, StatusCode::BAD_GATEWAY);
+        assert!(html.message.contains("expected JSON"));
     }
 }
