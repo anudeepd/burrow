@@ -10,7 +10,7 @@
  * This test pins the invariant: the rail's element structure is identical whatever the prefs say. The visual state is
  * allowed to differ (classes, `data-collapsed`, the rail's width) — React patches those silently.
  */
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

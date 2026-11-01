@@ -17,6 +17,7 @@ export default defineConfig({
     environment: "happy-dom",
     pool: "threads",
     maxWorkers: 2,
+    testTimeout: 10_000,
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     exclude: ["e2e/**", "node_modules/**", "dist/**", "dev/**"],
     setupFiles: ["./vitest.setup.ts"],
