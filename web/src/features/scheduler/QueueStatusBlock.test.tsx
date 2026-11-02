@@ -96,6 +96,18 @@ describe("CapacityQueueStatus", () => {
     expect(screen.queryByText("Queue State")).toBeNull();
     expect(screen.queryByText("Num Schedulable Applications")).toBeNull();
   });
+
+  it("renders enabled intra-queue preemption and a zero maximum lifetime", () => {
+    const raw = {
+      state: "RUNNING",
+      intraQueuePreemptionDisabled: false,
+      maxApplicationLifetime: 0,
+    } as unknown as CapacityRaw;
+    render(<CapacityQueueStatus raw={raw} leaf />);
+
+    expect(screen.getByText("enabled")).toBeTruthy();
+    expect(screen.getByText("0")).toBeTruthy();
+  });
 });
 
 describe("FairQueueStatus", () => {

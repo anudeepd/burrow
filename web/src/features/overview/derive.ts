@@ -260,7 +260,7 @@ export function maximumClusterPriority(props: ReadonlyArray<{ key: string; value
  */
 export interface TeasedValue {
   field: string;
-  raw: unknown;
+  raw: number | null;
   fmt: Fmt;
   text: string;
 }

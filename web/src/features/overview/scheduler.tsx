@@ -49,11 +49,7 @@ function Cell({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-const numeric = (value: unknown): number => {
-  if (value == null) return -1;
-  const parsed = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(parsed) ? parsed : -1;
-};
+const numeric = (value: number | null | undefined): number => value ?? -1;
 
 const QUEUE_COLUMNS: ColDef<QueueTeaser>[] = [
   {

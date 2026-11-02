@@ -120,7 +120,7 @@ const LEVEL_HEAD = 120;
 export function detectLevel(line: string): LogLevel | null {
   const head = line.length > LEVEL_HEAD ? line.slice(0, LEVEL_HEAD) : line;
   const m = LEVEL_RE.exec(head);
-  return m ? (LEVEL_ALIAS[m[1]!] ?? null) : null;
+  return m ? LEVEL_ALIAS[m[1]!]! : null;
 }
 
 /** URL level filter: `all`/absent → no filter; `WARN` → WARN and above; `WARN+` is accepted as the same thing. */

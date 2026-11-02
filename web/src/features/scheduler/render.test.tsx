@@ -282,6 +282,58 @@ describe("SchedulerPage over captured payloads", () => {
     expect(patch).toHaveBeenCalledWith({ partition: "gpu" });
   });
 
+  it("renders the complete Capacity and Fair queue column sets", async () => {
+    const capacityFixture = structuredClone(CAPACITY["yarn/scheduler"]) as {
+      scheduler: { schedulerInfo: { queues: { queue: Record<string, unknown>[] } } };
+    };
+    const autoQueue = capacityFixture.scheduler.schedulerInfo.queues.queue[0]!;
+    const autoPartition = (autoQueue.capacities as { queueCapacitiesByPartition: Record<string, unknown>[] })
+      .queueCapacitiesByPartition[0]!;
+    autoQueue.isAutoCreatedLeafQueue = true;
+    autoQueue.maxApplicationsPerUser = 3;
+    autoQueue.maxParallelApps = 6;
+    autoQueue.queueType = "leaf";
+    autoQueue.creationMethod = "dynamicFlexible";
+    autoQueue.autoCreationEligibility = "flexible";
+    autoQueue.mode = "weight";
+    autoQueue.preemptionDisabled = false;
+    autoQueue.intraQueuePreemptionDisabled = true;
+    autoQueue.nodeLabels = ["gpu", "ssd"];
+    autoPartition.maxAMLimitPercentage = undefined;
+    autoPartition.effectiveMinResource = undefined;
+    autoPartition.effectiveMaxResource = undefined;
+    autoPartition.weight = undefined;
+    autoPartition.normalizedWeight = undefined;
+    stubApi({ ...CAPACITY, "yarn/scheduler": capacityFixture });
+    const capacity = renderAt(<SchedulerPage search={{}} patch={() => undefined} />, ["/scheduler"]);
+    const capacityTable = await screen.findByRole("table", { name: "Capacity scheduler queue tree" });
+    fireEvent.click(
+      within(capacityTable.closest("[data-burrow-table-root]") as HTMLElement).getByRole("button", { name: /Choose columns/ }),
+    );
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    expect(within(capacityTable).getByRole("columnheader", { name: /Mode/ })).toBeTruthy();
+    expect(capacityTable.textContent).toContain("Ordering Policy");
+    capacity.unmount();
+
+    const fairFixture = structuredClone(fixture("fair/scheduler.json")) as {
+      scheduler: { schedulerInfo: { rootQueue: Record<string, unknown> } };
+    };
+    const rootQueue = fairFixture.scheduler.schedulerInfo.rootQueue;
+    const fairQueues = (rootQueue.childQueues as { queue: Record<string, unknown>[] }).queue;
+    const fairQueue = fairQueues[0]!;
+    fairQueue.fairResources = { ...(fairQueue.fairResources as Record<string, unknown>), memory: 0 };
+    fairQueue.minResources = { ...(fairQueue.minResources as Record<string, unknown>), memory: 0 };
+    fairQueue.maxContainerAllocation = undefined;
+    fairQueue.amUsedResources = undefined;
+    stubApi({ ...CAPACITY, "yarn/scheduler": fairFixture });
+    renderAt(<SchedulerPage search={{}} patch={() => undefined} />, ["/scheduler"]);
+    const fairTable = await screen.findByRole("table", { name: "Fair scheduler queue tree" });
+    fireEvent.click(within(fairTable.closest("[data-burrow-table-root]") as HTMLElement).getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    expect(within(fairTable).getByRole("columnheader", { name: /Max Container/ })).toBeTruthy();
+    expect(fairTable.textContent).toContain("Used of Fair");
+  });
+
   it("offers guaranteed shares when every leaf queue is idle", async () => {
     const raw = structuredClone(CAPACITY["yarn/scheduler"]) as { scheduler: { schedulerInfo: unknown } };
     const zeroQueueUsage = (value: unknown): void => {

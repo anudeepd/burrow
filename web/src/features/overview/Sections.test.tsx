@@ -5,7 +5,7 @@ import type { ClusterInfoResponse, ClusterMetrics, NodesResponse } from "~/api/s
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
+const { cleanup, fireEvent, render, screen, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
@@ -214,6 +214,35 @@ describe("overview sections", () => {
     expect(samples.getAttribute("aria-valuetext")).toContain("Memory utilisation 55.0%");
     expect(document.querySelector('[data-testid="cluster-metrics"]')?.textContent).toContain(":");
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("renders zero capacity and unavailable raw aggregate counters honestly", async () => {
+    const { client } = renderOverview(<ClusterMetricsSection showRawAggregate />);
+    const sparseMetrics = {
+      ...metrics,
+      totalMB: null,
+      allocatedMB: null,
+      availableMB: null,
+      reservedMB: null,
+      pendingMB: null,
+      totalVirtualCores: 0,
+      allocatedVirtualCores: 0,
+      availableVirtualCores: 0,
+      reservedVirtualCores: 0,
+      pendingVirtualCores: 0,
+      utilizedMBPercent: Number.NaN,
+      utilizedVirtualCoresPercent: Number.NaN,
+      rmSchedulerBusyPercent: -1,
+      crossPartitionMetricsAvailable: false,
+    };
+    client.setQueryData(ov.metrics().queryKey, { clusterMetrics: sparseMetrics } as never);
+
+    const section = await screen.findByTestId("cluster-metrics");
+    for (const key of ["totalMB", "allocatedMB", "availableMB", "reservedMB", "pendingMB"]) {
+      expect(section.textContent).toContain(`${key} —`);
+    }
+    expect(section.textContent).toContain("monitor is off");
+    expect(section.textContent).toContain("used / capacity now 0.0%");
   });
 
   it("shows ResourceManager metric failures with and without cached data", async () => {
@@ -434,6 +463,59 @@ describe("overview sections", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: /JSON/ }));
     expect(createUrl).toHaveBeenCalledTimes(2);
     expect(clickAnchor).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows missing teaser values when the scheduler reports NaN counters", async () => {
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:missing-queue-values");
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    const { client } = renderOverview(<SchedulerSection />);
+    const schedulerData = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler.json"), "utf8")) as {
+      scheduler: { schedulerInfo: { queues: { queue: Record<string, unknown>[] } } };
+    };
+    const defaultQueue = schedulerData.scheduler.schedulerInfo.queues.queue[0]!;
+    defaultQueue.usedCapacity = "NaN";
+    defaultQueue.absoluteUsedCapacity = "NaN";
+    defaultQueue.absoluteCapacity = "NaN";
+    defaultQueue.absoluteMaxCapacity = "NaN";
+    defaultQueue.state = undefined;
+    defaultQueue.allocatedContainers = undefined;
+    defaultQueue.pendingContainers = undefined;
+    defaultQueue.numActiveApplications = undefined;
+    defaultQueue.numPendingApplications = undefined;
+    client.setQueryData(ov.scheduler().queryKey, schedulerData as never);
+
+    const table = await screen.findByRole("table", { name: "Queue headroom" });
+    fireEvent.click(screen.getByRole("button", { name: "Choose columns" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    const row = within(table).getByRole("row", { name: /root\.default/ });
+    expect(within(row).getAllByText("—").length).toBeGreaterThanOrEqual(4);
+
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
+  });
+
+  it("shows FIFO's empty queue state when optional scheduler facts are absent", async () => {
+    const { client } = renderOverview(<SchedulerSection />);
+    const fifo = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/fifo/scheduler.json"), "utf8"));
+    client.setQueryData(ov.scheduler().queryKey, fifo as never);
+    client.setQueryData(ov.schedulerOverview().queryKey, null as never);
+    client.setQueryData(tq.conf().queryKey, [] as never);
+    client.setQueryData(ov.metrics().queryKey, {
+      clusterMetrics: {
+        ...metrics,
+        rmSchedulerBusyPercent: null,
+        rmEventQueueSize: null,
+        schedulerEventQueueSize: null,
+      },
+    } as never);
+
+    expect(await screen.findByText("The Fifo Scheduler has a single unnamed queue: there is no queue tree to show.")).toBeTruthy();
+    const scheduler = screen.getByTestId("scheduler");
+    expect(scheduler.textContent).toContain("Application priority was not reported.");
+    expect(scheduler.textContent).toContain("Scheduler load was not reported.");
+    expect(scheduler.textContent).toContain("Queue activity was not reported.");
+    expect(scheduler.textContent).toContain("Minimum allocation was not reported.");
+    expect(scheduler.textContent).toContain("Maximum allocation was not reported.");
   });
 
   it("uses scheduler REST facts when the overview endpoint is unavailable and supports the compact queue disclosure", async () => {

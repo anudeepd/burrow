@@ -52,6 +52,7 @@ async function mount(dag: DagInput, props: Record<string, unknown> = {}) {
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   document.documentElement.removeAttribute("data-motion");
 });
 

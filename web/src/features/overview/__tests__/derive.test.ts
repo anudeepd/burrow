@@ -72,6 +72,10 @@ describe("byteDesc (Hadoop StringUtils.byteDesc / TraditionalBinaryPrefix.long2S
     expect(byteDesc(1_073_738_000)).toBe("1.00 GB");
   });
 
+  it("keeps the largest prefix when a rounded value has no next prefix", () => {
+    expect(byteDesc(1024 ** 7 - 262144)).toBe("1024.00 EB");
+  });
+
   it("never produces NaN/garbage for absent or non-finite input", () => {
     expect(byteDesc(null)).toBe("");
     expect(byteDesc(undefined)).toBe("");
@@ -99,6 +103,8 @@ describe("legacy resource strings", () => {
       "Memory 1 GB · 1 vCore · yarn.io/gpu: 2 cards",
     );
     expect(resourceSummaryText(0, 0, [{ name: "yarn.io/gpu", value: 0, units: "" }])).toBe("Memory 0 B · 0 vCores · yarn.io/gpu: 0");
+    expect(byteDesc(-1024)).toBe("-1 KB");
+    expect(resourceSummaryText(-1024, 0)).toBe("Memory -1 GB · 0 vCores");
   });
 
   it("appends custom resource types exactly like Resource.getFormattedString", () => {
