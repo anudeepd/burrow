@@ -192,10 +192,8 @@ export function QueuePage({ queue, search, patch }: { queue: string; search: Que
           <Card>
             {node.capacity ? (
               <CapacityQueueStatus raw={node.capacity} leaf={node.role === "leaf"} />
-            ) : node.fair ? (
-              <FairQueueStatus raw={node.fair} leaf={node.role === "leaf"} />
             ) : (
-              <p className="text-body text-ink-3">This scheduler type has no queue status block.</p>
+              <FairQueueStatus raw={node.fair!} leaf={node.role === "leaf"} />
             )}
             {node.role !== "leaf" && (
               <p className="mt-2 text-small text-ink-4">
@@ -329,7 +327,7 @@ export function QueuePage({ queue, search, patch }: { queue: string; search: Que
             ) : (
               <StateNote title="This scheduler has no retrievable configuration" tone="warn">
                 `GET /ws/v1/cluster/scheduler-conf` only answers for schedulers implementing MutableConfScheduler — the CapacityScheduler.
-                The {kind === "fair" ? "FairScheduler" : "FifoScheduler"} returns HTTP 400.
+                The FairScheduler returns HTTP 400.
               </StateNote>
             )}
           </TabsPanel>
@@ -451,7 +449,7 @@ function FreenessHero({ node }: { node: QueueNode }) {
                 </KVRowGroup>
                 <KVRowGroup label="Room before max">
                   <FreeReadout
-                    freePct={node.capacity ? Math.max(0, (m.absMaxPct ?? m.maxPct ?? 0) - (usedPct ?? 0)) : null}
+                    freePct={Math.max(0, (m.absMaxPct ?? m.maxPct ?? 0) - (usedPct ?? 0))}
                     freeMb={null}
                     field="queue.derived.burstRoomPct"
                   />

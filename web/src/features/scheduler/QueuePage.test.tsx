@@ -18,6 +18,20 @@ const FIXTURES = resolve(process.cwd(), "../fixtures/rm/scheduler/capacity");
 const read = (name: string) => JSON.parse(readFileSync(resolve(FIXTURES, name), "utf8")) as never;
 const queue = "root.default";
 
+function findCapacityQueue(payload: unknown, path: string): Record<string, unknown> {
+  const root = (payload as { scheduler: { schedulerInfo: Record<string, unknown> } }).scheduler.schedulerInfo;
+  const visit = (queues: Record<string, unknown>[]): Record<string, unknown> | undefined => {
+    for (const candidate of queues) {
+      if (candidate.queuePath === path) return candidate;
+      const children = candidate.queues as { queue?: Record<string, unknown>[] } | undefined;
+      const match = visit(children?.queue ?? []);
+      if (match) return match;
+    }
+    return undefined;
+  };
+  return visit((root.queues as { queue?: Record<string, unknown>[] } | undefined)?.queue ?? [])!;
+}
+
 function renderQueue(
   searchText = "",
   seedScheduler = true,
@@ -187,6 +201,60 @@ describe("QueuePage controls", () => {
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 
+  it("renders capacity partition data when the scheduler omits queue-level summaries", async () => {
+    const payload = read("scheduler.json");
+    const queueInfo = findCapacityQueue(payload, queue);
+    queueInfo.usedCapacity = undefined;
+    queueInfo.absoluteUsedCapacity = undefined;
+    queueInfo.absoluteCapacity = undefined;
+    queueInfo.absoluteMaxCapacity = undefined;
+    queueInfo.maxEffectiveCapacity = undefined;
+    queueInfo.resourcesUsed = undefined;
+    queueInfo.capacities = {
+      queueCapacitiesByPartition: [
+        {
+          capacity: 25,
+          maxCapacity: 80,
+          effectiveMaxResource: { memory: 2048 },
+        },
+      ],
+    };
+    queueInfo.resources = {
+      resourceUsagesByPartition: [{ used: { memory: 512 } }],
+    };
+
+    const capacity = renderQueue("tab=partitions", true, queue, "capacity", payload);
+    expect(await screen.findByRole("heading", { name: queue })).toBeTruthy();
+    expect(await screen.findByRole("table", { name: `Node-label partitions of ${queue}` })).toBeTruthy();
+    expect(screen.getAllByText("25.0%", { exact: true }).length).toBeGreaterThan(0);
+    capacity.unmount();
+
+    queueInfo.capacities = undefined;
+    queueInfo.resources = undefined;
+    queueInfo.capacity = undefined;
+    queueInfo.maxCapacity = undefined;
+    renderQueue("tab=partitions", true, queue, "capacity", payload);
+    expect(await screen.findByText("This queue has no per-partition capacities.")).toBeTruthy();
+  });
+
+  it("renders fair queue freeness when usage is omitted and shares are reported", async () => {
+    const payload = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/fair/scheduler.json"), "utf8")) as {
+      scheduler: { schedulerInfo: { rootQueue: { childQueues: { queue: Record<string, unknown>[] } } } };
+    };
+    const fairQueue = "root.etl";
+    const queueInfo = payload.scheduler.schedulerInfo.rootQueue.childQueues.queue.find((candidate) => candidate.queueName === fairQueue)!;
+    queueInfo.usedResources = undefined;
+    queueInfo.maxResources = { memory: 2048 };
+    queueInfo.fairResources = { memory: 1024 };
+    queueInfo.minResources = { memory: 512 };
+
+    renderQueue("", true, fairQueue, "fair", payload);
+    expect(await screen.findByRole("heading", { name: fairQueue })).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: /root\.etl: .*fair share/ })).toBeTruthy();
+    expect(screen.getByText("Headroom to max")).toBeTruthy();
+    expect(screen.getByText("Used of fair")).toBeTruthy();
+  });
+
   it("renders parent queue status without leaf-only details in both scheduler families", async () => {
     const capacityPayload = read("scheduler.json") as {
       scheduler: { schedulerInfo: { queues: { queue: Record<string, unknown>[] } } };
@@ -239,7 +307,7 @@ describe("QueuePage controls", () => {
     expect(await screen.findByRole("heading", { name: "Request failed" })).toBeTruthy();
     failed.unmount();
 
-    const activities = renderQueue("tab=activities&nodeId=node-1&groupBy=DIAGNOSTIC");
+    const activities = renderQueue("tab=activities&nodeId=127.0.0.3%3A8041&groupBy=DIAGNOSTIC");
     fireEvent.click(await screen.findByRole("button", { name: "Detailed" }));
     expect(patch).toHaveBeenCalledWith({ groupBy: undefined });
     fireEvent.click(screen.getByRole("button", { name: "Group by diagnostic" }));
@@ -316,5 +384,29 @@ describe("QueuePage controls", () => {
     fireEvent.pointerUp(node, { button: 0, pointerType: "mouse" });
     fireEvent.click(node);
     await waitFor(() => expect(patch).toHaveBeenCalledWith({ nodeId: "127.0.0.3:8041" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "NodeManager" }));
+    const anyNode = await screen.findByRole("option", { name: "latest (any node)" });
+    fireEvent.pointerDown(anyNode, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(anyNode, { button: 0, pointerType: "mouse" });
+    fireEvent.click(anyNode);
+    await waitFor(() => expect(patch).toHaveBeenCalledWith({ nodeId: undefined }));
+  });
+
+  it("keeps the activity filter usable when NodeManager data is unavailable", async () => {
+    const view = renderQueue("tab=activities");
+    const nodes = view.client.getQueryCache().find({ queryKey: nodesQuery().queryKey })!;
+    act(() => {
+      nodes.setState({
+        ...nodes.state,
+        data: undefined,
+        status: "error",
+        error: new Error("NodeManager list unavailable"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: nodes.state.errorUpdateCount + 1,
+        fetchStatus: "idle",
+      });
+    });
+    expect(await screen.findByRole("combobox", { name: "NodeManager" })).toBeTruthy();
+    expect(screen.queryByRole("option", { name: "127.0.0.3:8041" })).toBeNull();
   });
 });

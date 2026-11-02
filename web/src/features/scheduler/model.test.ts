@@ -119,6 +119,7 @@ describe("captured scheduler payloads", () => {
     const res = parseScheduler("fair/scheduler.json");
     const info = res.scheduler.schedulerInfo;
     expect(schedKindOf(info)).toBe("fair");
+    expect(buildTree(info)).not.toBeNull();
     const root = buildFairTree(info as never);
     const names = walkTree(root).map((n) => n.id);
     expect(names[0]).toBe("root");
@@ -241,6 +242,81 @@ describe("captured scheduler payloads", () => {
     };
     expect(usedOfFairPct(reportedShare)).toBe(40);
     expect(usedOfMinPct(reportedShare)).toBe(200);
+  });
+
+  it("covers scheduler tree, partition, headroom, and activity fallbacks", () => {
+    expect(schedKindOf({ type: "futureScheduler" } as never)).toBe("unknown");
+
+    const sparseCapacity = buildCapacityTree({
+      type: "capacityScheduler",
+      queueName: "root",
+      capacity: 100,
+      queues: { queue: [{ queueName: "" }] },
+    } as never);
+    expect(sparseCapacity.id).toBe("root");
+    expect(sparseCapacity.children[0]).toMatchObject({ id: "root", role: "leaf" });
+    expect(capacityMetrics({} as never).usedPct).toBeNull();
+    expect(partitionOf({ ...sparseCapacity, capacity: {} }, "gpu")).toEqual({ cap: undefined, res: undefined });
+    expect(partitionNames(sparseCapacity)).toEqual([]);
+    expect(buildCapacityTree({ type: "capacityScheduler", capacity: 100 } as never).id).toBe("root");
+    expect(
+      partitionNames({
+        ...sparseCapacity,
+        capacity: { capacities: { queueCapacitiesByPartition: [{ partitionName: "gpu" }, {}] } } as never,
+      }),
+    ).toEqual(["", "gpu"]);
+
+    const unnamedPartition = {
+      capacities: { queueCapacitiesByPartition: [{ capacity: 25 }] },
+      resources: { resourceUsagesByPartition: [{ used: { memory: 8 } }] },
+    } as never;
+    const unnamedPartitionNode: QueueNode = { ...sparseCapacity, capacity: unnamedPartition };
+    expect(capacityMetrics(unnamedPartition).capPct).toBe(25);
+    expect(partitionOf(unnamedPartitionNode, "").cap?.capacity).toBe(25);
+    expect(partitionNames(unnamedPartitionNode)).toEqual([""]);
+
+    const fairFallback = buildFairTree({
+      rootQueue: { childQueues: { queue: [{ queueName: "" }] } },
+    } as never);
+    expect(fairFallback.children[0]).toMatchObject({ id: "root", role: "leaf" });
+    expect(buildTree({ type: "fifoScheduler" } as never)).toBeNull();
+    expect(findQueue(null, "root")).toBeNull();
+    expect(findQueue(sparseCapacity, "missing")).toBeNull();
+
+    const capacityWithMissingShare: QueueNode = {
+      id: "root",
+      name: "root",
+      depth: 0,
+      role: "root",
+      children: [],
+      capacity: {
+        absoluteUsedCapacity: 0,
+        absoluteCapacity: 0,
+        capacities: { queueCapacitiesByPartition: [{ partitionName: "gpu" }] },
+        resources: { resourceUsagesByPartition: [{ partitionName: "gpu" }] },
+      } as never,
+    };
+    expect(capacityMetrics(capacityWithMissingShare.capacity!, "gpu").usedPct).toBeNull();
+    expect(partitionOf(capacityWithMissingShare, "default")).toEqual({ cap: undefined, res: undefined });
+    expect(headroomOf(capacityWithMissingShare).guaranteedFreePct).toBeNull();
+
+    const fairWithoutUsage: QueueNode = {
+      id: "root",
+      name: "root",
+      depth: 0,
+      role: "root",
+      children: [],
+      fair: { fairResources: { memory: 10 } } as never,
+    };
+    expect(headroomOf(fairWithoutUsage).fairShareFreeMb).toBeNull();
+    expect(activityRows({} as never)).toEqual([]);
+    expect(activityRows({ allocations: [{}] } as never)).toMatchObject([
+      { containerId: null, nodeId: null, queue: "", state: null, diagnostic: null, partition: null, finalState: null },
+    ]);
+    expect(activityRows({ allocations: [{ root: { children: [{}] } }] } as never)).toMatchObject([
+      { containerId: null, nodeId: null, queue: "", state: null, diagnostic: null, partition: null, finalState: null },
+      { containerId: null, nodeId: null, queue: "", state: null, diagnostic: null, partition: null, finalState: null },
+    ]);
   });
 
   it("maps scheduler health operations and preserves unknown operations", () => {

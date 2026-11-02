@@ -247,7 +247,7 @@ export function buildCapacityTree(info: CapacitySchedulerInfo): QueueNode {
     const id = (typeof raw.queuePath === "string" && raw.queuePath) || fallbackPath;
     const children = (raw.queues?.queue ?? []).map((c) => build(c, depth + 1, id));
     const role: QueueNode["role"] = depth === 0 ? "root" : children.length ? "parent" : "leaf";
-    return { id, name: id.split(".").pop() ?? id, depth, role, children, capacity: raw };
+    return { id, name: id.slice(id.lastIndexOf(".") + 1), depth, role, children, capacity: raw };
   };
   return build(info, 0, info.queuePath ?? info.queueName ?? "root");
 }
@@ -257,7 +257,7 @@ export function buildFairTree(info: FairSchedulerInfo): QueueNode {
     const rawName = raw.queueName || fallbackPath;
     const children = (raw.childQueues?.queue ?? []).map((c) => build(c, depth + 1, rawName));
     const role: QueueNode["role"] = depth === 0 ? "root" : children.length ? "parent" : "leaf";
-    return { id: rawName, name: rawName.split(".").pop() ?? rawName, depth, role, children, fair: raw };
+    return { id: rawName, name: rawName.slice(rawName.lastIndexOf(".") + 1), depth, role, children, fair: raw };
   };
   return build(info.rootQueue, 0, info.rootQueue.queueName || "root");
 }
