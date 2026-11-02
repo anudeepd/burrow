@@ -16,6 +16,7 @@ export function Select<T extends string>({
   className,
   placeholder,
   onClick,
+  stopPopupClickPropagation = false,
 }: {
   value: T | null;
   onValueChange: (v: T | null) => void;
@@ -25,6 +26,8 @@ export function Select<T extends string>({
   className?: string;
   placeholder?: ReactNode;
   onClick?: MouseEventHandler<HTMLButtonElement>;
+  /** Keep clicks in the portaled popup from activating a clickable ancestor, such as a table row. */
+  stopPopupClickPropagation?: boolean;
 }) {
   const items = options.map((o) => ({ value: o.value, label: o.label }));
   return (
@@ -49,7 +52,10 @@ export function Select<T extends string>({
       </BSelect.Trigger>
       <BSelect.Portal>
         <BSelect.Positioner sideOffset={4} alignItemWithTrigger={false} className="z-popover">
-          <BSelect.Popup className="burrow-pop min-w-(--anchor-width) rounded-lg bg-fabric-2 p-1 text-body shadow-(--shadow-overlay) outline-none">
+          <BSelect.Popup
+            onClick={stopPopupClickPropagation ? (event) => event.stopPropagation() : undefined}
+            className="burrow-pop min-w-(--anchor-width) rounded-lg bg-fabric-2 p-1 text-body shadow-(--shadow-overlay) outline-none"
+          >
             <BSelect.List className="max-h-72 overflow-auto">
               {options.map((o) => (
                 <BSelect.Item
