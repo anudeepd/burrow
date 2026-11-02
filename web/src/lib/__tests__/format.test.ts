@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { fmtBytes, fmtDuration, fmtEpoch, fmtInt, fmtMB, fmtPct, fmtRelative, formatByTag, rawString } from "~/lib/format";
+import {
+  fmtBytes,
+  fmtClock,
+  fmtDuration,
+  fmtEpoch,
+  fmtId,
+  fmtInt,
+  fmtIsoTimestamp,
+  fmtMB,
+  fmtPct,
+  fmtRelative,
+  formatByTag,
+  rawString,
+} from "~/lib/format";
 
 describe("formatters", () => {
   it("formats integers with a fixed locale", () => {
@@ -28,7 +41,15 @@ describe("formatters", () => {
     expect(fmtDuration(1000)).toBe("1s");
     expect(fmtDuration(3_725_000)).toBe("1h 2m 5s");
     expect(fmtDuration(90_000)).toBe("1m 30s");
+    expect(fmtDuration(90_061_000)).toBe("1d 1h 1m");
     expect(fmtDuration(-1)).toBe("—");
+  });
+
+  it("formats identifiers without grouping and keeps invalid numeric ids missing", () => {
+    expect(fmtId(1234567)).toBe("1234567");
+    expect(fmtId("001234")).toBe("001234");
+    expect(fmtId(Number.POSITIVE_INFINITY)).toBe("—");
+    expect(fmtId(undefined)).toBe("—");
   });
 
   it("formats epochs in the requested zone and hides the 'not yet' sentinel", () => {
@@ -37,6 +58,17 @@ describe("formatters", () => {
     expect(fmtEpoch(0)).toBe("—");
     expect(fmtEpoch(-1)).toBe("—");
     expect(fmtEpoch(null)).toBe("—");
+  });
+
+  it("converts zoned ISO timestamps and leaves unzoned or invalid metadata intact", () => {
+    const ms = Date.UTC(2026, 9, 3, 12, 4, 9);
+    expect(fmtIsoTimestamp("  2026-10-03T12:04:09Z  ", "utc")).toBe("2026-10-03 12:04:09");
+    expect(fmtIsoTimestamp("2026-10-03 12:04:09")).toBe("2026-10-03 12:04:09");
+    expect(fmtIsoTimestamp("not-a-dateZ")).toBe("not-a-dateZ");
+    expect(fmtIsoTimestamp("   ")).toBe("—");
+    expect(fmtIsoTimestamp(null)).toBe("—");
+    expect(fmtClock(ms, "utc")).toBe("12:04:09");
+    expect(fmtClock(0)).toBe("—");
   });
 
   it("formats relative times", () => {
@@ -63,5 +95,7 @@ describe("formatters", () => {
     expect(formatByTag("epoch", 0)).toBe("—");
     expect(formatByTag("text", "NEW")).toBe("NEW");
     expect(formatByTag("int", null)).toBe("—");
+    expect(formatByTag("id", 1234567)).toBe("1234567");
+    expect(formatByTag("id", { id: 7 })).toBe("[object Object]");
   });
 });

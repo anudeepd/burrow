@@ -4,7 +4,7 @@
  * base the operator configured — while the raw upstream value stays untouched for the parity harness.
  */
 import { describe, expect, it } from "vitest";
-import { rewriteUpstreamUrl } from "~/lib/upstream-url";
+import { rmProxyUrl, rewriteUpstreamUrl } from "~/lib/upstream-url";
 
 const bases = {
   rm: "http://127.0.0.1:8088",
@@ -70,5 +70,24 @@ describe("rewriteUpstreamUrl", () => {
     const r = rewriteUpstreamUrl("http://rm-host:8088/proxy/application_1_0001/", {});
     expect(r.kind).toBe("rm-proxy");
     expect(r.href).toBe("http://rm-host:8088/proxy/application_1_0001/");
+  });
+
+  it("classifies NodeManager REST and port-based daemon links", () => {
+    expect(rewriteUpstreamUrl("http://node:8041/ws/v1/node/containers", bases).kind).toBe("node-manager");
+    expect(rewriteUpstreamUrl("http://history:19888/jobs", bases).kind).toBe("jhs");
+    expect(rewriteUpstreamUrl("http://rm-host:8088/ws/v1/cluster/apps", bases).kind).toBe("rm");
+  });
+
+  it("keeps links unchanged when their configured base is missing or invalid", () => {
+    const jobHistory = "http://history:19888/jobhistory/logs/app";
+    const cluster = "http://rm-host:8088/cluster/apps";
+    expect(rewriteUpstreamUrl(jobHistory, {}).href).toBe(jobHistory);
+    expect(rewriteUpstreamUrl(cluster, { rm: "not a URL" }).href).toBe(cluster);
+    expect(rewriteUpstreamUrl("http://rm-host:8089/unknown", bases).kind).toBe("other");
+    expect(rewriteUpstreamUrl("http://history:19888/jobs", { sparkHistory: "not a URL" }).kind).toBe("other");
+  });
+
+  it("returns no proxy URL when the RM base is unavailable", () => {
+    expect(rmProxyUrl("app", {})).toBeNull();
   });
 });

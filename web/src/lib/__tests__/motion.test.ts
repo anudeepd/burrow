@@ -86,6 +86,17 @@ describe("flash()", () => {
     expect(flash(noWaapi)).toBeUndefined();
     expect(animate).not.toHaveBeenCalled();
   });
+
+  it("skips fades and flashes when their duration tokens are non-positive", () => {
+    const el = document.createElement("div");
+    const animate = vi.fn(() => ({ cancel: () => {} }) as unknown as Animation);
+    Object.defineProperty(el, "animate", { value: animate, configurable: true });
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({ getPropertyValue: () => "0ms" } as unknown as CSSStyleDeclaration);
+
+    expect(fadeIn(el)).toBeUndefined();
+    expect(flash(el)).toBeUndefined();
+    expect(animate).not.toHaveBeenCalled();
+  });
 });
 
 describe("fadeIn()", () => {

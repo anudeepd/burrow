@@ -116,6 +116,11 @@ describe("computeFacets", () => {
   it("is empty for no apps", () => {
     expect(computeFacets([]).total).toBe(0);
   });
+  it("ignores absent final statuses and empty application types", () => {
+    const facets = computeFacets([makeApp({ finalStatus: "", applicationType: "" })]);
+    expect(facets.byFinal).toEqual({});
+    expect(facets.types).toEqual([]);
+  });
 });
 
 describe("filterApps", () => {

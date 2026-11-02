@@ -55,6 +55,7 @@ describe("byteDesc (Hadoop StringUtils.byteDesc / TraditionalBinaryPrefix.long2S
   it("prints plain bytes below 1 KiB, exactly like Hadoop", () => {
     expect(byteDesc(0)).toBe("0 B");
     expect(byteDesc(1023)).toBe("1023 B");
+    expect(byteDesc(-1023)).toBe("-1023 B");
   });
 
   it("uses the exact-division fast path (no decimals)", () => {
@@ -109,6 +110,17 @@ describe("legacy resource strings", () => {
     const info = { memory: 1024, vCores: 4, resourceInformations: { resourceInformation: ris } } as never;
     expect(customResources(info)).toEqual([{ name: "yarn.io/gpu", value: 2, units: "" }]);
     expect(resourceText(1024, 4, customResources(info))).toBe("<memory:1 GB, vCores:4, yarn.io/gpu: 2>");
+    expect(customResources(null)).toEqual([]);
+    expect(
+      customResources({
+        resourceInformations: {
+          resourceInformation: [
+            { name: "yarn.io/gpu", value: 0, tags: [] },
+            { name: "yarn.io/fpga", value: 1, tags: [] },
+          ],
+        },
+      } as never),
+    ).toEqual([{ name: "yarn.io/fpga", value: 1, units: "" }]);
   });
 
   it("subtracts reserved custom resources (used = used − reserved)", () => {
@@ -118,6 +130,9 @@ describe("legacy resource strings", () => {
     expect(subtractCustomResources([{ name: "yarn.io/gpu", value: 1, units: "" }], [{ name: "yarn.io/gpu", value: 1, units: "" }])).toEqual(
       [],
     );
+    expect(subtractCustomResources([{ name: "yarn.io/fpga", value: 2, units: "cards" }], [])).toEqual([
+      { name: "yarn.io/fpga", value: 2, units: "cards" },
+    ]);
   });
 });
 
@@ -131,6 +146,7 @@ describe("legacy #metricsoverview cells from the captured ClusterMetrics", () =>
    */
   it("reproduces the legacy Apps Completed cell (completed + failed + killed)", () => {
     expect(appsCompletedAll(metrics)).toBe(10);
+    expect(appsCompletedAll({} as ClusterMetrics)).toBe(0);
   });
 
   it("takes the cross-partition branch the captured payload reports", () => {
@@ -168,6 +184,10 @@ describe("legacy #metricsoverview cells from the captured ClusterMetrics", () =>
       memPct: null,
       vcorePct: null,
     });
+    expect(utilisation({ utilizedMBPercent: 135, utilizedVirtualCoresPercent: 0 } as ClusterMetrics)).toEqual({
+      memPct: 135,
+      vcorePct: 0,
+    });
   });
 
   it("uses zero-safe fallbacks when cross-partition counters are incomplete", () => {
@@ -192,6 +212,9 @@ describe("legacy #metricsoverview cells from the captured ClusterMetrics", () =>
         totalUsedResourcesAcrossPartition: { memory: 4, vCores: 2 },
       } as ClusterMetrics),
     ).toEqual({ memory: 4, vCores: 2, customs: [] });
+    expect(containersRunning({ crossPartitionMetricsAvailable: true, totalAllocatedContainersAcrossPartition: 7 } as ClusterMetrics)).toBe(
+      7,
+    );
   });
 });
 
@@ -199,6 +222,7 @@ describe("scheduler block", () => {
   it("re-derives the legacy 'Scheduling Resource Type' text from the REST string", () => {
     expect(schedulingResourceTypesText(schedulerOverview.schedulingResourceType)).toBe("[memory-mb (unit=Mi), vcores]");
     expect(schedulingResourceTypesText(null)).toBeNull();
+    expect(schedulingResourceTypesText("")).toBeNull();
   });
 
   it("maps the REST discriminator to the legacy display name", () => {
@@ -234,6 +258,16 @@ describe("scheduler block", () => {
       maximumAllocation: { memory: 3072, vCores: 4 },
     } as unknown as SchedulerInfo;
     expect(maxAllocationText(plain)).toBe("<memory:3072, vCores:4>");
+    expect(
+      schedulingResourceTypesFromInfo({
+        type: "capacityScheduler",
+        maximumAllocation: {
+          memory: 3072,
+          vCores: 4,
+          resourceInformations: { resourceInformation: [{ name: "yarn.io/gpu", value: 2, tags: [] }] },
+        },
+      } as unknown as SchedulerInfo),
+    ).toBe("[yarn.io/gpu]");
   });
 
   it("reads min allocation and max cluster priority from the effective RM conf", () => {
@@ -255,6 +289,12 @@ describe("scheduler block", () => {
       ]),
     ).toBeNull();
     expect(minAllocationText([{ key: "yarn.scheduler.minimum-allocation-mb", value: "256" }])).toBeNull();
+    expect(
+      minAllocationText([
+        { key: "yarn.scheduler.minimum-allocation-mb", value: "256" },
+        { key: "yarn.scheduler.minimum-allocation-vcores", value: "bad" },
+      ]),
+    ).toBeNull();
     expect(maximumClusterPriority([{ key: "yarn.cluster.max-application-priority", value: "   " }])).toBeNull();
   });
 
@@ -286,6 +326,36 @@ describe("scheduler block", () => {
     expect(teasers[0]).toMatchObject({ pressurePct: Number.POSITIVE_INFINITY, barPct: 100 });
     expect(teasers[1]).toMatchObject({ pressurePct: 150, barPct: 100 });
     expect(teasers[2]).toMatchObject({ pressurePct: -1, barPct: 0 });
+  });
+
+  it("uses queue-name and absolute-capacity fallbacks for incomplete Capacity values", () => {
+    const fixturePath = resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler.json");
+    const payload = JSON.parse(readFileSync(fixturePath, "utf8")) as {
+      scheduler: { schedulerInfo: { type: string; queues: { queue: Record<string, unknown>[] } } };
+    };
+    const [withAbsoluteUsage, noUsage] = payload.scheduler.schedulerInfo.queues.queue;
+    Object.assign(withAbsoluteUsage!, {
+      queuePath: undefined,
+      usedCapacity: "NaN",
+      absoluteUsedCapacity: 50,
+      absoluteCapacity: 25,
+      absoluteMaxCapacity: 100,
+      state: undefined,
+    });
+    Object.assign(noUsage!, {
+      usedCapacity: "NaN",
+      absoluteUsedCapacity: "NaN",
+      absoluteCapacity: "NaN",
+      absoluteMaxCapacity: "NaN",
+    });
+    const teasers = queueTeasers(payload.scheduler.schedulerInfo as unknown as SchedulerInfo);
+    expect(teasers[0]).toMatchObject({ path: "default", state: null, pressurePct: 200, barPct: 100 });
+    expect(teasers[1]).toMatchObject({ pressurePct: null, barPct: 0 });
+  });
+
+  it("returns no teasers when malformed queue arrays fail schema validation", () => {
+    expect(queueTeasers({ type: "capacityScheduler", queues: { queue: [null] } } as unknown as SchedulerInfo)).toEqual([]);
+    expect(queueTeasers({ type: "fairScheduler", rootQueue: { childQueues: { queue: [null] } } } as unknown as SchedulerInfo)).toEqual([]);
   });
 
   it("normalizes FairScheduler resource queues and zero-share pressure", () => {
@@ -322,6 +392,9 @@ describe("application state helpers", () => {
 
   it("classifies phases", () => {
     expect(appPhase("RUNNING")).toBe("running");
+    expect(appPhase("NEW")).toBe("queued");
+    expect(appPhase("NEW_SAVING")).toBe("queued");
+    expect(appPhase("SUBMITTED")).toBe("queued");
     expect(appPhase("ACCEPTED")).toBe("queued");
     expect(appPhase("FINISHED")).toBe("terminal");
     expect(appPhase(undefined)).toBe("terminal");

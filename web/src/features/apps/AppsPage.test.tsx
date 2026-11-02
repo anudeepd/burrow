@@ -9,6 +9,7 @@ const { cleanup, render, screen, fireEvent, waitFor, within } = await import("@t
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
+const { parityStore } = await import("~/state/parity");
 const { AppsPage } = await import("./apps-page");
 const { appsSearchSchema } = await import("./search");
 
@@ -19,6 +20,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   window.__BURROW_PARITY__ = true;
+  parityStore.setState(() => ({ enabled: true }));
 });
 
 describe("AppsPage", () => {
@@ -100,6 +102,13 @@ describe("AppsPage", () => {
     expect(filtered.patch).toHaveBeenCalledWith(expect.objectContaining({ user: undefined, name: undefined, states: undefined }));
   });
 
+  it("uses the non-parity empty-filter guidance", async () => {
+    window.__BURROW_PARITY__ = false;
+    parityStore.setState(() => ({ enabled: false }));
+    renderAppsPage({ search: { user: "no-such-user" }, previewApps: apps });
+    expect(await screen.findByText("Relax a filter to widen the view.")).toBeTruthy();
+  });
+
   it("uses the lifecycle picker when the measured content area is compact", async () => {
     vi.stubGlobal(
       "ResizeObserver",
@@ -118,13 +127,18 @@ describe("AppsPage", () => {
 
   it("writes lifecycle and column choices back to URL search", async () => {
     window.__BURROW_PARITY__ = false;
-    const { patch } = renderAppsPage({ search: { cols: "all" }, previewApps: apps });
+    parityStore.setState(() => ({ enabled: false }));
+    const { patch } = renderAppsPage({ search: { states: "RUNNING", cols: "all" }, previewApps: apps });
+    fireEvent.click(await screen.findByRole("tab", { name: /^All/ }));
+    expect(patch).toHaveBeenCalledWith({ states: undefined });
     fireEvent.click(await screen.findByRole("tab", { name: /Completed/ }));
     expect(patch).toHaveBeenCalledWith({ states: "FINISHED,FAILED,KILLED" });
 
     fireEvent.click(screen.getByRole("button", { name: "Choose columns" }));
     fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "User" }));
     expect(patch.mock.calls.at(-1)?.[0]).toEqual(expect.objectContaining({ cols: expect.any(String) }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Reset to default columns" }));
+    expect(patch).toHaveBeenLastCalledWith({ cols: undefined });
   });
 
   it("sorts the application table, toggles final outcomes, and opens a selected row", async () => {

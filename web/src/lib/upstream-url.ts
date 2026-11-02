@@ -54,13 +54,6 @@ function originOf(base: string | null | undefined): string | null {
   return u ? u.origin : null;
 }
 
-function sameOrigin(a: string, b: string | null | undefined): boolean {
-  const bo = originOf(b);
-  if (!bo) return false;
-  const u = parse(a);
-  return !!u && u.origin === bo;
-}
-
 /**
  * Classify an upstream URL and, where Burrow knows a browser-reachable base for that daemon, rewrite it.
  * Ports are used as the fallback signal because the hosts differ between what the cluster advertises and what the
@@ -96,7 +89,7 @@ export function rewriteUpstreamUrl(url: string | null | undefined, bases: Upstre
     const href = rmOrigin ? rmOrigin + u.pathname + u.search + u.hash : raw;
     return { href, internal: false, kind: "rm", raw };
   }
-  if (shsOrigin && sameOrigin(raw, bases.sparkHistory)) {
+  if (shsOrigin && u.origin === shsOrigin) {
     return { href: raw, internal: false, kind: "spark-history", raw };
   }
   if (rmPort && (u.port === rmPort || u.pathname.startsWith("/ws/v1/cluster/"))) {

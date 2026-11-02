@@ -585,7 +585,6 @@ export class LineBuffer {
 
   /** Emit the held tail as a line (used before a gap or at EOF). */
   private flushPending(): void {
-    if (!this.pending) return;
     const raw = this.pending;
     const line = raw.endsWith("\r") ? raw.slice(0, -1) : raw;
     this.push(line, this.pendingStart, this.pendingStart + utf8Len(raw), this.pendingPartial);

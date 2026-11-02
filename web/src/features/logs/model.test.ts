@@ -10,6 +10,7 @@ import {
   compileSearch,
   detectLevel,
   detectTimestamp,
+  formatDelta,
   findMatches,
   firstErrorLine,
   hasAnsi,
@@ -57,6 +58,10 @@ describe("sliceBytes", () => {
   it("supports a finite byte window and empty overlap", () => {
     expect(sliceBytes("aé😀z", 1, 6)).toBe("é😀");
     expect(sliceBytes("abc", 3)).toBe("");
+    expect(sliceBytes("abc", 0)).toBe("abc");
+    expect(sliceBytes("→x", 3)).toBe("x");
+    expect(sliceBytes("😀x", 4)).toBe("x");
+    expect(sliceBytes("→xy", 0, 3)).toBe("→");
   });
 });
 
@@ -67,6 +72,7 @@ describe("ANSI", () => {
     expect(stripAnsi("\u001b[31mred\u001b[0m!")).toBe("red!");
     // a non-SGR escape is not SGR: it stays visible (nothing is silently dropped)
     expect(stripAnsi("a\u001b[2Kb")).toBe("a\u001b[2Kb");
+    expect(stripAnsi("plain")).toBe("plain");
   });
 });
 
@@ -110,17 +116,20 @@ describe("timestamps", () => {
     const t = detectTimestamp("2026-10-03 12:34:56,789 INFO x");
     expect(t?.timeOnly).toBe(false);
     expect(t?.epoch).toBe(Date.UTC(2026, 9, 3, 12, 34, 56, 789));
+    expect(detectTimestamp("2026-10-03 12:34:56 INFO x")?.epoch).toBe(Date.UTC(2026, 9, 3, 12, 34, 56));
   });
   it("parses Hadoop's log4j `yy/MM/dd HH:mm:ss` pattern", () => {
     const t = detectTimestamp("26/10/03 13:39:14 WARN NativeCodeLoader: …");
     expect(t?.timeOnly).toBe(false);
     expect(t?.epoch).toBe(Date.UTC(2026, 9, 3, 13, 39, 14));
+    expect(detectTimestamp("26/10/03 13:39:14,5 WARN x")?.epoch).toBe(Date.UTC(2026, 9, 3, 13, 39, 14, 500));
   });
   it("parses a time-only stamp without inventing a date", () => {
     const t = detectTimestamp("12:34:56.7 INFO x");
     expect(t?.timeOnly).toBe(true);
     expect(t?.epoch).toBeNull();
     expect(t?.msOfDay).toBe(((12 * 60 + 34) * 60 + 56) * 1000 + 700);
+    expect(detectTimestamp("12:34:56 INFO x")?.msOfDay).toBe(((12 * 60 + 34) * 60 + 56) * 1000);
   });
   it("returns null for an unstamped line", () => {
     expect(detectTimestamp("\tat Foo.bar(Foo.java:1)")).toBeNull();
@@ -141,6 +150,10 @@ describe("timestamps", () => {
     expect(relativeTimestampMs(dated, null)).toBeNull();
     expect(relativeTimestampMs(dated, "epoch:not-a-number" as TimestampReference)).toBeNull();
     expect(relativeTimestampMs(clock, "epoch:0")).toBeNull();
+  });
+  it("formats signed deltas", () => {
+    expect(formatDelta(1234)).toBe("+1,234 ms");
+    expect(formatDelta(-12)).toBe("−12 ms");
   });
 });
 
@@ -164,6 +177,10 @@ describe("search", () => {
     const m = findMatches(["\u001b[31mERROR\u001b[0m boom"], { query: "boom", regex: false, caseSensitive: false });
     expect(m).toEqual([{ line: 0, start: 6, end: 10 }]);
   });
+  it("returns no matches for empty queries or invalid regexes", () => {
+    expect(findMatches(["anything"], { query: "", regex: false, caseSensitive: false })).toEqual([]);
+    expect(findMatches(["anything"], { query: "(", regex: true, caseSensitive: false })).toEqual([]);
+  });
   it("does not spin on zero-length matches", () => {
     const m = findMatches(["abc"], { query: "^", regex: true, caseSensitive: false });
     expect(m.length).toBe(1);
@@ -177,6 +194,7 @@ describe("search", () => {
     const matches = findMatches(["a a", "b a"], { query: "a", regex: false, caseSensitive: false });
     expect(matchesByLine(matches).get(0)).toHaveLength(2);
     expect(stepMatch(matches, -1, 1)).toBe(0);
+    expect(stepMatch(matches, -1, -1)).toBe(2);
     expect(stepMatch(matches, 2, 1)).toBe(0);
     expect(stepMatch(matches, 0, -1)).toBe(2);
     expect(stepMatch([], 0, 1)).toBe(-1);
@@ -220,6 +238,11 @@ describe("search", () => {
     await expect(scan.promise).resolves.toHaveLength(2);
     expect(progress).toEqual([[2, 1]]);
     await expect(scanMatchesAsync(["x"], { query: "", regex: false, caseSensitive: false }).promise).resolves.toEqual([]);
+  });
+
+  it("searches ANSI and empty lines asynchronously", async () => {
+    const scan = scanMatchesAsync(["", "\u001b[31mhit\u001b[0m"], { query: "hit", regex: false, caseSensitive: false });
+    await expect(scan.promise).resolves.toEqual([{ line: 1, start: 0, end: 3 }]);
   });
 });
 
@@ -303,6 +326,14 @@ describe("LineBuffer offset math", () => {
     b.append("more\n", b.resumeOffset);
     expect(b.length).toBe(2);
     b.markEnded(); // EOF is idempotent
+    const emptyTail = new LineBuffer();
+    emptyTail.setWindow("complete\n", 0);
+    emptyTail.markEnded();
+    expect(emptyTail.toLines()).toEqual(["complete"]);
+    const carriageReturnTail = new LineBuffer();
+    carriageReturnTail.setWindow("tail\r", 0);
+    carriageReturnTail.markEnded();
+    expect(carriageReturnTail.line(0)).toBe("tail");
   });
 
   it("replaces its window when a head-aligned chunk arrives", () => {

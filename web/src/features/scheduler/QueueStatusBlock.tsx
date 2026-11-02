@@ -90,7 +90,7 @@ export function CapacityQueueStatus({ raw, leaf }: { raw: CapacityRaw; leaf: boo
       </KVRowGroup>
       {!weightUnset ? (
         <KVRow label="Configured Weight" field="queue.capacities.queueCapacitiesByPartition.weight" raw={cap?.weight}>
-          {cap?.weight == null ? "—" : String(cap.weight)}
+          {String(cap!.weight)}
         </KVRow>
       ) : (
         <ResourceRow

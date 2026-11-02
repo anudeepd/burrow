@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-const { apiGetWithMeta, apiText } = await import("./client");
+const { ApiError, apiGetWithMeta, apiText, canonicalQuery } = await import("./client");
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -10,6 +10,78 @@ afterEach(() => {
 });
 
 describe("API response handling", () => {
+  it("canonicalizes scalar, array, empty, and absent query parameters", () => {
+    expect(canonicalQuery()).toBe("");
+    expect(canonicalQuery({})).toBe("");
+    expect(canonicalQuery({ empty: "", absent: null })).toBe("");
+    expect(canonicalQuery({ tag: ["a", "b,c"], flag: false })).toBe("?flag=false&tag=a,b,c");
+  });
+
+  it("classifies network failures, timeouts, aborts, and unreachable API errors", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Promise.reject(new Error("offline"))),
+    );
+    await expect(apiGetWithMeta("health")).rejects.toMatchObject({ kind: "network", hint: "Is the Burrow server still running?" });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Promise.reject(new DOMException("deadline", "TimeoutError"))),
+    );
+    await expect(apiGetWithMeta("health", { timeoutMs: 1500 })).rejects.toMatchObject({
+      kind: "timeout",
+      message: "No response from /api/health within 2s",
+      hint: "Burrow or the ResourceManager is slow to answer.",
+    });
+
+    const controller = new AbortController();
+    controller.abort();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Promise.reject(new Error("aborted"))),
+    );
+    await expect(apiGetWithMeta("health", { signal: controller.signal })).rejects.toMatchObject({
+      kind: "abort",
+      message: "Request cancelled",
+    });
+
+    expect(new ApiError("bad gateway", "http", 502).isUnreachable).toBe(true);
+    expect(new ApiError("upstream down", "http", 500, "upstream_unreachable").isUnreachable).toBe(true);
+    expect(new ApiError("offline", "network", null).isUnreachable).toBe(true);
+    expect(new ApiError("slow", "timeout", null).isUnreachable).toBe(true);
+    expect(new ApiError("bad request", "http", 400).isUnreachable).toBe(false);
+  });
+
+  it("uses HTTP fallbacks for empty and incomplete error envelopes", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("", { status: 502 })),
+    );
+    await expect(apiGetWithMeta("missing-body")).rejects.toMatchObject({ message: "HTTP 502 from /api/missing-body", body: null });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ error: {} }), { status: 500 })),
+    );
+    await expect(apiGetWithMeta("missing-message")).rejects.toMatchObject({ message: "HTTP 500", code: null });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ RemoteException: {} }), { status: 500 })),
+    );
+    await expect(apiGetWithMeta("missing-remote-fields")).rejects.toMatchObject({ message: "HTTP 500", code: "RemoteException" });
+  });
+
+  it("validates good schemas without changing their parsed data", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ value: "ok" }), { status: 200 })),
+    );
+    await expect(apiGetWithMeta("typed", { schema: z.object({ value: z.string() }) })).resolves.toMatchObject({
+      data: { value: "ok" },
+    });
+  });
+
   it("maps Hadoop RemoteException responses to a structured API error", async () => {
     vi.stubGlobal(
       "fetch",
@@ -84,6 +156,28 @@ describe("API response handling", () => {
         },
       ]);
       expect(warning).toHaveBeenCalledOnce();
+    } finally {
+      window.__BURROW_STRICT_SCHEMAS__ = originalStrict;
+      vi.resetModules();
+    }
+  });
+
+  it("throws a schema error in strict mode", async () => {
+    const originalStrict = window.__BURROW_STRICT_SCHEMAS__;
+    window.__BURROW_STRICT_SCHEMAS__ = true;
+    vi.resetModules();
+    const strictClient = await import("./client");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ wrong: true }), { status: 200 })),
+    );
+
+    try {
+      await expect(strictClient.apiGetWithMeta("strict", { schema: z.object({ value: z.string() }) })).rejects.toMatchObject({
+        kind: "schema",
+        code: "schema_mismatch",
+        message: "Response from strict does not match the schema",
+      });
     } finally {
       window.__BURROW_STRICT_SCHEMAS__ = originalStrict;
       vi.resetModules();

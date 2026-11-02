@@ -81,6 +81,7 @@ describe("apps search codec", () => {
   it("round-trips sort", () => {
     expect(sortFromParam(undefined)).toEqual([{ id: "starttime", desc: true }]);
     expect(sortFromParam(DEFAULT_SORT)).toEqual([{ id: "starttime", desc: true }]);
+    expect(sortFromParam("")).toEqual([]);
     expect(sortFromParam("starttime")).toEqual([{ id: "starttime", desc: false }]);
     expect(sortFromParam("-id")).toEqual([{ id: "id", desc: true }]);
     expect(sortFromParam("-allocatedMemory")).toEqual([{ id: "allocatedMemory", desc: true }]);

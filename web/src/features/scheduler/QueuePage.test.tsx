@@ -18,7 +18,7 @@ const FIXTURES = resolve(process.cwd(), "../fixtures/rm/scheduler/capacity");
 const read = (name: string) => JSON.parse(readFileSync(resolve(FIXTURES, name), "utf8")) as never;
 const queue = "root.default";
 
-function renderQueue(searchText = "", seedScheduler = true, queueName = queue) {
+function renderQueue(searchText = "", seedScheduler = true, queueName = queue, schedulerKind: "capacity" | "fair" = "capacity") {
   const root = createRootRoute();
   const scheduler = createRoute({ getParentRoute: () => root, path: "/scheduler", component: () => null });
   patch = vi.fn();
@@ -41,7 +41,10 @@ function renderQueue(searchText = "", seedScheduler = true, queueName = queue) {
     history: createMemoryHistory({ initialEntries: ["/scheduler/detail"] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { enabled: false, retry: false, refetchOnMount: false } } });
-  if (seedScheduler) client.setQueryData(schedulerQuery().queryKey, read("scheduler.json"));
+  if (seedScheduler) {
+    const schedulerPath = resolve(process.cwd(), `../fixtures/rm/scheduler/${schedulerKind}/scheduler.json`);
+    client.setQueryData(schedulerQuery().queryKey, JSON.parse(readFileSync(schedulerPath, "utf8")) as never);
+  }
   client.setQueryData(
     queueAppsQuery(queueName, ["RUNNING", "ACCEPTED"]).queryKey,
     JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/overview/apps-active.json"), "utf8")) as never,
@@ -137,5 +140,33 @@ describe("QueuePage controls", () => {
     expect(await screen.findByText("No queue named root.removed in this scheduler")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Back to the scheduler tree" }));
     await waitFor(() => expect(missing.router.state.location.pathname).toBe("/scheduler"));
+  });
+
+  it("shows Fair-specific queue facts and the unsupported users, partitions, and configuration sections", async () => {
+    renderQueue("tab=users", true, "root.default", "fair");
+    expect(await screen.findByRole("heading", { name: "root.default" })).toBeTruthy();
+    expect(screen.getByText("preemptable")).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: /root\.default: .*fair share/ })).toBeTruthy();
+    expect(screen.getByText("The Fair scheduler has no per-user table")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Partitions" }));
+    expect(await screen.findByText("No partitions in this scheduler shape")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Configuration" }));
+    expect(await screen.findByText("This scheduler has no retrievable configuration")).toBeTruthy();
+    expect(screen.getByText(/FairScheduler returns HTTP 400/)).toBeTruthy();
+  });
+
+  it("renders parent queue status without leaf-only details in both scheduler families", async () => {
+    const capacity = renderQueue("", true, "root");
+    expect(await screen.findByRole("heading", { name: "root" })).toBeTruthy();
+    expect(screen.getByText(/Parent queue: the legacy page renders no status block for parents/)).toBeTruthy();
+    expect(screen.queryByText("Num Schedulable Applications")).toBeNull();
+    capacity.unmount();
+
+    renderQueue("", true, "root", "fair");
+    expect(await screen.findByRole("heading", { name: "root" })).toBeTruthy();
+    expect(screen.getByText("parent queues have no preemptable field")).toBeTruthy();
+    expect(screen.queryByText("Demand Resources")).toBeNull();
   });
 });
