@@ -119,6 +119,42 @@ fn requested_range(
     }
 }
 
+async fn logs_listing(core: &Core, req: &ApiRequest<'_>) -> Result<Reply, ApiError> {
+    let mut spec = GetSpec::new("/logs/", LOGS_LISTING_TTL, Any);
+    spec.bypass = req.bypass;
+    let served = core.served(&core.rm, &spec).await?;
+    listing_reply(served).await
+}
+
+async fn listing_reply(served: Served) -> Result<Reply, ApiError> {
+    match served {
+        Served::Entry { entry, source } if entry.status.is_success() => {
+            let html = String::from_utf8_lossy(&entry.body);
+            let files = parse_logs_listing(&html);
+            let body = Bytes::from(
+                serde_json::to_vec(&serde_json::json!({ "files": files })).expect("serialises"),
+            );
+            Ok(Reply {
+                status: StatusCode::OK,
+                content_type: Some(HeaderValue::from_static(JSON_CT)),
+                extra: Default::default(),
+                etag: Some(weak_etag(&body)),
+                body: ReplyBody::Bytes(body),
+                cache: Some(source),
+                upstream: matches!(
+                    source,
+                    crate::cache::CacheSource::Miss
+                        | crate::cache::CacheSource::Coalesced
+                        | crate::cache::CacheSource::Bypass
+                )
+                .then(|| entry.served_by.to_string()),
+                age_ms: Some(entry.age().as_millis() as u64),
+            })
+        }
+        other => Ok(Reply::from_served(other, Expect::Any, false).await),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -196,41 +232,5 @@ mod tests {
             overflow.message,
             "requested log byte range exceeds supported limits"
         );
-    }
-}
-
-async fn logs_listing(core: &Core, req: &ApiRequest<'_>) -> Result<Reply, ApiError> {
-    let mut spec = GetSpec::new("/logs/", LOGS_LISTING_TTL, Any);
-    spec.bypass = req.bypass;
-    let served = core.served(&core.rm, &spec).await?;
-    listing_reply(served).await
-}
-
-async fn listing_reply(served: Served) -> Result<Reply, ApiError> {
-    match served {
-        Served::Entry { entry, source } if entry.status.is_success() => {
-            let html = String::from_utf8_lossy(&entry.body);
-            let files = parse_logs_listing(&html);
-            let body = Bytes::from(
-                serde_json::to_vec(&serde_json::json!({ "files": files })).expect("serialises"),
-            );
-            Ok(Reply {
-                status: StatusCode::OK,
-                content_type: Some(HeaderValue::from_static(JSON_CT)),
-                extra: Default::default(),
-                etag: Some(weak_etag(&body)),
-                body: ReplyBody::Bytes(body),
-                cache: Some(source),
-                upstream: matches!(
-                    source,
-                    crate::cache::CacheSource::Miss
-                        | crate::cache::CacheSource::Coalesced
-                        | crate::cache::CacheSource::Bypass
-                )
-                .then(|| entry.served_by.to_string()),
-                age_ms: Some(entry.age().as_millis() as u64),
-            })
-        }
-        other => Ok(Reply::from_served(other, Expect::Any, false).await),
     }
 }

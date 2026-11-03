@@ -415,9 +415,7 @@ async fn log_resolution_discovers_the_node_from_attempts_and_containers() {
         seed_nodes(&mock).await;
         seed_app(&mock, "RUNNING").await;
         let attempt = if via_containers {
-            format!(
-                r#"{{"appAttempts":{{"appAttempt":[{{"appAttemptId":"appattempt_1791010984040_0005_000001"}}]}}}}"#
-            )
+            r#"{"appAttempts":{"appAttempt":[{"appAttemptId":"appattempt_1791010984040_0005_000001"}]}}"#.to_string()
         } else {
             format!(
                 r#"{{"appAttempts":{{"appAttempt":[{{"appAttemptId":"appattempt_1791010984040_0005_000001","containerId":"{CID}","nodeHttpAddress":"{}"}}]}}}}"#,

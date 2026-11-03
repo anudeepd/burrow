@@ -307,7 +307,7 @@ async fn node_for_container(core: &Core, app: &str, cid: &str) -> Result<Option<
             .unwrap_or_default();
         for c in containers {
             let Some(http) = (c.id.as_deref() == Some(cid))
-                .then(|| c.node_http.as_deref())
+                .then_some(c.node_http.as_deref())
                 .flatten()
                 .and_then(crate::routes::nm::normalize_authority)
             else {

@@ -564,7 +564,12 @@ mod tests {
         task.await.unwrap();
 
         let (rm_url, task) = server(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 78\r\nConnection: close\r\n\r\n{\"clusterInfo\":{\"haState\":\"ACTIVE\",\"hadoopVersion\":\"3.4.0\",\"state\":\"STARTED\"}}").await;
-        let pool = RmPool::new(&[rm_url.clone()], client, &tuning, HaConfig::default());
+        let pool = RmPool::new(
+            std::slice::from_ref(&rm_url),
+            client,
+            &tuning,
+            HaConfig::default(),
+        );
         let wrapped_rm = Upstream::rm(pool);
         assert_eq!(wrapped_rm.cache_id(None), "rm");
         assert!(wrapped_rm.as_rm().is_some());

@@ -439,7 +439,7 @@ mod tests {
         std::fs::create_dir(&no_shell).unwrap();
         std::fs::write(no_shell.join("_shell.html.gz"), "only variant").unwrap();
         assert!(!Assets::dir(no_shell).has_shell());
-        assert_eq!(Assets::embedded().origin().starts_with("embedded ("), true);
+        assert!(Assets::embedded().origin().starts_with("embedded ("));
 
         let mut count = 0;
         count_file_kind(

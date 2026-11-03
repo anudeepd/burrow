@@ -619,8 +619,10 @@ mod tests {
 
     #[tokio::test]
     async fn ttl_fresh_hit_and_stale_refresh_paths_are_accounted_for() {
-        let mut cfg = CacheConfig::default();
-        cfg.ttl_scale = 0.5;
+        let cfg = CacheConfig {
+            ttl_scale: 0.5,
+            ..CacheConfig::default()
+        };
         let cache = Cache::new(cfg);
         assert_eq!(cache.config().ttl_scale, 0.5);
         assert_eq!(cache.ttl_for(TtlPolicy::None, b""), Duration::ZERO);

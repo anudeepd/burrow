@@ -134,7 +134,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name linux-snapshots --dir web/e2e/__screenshots__/linux
+        run: |
+          set -euo pipefail
+          snapshots_dir="$(mktemp -d "$RUNNER_TEMP/linux-snapshots.XXXXXX")"
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name linux-snapshots --dir "$snapshots_dir"
+          cp -a "$snapshots_dir"/. web/e2e/__screenshots__/linux/
       - name: Commit refreshed Linux screenshot baselines
         id: commit
         run: |

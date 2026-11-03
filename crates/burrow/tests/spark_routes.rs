@@ -1103,8 +1103,8 @@ async fn history_resolver_uses_the_first_unknown_candidate_as_a_safe_fallback() 
 #[tokio::test]
 async fn sql_rest_404_is_preserved_when_spark_version_is_new_unknown_or_unavailable() {
     for version_doc in [
-        format!(r#"{{"attempts":[{{"appSparkVersion":"3.5.0"}}]}}"#),
-        format!(r#"{{"attempts":[{{"appSparkVersion":"dev-build"}}]}}"#),
+        r#"{"attempts":[{"appSparkVersion":"3.5.0"}]}"#.to_string(),
+        r#"{"attempts":[{"appSparkVersion":"dev-build"}]}"#.to_string(),
         "not json".to_string(),
     ] {
         let mock = mock_with_app("RUNNING").await;
@@ -1194,7 +1194,7 @@ async fn spark_route_handles_root_paths_dag_failures_and_oversized_payloads() {
     .await;
     mock.set(
         &format!("/api/v1/applications/{APP}/jobs"),
-        Canned::json(format!(r#"[{{"jobId":8,"stageIds":[8]}}]"#)),
+        Canned::json(r#"[{"jobId":8,"stageIds":[8]}]"#.to_string()),
     )
     .await;
 
