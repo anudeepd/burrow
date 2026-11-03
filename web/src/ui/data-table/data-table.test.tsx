@@ -107,7 +107,7 @@ afterEach(() => {
   else if (originalClientWidth) Object.defineProperty(HTMLElement.prototype, "clientWidth", originalClientWidth);
   if (originalRect === null) delete (HTMLElement.prototype as { getBoundingClientRect?: () => DOMRect }).getBoundingClientRect;
   else if (originalRect) Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", originalRect);
-  if (originalMatchMedia === null) delete (window as Window & { matchMedia?: typeof window.matchMedia }).matchMedia;
+  if (originalMatchMedia === null) delete (window as { matchMedia?: typeof window.matchMedia }).matchMedia;
   else if (originalMatchMedia) Object.defineProperty(window, "matchMedia", originalMatchMedia);
   if (originalAnimate === null) delete (HTMLElement.prototype as { animate?: (...args: unknown[]) => Animation }).animate;
   else if (originalAnimate) Object.defineProperty(HTMLElement.prototype, "animate", originalAnimate);
@@ -443,7 +443,7 @@ describe("DataTable", () => {
     const animations: Array<{ cancel: ReturnType<typeof vi.fn>; oncancel: (() => void) | null; onfinish: (() => void) | null }> = [];
     let reordered = false;
     let computedTransform = "none";
-    const animate = vi.fn(() => {
+    const animate = vi.fn((_keyframes?: Keyframe[] | PropertyIndexedKeyframes | null, _options?: number | KeyframeAnimationOptions) => {
       const animation = { cancel: vi.fn(), oncancel: null, onfinish: null };
       animations.push(animation);
       return animation as unknown as Animation;

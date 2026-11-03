@@ -156,19 +156,21 @@ describe("scheduler display primitives", () => {
       availNodeCapacity: 1536,
       totalNodeCapacity: 2048,
       numContainers: 3,
-    } as never;
+    } as object;
 
-    render(<FifoQueueStatus info={info} />);
+    render(<FifoQueueStatus info={info as never} />);
     expect(screen.getByText("RUNNING")).toBeTruthy();
     cleanup();
 
     render(
-      <FifoQueueStatus info={{ ...info, capacity: Number.POSITIVE_INFINITY, usedCapacity: Number.POSITIVE_INFINITY, qstate: undefined }} />,
+      <FifoQueueStatus
+        info={{ ...info, capacity: Number.POSITIVE_INFINITY, usedCapacity: Number.POSITIVE_INFINITY, qstate: undefined } as never}
+      />,
     );
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
     cleanup();
 
-    render(<FifoQueueStatus info={{ ...info, capacity: 0 }} />);
+    render(<FifoQueueStatus info={{ ...info, capacity: 0 } as never} />);
     expect(screen.getByText("RUNNING")).toBeTruthy();
   });
 

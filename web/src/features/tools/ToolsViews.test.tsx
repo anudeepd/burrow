@@ -299,7 +299,7 @@ describe("tools pages", () => {
   it("closes a property when its selected row is activated again", async () => {
     const { router } = renderToolsPage("conf", "?open=yarn.admin.acl", { confKeys: ["yarn.admin.acl"] });
     await screen.findByRole("table", { name: "Configuration properties" });
-    await router.navigate({ search: (prev) => ({ ...prev, open: "yarn.admin.acl" }), replace: true });
+    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, open: "yarn.admin.acl" })) as never, replace: true });
     fireEvent.click(screen.getByRole("row", { name: /yarn.admin.acl/ }));
     await waitFor(() => expect((router.state.location.search as { open?: string }).open).toBeUndefined());
   });

@@ -88,8 +88,15 @@ describe("ActiveRail", () => {
       { ...app, id: "queued-old", name: "queued-old", state: "ACCEPTED", startedTime: 1 },
       { ...app, id: "running-late", name: "running-late", state: "RUNNING", startedTime: 3, progress: undefined } as unknown as App,
       { ...app, id: "running-early", name: "running-early", state: "RUNNING", startedTime: 2, applicationType: undefined },
-      { ...app, id: "queued-no-start-a", name: "queued-no-start-a", state: "SUBMITTED", startedTime: undefined, elapsedTime: undefined },
-      { ...app, id: "queued-no-start-b", name: "queued-no-start-b", state: "SUBMITTED", startedTime: undefined },
+      {
+        ...app,
+        id: "queued-no-start-a",
+        name: "queued-no-start-a",
+        state: "SUBMITTED",
+        startedTime: undefined,
+        elapsedTime: undefined,
+      } as unknown as App,
+      { ...app, id: "queued-no-start-b", name: "queued-no-start-b", state: "SUBMITTED", startedTime: undefined } as unknown as App,
       ...Array.from({ length: 4 }, (_, i) => ({ ...app, id: `queued-${i}`, name: `queued-${i}`, state: "SUBMITTED", startedTime: 4 + i })),
     ];
     const retry = vi.fn();

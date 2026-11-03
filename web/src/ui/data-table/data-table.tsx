@@ -217,7 +217,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const [widthRef, viewportW] = useElementWidth<HTMLDivElement>(0);
   const explicitlySizedColumns = useMemo(() => {
     const ids = new Set<string>();
-    const collect = (definitions: ColDef<T>[]) => {
+    const collect = (definitions: readonly ColDef<T>[]) => {
       for (const definition of definitions) {
         if ("columns" in definition && definition.columns) collect(definition.columns);
         else if (definition.size != null) ids.add(columnId(definition));

@@ -204,7 +204,7 @@ describe("overview sections", () => {
       clusterInfo: {
         ...identity.clusterInfo,
         rmStateStoreName: "NullRMStateStore",
-        haZooKeeperConnectionState: null,
+        haZooKeeperConnectionState: null as unknown as string,
       },
     });
     connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
@@ -230,7 +230,7 @@ describe("overview sections", () => {
     query.setState({
       ...query.state,
       status: "error",
-      error: "raw identity failure",
+      error: "raw identity failure" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: query.state.errorUpdateCount + 1,
     });
@@ -398,7 +398,7 @@ describe("overview sections", () => {
     const cluster = renderOverview(<ClusterMetricsSection />, false);
     await screen.findByText("Applications");
     const clusterQuery = cluster.client.getQueryCache().find({ queryKey: ov.metrics().queryKey })!;
-    clusterQuery.setState({ ...clusterQuery.state, status: "error", error: "raw cluster metrics failure" });
+    clusterQuery.setState({ ...clusterQuery.state, status: "error", error: "raw cluster metrics failure" as unknown as Error });
     expect(await screen.findByText("raw cluster metrics failure")).toBeTruthy();
     cluster.unmount();
 
@@ -527,7 +527,9 @@ describe("overview sections", () => {
     connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
     const { client } = renderOverview(<NodeStatesSection metrics={undefined} />);
     const sparseNodes = JSON.parse(JSON.stringify(nodes)) as NodesResponse;
-    Object.assign(sparseNodes.nodes?.node[0], { rack: "", nodeLabels: [], memUtilization: undefined });
+    const sparseNode = sparseNodes.nodes?.node[0];
+    if (!sparseNode) throw new Error("nodes fixture must include a node");
+    Object.assign(sparseNode, { rack: "", nodeLabels: [], memUtilization: undefined });
     client.setQueryData(ov.nodes().queryKey, sparseNodes);
 
     const table = await screen.findByRole("table", { name: "Registered nodes" });
@@ -564,7 +566,7 @@ describe("overview sections", () => {
     query.setState({
       ...query.state,
       status: "error",
-      error: "raw node-list response",
+      error: "raw node-list response" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: query.state.errorUpdateCount + 1,
     });
@@ -864,7 +866,7 @@ describe("overview sections", () => {
       ...rawOverviewQuery.state,
       data: undefined,
       status: "error",
-      error: "raw overview failure",
+      error: "raw overview failure" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: rawOverviewQuery.state.errorUpdateCount + 1,
     });
@@ -915,7 +917,7 @@ describe("overview sections", () => {
       ...overviewQuery.state,
       data: undefined,
       status: "error",
-      error: "raw scheduler overview failure",
+      error: "raw scheduler overview failure" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: overviewQuery.state.errorUpdateCount + 1,
     });
@@ -924,7 +926,7 @@ describe("overview sections", () => {
       ...confQuery.state,
       data: undefined,
       status: "error",
-      error: "raw scheduler configuration failure",
+      error: "raw scheduler configuration failure" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: confQuery.state.errorUpdateCount + 1,
     });
@@ -938,7 +940,7 @@ describe("overview sections", () => {
       ...schedulerQuery.state,
       data: undefined,
       status: "error",
-      error: "raw queue tree failure",
+      error: "raw queue tree failure" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: schedulerQuery.state.errorUpdateCount + 1,
     });

@@ -217,7 +217,9 @@ describe("AppFilters", () => {
       oncancel: null,
       onfinish: null,
     } as unknown as Animation;
-    const animate = vi.fn(() => animation);
+    const animate = vi.fn(
+      (_keyframes?: Keyframe[] | PropertyIndexedKeyframes | null, _options?: number | KeyframeAnimationOptions) => animation,
+    );
     const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
       const shift = this.dataset.filterMotionKey ? phase * 24 : 0;
       return {
@@ -251,7 +253,7 @@ describe("AppFilters", () => {
     const exit = view.container.querySelector('[role="presentation"]');
     expect(exit?.id).toBe("");
     expect(exit?.querySelector("[id]")).toBeNull();
-    animation.oncancel?.();
+    animation.oncancel?.(new Event("cancel") as AnimationPlaybackEvent);
     expect(exit?.isConnected).toBe(false);
     phase = 2;
     targetTransform = "matrix(1, 0, 0, 1, 0, 0)";

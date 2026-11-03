@@ -99,7 +99,7 @@ export function parseAnsi(input: string): AnsiSpan[] {
     cursor = re.lastIndex;
     const params = m[1]!.split(";").map((p) => (p === "" ? 0 : Number(p)));
     for (let i = 0; i < params.length; i++) {
-      const code = params[i];
+      const code = params[i]!;
       if (code === 38 || code === 48) {
         // extended colour: 38;5;n / 38;2;r;g;b — skip the operands and keep the default ink (never guess a colour)
         const mode = params[i + 1];

@@ -176,7 +176,7 @@ function markQueryError(client: InstanceType<typeof QueryClient>, queryKey: read
     ...query.state,
     data: keepData ? query.state.data : undefined,
     status: "error",
-    error,
+    error: error as unknown as Error,
     errorUpdatedAt: Date.now(),
     errorUpdateCount: query.state.errorUpdateCount + 1,
     fetchStatus: "idle",
@@ -1289,7 +1289,7 @@ describe("Spark list pages", () => {
     jobFailure.setState({
       ...jobFailure.state,
       status: "error",
-      error: "job source unavailable" as Error,
+      error: "job source unavailable" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: jobFailure.state.errorUpdateCount + 1,
       fetchStatus: "idle",
@@ -1531,7 +1531,9 @@ describe("Spark list pages", () => {
         successJobIds: [0],
         nodes: [],
       } satisfies SparkSqlExecution);
-      client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, [{ ...allJobs[0]!, jobId: 0, stageIds: null }]);
+      client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, [
+        { ...allJobs[0]!, jobId: 0, stageIds: null },
+      ] as never);
     });
     expect(await screen.findByText("No stage ids reported for these jobs.")).toBeTruthy();
     jobWithoutStages.unmount();

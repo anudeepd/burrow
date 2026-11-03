@@ -41,7 +41,7 @@ function renderContainer(container: Container, logsAvailable: boolean) {
     version: "0.1.0",
     now: 0,
     readOnly: true,
-    rm: { urls: [], active: null, reachable: null },
+    rm: { urls: [], active: null, reachable: false },
     services: { sparkHistory: { configured: false }, jobHistory: { configured: false }, timeline: { configured: false } },
     features: {
       sparkLive: false,

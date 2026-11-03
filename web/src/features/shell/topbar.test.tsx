@@ -126,7 +126,7 @@ describe("Topbar", () => {
       infoQuery.setState({
         ...infoQuery.state,
         status: "error",
-        error: "raw identity refresh failed",
+        error: "raw identity refresh failed" as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: 1,
       });

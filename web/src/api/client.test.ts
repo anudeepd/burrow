@@ -92,7 +92,9 @@ describe("API response handling", () => {
   });
 
   it("loads untyped data, applies a schema, and sends an explicit no-cache header", async () => {
-    const fetch = vi.fn(async () => new Response(JSON.stringify({ value: "ok" }), { status: 200 }));
+    const fetch = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({ value: "ok" }), { status: 200 }),
+    );
     vi.stubGlobal("fetch", fetch);
     await expect(apiGet<{ value: string }>("plain")).resolves.toEqual({ value: "ok" });
     await expect(apiGet("cached", { schema: z.object({ value: z.string() }), noCache: true })).resolves.toEqual({ value: "ok" });

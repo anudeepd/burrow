@@ -13,6 +13,7 @@ import {
   NodesResponseSchema,
   NodeToLabelsResponseSchema,
 } from "~/api/schemas";
+import type { Node as YarnNode } from "~/api/schemas";
 import { NmAppsResponseSchema, NmContainersResponseSchema, NmInfoResponseSchema } from "~/api/queries/nodes";
 import { nodeColumns } from "./columns";
 import {
@@ -229,6 +230,8 @@ describe("derived values", () => {
     expect(resourceMatrix({})).toEqual([]);
     const missingUsage = resourceMatrix({
       totalResource: {
+        memory: 0,
+        vCores: 0,
         resourceInformations: { resourceInformation: [{ name: "yarn.io/fpga", value: 2, tags: [] }] },
       },
     });
@@ -333,17 +336,30 @@ describe("label payloads (live capture)", () => {
   it("covers label text, resource formatting, missing node labels, and non-default ordering", () => {
     expect(labelTypeText(false)).toBe("Non Exclusive Partition");
     expect(resourceText(1536, 2)).toBe("<memory:1.5 GB, vCores:2>");
-    const unlabelled = { ...nodes[0]!, nodeLabels: undefined };
+    const unlabelled = { ...nodes[0]!, nodeLabels: undefined } as unknown as YarnNode;
     const defaults = buildLabelRows([{ name: "", exclusivity: true }], [unlabelled]);
     expect(defaults[0]?.nodes).toEqual([unlabelled]);
-    const sorted = buildLabelRows([{ name: "zeta" }, { name: "alpha" }], []);
+    const sorted = buildLabelRows(
+      [
+        { name: "zeta", exclusivity: false },
+        { name: "alpha", exclusivity: false },
+      ],
+      [],
+    );
     expect(sorted.map((row) => row.label.name)).toEqual(["alpha", "zeta"]);
-    const withDefault = buildLabelRows([{ name: "" }, { name: "zeta" }], []);
+    const withDefault = buildLabelRows(
+      [
+        { name: "", exclusivity: false },
+        { name: "zeta", exclusivity: false },
+      ],
+      [],
+    );
     expect(withDefault.map((row) => row.label.name)).toEqual(["", "zeta"]);
   });
 
   it("summarizes every lifecycle state and keeps only the highest running utilization", () => {
-    const stateNode = (state: string, memUtilization = 0) => ({ state, memUtilization, cpuUtilization: 0, numContainers: 1 }) as Node;
+    const stateNode = (state: string, memUtilization = 0) =>
+      ({ state, memUtilization, cpuUtilization: 0, numContainers: 1 }) as unknown as YarnNode;
     const summary = summarize([
       stateNode("RUNNING", 90),
       stateNode("RUNNING", 30),
@@ -358,7 +374,7 @@ describe("label payloads (live capture)", () => {
   });
 
   it("matches a missing rack and version using the documented defaults", () => {
-    const missing = { ...nodes[0]!, rack: "", version: undefined } as Node;
+    const missing = { ...nodes[0]!, rack: "", version: undefined } as unknown as YarnNode;
     expect(matchesFilter(missing, { rack: "/default-rack" })).toBe(true);
     expect(matchesFilter(missing, { q: "no-version" })).toBe(false);
   });

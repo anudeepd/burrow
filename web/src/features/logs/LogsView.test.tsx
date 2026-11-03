@@ -67,7 +67,7 @@ function renderLogs(
         { name: "stderr", size: 9, lastModified: null },
         { name: "stdout", ...(options.omitFileSize ? {} : { size: logText.length }), lastModified: null },
       ],
-    });
+    } as never);
     const windowKey = ["logs", "window", containerId, "stdout", 0, "", "", ""];
     client.setQueryData(windowKey, {
       text: logText,
@@ -87,7 +87,7 @@ function renderLogs(
         ...query.state,
         data: undefined,
         status: "error",
-        error,
+        error: error as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: query.state.errorUpdateCount + 1,
       });
@@ -403,7 +403,7 @@ describe("LogsView", () => {
     query.setState({
       ...query.state,
       status: "error",
-      error: "raw window refresh failure",
+      error: "raw window refresh failure" as unknown as Error,
       errorUpdatedAt: Date.now(),
       errorUpdateCount: query.state.errorUpdateCount + 1,
     });
@@ -432,8 +432,9 @@ describe("LogsView", () => {
     stubLogFetch();
     const { router, unmount } = renderLogs();
     await screen.findByRole("log", { name: "Container log" });
-    const setInterval = vi.fn((callback: TimerHandler) => {
+    const setInterval = vi.fn((callback: TimerHandler, delay?: number) => {
       void callback;
+      void delay;
       return 77;
     });
     const clearInterval = vi.fn();

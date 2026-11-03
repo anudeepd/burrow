@@ -31,15 +31,16 @@ describe("Spark URL search helpers", () => {
       sort: "name",
       dir: "desc",
     });
-    expect(serializeSort([{ id: 7, desc: false }])).toEqual({ sort: "7", dir: "asc" });
+    expect(serializeSort([{ id: "7", desc: false }])).toEqual({ sort: "7", dir: "asc" });
   });
 
   it("parses and serializes visible and explicitly hidden columns", () => {
     expect(parseColumns({ cols: "name, -error,, status " })).toEqual({ name: true, error: false, status: true });
     expect(parseColumns({ cols: "" })).toEqual({});
     expect(parseColumns({ cols: 12 })).toEqual({});
-    expect(serializeColumns({ error: false, name: true, ignored: undefined })).toEqual({ cols: "-error,name" });
+    expect(serializeColumns({ error: false, name: true })).toEqual({ cols: "-error,name" });
     expect(serializeColumns({})).toEqual({ cols: undefined });
+    expect(serializeColumns({ malformed: undefined } as never)).toEqual({ cols: undefined });
   });
 
   it("copies only non-empty string and numeric whitelisted search values", () => {

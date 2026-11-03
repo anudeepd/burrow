@@ -200,7 +200,7 @@ describe("AttemptDetail", () => {
       trackingUI: "UNASSIGNED",
       trackingUrl: undefined,
       resourceRequests: undefined,
-    } as App;
+    } as unknown as App;
     const sparseAttempt = {
       ...attempt,
       containerId: "",
@@ -209,7 +209,7 @@ describe("AttemptDetail", () => {
       exportPorts: "",
       logsLink: "",
       finishedTime: 0,
-    } as AppAttempt;
+    } as unknown as AppAttempt;
     const view = renderDetail({
       app: sparseApp,
       attempt: sparseAttempt,
@@ -238,7 +238,7 @@ describe("AttemptDetail", () => {
       executionTypeRequest: undefined,
       placementConstraint: "",
       allocationTags: [],
-    } as ResourceRequestInfo;
+    } as unknown as ResourceRequestInfo;
     const app = {
       ...appPayload,
       state: "FINISHED",
@@ -256,7 +256,7 @@ describe("AttemptDetail", () => {
       logsLink: "http://rm:8088/jobhistory/logs/container",
       finishedTime: 2_000,
       appAttemptState: "FINISHED",
-    } as AppAttempt;
+    } as unknown as AppAttempt;
     renderDetail({
       app,
       attempt: attemptRow,

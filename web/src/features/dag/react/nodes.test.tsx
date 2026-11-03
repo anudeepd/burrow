@@ -9,7 +9,7 @@ function makeVisual(overrides: Partial<NodeVisual> = {}): NodeVisual {
     rect: { x: 12, y: 18, width: 220, height: 158 },
     tone: "ok",
     status: "COMPLETE",
-    statusShape: "circle",
+    statusShape: "disc",
     statusLabel: "Complete",
     running: false,
     skipped: false,

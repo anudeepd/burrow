@@ -38,7 +38,7 @@ describe("Button", () => {
     );
 
     expect(screen.getByRole("button", { name: "Enabled" })).toBeTruthy();
-    const disabled = screen.getByRole("button", { name: "Disabled" });
+    const disabled = screen.getByRole("button", { name: "Disabled" }) as HTMLButtonElement;
     expect(disabled.disabled).toBe(true);
     expect(disabled.parentElement?.tagName).toBe("SPAN");
     expect(screen.getByText("⌘K").tagName).toBe("KBD");

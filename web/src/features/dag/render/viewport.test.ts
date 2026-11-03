@@ -15,6 +15,7 @@ import {
   clampScale,
   fitViewport,
   focusScale,
+  initialViewportForLayout,
   isTooWideToFit,
   minimapProjection,
   panBy,
@@ -103,6 +104,16 @@ describe("pan and zoom", () => {
 });
 
 describe("fit and focus", () => {
+  it("preserves a usable viewport and initializes null or invalid viewports", () => {
+    const content = { width: 2000, height: 1000 };
+    const previous = { x: 12, y: 34, scale: 1.5 };
+    const expected = initialViewport(content, SIZE);
+
+    expect(initialViewportForLayout(previous, content, SIZE)).toBe(previous);
+    expect(initialViewportForLayout(null, content, SIZE)).toEqual(expected);
+    expect(initialViewportForLayout({ x: 0, y: 0, scale: 0 }, content, SIZE)).toEqual(expected);
+  });
+
   it("fits the content with padding", () => {
     const fitted = fitViewport({ width: 2000, height: 1000 }, SIZE, 20);
     // min(960/2000, 460/1000) — the height is the binding constraint

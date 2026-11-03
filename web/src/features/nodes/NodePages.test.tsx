@@ -212,7 +212,7 @@ describe("node pages", () => {
   it("shows paused and stale status for unhealthy clusters and discovers custom resources", async () => {
     const { client, router } = renderNodeRoute("nodes", "?cols=");
     expect(await screen.findByRole("table", { name: "Cluster nodes" })).toBeTruthy();
-    await router.navigate({ search: (prev) => ({ ...prev, cols: undefined }) });
+    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, cols: undefined })) as never });
 
     const query = client.getQueryCache().find({ queryKey: nq.nodes().queryKey })!;
     const response = client.getQueryData(nq.nodes().queryKey) as NodesResponse;
@@ -314,7 +314,7 @@ describe("node pages", () => {
       "label=empty-partition",
     );
 
-    await router.navigate({ search: (prev) => ({ ...prev, open: "" }) });
+    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, open: "" })) as never });
     expect(await screen.findByRole("heading", { name: "Nodes in DEFAULT" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Filter the node table by this label" }).getAttribute("href")).toContain("label=(none)");
   });
@@ -352,8 +352,10 @@ describe("node pages", () => {
     const columns = labelColumns(undefined);
     const type = columns.find((column) => column.id === "type")!;
     const resource = columns.find((column) => column.id === "resource")!;
-    expect(type.accessorFn?.(nonExclusive as never, 0)).toBe("Non Exclusive Partition");
-    expect(resource.accessorFn?.(nonExclusive as never, 0)).toBe(0);
+    expect((type as { accessorFn?: (row: never, index: number) => unknown }).accessorFn?.(nonExclusive as never, 0)).toBe(
+      "Non Exclusive Partition",
+    );
+    expect((resource as { accessorFn?: (row: never, index: number) => unknown }).accessorFn?.(nonExclusive as never, 0)).toBe(0);
   });
 
   it("shows stale label-source warnings and fatal label or node read errors", async () => {
@@ -385,7 +387,7 @@ describe("node pages", () => {
     act(() => {
       missingLabels.setState({
         ...missingLabels.state,
-        error: "raw label failure",
+        error: "raw label failure" as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: missingLabels.state.errorUpdateCount + 1,
       });
@@ -409,7 +411,7 @@ describe("node pages", () => {
     act(() => {
       missingNodes.setState({
         ...missingNodes.state,
-        error: "raw node membership failure",
+        error: "raw node membership failure" as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: missingNodes.state.errorUpdateCount + 1,
       });
@@ -433,7 +435,7 @@ describe("node pages", () => {
     act(() => {
       nodes.setState({
         ...nodes.state,
-        error: "membership string failure",
+        error: "membership string failure" as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: nodes.state.errorUpdateCount + 1,
       });
@@ -472,7 +474,7 @@ describe("node pages", () => {
     act(() => {
       missingNodes.setState({
         ...missingNodes.state,
-        error: "node list unavailable raw",
+        error: "node list unavailable raw" as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: missingNodes.state.errorUpdateCount + 1,
       });
@@ -691,7 +693,7 @@ describe("node pages", () => {
         ...infoQuery.state,
         data: undefined,
         status: "error",
-        error: "node manager failed",
+        error: "node manager failed" as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: infoQuery.state.errorUpdateCount + 1,
         fetchStatus: "idle",
@@ -782,7 +784,7 @@ describe("node pages", () => {
         ...nodeQuery.state,
         data: undefined,
         status: "error",
-        error: "non-Error node failure",
+        error: "non-Error node failure" as unknown as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: nodeQuery.state.errorUpdateCount + 1,
         fetchStatus: "idle",

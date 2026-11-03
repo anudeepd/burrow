@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { App, AppAttempt } from "~/api/schemas";
+import type { SparkSource } from "../queries";
 
 window.__BURROW_PARITY__ = true;
 
@@ -60,7 +61,7 @@ function renderSections(
     path?: string;
     rmActive?: string | null;
     rmUrls?: string[];
-    sparkSourceData?: unknown;
+    sparkSourceData?: SparkSource;
     attemptTrackingUrl?: string | null;
   } = {},
 ) {
@@ -189,7 +190,7 @@ describe("application sections", () => {
       nodeHttpAddress: undefined,
       blacklistedNodes: "worker-a,worker-b",
       nodesBlacklistedBySystem: "worker-c",
-    } as AppAttempt;
+    } as unknown as AppAttempt;
     renderSections([sparse]);
     const table = await screen.findByRole("table", { name: "Application attempts" });
     expect(table.querySelector('[data-yf="attempt.blacklistedNodes"][data-yv="worker-a,worker-b"]')).toBeTruthy();
@@ -221,7 +222,7 @@ describe("application sections", () => {
       trackingUI: "UNASSIGNED",
       trackingUrl: undefined,
       applicationTags: "",
-    } as App;
+    } as unknown as App;
     const successfulRetry = {
       ...attempts[0]!,
       id: 2,
@@ -276,7 +277,7 @@ describe("application sections", () => {
       finishedTime: 0,
       diagnostics: null,
       timeouts: { timeout: [{ type: "LIFETIME", remainingTimeInSeconds: 75 }] },
-    } as App;
+    } as unknown as App;
     renderSections([], acceptedApp, {
       path: `/apps/${app.id}`,
       attemptTrackingUrl: "http://rm:8088/proxy/application_1791010984040_0002/",
@@ -303,7 +304,7 @@ describe("application sections", () => {
 
   it("renders timeline fallbacks when a live app has no reported milestones", async () => {
     const liveWithoutTimes = { ...app, state: "RUNNING", startedTime: 0, launchTime: 0, finishedTime: 0 };
-    const pendingAttempt = { ...attempts[0]!, startTime: undefined, finishedTime: 0, appAttemptState: "PENDING" } as AppAttempt;
+    const pendingAttempt = { ...attempts[0]!, startTime: undefined, finishedTime: 0, appAttemptState: "PENDING" } as unknown as AppAttempt;
     renderSections([pendingAttempt], liveWithoutTimes, { path: `/apps/${app.id}` });
     expect(await screen.findByText(/→ now/)).toBeTruthy();
     expect(screen.getByRole("img", { name: /Attempt 1: PENDING/ })).toBeTruthy();

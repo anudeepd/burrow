@@ -36,9 +36,9 @@ const baseStage = {
 function evaluateCells(stage: SparkStage, options: StageColumnOptions) {
   const columns = stageColumns(options);
   const cells = columns.flatMap((column) => {
-    const exportValue = column.meta?.exportValue as ((row: SparkStage) => unknown) | undefined;
+    const exportValue = column.meta?.exportValue as unknown as ((row: SparkStage) => unknown) | undefined;
     exportValue?.(stage);
-    const accessor = column.accessorFn as ((row: SparkStage) => unknown) | undefined;
+    const accessor = (column as unknown as { accessorFn?: (row: SparkStage) => unknown }).accessorFn;
     accessor?.(stage);
     if (typeof column.cell !== "function") return [];
     const cell = column.cell as (context: never) => ReactNode;
@@ -66,8 +66,16 @@ describe("Spark stage table columns", () => {
     expect(columns.map((column) => column.id)).toContain("attemptId");
     expect(columns.map((column) => column.id)).toContain("spill");
     expect(columns.map((column) => column.id)).toContain("failureReason");
-    expect(columns.find((column) => column.id === "name")?.meta?.exportValue?.(baseStage)).toBe("Parse records");
-    expect(columns.find((column) => column.id === "stageId")?.meta?.exportValue?.(baseStage)).toBe(4);
+    expect(
+      (columns.find((column) => column.id === "name")?.meta?.exportValue as unknown as ((row: SparkStage) => unknown) | undefined)?.(
+        baseStage,
+      ),
+    ).toBe("Parse records");
+    expect(
+      (columns.find((column) => column.id === "stageId")?.meta?.exportValue as unknown as ((row: SparkStage) => unknown) | undefined)?.(
+        baseStage,
+      ),
+    ).toBe(4);
     expect(firstLine("\n  \n  java.lang.IllegalStateException: bad row\nstack trace")).toBe("  java.lang.IllegalStateException: bad row");
     expect(firstLine("\n   ")).toBe("\n   ");
     expect(renderCells(cells).container.textContent).toContain("—");
@@ -112,8 +120,16 @@ describe("Spark stage table columns", () => {
     const { columns, cells } = evaluateCells(detailedStage, options);
     const view = renderCells(cells);
 
-    expect(columns.find((column) => column.id === "name")?.meta?.exportValue?.(detailedStage)).toBe("Visible stage description");
-    expect(columns.find((column) => column.id === "attemptId")?.meta?.exportValue?.(detailedStage)).toBe(2);
+    expect(
+      (columns.find((column) => column.id === "name")?.meta?.exportValue as unknown as ((row: SparkStage) => unknown) | undefined)?.(
+        detailedStage,
+      ),
+    ).toBe("Visible stage description");
+    expect(
+      (columns.find((column) => column.id === "attemptId")?.meta?.exportValue as unknown as ((row: SparkStage) => unknown) | undefined)?.(
+        detailedStage,
+      ),
+    ).toBe(2);
     expect(view.container.textContent).toContain("Visible stage description");
     expect(view.container.textContent).toContain("Fallback display name");
     expect(view.container.textContent).toContain("x".repeat(157));

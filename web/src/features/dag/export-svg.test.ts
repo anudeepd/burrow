@@ -155,7 +155,7 @@ describe("serializeDagSvg", () => {
     const computedStyle = vi.spyOn(window, "getComputedStyle").mockReturnValue({
       backgroundColor: "transparent",
       getPropertyValue,
-    } as CSSStyleDeclaration);
+    } as unknown as CSSStyleDeclaration);
     const source = sourceSvg();
     expect(window.getComputedStyle(source).getPropertyValue("fill")).toBe("");
     const output = serializeDagSvg(source, dag, undefined, graph(), layout(), scene(), document.createElement("div"), false)!;

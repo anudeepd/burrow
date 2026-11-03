@@ -150,10 +150,10 @@ describe("SchedulerPage over captured payloads", () => {
       capacity: 100,
       usedCapacity: 0,
       maxCapacity: 100,
-    } as never;
+    } as Record<string, unknown>;
 
     renderAt(
-      <SchedulerMetrics info={info} queueCount={0} overShare={0} metrics={undefined} metricsError="metrics endpoint failed" />,
+      <SchedulerMetrics info={info as never} queueCount={0} overShare={0} metrics={undefined} metricsError="metrics endpoint failed" />,
       ["/scheduler"],
       disableMetricQueries,
     );
@@ -195,7 +195,7 @@ describe("SchedulerPage over captured payloads", () => {
     expect(screen.getByText("Over their share").parentElement?.textContent).toContain("1");
     cleanup();
 
-    renderAt(<SchedulerMetrics info={info} queueCount={1} overShare={0} metrics={undefined} />, ["/scheduler"], (client) =>
+    renderAt(<SchedulerMetrics info={info as never} queueCount={1} overShare={0} metrics={undefined} />, ["/scheduler"], (client) =>
       disableMetricQueries(client, {
         schedulerType: "Capacity Scheduler",
         schedulingResourceType: "memory-mb,vcores",
@@ -324,7 +324,7 @@ describe("SchedulerPage over captured payloads", () => {
     await screen.findByRole("img", { name: /Narrow queue map/ });
     const figure = view.container.querySelector("figure")!;
     await act(async () => {
-      notify?.([{ target: figure, contentRect: { width: 120 } } as ResizeObserverEntry], {} as ResizeObserver);
+      notify?.([{ target: figure, contentRect: { width: 120 } } as unknown as ResizeObserverEntry], {} as ResizeObserver);
     });
 
     expect(view.container.querySelector("svg")?.getAttribute("viewBox")).toBe("0 0 120 40");
@@ -732,7 +732,9 @@ describe("SchedulerPage over captured payloads", () => {
       }
 
       const queues = (node.queues as { queue?: Record<string, unknown>[] } | undefined)?.queue ?? [];
-      queues.forEach(clearAbsolute);
+      queues.forEach((queue) => {
+        clearAbsolute(queue);
+      });
     };
     clearAbsolute(payload.scheduler.schedulerInfo, true);
     stubApi({ ...CAPACITY, "yarn/scheduler": payload });

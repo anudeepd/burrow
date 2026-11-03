@@ -234,7 +234,7 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
       .querySelector<HTMLElement>('[data-col="duration"] button');
     expect(durationButton).toBeTruthy();
     fireEvent.click(durationButton!);
-    await waitFor(() => expect(router.state.location.search.sort).toBe("duration"));
+    await waitFor(() => expect((router.state.location.search as Record<string, unknown>).sort).toBe("duration"));
     await waitFor(() => expect((router.state.location.search as { sort?: string }).sort).toBe("duration"));
 
     fireEvent.click(screen.getByRole("combobox", { name: "SQL status filter" }));
@@ -413,13 +413,13 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     await screen.findByRole("table", { name: "Spark SQL executions" });
 
     fireEvent.change(screen.getByRole("searchbox", { name: "Filter SQL executions" }), { target: { value: "" } });
-    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
+    await waitFor(() => expect((router.state.location.search as Record<string, unknown>).q).toBeUndefined());
     fireEvent.click(screen.getByRole("combobox", { name: "SQL status filter" }));
     const allStatuses = await screen.findByRole("option", { name: "All statuses" });
     fireEvent.pointerDown(allStatuses, { button: 0, pointerType: "mouse" });
     fireEvent.pointerUp(allStatuses, { button: 0, pointerType: "mouse" });
     fireEvent.click(allStatuses);
-    await waitFor(() => expect(router.state.location.search.status).toBeUndefined());
+    await waitFor(() => expect((router.state.location.search as Record<string, unknown>).status).toBeUndefined());
 
     expect(await screen.findByText("UNKNOWN")).toBeTruthy();
     expect(screen.getByRole("link", { name: longError })).toBeTruthy();
@@ -441,6 +441,6 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     fireEvent.pointerDown(allRows, { button: 0, pointerType: "mouse" });
     fireEvent.pointerUp(allRows, { button: 0, pointerType: "mouse" });
     fireEvent.click(allRows);
-    await waitFor(() => expect(router.state.location.search.size).toBeUndefined());
+    await waitFor(() => expect((router.state.location.search as Record<string, unknown>).size).toBeUndefined());
   });
 });

@@ -135,6 +135,11 @@ export function initialViewport(content: Size, size: Size, focus?: WorldRect | n
   return { scale, x: centreX - size.width / 2 / scale, y: centreY - size.height / 2 / scale };
 }
 
+/** Preserve a usable user viewport when a layout is refreshed; otherwise calculate the graph's opening view. */
+export function initialViewportForLayout(previous: Viewport | null, content: Size, size: Size, focus?: WorldRect | null): Viewport {
+  return previous !== null && previous.scale > 0 ? previous : initialViewport(content, size, focus);
+}
+
 /** True when the whole graph cannot be shown at a legible scale (drives the "very wide" hint). */
 export function isTooWideToFit(content: Size, size: Size): boolean {
   return fitViewport(content, size).scale < LEGIBLE_MIN_SCALE;

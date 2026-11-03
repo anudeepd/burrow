@@ -264,7 +264,9 @@ describe("Spark detail widgets", () => {
     const launch = columns.find((column) => column.id === "launchTime") as unknown as {
       accessorFn: (task: SparkTask, index: number) => number;
     };
-    expect(launch.accessorFn({ ...tasks[0]!, launchTime: 123 }, 0)).toBe(123);
+    const numericLaunch = { ...tasks[0]!, launchTime: 123 } as unknown as SparkTask;
+    expect(launch.accessorFn(numericLaunch, 0)).toBe(123);
+    expect(launch.accessorFn({ ...tasks[0]!, launchTime: "123" }, 0)).toBe(123);
     expect(launch.accessorFn({ ...tasks[0]!, launchTime: "2026-11-03T00:00:00Z" }, 0)).toBe(Date.parse("2026-11-03T00:00:00Z"));
 
     const speculative = columns.find((column) => column.id === "speculative") as unknown as {

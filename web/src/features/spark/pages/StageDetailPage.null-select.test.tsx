@@ -45,10 +45,13 @@ it("ignores a cleared nullable stage-attempt selection", async () => {
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
   const options = { details: true, withSummaries: true, quantiles: [0.05, 0.25, 0.5, 0.75, 0.95], kind: "static" as const, attempt: null };
-  client.setQueryData(sp.stageAttempt(APP_ID, 0, 0, options).queryKey, stage);
-  client.setQueryData(sp.stageAttempts(APP_ID, 0, "static", null).queryKey, [stages[0], { ...stages[0], attemptId: 1 }]);
-  client.setQueryData(sp.allTasks(APP_ID, 0, 0, "static", null).queryKey, tasks);
-  client.setQueryData(sp.dagStage(APP_ID, 0, 0, null).queryKey, { kind: "stage", granularity: "rdd", stages: [], edges: [] });
+  client.setQueryData(sp.stageAttempt(APP_ID, 0, 0, options).queryKey, stage as never);
+  client.setQueryData(sp.stageAttempts(APP_ID, 0, "static", null).queryKey, [
+    stages[0],
+    { ...(stages[0] as Record<string, unknown>), attemptId: 1 },
+  ] as never);
+  client.setQueryData(sp.allTasks(APP_ID, 0, 0, "static", null).queryKey, tasks as never);
+  client.setQueryData(sp.dagStage(APP_ID, 0, 0, null).queryKey, { kind: "stage", granularity: "rdd", stages: [], edges: [] } as never);
 
   const view = render(
     <QueryClientProvider client={client}>

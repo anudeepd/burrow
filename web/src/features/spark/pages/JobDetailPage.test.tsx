@@ -47,8 +47,8 @@ function renderJobPage(
     history: createMemoryHistory({ initialEntries: [initialUrl] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
-  client.setQueryData(sp.job(APP_ID, JOB_ID, kind, null).queryKey, options.job ?? JOB);
-  client.setQueryData(sp.stages(APP_ID, { kind, attempt: null }).queryKey, options.stages ?? STAGES);
+  client.setQueryData(sp.job(APP_ID, JOB_ID, kind, null).queryKey, (options.job ?? JOB) as never);
+  client.setQueryData(sp.stages(APP_ID, { kind, attempt: null }).queryKey, (options.stages ?? STAGES) as never);
   client.setQueryData(sp.dagJob(APP_ID, JOB_ID, null).queryKey, DAG);
 
   const view = render(

@@ -33,7 +33,7 @@ export function visibilityFromParam(value: string | undefined, defaults: ColumnV
   return Object.fromEntries(ids.map((id) => [id, visible.has(id)]));
 }
 
-export function visibilityToParam(visibility: ColumnVisibilityState, defaults: ColumnVisibilityState): string | undefined {
+export function visibilityToParam(visibility: ColumnVisibilityState, defaults: Partial<ColumnVisibilityState>): string | undefined {
   const ids = Object.keys(defaults);
   const isVisible = (id: string) => visibility[id] ?? defaults[id] ?? true;
   if (ids.every((id) => !isVisible(id))) return "none";

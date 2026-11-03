@@ -97,13 +97,13 @@ function renderToolPage(
   const host = new URLSearchParams(search.replace(/^\?/, "")).get("host");
   if (!options.noJmxData) client.setQueryData(tq.jmx("").queryKey, jmxPayload);
   else if (options.jmxFetching) {
-    const query = client.getQueryCache().build(client, tq.jmx(""));
+    const query = client.getQueryCache().build(client, tq.jmx("") as never);
     query.setState({ ...query.state, data: undefined, status: "pending", fetchStatus: "fetching", dataUpdatedAt: 0 });
   }
   if (host) client.setQueryData(nq.nmJmx(host).queryKey, jmxPayload);
   if (!options.noStacksData) client.setQueryData(tq.stacks().queryKey, options.stacksData ?? stacksPayload);
   else {
-    const query = client.getQueryCache().build(client, tq.stacks());
+    const query = client.getQueryCache().build(client, tq.stacks() as never);
     if (options.stacksFetching) {
       query.setState({ ...query.state, data: undefined, status: "pending", fetchStatus: "fetching", dataUpdatedAt: 0 });
     }
@@ -425,8 +425,8 @@ describe("StacksView", () => {
     expect(tree.getAttribute("data-burrow-stacks-rows")).not.toBe("0");
     expect(screen.getByText(/230 threads/)).toBeTruthy();
 
-    await router.navigate({ search: (prev) => ({ ...prev, thread: "3" }), replace: true });
-    await router.navigate({ search: (prev) => ({ ...prev, thread: "2" }), replace: true });
+    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, thread: "3" })) as never, replace: true });
+    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, thread: "2" })) as never, replace: true });
 
     const stateFilters = within(screen.getByRole("group", { name: "Thread state filter" }));
     fireEvent.click(stateFilters.getAllByRole("button").find((button) => button.textContent?.trim().startsWith("WAITING"))!);

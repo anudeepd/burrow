@@ -14,7 +14,7 @@ const { parityStore } = await import("~/state/parity");
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
-  parityStore.setState({ enabled: false });
+  parityStore.setState(() => ({ enabled: false }));
 });
 
 const activity = { allocations: [] } as Activities;
@@ -166,7 +166,7 @@ describe("ActivitiesTable reveal lifecycle", () => {
   });
 
   it("scrolls a fitting panel into view with motion enabled", () => {
-    parityStore.setState({ enabled: false });
+    parityStore.setState(() => ({ enabled: false }));
     const frames = new Map<number, FrameRequestCallback>();
     let nextFrame = 1;
     vi.stubGlobal("ResizeObserver", undefined);

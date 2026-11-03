@@ -100,7 +100,7 @@ describe("route recovery edge cases", () => {
   it("uses the newest attempt when the application has no tracking URL", async () => {
     const appId = APP_ID.replace(/0001$/, "0106");
     const appPayload = readRm("app/running/app.json") as { app: Record<string, unknown> };
-    const app = { ...appPayload.app, id: appId };
+    const app: Record<string, unknown> = { ...appPayload.app, id: appId };
     delete app.trackingUrl;
     const attemptsPayload = readRm("app/running/appattempts.json") as {
       appAttempts: { appAttempt: Array<Record<string, unknown>> };

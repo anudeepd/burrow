@@ -29,7 +29,7 @@ const sparkModules: Record<string, { sparkAppTab?: SparkTabContribution }> = imp
 
 const SPARK_TAB = Object.values(sparkModules)[0]?.sparkAppTab;
 
-export function appTabs(appId: string, sparkTab: SparkTabContribution | null = SPARK_TAB): AppTabDef[] {
+export function appTabs(appId: string, sparkTab: SparkTabContribution | null | undefined = SPARK_TAB): AppTabDef[] {
   const base = `/apps/${appId}`;
   const tabs: AppTabDef[] = [
     { value: "overview", label: "Overview", href: base, available: true },
@@ -52,7 +52,7 @@ export function appTabs(appId: string, sparkTab: SparkTabContribution | null = S
 }
 
 /** Which tab is active for the current location. `attempts/$attemptId` and `containers/$containerId` both live in Attempts. */
-export function activeTab(pathname: string, appId: string, sparkValue: string | null = SPARK_TAB?.value): string {
+export function activeTab(pathname: string, appId: string, sparkValue: string | null | undefined = SPARK_TAB?.value): string {
   const rest = pathname.slice(`/apps/${appId}`.length);
   if (rest.startsWith("/spark")) return sparkValue ?? "spark";
   if (rest.startsWith("/logs")) return "logs";

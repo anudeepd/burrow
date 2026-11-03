@@ -323,7 +323,7 @@ describe("DAG drawers", () => {
       <EdgeDrawer
         open
         onClose={() => undefined}
-        edge={{ ...shuffle, flowing: true, intensity: null } as EdgeVisual}
+        edge={{ ...shuffle, flowing: true, intensity: null } as unknown as EdgeVisual}
         graphKind="job"
         metrics={metrics}
         producer={node()}

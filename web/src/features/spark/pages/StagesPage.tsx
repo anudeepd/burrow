@@ -112,7 +112,7 @@ export function StagesPage() {
               onValueChange={(v) =>
                 void navigate({
                   to: "/apps/$appId/spark/stages/$stageId/$attemptId",
-                  params: { appId, stageId: String(s.stageId), attemptId: v },
+                  params: { appId, stageId: String(s.stageId), attemptId: String(v) },
                   search: { attempt: attempt ?? undefined },
                 })
               }

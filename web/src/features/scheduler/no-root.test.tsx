@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 window.__BURROW_PARITY__ = true;
 
@@ -8,12 +8,14 @@ vi.mock("./model", async (importOriginal) => ({
   buildTree: vi.fn(() => null),
 }));
 
-const { render, screen } = await import("@testing-library/react");
+const { cleanup, render, screen } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
 const { schedulerQuery } = await import("~/api/queries/scheduler");
 const { SchedulerPage } = await import("./SchedulerPage");
+
+afterEach(() => cleanup());
 
 const readFixture = (path: string) => JSON.parse(readFileSync(path, "utf8")) as never;
 

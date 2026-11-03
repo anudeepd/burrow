@@ -44,10 +44,12 @@ const ContainersInnerSchema = obj({ container: list(ContainerSchema) });
 export const ContainersResponseSchema = obj({
   containers: ContainersInnerSchema.nullable().optional(),
   container: list(ContainerSchema).optional(),
-}).transform((v): { containers?: { container: Container[] } } => ({
-  containers: v.containers ?? { container: v.container },
-}));
-export type ContainersResponse = z.infer<typeof ContainersResponseSchema>;
+}).transform(
+  (v): ContainersResponse => ({
+    containers: v.containers ?? { container: v.container },
+  }),
+);
+export type ContainersResponse = { containers?: { container?: Container[] } | null };
 export const selectContainers = (r: ContainersResponse): Container[] => r.containers?.container ?? [];
 
 /** `GET …/containers/{id}` — `{container:{…}}`; root unwrapped (bare object) tolerated. */

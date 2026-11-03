@@ -47,7 +47,7 @@ const isCompleted = (app: App): boolean => app.state === "FINISHED" || app.state
 /** The legacy GPU rule: a completed app that used no GPU shows "N/A"; otherwise the raw number (even -1). */
 function gpuCell(app: App, field: string, value: number | undefined) {
   const na = isCompleted(app) && (value ?? 0) <= 0;
-  return <NumCell field={field} value={value} na={na} />;
+  return <NumCell field={field} value={value} fmt="int" na={na} />;
 }
 
 /**
@@ -268,7 +268,7 @@ export const APPS_COLUMNS: ColDef<App>[] = [
     size: 156,
     meta: { label: "Allocated CPU vCores", hint: "-1 means no resource report (shown as N/A)" },
     cell: ({ row }) => (
-      <NumCell field="app.allocatedVCores" value={row.original.allocatedVCores} na={isSentinel(row.original.allocatedVCores)} />
+      <NumCell field="app.allocatedVCores" value={row.original.allocatedVCores} fmt="int" na={isSentinel(row.original.allocatedVCores)} />
     ),
   },
   {
@@ -277,7 +277,9 @@ export const APPS_COLUMNS: ColDef<App>[] = [
     sortFn: "basic",
     size: 160,
     meta: { label: "Allocated Memory MB", hint: "-1 means no resource report (shown as N/A)" },
-    cell: ({ row }) => <NumCell field="app.allocatedMB" value={row.original.allocatedMB} na={isSentinel(row.original.allocatedMB)} />,
+    cell: ({ row }) => (
+      <NumCell field="app.allocatedMB" value={row.original.allocatedMB} fmt="int" na={isSentinel(row.original.allocatedMB)} />
+    ),
   },
   {
     id: "allocatedGpu",
@@ -294,7 +296,7 @@ export const APPS_COLUMNS: ColDef<App>[] = [
     size: 156,
     meta: { label: "Reserved CPU vCores", hint: "Resources reserved for this application" },
     cell: ({ row }) => (
-      <NumCell field="app.reservedVCores" value={row.original.reservedVCores} na={isSentinel(row.original.reservedVCores)} />
+      <NumCell field="app.reservedVCores" value={row.original.reservedVCores} fmt="int" na={isSentinel(row.original.reservedVCores)} />
     ),
   },
   {
@@ -303,7 +305,9 @@ export const APPS_COLUMNS: ColDef<App>[] = [
     sortFn: "basic",
     size: 156,
     meta: { label: "Reserved Memory MB", hint: "Memory reserved for this application" },
-    cell: ({ row }) => <NumCell field="app.reservedMB" value={row.original.reservedMB} na={isSentinel(row.original.reservedMB)} />,
+    cell: ({ row }) => (
+      <NumCell field="app.reservedMB" value={row.original.reservedMB} fmt="int" na={isSentinel(row.original.reservedMB)} />
+    ),
   },
   {
     id: "reservedGpu",

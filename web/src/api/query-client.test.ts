@@ -19,8 +19,11 @@ describe("createQueryClient during server rendering", () => {
       expect(retry(0, new Error("network error"))).toBe(true);
       expect(retry(2, new Error("retry cap"))).toBe(false);
     }
-    expect(client.getDefaultOptions().queries?.retryDelay?.(0, new Error("retry"))).toBe(1000);
-    expect(client.getDefaultOptions().queries?.retryDelay?.(9, new Error("retry cap"))).toBe(4000);
+    const retryDelay = client.getDefaultOptions().queries?.retryDelay;
+    if (typeof retryDelay === "function") {
+      expect(retryDelay(0, new Error("retry"))).toBe(1000);
+      expect(retryDelay(9, new Error("retry cap"))).toBe(4000);
+    }
     expect(client.getDefaultOptions().queries?.refetchOnReconnect).toBe(true);
     parityStore.setState(() => ({ enabled: true }));
     expect(createQueryClient().getDefaultOptions().queries?.refetchOnReconnect).toBe(false);

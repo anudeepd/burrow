@@ -1,8 +1,8 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 import type { q as queryFactories } from "~/api/queries";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { App, AppAttempt } from "~/api/schemas";
 import type { Meta } from "~/api/schemas/meta";
 import { parityStore } from "~/state/parity";
@@ -10,6 +10,7 @@ import { parityStore } from "~/state/parity";
 // vitest does not expose globals, so Testing Library's automatic cleanup is not registered — do it explicitly.
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   parityStore.setState(() => ({ enabled: true }));
   window.__BURROW_PARITY__ = true;
 });
@@ -314,6 +315,21 @@ describe("apps table column contract", () => {
       </QueryClientProvider>,
     );
     expect((await screen.findByText("1")).getAttribute("data-yf")).toBe("app.derived.blacklistedNodesCount");
+  });
+
+  it("explains when the attempt query fails before a blacklist count is available", async () => {
+    const appId = "application_1767000000000_0005";
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network unavailable"));
+    render(
+      <QueryClientProvider client={client}>
+        <BlacklistedCell appId={appId} />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(client.getQueryCache().find({ queryKey: q.appAttempts(appId).queryKey })?.state.status).toBe("error"));
+    expect(screen.getByText("N/A")).toBeTruthy();
+    expect(screen.getByText("N/A").hasAttribute("data-base-ui-tooltip-trigger")).toBe(true);
   });
 
   it("tags the Tracking UI cell with the legacy text and the URL actually linked", async () => {

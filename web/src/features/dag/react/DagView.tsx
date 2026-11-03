@@ -40,7 +40,7 @@ import {
   centerOn,
   focusScale,
   fitViewport,
-  initialViewport,
+  initialViewportForLayout,
   minimapProjection,
   panBy,
   semanticLevel,
@@ -294,7 +294,7 @@ export function DagView({
   useEffect(() => {
     if (!layout || size.width <= 0 || size.height <= 0) return;
     const focus = graph.nodes[0] ? layout.nodes.get(graph.nodes[0].id) : undefined;
-    setViewport((prev) => (prev !== null && prev.scale > 0 ? prev : initialViewport(layout, size, focus ?? null)));
+    setViewport((prev) => initialViewportForLayout(prev, layout, size, focus ?? null));
   }, [layout, size, graph.nodes]);
 
   // ---- metrics join ------------------------------------------------------------------------------
