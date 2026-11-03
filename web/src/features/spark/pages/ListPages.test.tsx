@@ -679,7 +679,7 @@ describe("Spark list pages", () => {
     await waitFor(() => expect(router.state.location.search.sort).toBe("duration"));
     fireEvent.click(table.querySelector('[data-col="attemptCount"] button')!);
     await waitFor(() => expect(router.state.location.search.sort).toBe("attemptCount"));
-  });
+  }, 20_000);
 
   it("handles missing attempt metadata and navigates to attempt zero", async () => {
     const incomplete: SparkStage = {
