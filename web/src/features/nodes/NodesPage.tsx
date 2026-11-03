@@ -29,6 +29,10 @@ import { formatCols, formatSort, parseCols, parseSort } from "./search";
 
 const route = getRouteApi("/nodes/");
 
+export function nodeVisibilityPatch(visibility: Record<string, boolean>): { cols: string } {
+  return { cols: formatCols(visibility) ?? "" };
+}
+
 export function NodesPage() {
   const search = route.useSearch();
   const navigate = route.useNavigate();
@@ -175,7 +179,7 @@ export function NodesPage() {
                     sorting={sorting}
                     onSortingChange={(s) => setSearch({ sort: formatSort(s) })}
                     columnVisibility={visibility}
-                    onColumnVisibilityChange={(v) => setSearch({ cols: formatCols(v) ?? "" })}
+                    onColumnVisibilityChange={(v) => setSearch(nodeVisibilityPatch(v))}
                     defaultVisibility={defaultVisibility(nodes ?? [])}
                     rowVersion={nodeRowVersion}
                     onRowActivate={(n) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: n.id } })}

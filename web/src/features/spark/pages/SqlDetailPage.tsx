@@ -92,7 +92,8 @@ export function SqlDetailPage() {
   const now = useNow();
   const tz = usePref("tz");
 
-  const q = typeof search.q === "string" ? search.q : "";
+  // sparkSearch validates q to string | undefined before this route exposes it.
+  const q = search.q ?? "";
   const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
 
   const execQ = useQuery(sp.sqlExecution(appId, executionId, { kind, attempt }));

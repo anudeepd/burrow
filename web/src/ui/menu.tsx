@@ -62,16 +62,21 @@ export function MenuItem({
   href?: string;
   title?: string;
 }) {
+  const content = (
+    <>
+      <span className={cn("min-w-0 flex-1", wrap ? "whitespace-normal break-words" : "truncate")}>{children}</span>
+      {shortcut && <span className="text-micro text-ink-4">{shortcut}</span>}
+    </>
+  );
   const item = (
     <BMenu.Item
-      render={href ? <a href={href}>{children}</a> : undefined}
+      render={href ? <a href={href}>{content}</a> : undefined}
       className={cn(itemCls, wrap && "h-auto min-h-7 items-start py-1.5", className)}
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
     >
-      <span className={cn("min-w-0 flex-1", wrap ? "whitespace-normal break-words" : "truncate")}>{children}</span>
-      {shortcut && <span className="text-micro text-ink-4">{shortcut}</span>}
+      {content}
     </BMenu.Item>
   );
   return title ? <Tooltip label={title}>{item}</Tooltip> : item;

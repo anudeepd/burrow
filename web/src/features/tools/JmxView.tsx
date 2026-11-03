@@ -143,7 +143,7 @@ export function JmxView() {
     if (search.attr) return findValueNode(tree, search.bean, search.attr.split("."))?.id ?? null;
     return findBeanNode(tree, search.bean)?.id ?? null;
   }, [tree, search.bean, search.attr]);
-  const selected = selectedId ? (tree.byId.get(selectedId) ?? null) : null;
+  const selected = selectedId ? tree.byId.get(selectedId)! : null;
   /* selecting a bean on a narrow screen should show the pane it opened, not leave it below the fold */
   useEffect(() => {
     if (selected) revealDetail();
@@ -213,7 +213,7 @@ export function JmxView() {
   );
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (handleTreeNavigationEvent(e, scrollRef.current?.clientHeight ?? 400, rowH, activeIndex, rows.length, move)) return;
+    if (handleTreeNavigationEvent(e, scrollRef.current!.clientHeight, rowH, activeIndex, rows.length, move)) return;
     if (e.target !== e.currentTarget) return;
     const row = rows[activeIndex];
     switch (e.key) {
@@ -227,7 +227,7 @@ export function JmxView() {
         if (row && isOpenNext(rows, activeIndex) && !parity && !match.active) toggle(row);
         else if (row?.parent) {
           const at = rows.findIndex((n) => n.id === row.parent?.id);
-          if (at >= 0) move(at);
+          move(at);
         }
         break;
       case " ":
@@ -370,29 +370,25 @@ export function JmxView() {
                   <div role="group" className="relative" style={parity ? undefined : { height: virt.getTotalSize() }}>
                     {(parity
                       ? rows.map((node, index) => ({ node, index, start: null as number | null }))
-                      : virt
-                          .getVirtualItems()
-                          .map((v) => ({ node: rows[v.index] as JmxNode | undefined, index: v.index, start: v.start as number | null }))
-                    ).map(({ node, index, start }) =>
-                      node ? (
-                        <JmxRow
-                          key={node.id}
-                          node={node}
-                          index={index}
-                          height={rowH}
-                          offset={start}
-                          query={search.q ?? ""}
-                          tz={tz}
-                          open={isOpenNext(rows, index)}
-                          expandable={node.children.length > 0}
-                          selected={node.id === selectedId}
-                          active={index === activeIndex}
-                          domId={rowDomId(index)}
-                          onToggle={() => toggle(node)}
-                          onSelect={() => select(node)}
-                        />
-                      ) : null,
-                    )}
+                      : virt.getVirtualItems().map((v) => ({ node: rows[v.index]!, index: v.index, start: v.start as number | null }))
+                    ).map(({ node, index, start }) => (
+                      <JmxRow
+                        key={node.id}
+                        node={node}
+                        index={index}
+                        height={rowH}
+                        offset={start}
+                        query={search.q ?? ""}
+                        tz={tz}
+                        open={isOpenNext(rows, index)}
+                        expandable={node.children.length > 0}
+                        selected={node.id === selectedId}
+                        active={index === activeIndex}
+                        domId={rowDomId(index)}
+                        onToggle={() => toggle(node)}
+                        onSelect={() => select(node)}
+                      />
+                    ))}
                   </div>
                   {rows.length === 0 && (
                     <p className="p-6 text-center text-body text-ink-3">
@@ -613,7 +609,7 @@ function MemoryBar({ memory, field, raw }: { memory: JmxMemory; field: string; r
         valueText={`${percent.toFixed(1)}% used`}
         label={`${field} used`}
         className="w-24 shrink-0"
-        datum={{ "data-yf": field, "data-yv": JSON.stringify(raw) ?? "", "data-yfmt": "pct" }}
+        datum={{ "data-yf": field, "data-yv": JSON.stringify(raw)!, "data-yfmt": "pct" }}
       />
     </span>
   );
@@ -747,7 +743,7 @@ function JmxDetails({ node, tree, tz, onSelect }: { node: JmxNode | null; tree: 
             tone={utilizationTone(memoryPercent(memory))}
             valueText={`${memoryPercent(memory).toFixed(1)}% used`}
             label={`${field} used`}
-            datum={{ "data-yf": field, "data-yv": JSON.stringify(node.value) ?? "", "data-yfmt": "pct" }}
+            datum={{ "data-yf": field, "data-yv": JSON.stringify(node.value)!, "data-yfmt": "pct" }}
           />
           <p className="text-small text-ink-3 tnum">{memorySummary(memory)}</p>
         </Section>

@@ -9,16 +9,22 @@ const { cleanup, fireEvent, render, screen, waitFor, within } = await import("@t
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
+const { connectionStore } = await import("~/api/connection");
 const { ApiError } = await import("~/api/client");
 const { tq } = await import("~/api/queries/tools");
 const { ov } = await import("~/api/queries/overview");
 const { historyStore } = await import("~/state/history");
-const { SchedulerSection } = await import("./scheduler");
+const { prefsStore } = await import("~/state/prefs");
+const { parityStore } = await import("~/state/parity");
+const { SchedulerSection, clusterMetricsUnavailableReason } = await import("./scheduler");
 const { ClusterMetricsSection, ResourceManagerMetricsSection } = await import("./cluster-metrics");
 const { ClusterIdentity } = await import("./cluster-identity");
 const { NodeStatesSection } = await import("./node-states");
 const { OverviewAttentionSummary } = await import("./attention-summary");
 const { OverviewPage } = await import("./overview-page");
+const { OverviewLoading } = await import("./overview-loading");
+const { MetricCard } = await import("./metric-card");
+const { CrossLink } = await import("./ui");
 
 const FIXTURE = resolve(process.cwd(), "../fixtures/rm/overview");
 const nodesFile = resolve(process.cwd(), "../fixtures/rm/nodes/nodes.json");
@@ -76,6 +82,9 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   historyStore.setState(() => ({ samples: [] }));
+  connectionStore.setState((state) => ({ ...state, lastCache: null }));
+  prefsStore.setState((state) => ({ ...state, tz: "local" }));
+  parityStore.setState(() => ({ enabled: true }));
   if (originalCreateObjectURL) Object.defineProperty(URL, "createObjectURL", originalCreateObjectURL);
   else Reflect.deleteProperty(URL, "createObjectURL");
   if (originalRevokeObjectURL) Object.defineProperty(URL, "revokeObjectURL", originalRevokeObjectURL);
@@ -84,6 +93,41 @@ afterEach(() => {
 });
 
 describe("overview sections", () => {
+  it("renders the route loading placeholder and a default linked metric card", async () => {
+    const loading = render(<OverviewLoading />);
+    expect(screen.getByRole("status", { name: "Loading cluster overview" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Overview" })).toBeTruthy();
+    loading.unmount();
+
+    const { router } = renderOverview(
+      <MetricCard label="Total nodes" field="cluster.nodes.total" raw={12} fmt="int" href="/nodes" />,
+      false,
+    );
+    const link = await screen.findByRole("link", { name: "Total nodes: open the filtered view" });
+    expect(link.textContent).toContain("Open Total nodes");
+    fireEvent.click(link);
+    await waitFor(() => expect(router.state.location.pathname).toBe("/nodes"));
+  });
+
+  it("shows an em dash in the header before cluster metrics have loaded", async () => {
+    renderOverview(<OverviewPage window="5m" onHistoryWindow={() => {}} />, false);
+    expect(await screen.findByRole("heading", { name: "Overview" })).toBeTruthy();
+    expect(await screen.findByText("— applications submitted")).toBeTruthy();
+  });
+
+  it("lets link handlers prevent client-side navigation", async () => {
+    const onClick = vi.fn((event: React.MouseEvent<HTMLAnchorElement>) => event.preventDefault());
+    const { router } = renderOverview(
+      <CrossLink href="/nodes" onClick={onClick}>
+        Prevent navigation
+      </CrossLink>,
+      false,
+    );
+    fireEvent.click(await screen.findByRole("link", { name: "Prevent navigation" }));
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(router.state.location.pathname).toBe("/");
+  });
+
   it("renders the overview composition and keeps the history-window control interactive", async () => {
     const onHistoryWindow = vi.fn();
     renderOverview(<OverviewPage window="all" onHistoryWindow={onHistoryWindow} />);
@@ -152,6 +196,66 @@ describe("overview sections", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
+  it("formats sparse identity metadata and a raw identity read failure", async () => {
+    const identity = JSON.parse(readFileSync(`${FIXTURE}/info.json`, "utf8")) as ClusterInfoResponse;
+    const cached = renderOverview(<ClusterIdentity showUpstreamAnswer />, true);
+    cached.client.setQueryData(ov.info().queryKey, {
+      ...identity,
+      clusterInfo: {
+        ...identity.clusterInfo,
+        rmStateStoreName: "NullRMStateStore",
+        haZooKeeperConnectionState: null,
+      },
+    });
+    connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
+    const infoQuery = cached.client.getQueryCache().find({ queryKey: ov.info().queryKey })!;
+    infoQuery.setState({
+      ...infoQuery.state,
+      status: "error",
+      error: new Error("raw metadata refresh"),
+      dataUpdatedAt: 0,
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: infoQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("NullRMStateStore")).toBeTruthy();
+    expect(screen.getAllByText("stale").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/last upstream answer/)).toBeNull();
+    infoQuery.setState({ ...infoQuery.state, dataUpdatedAt: Date.now() });
+    expect(await screen.findByText(/last upstream answer/)).toBeTruthy();
+    cached.unmount();
+
+    const missing = renderOverview(<ClusterIdentity />, false);
+    await screen.findByTestId("identity-skeleton");
+    const query = missing.client.getQueryCache().find({ queryKey: ov.info().queryKey })!;
+    query.setState({
+      ...query.state,
+      status: "error",
+      error: "raw identity failure",
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: query.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("raw identity failure")).toBeTruthy();
+    missing.unmount();
+
+    const emptyError = renderOverview(<ClusterIdentity />, false);
+    await screen.findByTestId("identity-skeleton");
+    const emptyQuery = emptyError.client.getQueryCache().find({ queryKey: ov.info().queryKey })!;
+    emptyQuery.setState({
+      ...emptyQuery.state,
+      status: "error",
+      error: null,
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: emptyQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("The ResourceManager did not respond.")).toBeTruthy();
+  });
+
+  it("renders no identity section when the successful response has no data", async () => {
+    const { client } = renderOverview(<ClusterIdentity />, false);
+    client.setQueryData(ov.info().queryKey, { clusterInfo: null } as never);
+    await waitFor(() => expect(screen.queryByTestId("identity")).toBeNull());
+  });
+
   it("renders cluster counters and the registered-node inventory from captured RM responses", async () => {
     renderOverview(
       <>
@@ -203,6 +307,14 @@ describe("overview sections", () => {
     const metricsQuery = stale.client.getQueryCache().find({ queryKey: ov.metrics().queryKey })!;
     metricsQuery.setState({
       ...metricsQuery.state,
+      data: {
+        clusterMetrics: {
+          ...metrics,
+          rmSchedulerBusyPercent: null,
+          rmEventQueueSize: null,
+          schedulerEventQueueSize: null,
+        },
+      },
       status: "error",
       error: new Error("metrics refresh failed"),
       errorUpdatedAt: Date.now(),
@@ -243,6 +355,65 @@ describe("overview sections", () => {
     }
     expect(section.textContent).toContain("monitor is off");
     expect(section.textContent).toContain("used / capacity now 0.0%");
+  });
+
+  it("renders sparse cross-partition values, reserved usage, and UTC history samples", async () => {
+    const now = Date.now();
+    historyStore.setState(() => ({
+      samples: [
+        { t: now - 60_000, memPct: 35, vcorePct: 20, appsRunning: 1, appsPending: 2, containers: 3 },
+        { t: now - 30_000, memPct: 45, vcorePct: 25, appsRunning: 2, appsPending: 1, containers: 4 },
+      ],
+    }));
+    prefsStore.setState((state) => ({ ...state, tz: "utc" }));
+    connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
+    const { client } = renderOverview(<ClusterMetricsSection showRawAggregate />);
+    const sparse = {
+      ...metrics,
+      totalAllocatedContainersAcrossPartition: undefined,
+      containersAllocated: undefined,
+      totalUsedResourcesAcrossPartition: undefined,
+      totalClusterResourcesAcrossPartition: undefined,
+      totalReservedResourcesAcrossPartition: { memory: 128, vCores: 2 },
+      reservedMB: 128,
+      reservedVirtualCores: 2,
+      rmSchedulerBusyPercent: null,
+    };
+    client.setQueryData(ov.metrics().queryKey, { clusterMetrics: sparse } as never);
+
+    const section = await screen.findByTestId("cluster-metrics");
+    expect(section.textContent).toContain("reserved");
+    expect(section.textContent).toContain("upstream served stale cache");
+    const samples = screen.getByRole("slider", { name: "Memory utilisation history samples" });
+    fireEvent.focus(samples);
+    expect(samples.getAttribute("aria-valuetext")).toContain("UTC");
+
+    client.setQueryData(ov.metrics().queryKey, {
+      clusterMetrics: { ...sparse, crossPartitionMetricsAvailable: false, containersAllocated: undefined },
+    } as never);
+    await waitFor(() => expect(section.querySelector('[data-testid="metric-containers-running"]')?.textContent).toContain("0"));
+  });
+
+  it("formats raw failures when neither cluster or ResourceManager metrics have loaded", async () => {
+    const cluster = renderOverview(<ClusterMetricsSection />, false);
+    await screen.findByText("Applications");
+    const clusterQuery = cluster.client.getQueryCache().find({ queryKey: ov.metrics().queryKey })!;
+    clusterQuery.setState({ ...clusterQuery.state, status: "error", error: "raw cluster metrics failure" });
+    expect(await screen.findByText("raw cluster metrics failure")).toBeTruthy();
+    cluster.unmount();
+
+    const emptyCluster = renderOverview(<ClusterMetricsSection />, false);
+    await screen.findByText("Applications");
+    const emptyClusterQuery = emptyCluster.client.getQueryCache().find({ queryKey: ov.metrics().queryKey })!;
+    emptyClusterQuery.setState({ ...emptyClusterQuery.state, status: "error", error: null });
+    expect(await screen.findByText("The ResourceManager did not return cluster metrics.")).toBeTruthy();
+    emptyCluster.unmount();
+
+    const resource = renderOverview(<ResourceManagerMetricsSection />, false);
+    await screen.findByText("Applications");
+    const resourceQuery = resource.client.getQueryCache().find({ queryKey: ov.metrics().queryKey })!;
+    resourceQuery.setState({ ...resourceQuery.state, status: "error", error: null });
+    expect(await screen.findByText("The ResourceManager did not return its resource counters.")).toBeTruthy();
   });
 
   it("shows ResourceManager metric failures with and without cached data", async () => {
@@ -351,6 +522,70 @@ describe("overview sections", () => {
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/nodes\//));
   });
 
+  it("renders empty node labels and missing measurements with stale UTC context", async () => {
+    prefsStore.setState((state) => ({ ...state, tz: "utc" }));
+    connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
+    const { client } = renderOverview(<NodeStatesSection metrics={undefined} />);
+    const sparseNodes = JSON.parse(JSON.stringify(nodes)) as NodesResponse;
+    Object.assign(sparseNodes.nodes?.node[0], { rack: "", nodeLabels: [], memUtilization: undefined });
+    client.setQueryData(ov.nodes().queryKey, sparseNodes);
+
+    const table = await screen.findByRole("table", { name: "Registered nodes" });
+    fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
+    expect(screen.getByText("Node state counts are unavailable.")).toBeTruthy();
+    expect(screen.getByText("stale cache")).toBeTruthy();
+    expect(table.textContent).toContain("—");
+    expect(within(table).getAllByRole("progressbar", { name: /Physical memory utilization/ }).length).toBeGreaterThan(0);
+
+    client.setQueryData(ov.nodes().queryKey, { nodes: { node: [] } });
+    expect(await screen.findByRole("heading", { name: "No nodes registered" })).toBeTruthy();
+  });
+
+  it("shows node disclosure loading and stale summary states", async () => {
+    const pending = renderOverview(<NodeStatesSection metrics={metrics} collapseInventory />, false);
+    await screen.findByTestId("node-states");
+    expect(screen.getByText("loading")).toBeTruthy();
+    pending.unmount();
+
+    connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
+    const stale = renderOverview(<NodeStatesSection metrics={metrics} collapseInventory />);
+    const expand = await screen.findByText("expand list");
+    expect(expand.parentElement?.textContent).toContain("stale cache");
+    fireEvent.click(expand.closest("summary")!);
+    expect(await screen.findByRole("table", { name: "Registered nodes" })).toBeTruthy();
+    stale.unmount();
+  });
+
+  it("renders raw node-list errors without metric counts or cached rows", async () => {
+    const failed = renderOverview(<NodeStatesSection metrics={undefined} />, false);
+    await screen.findByTestId("node-states");
+    const query = failed.client.getQueryCache().find({ queryKey: ov.nodes().queryKey })!;
+    query.setState({
+      ...query.state,
+      status: "error",
+      error: "raw node-list response",
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: query.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("raw node-list response")).toBeTruthy();
+    expect(screen.getByText("Node state counts are unavailable.")).toBeTruthy();
+    failed.unmount();
+
+    const empty = renderOverview(<NodeStatesSection metrics={undefined} />, false);
+    await screen.findByTestId("node-states");
+    empty.client.setQueryData(ov.nodes().queryKey, { nodes: { node: [] } });
+    const emptyQuery = empty.client.getQueryCache().find({ queryKey: ov.nodes().queryKey })!;
+    emptyQuery.setState({
+      ...emptyQuery.state,
+      status: "error",
+      error: new Error("empty node list refresh"),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: emptyQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("Node list refresh failed; showing the last loaded result")).toBeTruthy();
+  });
+
   it("summarizes unreachable services, node health, and high resource pressure", async () => {
     renderOverview(
       <OverviewAttentionSummary
@@ -375,6 +610,28 @@ describe("overview sections", () => {
     expect(screen.getByRole("link", { name: "2 lost nodes" })).toBeTruthy();
     expect(screen.getByText(/ResourceManager allocation high: 9 of 10 vCores allocated/)).toBeTruthy();
     expect(screen.getByText(/memory allocated/)).toBeTruthy();
+  });
+
+  it("covers singular findings, zero-capacity counters, and known incomplete conditions", async () => {
+    renderOverview(
+      <OverviewAttentionSummary
+        metrics={{
+          ...metrics,
+          unhealthyNodes: 2,
+          lostNodes: 1,
+          totalMB: 0,
+          allocatedMB: 0,
+          totalVirtualCores: 0,
+          allocatedVirtualCores: 0,
+        }}
+        metricsPending={false}
+        metricsError
+      />,
+    );
+    expect(await screen.findByRole("heading", { name: "Needs attention" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "2 unhealthy nodes" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "1 lost node" })).toBeTruthy();
+    expect(screen.getByText(/Known conditions are shown below/)).toBeTruthy();
   });
 
   it("shows the loading summary while metrics and cluster metadata are pending", async () => {
@@ -443,6 +700,37 @@ describe("overview sections", () => {
     expect(screen.getByRole("link", { name: "root.default" })).toBeTruthy();
     expect(screen.getByText("Scheduling Resource Type")).toBeTruthy();
     expect(screen.getByText("RM Dispatcher EventQueue Size")).toBeTruthy();
+  });
+
+  it("renders one stale scheduler queue with configuration and metrics fallbacks", async () => {
+    connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
+    parityStore.setState(() => ({ enabled: false }));
+    const { client } = renderOverview(<SchedulerSection collapseQueueTable />);
+    const capacity = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler.json"), "utf8")) as {
+      scheduler: { schedulerInfo: { queues: { queue: Record<string, unknown>[] } } };
+    };
+    capacity.scheduler.schedulerInfo.queues.queue = capacity.scheduler.schedulerInfo.queues.queue.slice(0, 1);
+    client.setQueryData(ov.scheduler().queryKey, capacity as never);
+    client.setQueryData(ov.schedulerOverview().queryKey, null as never);
+    client.setQueryData(tq.conf().queryKey, {
+      properties: [
+        { key: "yarn.scheduler.minimum-allocation-mb", value: "256" },
+        { key: "yarn.scheduler.minimum-allocation-vcores", value: "1" },
+      ],
+    } as never);
+    const scheduler = await screen.findByTestId("scheduler");
+    expect(scheduler.textContent).toContain("upstream served stale cache");
+    expect(scheduler.textContent).toContain("3 GiB · 4 vCores");
+    expect(scheduler.querySelector('[data-yf="scheduler.derived.maxAllocationText"]')?.className).toContain("tnum");
+    expect(scheduler.querySelector('[data-yf="scheduler.derived.minAllocationText"]')?.textContent).toContain("256");
+    expect(await screen.findAllByText("1 row")).toHaveLength(2);
+  });
+
+  it("formats missing scheduler metric-source errors", () => {
+    expect(clusterMetricsUnavailableReason(new Error("dispatcher counters unavailable"))).toBe(
+      "Cluster metrics unavailable: dispatcher counters unavailable",
+    );
+    expect(clusterMetricsUnavailableReason(null)).toBeNull();
   });
 
   it("shows every queue teaser field from the column menu", async () => {
@@ -546,6 +834,51 @@ describe("overview sections", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
+  it("shows Error messages from either scheduler source when both sources are unavailable", async () => {
+    const overviewFailure = renderOverview(<SchedulerSection />);
+    const overviewQuery = overviewFailure.client.getQueryCache().find({ queryKey: ov.schedulerOverview().queryKey })!;
+    const schedulerQuery = overviewFailure.client.getQueryCache().find({ queryKey: ov.scheduler().queryKey })!;
+    overviewQuery.setState({
+      ...overviewQuery.state,
+      data: undefined,
+      status: "error",
+      error: new Error("overview source offline"),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: overviewQuery.state.errorUpdateCount + 1,
+    });
+    schedulerQuery.setState({
+      ...schedulerQuery.state,
+      data: undefined,
+      status: "error",
+      error: new Error("scheduler source offline"),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: schedulerQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("overview source offline")).toBeTruthy();
+    overviewFailure.unmount();
+
+    const schedulerFailure = renderOverview(<SchedulerSection />);
+    const rawOverviewQuery = schedulerFailure.client.getQueryCache().find({ queryKey: ov.schedulerOverview().queryKey })!;
+    const errorSchedulerQuery = schedulerFailure.client.getQueryCache().find({ queryKey: ov.scheduler().queryKey })!;
+    rawOverviewQuery.setState({
+      ...rawOverviewQuery.state,
+      data: undefined,
+      status: "error",
+      error: "raw overview failure",
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: rawOverviewQuery.state.errorUpdateCount + 1,
+    });
+    errorSchedulerQuery.setState({
+      ...errorSchedulerQuery.state,
+      data: undefined,
+      status: "error",
+      error: new Error("scheduler source error"),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: errorSchedulerQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("scheduler source error")).toBeTruthy();
+  });
+
   it("renders a compact loading skeleton while both scheduler sources are pending", async () => {
     renderOverview(<SchedulerSection />, false);
     await waitFor(() => expect(document.querySelector('[aria-busy="true"]')).not.toBeNull());
@@ -573,6 +906,56 @@ describe("overview sections", () => {
     expect(screen.getByText("overview request failed")).toBeTruthy();
     expect(screen.getByText("Capacity Scheduler")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("shows raw scheduler overview and configuration errors while retaining REST data", async () => {
+    const overviewFailure = renderOverview(<SchedulerSection />);
+    const overviewQuery = overviewFailure.client.getQueryCache().find({ queryKey: ov.schedulerOverview().queryKey })!;
+    overviewQuery.setState({
+      ...overviewQuery.state,
+      data: undefined,
+      status: "error",
+      error: "raw scheduler overview failure",
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: overviewQuery.state.errorUpdateCount + 1,
+    });
+    const confQuery = overviewFailure.client.getQueryCache().find({ queryKey: tq.conf().queryKey })!;
+    confQuery.setState({
+      ...confQuery.state,
+      data: undefined,
+      status: "error",
+      error: "raw scheduler configuration failure",
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: confQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText("raw scheduler overview failure")).toBeTruthy();
+    expect(await screen.findByText("raw scheduler configuration failure")).toBeTruthy();
+    overviewFailure.unmount();
+
+    const queueFailure = renderOverview(<SchedulerSection />);
+    const schedulerQuery = queueFailure.client.getQueryCache().find({ queryKey: ov.scheduler().queryKey })!;
+    schedulerQuery.setState({
+      ...schedulerQuery.state,
+      data: undefined,
+      status: "error",
+      error: "raw queue tree failure",
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: schedulerQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByRole("heading", { name: "Queue data is unavailable" })).toBeTruthy();
+    expect(screen.getByText("raw queue tree failure")).toBeTruthy();
+  });
+
+  it("reports when the scheduler source has no type discriminator", async () => {
+    const { client } = renderOverview(<SchedulerSection />);
+    const schedulerData = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler.json"), "utf8")) as {
+      scheduler: { schedulerInfo: Record<string, unknown> };
+    };
+    delete schedulerData.scheduler.schedulerInfo.type;
+    client.setQueryData(ov.scheduler().queryKey, schedulerData as never);
+    client.setQueryData(ov.schedulerOverview().queryKey, null as never);
+    client.setQueryData(tq.conf().queryKey, [] as never);
+    expect(await screen.findByText("scheduler type not reported")).toBeTruthy();
   });
 
   it("uses overview allocation values and reports when configuration could not be loaded", async () => {

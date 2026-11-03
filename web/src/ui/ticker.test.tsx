@@ -19,6 +19,13 @@ afterEach(() => {
 });
 
 describe("Ticker", () => {
+  it("uses the standard number formatter without a parity field", () => {
+    const { container } = render(<Ticker value={1234} />);
+    const value = container.querySelector("span")!;
+    expect(value.textContent).toBe("1,234");
+    expect(value.hasAttribute("data-yf")).toBe(false);
+  });
+
   it("renders missing values, stamps raw values, and completes a number tween", async () => {
     let clock = 1_000;
     let frame: FrameRequestCallback | null = null;

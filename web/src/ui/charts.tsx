@@ -12,8 +12,8 @@ export interface Point {
 function useGeometry(points: Point[], w: number, h: number, pad: number, domain?: [number, number]) {
   return useMemo(() => {
     if (points.length < 2) return null;
-    const t0 = points[0]?.t ?? 0;
-    const t1 = points[points.length - 1]?.t ?? 1;
+    const t0 = points[0]!.t;
+    const t1 = points[points.length - 1]!.t;
     const vs = points.map((p) => p.v);
     const rawLo = domain ? domain[0] : Math.min(...vs);
     const rawHi = domain ? domain[1] : Math.max(...vs);
@@ -26,7 +26,7 @@ function useGeometry(points: Point[], w: number, h: number, pad: number, domain?
       .domain([t0, t1 === t0 ? t0 + 1 : t1])
       .range([pad, w - pad]);
     const y = scaleLinear()
-      .domain([lo, hi === lo ? lo + 1 : hi])
+      .domain([lo, hi])
       .range([h - pad, pad]);
     const ln = line<Point>()
       .x((p) => x(p.t))
@@ -37,7 +37,7 @@ function useGeometry(points: Point[], w: number, h: number, pad: number, domain?
       .y0(h - pad)
       .y1((p) => y(p.v))
       .curve(curveMonotoneX);
-    return { x, y, linePath: ln(points) ?? "", areaPath: ar(points) ?? "", last: points[points.length - 1] as Point };
+    return { x, y, linePath: ln(points)!, areaPath: ar(points)!, last: points[points.length - 1]! };
   }, [points, w, h, pad, domain]);
 }
 
@@ -139,8 +139,9 @@ export function AreaChart({
   const g = useGeometry(points, plotW, plotHeight, 4, domain);
 
   useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg || typeof ResizeObserver === "undefined") return;
+    if (typeof ResizeObserver === "undefined") return;
+    // The chart always renders this SVG before its effects run.
+    const svg = svgRef.current!;
     const panel = svg.parentElement;
     const syncPanelHeight = () => {
       const shouldFill = Boolean(fillHeight && panel && getComputedStyle(panel).display === "flex");
@@ -181,36 +182,35 @@ export function AreaChart({
   }, [activeIndex, points]);
   const activeTooltip = activePoint && sampleTooltip ? sampleTooltip(activePoint) : null;
   const pointIndexAt = (x: number) => {
-    if (!g || points.length < 2) return null;
-    const firstX = g.x(points[0]?.t ?? 0);
-    const lastX = g.x(points[points.length - 1]?.t ?? 0);
+    // Only the sample slider calls this function, and it renders only with valid geometry and at least two points.
+    const geometry = g!;
+    const firstX = geometry.x(points[0]!.t);
+    const lastX = geometry.x(points[points.length - 1]!.t);
     const clampedX = Math.max(Math.min(firstX, lastX), Math.min(Math.max(firstX, lastX), x));
-    const t = g.x.invert(clampedX);
+    const t = geometry.x.invert(clampedX);
     let lo = 0;
     let hi = points.length - 1;
     while (lo < hi) {
       const mid = Math.floor((lo + hi) / 2);
-      if ((points[mid]?.t ?? 0) < t) lo = mid + 1;
+      if (points[mid]!.t < t) lo = mid + 1;
       else hi = mid;
     }
     if (lo === 0) return 0;
-    const before = points[lo - 1];
-    const after = points[lo];
-    if (!before || !after) return null;
+    const before = points[lo - 1]!;
+    const after = points[lo]!;
     const span = after.t - before.t;
     if (span <= 0) return lo;
     const ratio = Math.max(0, Math.min(1, (t - before.t) / span));
     return lo - 1 + ratio;
   };
   const onSamplePointerMove = (e: PointerEvent<SVGRectElement>) => {
-    if (!g) return;
-    const rect = e.currentTarget.ownerSVGElement?.getBoundingClientRect();
-    if (!rect || rect.width === 0) return;
+    // The slider exists only when geometry is available and is an SVG child by construction.
+    const rect = e.currentTarget.ownerSVGElement!.getBoundingClientRect();
+    if (rect.width === 0) return;
     const x = ((e.clientX - rect.left) / rect.width) * chartWidth;
     setActiveIndex(pointIndexAt(x));
   };
   const onSampleKeyDown = (e: KeyboardEvent<SVGRectElement>) => {
-    if (!sampleTooltip || points.length < 2) return;
     const current = Math.round(activeIndex ?? points.length - 1);
     let next: number | null = null;
     if (e.key === "ArrowLeft" || e.key === "ArrowDown") next = Math.max(0, current - 1);
@@ -277,11 +277,11 @@ export function AreaChart({
       )}
       {showTimeAxis && g && timeLabel && (
         <g className="tnum" fontSize="10" fill="var(--ink-4)">
-          <text x={g.x(points[0]?.t ?? 0)} y={plotHeight + 6} textAnchor="start" dominantBaseline="middle">
-            {timeLabel(points[0]?.t ?? 0)}
+          <text x={g.x(points[0]!.t)} y={plotHeight + 6} textAnchor="start" dominantBaseline="middle">
+            {timeLabel(points[0]!.t)}
           </text>
-          <text x={g.x(points[points.length - 1]?.t ?? 0)} y={plotHeight + 6} textAnchor="end" dominantBaseline="middle">
-            {timeLabel(points[points.length - 1]?.t ?? 0)}
+          <text x={g.x(points[points.length - 1]!.t)} y={plotHeight + 6} textAnchor="end" dominantBaseline="middle">
+            {timeLabel(points[points.length - 1]!.t)}
           </text>
         </g>
       )}

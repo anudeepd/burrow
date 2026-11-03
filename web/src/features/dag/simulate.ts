@@ -80,12 +80,11 @@ export function syntheticDag(opts: SyntheticOptions): Dag {
   }
   // Chain the stages: the last RDD of stage s feeds the first RDD of stage s+1.
   for (let s = 1; s < stages; s++) {
-    const prev = outStages[s - 1];
-    const cur = outStages[s];
-    const from = prev?.nodes[prev.nodes.length - 1]?.id;
-    const to = cur?.nodes[0]?.id;
-    if (from == null || to == null) continue;
-    crossEdges.push({ from, to, fromStage: prev?.stageId, toStage: cur?.stageId });
+    const prev = outStages[s - 1]!;
+    const cur = outStages[s]!;
+    const from = prev.nodes[prev.nodes.length - 1]!.id;
+    const to = cur.nodes[0]!.id;
+    crossEdges.push({ from, to, fromStage: prev.stageId, toStage: cur.stageId });
   }
   void failStage;
   return { kind: "job", granularity: "rdd", jobId: 0, stages: outStages, edges: crossEdges };

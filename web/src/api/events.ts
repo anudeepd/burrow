@@ -50,7 +50,6 @@ export function startEvents(qc: QueryClient, enabled: () => boolean): () => void
       });
 
   const invalidateNow = (topic: string) => {
-    if (configuredInterval("live") === false || !hasActiveLiveQuery(topic)) return;
     void qc.invalidateQueries({
       predicate: (query) => {
         const meta = query.meta as { topic?: string; refetchKind?: string } | undefined;

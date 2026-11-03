@@ -11,6 +11,7 @@ describe("overview presentation primitives", () => {
         <Panel as="article" aria-label="summary" className="extra-class">
           Card
         </Panel>
+        <Panel aria-label="plain panel">Plain card</Panel>
         <Section
           id="identity"
           title="Identity"
@@ -21,6 +22,7 @@ describe("overview presentation primitives", () => {
         >
           Content
         </Section>
+        <Section title="Default section">Default content</Section>
         <dl>
           <Kv label="Version" className="version">
             <span>3.5.9</span>
@@ -30,7 +32,10 @@ describe("overview presentation primitives", () => {
       </>,
     );
     expect(screen.getByRole("article", { name: "summary" }).textContent).toBe("Card");
+    expect(screen.getByText("Plain card").parentElement?.tagName).toBe("DIV");
     expect(screen.getByRole("heading", { name: "Identity", level: 3 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Default section", level: 2 })).toBeTruthy();
+    expect(screen.getByText("Default content")).toBeTruthy();
     expect(screen.getByText("Cluster details")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "About Identity" }));
     expect(await screen.findByText("About these fields")).toBeTruthy();
@@ -45,11 +50,12 @@ describe("overview presentation primitives", () => {
         <Unavailable reason={<span>Not applicable</span>} variant="info" />
         <StaleTag ageMs={2500} />
         <StaleTag ageMs={0} />
+        <StaleTag ageMs={null} />
       </>,
     );
     expect(screen.getByText("No upstream value")).toBeTruthy();
     expect(screen.getByText("Not applicable")).toBeTruthy();
     expect(screen.getByText("stale · 3s")).toBeTruthy();
-    expect(container.querySelectorAll("svg.lucide-info")).toHaveLength(3);
+    expect(container.querySelectorAll("svg.lucide-info")).toHaveLength(4);
   });
 });

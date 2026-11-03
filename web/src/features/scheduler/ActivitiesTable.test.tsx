@@ -106,6 +106,27 @@ describe("ActivitiesTable", () => {
     expect(table.textContent).toContain("gpu");
   });
 
+  it("renders empty allocation fallbacks without inventing activity fields", () => {
+    render(
+      <ActivitiesTable
+        activities={{ allocations: [{}] } as Activities}
+        sorting={[]}
+        onSortingChange={vi.fn()}
+        columnVisibility={{}}
+        onColumnVisibilityChange={vi.fn()}
+        nodeId=""
+        onNodeIdChange={vi.fn()}
+        nodeOptions={[]}
+        groupBy=""
+        onGroupByChange={vi.fn()}
+      />,
+    );
+
+    const table = screen.getByRole("table", { name: "Scheduler allocation activities" });
+    expect(table.querySelectorAll('[role="row"]')).toHaveLength(2);
+    expect(table.textContent).toContain("—");
+  });
+
   it("reveals the table after filters change and lets the user stop a pending reveal", () => {
     const frames: FrameRequestCallback[] = [];
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {

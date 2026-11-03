@@ -116,7 +116,7 @@ export function StatusTimeline({ app, attempts, now }: { app: App; attempts: rea
             <div className="flex flex-col gap-1">
               {bands.map((band) => {
                 const left = ((band.startMs - (first ?? band.startMs)) / span) * 100;
-                const width = ((band.durationMs ?? 0) / span) * 100;
+                const width = (band.durationMs / span) * 100;
                 return (
                   <Entity
                     key={band.attemptId}
@@ -129,7 +129,7 @@ export function StatusTimeline({ app, attempts, now }: { app: App; attempts: rea
                     </Datum>
                     <span
                       role="img"
-                      aria-label={`Attempt ${band.num}: ${band.state}, ${fmtDuration(band.durationMs ?? 0)}`}
+                      aria-label={`Attempt ${band.num}: ${band.state}, ${fmtDuration(band.durationMs)}`}
                       className="relative h-1.5 min-w-0 overflow-hidden rounded-full bg-well"
                     >
                       <span

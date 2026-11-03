@@ -5,9 +5,14 @@ import type { q as queryFactories } from "~/api/queries";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { App, AppAttempt } from "~/api/schemas";
 import type { Meta } from "~/api/schemas/meta";
+import { parityStore } from "~/state/parity";
 
 // vitest does not expose globals, so Testing Library's automatic cleanup is not registered — do it explicitly.
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  parityStore.setState(() => ({ enabled: true }));
+  window.__BURROW_PARITY__ = true;
+});
 
 /**
  * The parity contract (docs/contracts/parity-dom.md) is verified on the REAL table, not on a mock of it: parity mode is
@@ -23,6 +28,7 @@ declare global {
 window.__BURROW_PARITY__ = true;
 
 let DataTable: typeof import("~/ui/data-table/data-table").DataTable;
+let BlacklistedCell: typeof import("~/features/apps/columns").BlacklistedCell;
 let APPS_COLUMNS: typeof import("~/features/apps/columns").APPS_COLUMNS;
 let APPS_FIELD_IDS: typeof import("~/features/apps/columns").APPS_FIELD_IDS;
 let APPS_COLUMN_IDS: typeof import("~/features/apps/columns").APPS_COLUMN_IDS;
@@ -52,7 +58,7 @@ const TEST_META: Meta = {
 
 beforeAll(async () => {
   ({ DataTable } = await import("~/ui/data-table/data-table"));
-  ({ APPS_COLUMNS, APPS_FIELD_IDS, APPS_COLUMN_IDS } = await import("~/features/apps/columns"));
+  ({ BlacklistedCell, APPS_COLUMNS, APPS_FIELD_IDS, APPS_COLUMN_IDS } = await import("~/features/apps/columns"));
   ({ q } = await import("~/api/queries"));
 });
 
@@ -282,6 +288,32 @@ describe("apps table column contract", () => {
     const second = document.querySelector(`[data-ye="${a2.id}"] [data-yf="app.derived.blacklistedNodesCount"]`);
     expect(second?.getAttribute("data-yv")).toBe("0");
     expect(second?.textContent).toBe("0");
+  });
+
+  it("uses the slow attempt-query refresh interval outside parity mode", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const appId = "application_1767000000000_0001";
+    const attempt: AppAttempt = {
+      id: 1,
+      startTime: 1,
+      finishedTime: 0,
+      containerId: "",
+      nodeHttpAddress: "",
+      nodeId: "",
+      logsLink: "",
+      blacklistedNodes: "n1:8041",
+      appAttemptId: "appattempt_1767000000000_0001_000001",
+      appAttemptState: "RUNNING",
+    };
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(q.appAttempts(appId).queryKey, { appAttempts: { appAttempt: [attempt] } });
+    render(
+      <QueryClientProvider client={client}>
+        <BlacklistedCell appId={appId} />
+      </QueryClientProvider>,
+    );
+    expect((await screen.findByText("1")).getAttribute("data-yf")).toBe("app.derived.blacklistedNodesCount");
   });
 
   it("tags the Tracking UI cell with the legacy text and the URL actually linked", async () => {

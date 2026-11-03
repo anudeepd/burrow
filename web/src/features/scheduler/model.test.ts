@@ -373,6 +373,22 @@ describe("treemap geometry", () => {
     expect(squarify([{ key: "a", label: "a", value: 0, field: "f", raw: 0, usedPct: null }], 0, 0, 100, 50)).toHaveLength(0);
   });
 
+  it("drops positive values that underflow when scaled to the viewport", () => {
+    const tiles = squarify(
+      [
+        { key: "large", value: 1e308, field: "f", raw: 1e308, usedPct: null },
+        { key: "underflow", value: Number.MIN_VALUE, field: "f", raw: Number.MIN_VALUE, usedPct: null },
+      ],
+      0,
+      0,
+      100,
+      100,
+    );
+
+    expect(tiles.map((tile) => tile.key)).toEqual(["large"]);
+    expect(tiles.every((tile) => Number.isFinite(tile.x + tile.y + tile.w + tile.h))).toBe(true);
+  });
+
   it("keeps similarly sized tiles together in a squarified row", () => {
     const items = Array.from({ length: 10 }, (_, i) => ({ key: `q${i}`, value: 1, field: "f", raw: 1, usedPct: null }));
     const tiles = squarify(items, 0, 0, 100, 100);

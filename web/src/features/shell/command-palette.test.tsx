@@ -2,6 +2,26 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const searchQueryOverride = vi.hoisted(() => ({
+  enabled: false,
+  data: undefined as unknown,
+  error: undefined as unknown,
+  refetch: vi.fn(),
+}));
+
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return {
+    ...actual,
+    useQuery: (options: { queryKey: readonly unknown[]; enabled?: boolean }) => {
+      const result = actual.useQuery(searchQueryOverride.enabled ? { ...options, enabled: false } : (options as never));
+      return searchQueryOverride.enabled
+        ? { data: searchQueryOverride.data, error: searchQueryOverride.error, refetch: searchQueryOverride.refetch }
+        : result;
+    },
+  };
+});
+
 const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
@@ -11,10 +31,14 @@ const { CommandPalette } = await import("./command-palette");
 const apps = JSON.parse(readFileSync(resolve(process.cwd(), "../fixtures/rm/overview/apps.json"), "utf8")) as unknown;
 const scrollDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, "scrollIntoView");
 
-function renderPalette(options: { appsError?: Error } = {}) {
+function renderPalette(options: { appsError?: unknown; cachedApps?: boolean; open?: boolean } = {}) {
   const onOpenChange = vi.fn();
   const root = createRootRoute();
-  const home = createRoute({ getParentRoute: () => root, path: "/", component: () => <CommandPalette open onOpenChange={onOpenChange} /> });
+  const home = createRoute({
+    getParentRoute: () => root,
+    path: "/",
+    component: () => <CommandPalette open={options.open ?? true} onOpenChange={onOpenChange} />,
+  });
   const appsRoute = createRoute({ getParentRoute: () => root, path: "/apps", component: () => null });
   const app = createRoute({ getParentRoute: () => appsRoute, path: "$appId", component: () => null });
   const routes = [
@@ -29,12 +53,13 @@ function renderPalette(options: { appsError?: Error } = {}) {
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
   client.setQueryData(q.apps().queryKey, apps as never);
-  if (options.appsError) {
+  if ("appsError" in options) {
     const query = client.getQueryCache().find({ queryKey: q.apps().queryKey })!;
     query.setState({
       ...query.state,
+      data: options.cachedApps === false ? undefined : query.state.data,
       status: "error",
-      error: options.appsError,
+      error: options.appsError instanceof Error ? options.appsError : new Error(String(options.appsError)),
       errorUpdatedAt: Date.now(),
       errorUpdateCount: query.state.errorUpdateCount + 1,
       fetchStatus: "idle",
@@ -59,6 +84,10 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  searchQueryOverride.enabled = false;
+  searchQueryOverride.data = undefined;
+  searchQueryOverride.error = undefined;
   if (scrollDescriptor) Object.defineProperty(Element.prototype, "scrollIntoView", scrollDescriptor);
   else delete (Element.prototype as { scrollIntoView?: () => void }).scrollIntoView;
 });
@@ -89,6 +118,7 @@ describe("command palette", () => {
     fireEvent.change(input, { target: { value: "no-such-command-or-app" } });
     const filterOption = await screen.findByRole("option", { name: /Applications named/ });
     fireEvent.mouseEnter(filterOption);
+    fireEvent.keyDown(input, { key: "x" });
     fireEvent.keyDown(input, { key: "Escape" });
     expect(onOpenChange).toHaveBeenCalledWith(false);
     fireEvent.click(filterOption);
@@ -97,10 +127,12 @@ describe("command palette", () => {
   });
 
   it("runs theme and live-update actions", async () => {
-    const { client } = renderPalette();
     const { prefsStore, setPrefs } = await import("~/state/prefs");
-    setPrefs({ theme: "dark", livePaused: false });
+    setPrefs({ theme: "light", livePaused: false });
+    const { client } = renderPalette();
 
+    fireEvent.click(await screen.findByRole("option", { name: /Switch theme: dark/ }));
+    await waitFor(() => expect(prefsStore.get().theme).toBe("dark"));
     fireEvent.click(await screen.findByRole("option", { name: /Switch theme: light/ }));
     await waitFor(() => expect(prefsStore.get().theme).toBe("light"));
     fireEvent.click(await screen.findByRole("option", { name: "Theme: follow system" }));
@@ -132,5 +164,33 @@ describe("command palette", () => {
     renderPalette({ appsError: new Error("applications unavailable") });
     expect((await screen.findByRole("alert")).textContent).toContain("Application search refresh failed; showing cached results");
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("limits application results and reports a raw failure without cached apps", async () => {
+    const { client } = renderPalette();
+    const limitedApps = Array.from({ length: 25 }, (_, i) => ({
+      id: `application_limit_${i}`,
+      name: `Limit Match ${i}`,
+      user: "tester",
+      queue: "root.default",
+      state: "RUNNING",
+    }));
+    client.setQueryData(q.apps().queryKey, { apps: { app: limitedApps } } as never);
+    const input = await screen.findByRole("combobox", { name: "Search applications and commands" });
+    fireEvent.change(input, { target: { value: "limit match" } });
+    expect(await screen.findAllByRole("option", { name: /Limit Match/ })).toHaveLength(24);
+
+    cleanup();
+    searchQueryOverride.enabled = true;
+    searchQueryOverride.data = undefined;
+    searchQueryOverride.error = "raw lookup failure";
+    renderPalette();
+    expect((await screen.findByRole("alert")).textContent).toContain("Could not load applications for search");
+    expect(screen.getByRole("alert").textContent).toContain("raw lookup failure");
+  });
+
+  it("skips result scrolling while the palette is closed", () => {
+    renderPalette({ open: false });
+    expect(screen.queryByRole("combobox", { name: "Search applications and commands" })).toBeNull();
   });
 });

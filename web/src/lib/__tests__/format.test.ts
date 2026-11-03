@@ -32,8 +32,10 @@ describe("formatters", () => {
   it("formats bytes and YARN megabytes", () => {
     expect(fmtBytes(0)).toBe("0 B");
     expect(fmtBytes(1536)).toBe("1.5 KiB");
+    expect(fmtBytes(-1)).toBe("—");
     expect(fmtMB(2048)).toBe("2 GiB");
     expect(fmtMB(512)).toBe("512 MiB");
+    expect(fmtMB(-1)).toBe("—");
   });
 
   it("formats durations the way operators read them", () => {
@@ -55,6 +57,7 @@ describe("formatters", () => {
   it("formats epochs in the requested zone and hides the 'not yet' sentinel", () => {
     const ms = Date.UTC(2026, 9, 3, 12, 4, 9);
     expect(fmtEpoch(ms, "utc")).toBe("2026-10-03 12:04:09");
+    expect(fmtEpoch(ms, "local")).toMatch(/^\d{4}-\d{2}-\d{2} /);
     expect(fmtEpoch(0)).toBe("—");
     expect(fmtEpoch(-1)).toBe("—");
     expect(fmtEpoch(null)).toBe("—");
@@ -90,6 +93,10 @@ describe("formatters", () => {
   });
 
   it("maps format tags to the visible text only", () => {
+    expect(formatByTag("bytes", 1536)).toBe("1.5 KiB");
+    expect(formatByTag("mb", 512)).toBe("512 MiB");
+    expect(formatByTag("ms", 340)).toBe("340 ms");
+    expect(formatByTag("dur", 1000)).toBe("1s");
     expect(formatByTag("int", "42")).toBe("42");
     expect(formatByTag("pct", 0.5)).toBe("0.5%");
     expect(formatByTag("epoch", 0)).toBe("—");

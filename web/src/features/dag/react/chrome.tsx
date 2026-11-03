@@ -302,7 +302,8 @@ function useDrawerScrollCue<T extends HTMLElement>(open: boolean, contentKey: st
     };
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
     observer?.observe(drawer);
-    if (drawer.firstElementChild) observer?.observe(drawer.firstElementChild);
+    // DrawerScrollCue is always rendered as a direct child, and observing it lets the cue follow async content.
+    observer?.observe(drawer.firstElementChild!);
     const mutations = new MutationObserver(update);
     mutations.observe(drawer, { childList: true, characterData: true, subtree: true });
     drawer.addEventListener("scroll", update, { passive: true });
@@ -441,10 +442,10 @@ export function StageDrawer({ open, onClose, node, metric, now, stageHref, rddHr
                 className="burrow-thread flex gap-px"
                 data-segments="true"
                 role="progressbar"
-                aria-label={`Stage ${metric?.stageId ?? ""} task progress`}
+                aria-label={`Stage ${metric!.stageId} task progress`}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-valuenow={Math.round(progress?.percent ?? 0)}
+                aria-valuenow={Math.round(progress!.percent)}
                 aria-valuetext={normalizedSegments.map((s) => `${s.label} ${s.percent.toFixed(0)}%`).join(", ")}
               >
                 {normalizedSegments.map((s) => (
@@ -454,7 +455,7 @@ export function StageDrawer({ open, onClose, node, metric, now, stageHref, rddHr
                 ))}
               </div>
               <p className="text-micro text-ink-3">
-                {progress ? `${fmtInt(progress.done)} of ${fmtInt(progress.total)} tasks complete` : null}
+                {`${fmtInt(progress!.done)} of ${fmtInt(progress!.total)} tasks complete`}
                 {progress && progress.active > 0 ? ` · ${fmtInt(progress.active)} running` : null}
                 {progress && progress.pending > 0 ? ` · ${fmtInt(progress.pending)} pending` : null}
                 {progress && progress.failed > 0 ? ` · ${fmtInt(progress.failed)} failed` : null}

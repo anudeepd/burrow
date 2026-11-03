@@ -55,7 +55,7 @@ describe("DAG edge layers", () => {
       }),
     ];
     const view = render(
-      <svg aria-label="DAG edges">
+      <svg role="img" aria-label="DAG edges">
         <EdgeLayer edges={edges} showLabels interactive onHover={onHover} onActivate={onActivate} />
       </svg>,
     );
@@ -72,11 +72,46 @@ describe("DAG edge layers", () => {
     expect(onHover).toHaveBeenNthCalledWith(2, null);
     expect(onActivate).toHaveBeenCalledWith(edges[0]);
     view.rerender(
-      <svg aria-label="DAG edges">
+      <svg role="img" aria-label="DAG edges">
         <EdgeLayer edges={edges} showLabels={false} interactive onHover={onHover} onActivate={onActivate} />
       </svg>,
     );
     expect(container.querySelectorAll(".burrow-dag-edge-label")).toHaveLength(0);
+  });
+
+  it("skips unchanged edge visuals and omits the pointer hit target when non-interactive", () => {
+    const onHover = vi.fn();
+    const onActivate = vi.fn();
+    const original = edge("memoized");
+    const unchanged = { ...original };
+    const changedLabel = { ...original, labels: [{ ...original.labels[0]!, text: "changed label" }] };
+    const changedPath = { ...original, path: "M 10 20 L 50 60" };
+    const view = render(
+      <svg role="img" aria-label="DAG edges">
+        <EdgeLayer edges={[original]} showLabels onHover={onHover} onActivate={onActivate} interactive />
+      </svg>,
+    );
+    view.rerender(
+      <svg role="img" aria-label="DAG edges">
+        <EdgeLayer edges={[unchanged]} showLabels onHover={onHover} onActivate={onActivate} interactive />
+      </svg>,
+    );
+    view.rerender(
+      <svg role="img" aria-label="DAG edges">
+        <EdgeLayer edges={[changedLabel]} showLabels onHover={onHover} onActivate={onActivate} interactive />
+      </svg>,
+    );
+    view.rerender(
+      <svg aria-label="DAG edges">
+        <EdgeLayer edges={[changedPath]} showLabels onHover={onHover} onActivate={onActivate} interactive />
+      </svg>,
+    );
+    view.rerender(
+      <svg aria-label="DAG edges">
+        <EdgeLayer edges={[changedPath]} showLabels onHover={onHover} onActivate={onActivate} interactive={false} />
+      </svg>,
+    );
+    expect(view.container.querySelector(".burrow-dag-edge-hit")).toBeNull();
   });
 
   it("draws static and flowing canvas segments, then stops the animation loop when unmounted", () => {
@@ -152,5 +187,57 @@ describe("DAG edge layers", () => {
     expect(ctx.lineDashOffset).toBe(0);
     expect(raf).not.toHaveBeenCalled();
     view.unmount();
+  });
+
+  it("uses the default pixel ratio, keeps matching canvas dimensions, and skips degenerate paths", () => {
+    const ctx = {
+      setTransform: vi.fn(),
+      clearRect: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      stroke: vi.fn(),
+      setLineDash: vi.fn(),
+      globalAlpha: 1,
+      strokeStyle: "",
+      lineWidth: 1,
+      lineCap: "butt",
+      lineDashOffset: 0,
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+    const descriptor = Object.getOwnPropertyDescriptor(window, "devicePixelRatio");
+    Object.defineProperty(window, "devicePixelRatio", { configurable: true, value: 0 });
+    try {
+      const view = render(
+        <CanvasEdgeLayer
+          edges={[edge("empty-path", { flowing: false, points: [] }), edge("one-point", { flowing: false, points: [point(1, 2)] })]}
+          viewport={{ x: 0, y: 0, scale: 1 }}
+          size={{ width: 300, height: 150 }}
+          reducedMotion
+          now={0}
+        />,
+      );
+      expect((view.container.querySelector("canvas") as HTMLCanvasElement).width).toBe(300);
+      expect((view.container.querySelector("canvas") as HTMLCanvasElement).height).toBe(150);
+      expect(ctx.stroke).not.toHaveBeenCalled();
+      view.unmount();
+    } finally {
+      if (descriptor) Object.defineProperty(window, "devicePixelRatio", descriptor);
+      else Reflect.deleteProperty(window, "devicePixelRatio");
+    }
+  });
+
+  it("returns cleanly when the canvas context is unavailable", () => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    const view = render(
+      <CanvasEdgeLayer
+        edges={[edge("no-context")]}
+        viewport={{ x: 0, y: 0, scale: 1 }}
+        size={{ width: 300, height: 200 }}
+        reducedMotion
+        now={0}
+      />,
+    );
+    expect(view.container.querySelector("canvas")).not.toBeNull();
   });
 });

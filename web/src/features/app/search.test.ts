@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sortingFromParam, sortingToParam, visibilityFromParam, visibilityToParam } from "./search";
+import { attemptsSearchSchema, parseSearch, sortingFromParam, sortingToParam, visibilityFromParam, visibilityToParam } from "./search";
 
 const DEFAULTS = { appAttemptId: true, startTime: true, nodeHttpAddress: false };
 
@@ -41,5 +41,27 @@ describe("column visibility codec", () => {
 
     expect(visibilityToParam(DEFAULTS, DEFAULTS)).toBeUndefined();
     expect(visibilityToParam({ appAttemptId: false, startTime: false, nodeHttpAddress: false }, DEFAULTS)).toBe("none");
+    expect(
+      visibilityToParam({ appAttemptId: true }, { appAttemptId: true, startTime: undefined, nodeHttpAddress: undefined }),
+    ).toBeUndefined();
+    expect(
+      visibilityToParam(
+        { appAttemptId: true, startTime: false, nodeHttpAddress: false },
+        { appAttemptId: true, startTime: undefined, nodeHttpAddress: false },
+      ),
+    ).toBe("appAttemptId");
+  });
+});
+
+describe("search validation", () => {
+  it("validates known keys while preserving sibling query parameters", () => {
+    expect(parseSearch(attemptsSearchSchema, { sort: "startTime:desc", parity: "1" })).toEqual({
+      sort: "startTime:desc",
+      parity: "1",
+    });
+  });
+
+  it("rejects invalid known search values", () => {
+    expect(() => parseSearch(attemptsSearchSchema, { cols: 5 })).toThrow();
   });
 });

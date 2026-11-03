@@ -30,7 +30,7 @@ function appItems(
   if (!needle) return [];
   const out: Item[] = [];
   for (const app of apps) {
-    if (out.length >= 24) break;
+    if (out.length === 24) break;
     const haystack = `${app.id} ${app.name} ${app.user} ${app.queue}`.toLowerCase();
     if (!haystack.includes(needle)) continue;
     out.push({
@@ -131,15 +131,14 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
 
   const shown = items.slice(0, 40);
   const activeIdx = Math.min(active, Math.max(0, shown.length - 1));
-  const activeItem = shown[activeIdx];
+  // The unfiltered palette always has actions; a filtered palette always has the scoped navigation action.
+  const activeItem = shown[activeIdx]!;
 
   useEffect(() => {
-    if (!open) return;
     resultsRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
   }, [activeItem?.id, open, query]);
 
-  const runItem = (item: Item | undefined) => {
-    if (!item) return;
+  const runItem = (item: Item) => {
     onOpenChange(false);
     setQuery("");
     item.run();
@@ -168,7 +167,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
             placeholder="Search applications by id, name, user or queue…"
             aria-label="Search applications and commands"
             aria-controls="palette-results"
-            aria-activedescendant={activeItem ? `palette-${activeItem.id}` : undefined}
+            aria-activedescendant={`palette-${activeItem.id}`}
             role="combobox"
             aria-expanded="true"
             onKeyDown={(e) => {
@@ -200,7 +199,6 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
         )}
 
         <div ref={resultsRef} id="palette-results" role="listbox" aria-label="Results" className="mt-2 max-h-[50vh] overflow-auto">
-          {shown.length === 0 && <p className="px-2 py-6 text-center text-small text-ink-3">No matches.</p>}
           {shown.map((item, i) => (
             <div key={item.id}>
               {(i === 0 || shown[i - 1]?.group !== item.group) && (

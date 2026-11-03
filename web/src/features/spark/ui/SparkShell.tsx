@@ -211,7 +211,7 @@ function SparkHeader({
           {attempts.length > 1 && (
             <Select
               label="Application attempt"
-              value={selectedAttempt ?? ""}
+              value={selectedAttempt!}
               onValueChange={setAttempt}
               options={[
                 { value: "", label: "Default attempt" },

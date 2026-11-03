@@ -57,7 +57,7 @@ function toLocalInput(ms: number): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function fromLocalInput(value: string): number | undefined {
+export function fromLocalInput(value: string): number | undefined {
   if (!value) return undefined;
   const ms = new Date(value).getTime();
   return Number.isFinite(ms) ? ms : undefined;
@@ -196,8 +196,7 @@ export function AppFilters({
   const activeFilterCount = filterCount(search) - (search.states === undefined ? 0 : 1);
 
   useIsomorphicLayoutEffect(() => {
-    const root = filterBarRef.current;
-    if (!root) return;
+    const root = filterBarRef.current!;
     filterAnimations.current.forEach((animation) => {
       animation.cancel();
     });
@@ -206,8 +205,7 @@ export function AppFilters({
     const rootRect = root.getBoundingClientRect();
     const current = new Map<string, FilterChipSnapshot>();
     for (const element of root.querySelectorAll<HTMLElement>("[data-filter-motion-key]")) {
-      const key = element.dataset.filterMotionKey;
-      if (!key) continue;
+      const key = element.dataset.filterMotionKey!;
       const rect = element.getBoundingClientRect();
       current.set(key, {
         left: rect.left - rootRect.left,
@@ -221,8 +219,8 @@ export function AppFilters({
     const previous = previousFilterChips.current;
     if (previous.size > 0 && motionAllowed()) {
       const duration = tokenMs(root, "--dur-content", 220);
-      const exitLayer = filterExitLayerRef.current;
-      if (duration > 0 && exitLayer) {
+      const exitLayer = filterExitLayerRef.current!;
+      if (duration > 0) {
         for (const [key, snapshot] of previous) {
           if (current.has(key) || typeof HTMLElement.prototype.animate !== "function") continue;
           const exiting = snapshot.element.cloneNode(true) as HTMLElement;

@@ -69,19 +69,7 @@ function propertyColumns(field: string): ColDef<PropertyRow>[] {
 }
 
 /** Collapsible pane. Open by default; parity forces every pane open so the crawl sees all data. */
-function Pane({
-  title,
-  count,
-  note,
-  toolbar,
-  children,
-}: {
-  title: string;
-  count?: string;
-  note?: ReactNode;
-  toolbar?: ReactNode;
-  children: ReactNode;
-}) {
+function Pane({ title, count, toolbar, children }: { title: string; count: string; toolbar?: ReactNode; children: ReactNode }) {
   const parity = useParity();
   const [open, setOpen] = useState(true);
   const isOpen = parity || open;
@@ -97,8 +85,7 @@ function Pane({
           {isOpen ? <ChevronDown className="size-4" aria-hidden="true" /> : <ChevronRight className="size-4" aria-hidden="true" />}
           {title}
         </button>
-        {count && <span className="text-small text-ink-4 tnum">{count}</span>}
-        {note && <span className="text-small text-ink-4">{note}</span>}
+        <span className="text-small text-ink-4 tnum">{count}</span>
         {toolbar && <span className="ml-auto flex flex-wrap items-center gap-2">{toolbar}</span>}
       </div>
       {isOpen && (

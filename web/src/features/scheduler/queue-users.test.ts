@@ -114,6 +114,22 @@ describe("queue user rows", () => {
     expect(userRows("root.q", raw as never, "gpu")[0]?.used).toEqual(r(0, 0));
   });
 
+  it("treats an omitted partition name as the default partition", () => {
+    const raw = {
+      users: {
+        user: [
+          {
+            username: "default-user",
+            numPendingApplications: 0,
+            numActiveApplications: 1,
+            resources: { resourceUsagesByPartition: [{ used: r(256, 1) }] },
+          },
+        ],
+      },
+    };
+    expect(userRows("root.q", raw as never)[0]?.used).toEqual(r(256, 1));
+  });
+
   it("falls back to aggregate usage only when partition usage is not exposed", () => {
     const raw = {
       users: { user: [{ username: "a", resourcesUsed: r(512, 1), numPendingApplications: 0, numActiveApplications: 1 }] },

@@ -1,6 +1,6 @@
 /** Label measurement and collision resolution — the "labels appear/disappear by zoom and node size" contract. */
 import { describe, expect, it } from "vitest";
-import { ellipsize, findOverlaps, measureText, resolveLabelCollisions } from "./labels";
+import { ellipsize, ellipsizeMonospace, findOverlaps, measureMonospaceText, measureText, resolveLabelCollisions } from "./labels";
 import type { LabelCandidate } from "./labels";
 
 const label = (id: string, x: number, y: number, priority = 0, text = id, fontSize = 12): LabelCandidate => ({
@@ -23,6 +23,11 @@ describe("measureText and ellipsize", () => {
     expect(measureText("iiii", 12)).toBeLessThan(measureText("mmmm", 12));
   });
 
+  it("gives wide CJK characters a full em advance in both title faces", () => {
+    expect(measureText("漢", 12)).toBe(12);
+    expect(measureMonospaceText("漢", 12)).toBe(12);
+  });
+
   it("returns the text unchanged when it fits", () => {
     expect(ellipsize("Stage 1", 12, 500)).toBe("Stage 1");
   });
@@ -36,6 +41,13 @@ describe("measureText and ellipsize", () => {
   it("degrades to an empty string when nothing fits", () => {
     expect(ellipsize("Stage 1", 12, 0)).toBe("");
     expect(ellipsize("Stage 1", 12, 1)).toBe("");
+  });
+
+  it("truncates monospace titles and handles unusable widths", () => {
+    expect(ellipsizeMonospace("Stage 1", 10, 100)).toBe("Stage 1");
+    expect(ellipsizeMonospace("A long stage title", 10, 28)).toBe("A l…");
+    expect(ellipsizeMonospace("Stage 1", 10, 0)).toBe("");
+    expect(ellipsizeMonospace("Stage 1", 10, 3)).toBe("");
   });
 });
 
@@ -62,6 +74,7 @@ describe("resolveLabelCollisions", () => {
     const candidates = [label("b", 0, 0, 5), label("a", 2, 2, 5)];
     expect(resolveLabelCollisions(candidates).placed.map((p) => p.id)).toEqual(["a"]);
     expect(resolveLabelCollisions([...candidates].reverse()).placed.map((p) => p.id)).toEqual(["a"]);
+    expect(resolveLabelCollisions([label("same", 0, 0), label("same", 500, 0)]).placed).toHaveLength(2);
   });
 
   it("places everything when nothing overlaps", () => {

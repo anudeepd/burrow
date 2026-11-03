@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { AppFilters } from "./filters";
+import { AppFilters, fromLocalInput } from "./filters";
 import type { Facets } from "./view";
 import type { AppsSearch } from "./search";
 import { parityStore } from "~/state/parity";
@@ -20,9 +20,17 @@ const now = 1_800_000_000_000;
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  parityStore.setState(() => ({ enabled: true }));
+  window.__BURROW_PARITY__ = true;
 });
 
 describe("AppFilters", () => {
+  it("parses empty, valid, and invalid datetime-local values", () => {
+    expect(fromLocalInput("")).toBeUndefined();
+    expect(fromLocalInput("not-a-date")).toBeUndefined();
+    expect(fromLocalInput("2026-11-02T12:30")).toBe(new Date("2026-11-02T12:30").getTime());
+  });
+
   it("reveals compact facets, applies range presets, and clears the active filter set", () => {
     const patch = vi.fn();
     const search: AppsSearch = {
@@ -203,6 +211,7 @@ describe("AppFilters", () => {
     delete document.documentElement.dataset.motion;
 
     let phase = 0;
+    let targetTransform = "none";
     const animation = {
       cancel: vi.fn(),
       oncancel: null,
@@ -210,7 +219,7 @@ describe("AppFilters", () => {
     } as unknown as Animation;
     const animate = vi.fn(() => animation);
     const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
-      const shift = this.dataset.filterMotionKey && phase === 1 ? 24 : 0;
+      const shift = this.dataset.filterMotionKey ? phase * 24 : 0;
       return {
         x: shift,
         y: 0,
@@ -224,6 +233,10 @@ describe("AppFilters", () => {
       };
     });
     HTMLElement.prototype.animate = animate;
+    vi.stubGlobal(
+      "getComputedStyle",
+      vi.fn(() => ({ getPropertyValue: () => "220ms", transform: targetTransform }) as unknown as CSSStyleDeclaration),
+    );
     const view = render(
       <AppFilters search={{ user: "alice", queue: "default" }} facets={facets} patch={() => {}} now={now} compact={false} />,
     );
@@ -234,9 +247,16 @@ describe("AppFilters", () => {
     view.rerender(<AppFilters search={{ queue: "default" }} facets={facets} patch={() => {}} now={now} compact={false} />);
 
     expect(animate.mock.calls.length).toBeGreaterThan(0);
+    expect(animate.mock.calls.some(([frames]) => JSON.stringify(frames).includes("translate(-24px, 0px)"))).toBe(true);
     const exit = view.container.querySelector('[role="presentation"]');
     expect(exit?.id).toBe("");
     expect(exit?.querySelector("[id]")).toBeNull();
+    animation.oncancel?.();
+    expect(exit?.isConnected).toBe(false);
+    phase = 2;
+    targetTransform = "matrix(1, 0, 0, 1, 0, 0)";
+    view.rerender(<AppFilters search={{ queue: "default", tag: "nightly" }} facets={facets} patch={() => {}} now={now} compact={false} />);
+    expect(animate.mock.calls.some(([frames]) => JSON.stringify(frames).includes("matrix(1, 0, 0, 1, 0, 0)"))).toBe(true);
     view.rerender(<AppFilters search={{}} facets={facets} patch={() => {}} now={now} compact={false} />);
     view.unmount();
     expect(animation.cancel).toHaveBeenCalled();
@@ -244,6 +264,31 @@ describe("AppFilters", () => {
     if (originalAnimate) HTMLElement.prototype.animate = originalAnimate;
     else delete (HTMLElement.prototype as Partial<HTMLElement>).animate;
     parityStore.setState(() => ({ enabled: originalParity }));
+    if (originalMotion === undefined) delete document.documentElement.dataset.motion;
+    else document.documentElement.dataset.motion = originalMotion;
+  });
+
+  it("skips filter-chip animations when the content token is zero", () => {
+    const originalParity = parityStore.get().enabled;
+    const originalMotion = document.documentElement.dataset.motion;
+    const originalAnimate = HTMLElement.prototype.animate;
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    delete document.documentElement.dataset.motion;
+    const animate = vi.fn(() => ({ cancel: vi.fn(), oncancel: null, onfinish: null }) as unknown as Animation);
+    HTMLElement.prototype.animate = animate;
+    vi.stubGlobal(
+      "getComputedStyle",
+      vi.fn(() => ({ getPropertyValue: () => "0ms", transform: "none" }) as unknown as CSSStyleDeclaration),
+    );
+    const view = render(<AppFilters search={{ user: "alice" }} facets={facets} patch={() => {}} now={now} compact={false} />);
+    view.rerender(<AppFilters search={{}} facets={facets} patch={() => {}} now={now} compact={false} />);
+    expect(animate).not.toHaveBeenCalled();
+    view.unmount();
+    if (originalAnimate) HTMLElement.prototype.animate = originalAnimate;
+    else delete (HTMLElement.prototype as Partial<HTMLElement>).animate;
+    parityStore.setState(() => ({ enabled: originalParity }));
+    window.__BURROW_PARITY__ = originalParity;
     if (originalMotion === undefined) delete document.documentElement.dataset.motion;
     else document.documentElement.dataset.motion = originalMotion;
   });

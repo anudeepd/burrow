@@ -14,7 +14,13 @@ import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const railData = vi.hoisted(() => ({ metrics: undefined as unknown, meta: undefined as unknown }));
+const railData = vi.hoisted(() => ({
+  metrics: undefined as unknown,
+  meta: undefined as unknown,
+  pathname: "/",
+  consecutiveFailures: 0,
+  lastCache: null as string | null,
+}));
 
 /** The rail only needs its *shape* here: the queries, the connection store and the router link are stubbed. */
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
@@ -23,11 +29,12 @@ vi.mock("@tanstack/react-query", async (importOriginal) => ({
 }));
 vi.mock("~/api/connection", () => ({
   useConnection: (select: (s: { consecutiveFailures: number; lastCache: string | null }) => unknown) =>
-    select({ consecutiveFailures: 0, lastCache: null }),
+    select({ consecutiveFailures: railData.consecutiveFailures, lastCache: railData.lastCache }),
 }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...props }: { children?: ReactNode } & Record<string, unknown>) => {
     delete props.activeOptions;
+    if (props.to === railData.pathname) props["data-status"] = "active";
     return createElement("a", props, children);
   },
   useLocation: () => ({ pathname: "/" }),
@@ -35,6 +42,8 @@ vi.mock("@tanstack/react-router", () => ({
 
 const { Rail } = await import("./rail");
 const { setPrefs } = await import("~/state/prefs");
+const { parityStore } = await import("~/state/parity");
+const originalRect = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getBoundingClientRect");
 
 /** Every element, in document order, by tag — sensitive to structure, blind to class names. */
 function signature(root: HTMLElement): string {
@@ -59,6 +68,12 @@ afterEach(() => {
   setPrefs({ railCollapsed: false, motion: "system" });
   railData.metrics = undefined;
   railData.meta = undefined;
+  railData.pathname = "/";
+  railData.consecutiveFailures = 0;
+  railData.lastCache = null;
+  if (originalRect) Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", originalRect);
+  else Reflect.deleteProperty(HTMLElement.prototype, "getBoundingClientRect");
+  parityStore.setState(() => ({ enabled: false }));
   vi.restoreAllMocks();
 });
 
@@ -111,6 +126,36 @@ describe("rail hydration shape", () => {
     expect(view.container.textContent).toContain("5");
   });
 
+  it("places the active selection and shows the connection and parity footer states", async () => {
+    railData.pathname = "/apps";
+    railData.consecutiveFailures = 2;
+    railData.lastCache = "stale";
+    parityStore.setState(() => ({ enabled: true }));
+    Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+      configurable: true,
+      value: function (this: HTMLElement) {
+        const top = this.matches("nav") ? 20 : 60;
+        return { x: 0, y: top, top, left: 0, right: 200, bottom: top + 36, width: 200, height: 36, toJSON: () => ({}) } as DOMRect;
+      },
+    });
+    const view = render(<Rail />);
+    await waitFor(() => expect(view.container.querySelector(".burrow-rail-active-selection")?.getAttribute("style")).toContain("40px"));
+    expect(view.container.textContent).toContain("2 failed request(s)");
+    expect(view.container.textContent).toContain("parity");
+
+    view.unmount();
+    railData.consecutiveFailures = 0;
+    const stale = render(<Rail />);
+    await waitFor(() => expect(stale.container.textContent).toContain("serving cached data"));
+  });
+
+  it("clears the active selection when the current route has no rail item", async () => {
+    railData.pathname = "/unknown";
+    const view = render(<Rail />);
+    await waitFor(() => expect(view.container.querySelector(".burrow-rail-active-selection")).toBeNull());
+    expect(view.container.querySelector("[data-testid='rail']")).toBeTruthy();
+  });
+
   it("explains app-requested and operating-system reduced motion", async () => {
     setPrefs({ motion: "reduced" });
     const view = render(<Rail />);
@@ -131,6 +176,18 @@ describe("rail hydration shape", () => {
       expect(await osView.findByText("os: no motion")).toBeTruthy();
     } finally {
       window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it("skips the operating-system motion preference when matchMedia is unavailable", async () => {
+    const matchMedia = window.matchMedia;
+    Reflect.deleteProperty(window, "matchMedia");
+    try {
+      const view = render(<Rail />);
+      expect(await view.findByTestId("rail")).toBeTruthy();
+      await waitFor(() => expect(view.queryByTestId("motion-chip")).toBeNull());
+    } finally {
+      window.matchMedia = matchMedia;
     }
   });
 });

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { App, AppAttempt, Container } from "~/api/schemas";
+import type { App, AppAttempt, AppAttemptDetail, Container, ResourceRequestInfo } from "~/api/schemas";
 
 vi.mock("../table-state", () => ({
   useLocalTableState: () => ({
@@ -63,6 +63,7 @@ const { cleanup, render, screen } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
+const { parityStore } = await import("~/state/parity");
 const { AttemptDetail } = await import("./AttemptDetail");
 
 const FIXTURE = resolve(process.cwd(), "../fixtures/rm/app/running");
@@ -72,7 +73,25 @@ const appPayload = (readJson("app.json") as { app: App }).app;
 const attempt = (readJson("appattempts.json") as { appAttempts: { appAttempt: AppAttempt[] } }).appAttempts.appAttempt[0]!;
 const containers = (readJson("containers-appattempt_1791010984040_0001_000001.json") as { container: Container[] }).container;
 
-function renderDetail() {
+const detailFixture: AppAttemptDetail = {
+  appAttemptId: attemptId,
+  host: "127.0.0.4",
+  rpcPort: 43981,
+  trackingUrl: "http://rm:8088/proxy/application/",
+  diagnosticsInfo: "Attempt diagnostics",
+  appAttemptState: "RUNNING",
+};
+
+function renderDetail(
+  options: {
+    app?: App;
+    attempt?: AppAttempt;
+    containers?: Container[];
+    containersUnavailable?: boolean;
+    containersError?: boolean;
+    detail?: AppAttemptDetail | null;
+  } = {},
+) {
   const requests = [
     {
       priority: 1,
@@ -99,26 +118,23 @@ function renderDetail() {
       allocationTags: [],
     },
   ];
-  const app = { ...appPayload, resourceRequests: requests } as App;
+  const appRow = options.app ?? ({ ...appPayload, resourceRequests: requests } as App);
+  const attemptRow = options.attempt ?? attempt;
+  const containerRows = options.containers ?? containers;
+  const attemptDetail = options.detail === undefined ? detailFixture : (options.detail ?? undefined);
   const root = createRootRoute();
   const home = createRoute({
     getParentRoute: () => root,
     path: "/",
     component: () => (
       <AttemptDetail
-        app={app}
-        attempt={attempt}
-        containers={containers}
-        containersUnavailable={false}
-        detail={{
-          appAttemptId: attemptId,
-          host: "127.0.0.4",
-          rpcPort: 43981,
-          trackingUrl: "http://rm:8088/proxy/application/",
-          diagnosticsInfo: "Attempt diagnostics",
-          appAttemptState: "RUNNING",
-        }}
-        now={attempt.startTime + 10_000}
+        app={appRow}
+        attempt={attemptRow}
+        containers={containerRows}
+        containersUnavailable={options.containersUnavailable ?? false}
+        containersError={options.containersError}
+        detail={attemptDetail}
+        now={attemptRow.startTime + 10_000}
       />
     ),
   });
@@ -150,11 +166,18 @@ function renderDetail() {
   return { ...view, client };
 }
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  parityStore.setState(() => ({ enabled: true }));
+});
 
 describe("AttemptDetail", () => {
   it("sorts and renders every container and outstanding request field", async () => {
-    renderDetail();
+    const sentinel = { ...containers[0]!, containerId: "container_sentinel", containerExitStatus: -1000 };
+    renderDetail({
+      containers: [...containers, sentinel],
+      attempt: { ...attempt, exportPorts: '{"http":8080}' } as AppAttempt,
+    });
 
     expect(await screen.findByText("Attempt 1")).toBeTruthy();
     const containerTable = screen.getByRole("table", { name: "Attempt containers" });
@@ -166,5 +189,93 @@ describe("AttemptDetail", () => {
     expect(requestTable.textContent).toContain("OPPORTUNISTIC");
     expect(requestTable.textContent).toContain("2 GiB");
     expect(screen.getByText("Attempt diagnostics")).toBeTruthy();
+  });
+
+  it("shows error and empty states when detail, containers, and requests are unavailable", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    const sparseApp = {
+      ...appPayload,
+      state: "NEW",
+      finalStatus: "UNDEFINED",
+      trackingUI: "UNASSIGNED",
+      trackingUrl: undefined,
+      resourceRequests: undefined,
+    } as App;
+    const sparseAttempt = {
+      ...attempt,
+      containerId: "",
+      nodeId: "",
+      nodeHttpAddress: undefined,
+      exportPorts: "",
+      logsLink: "",
+      finishedTime: 0,
+    } as AppAttempt;
+    const view = renderDetail({
+      app: sparseApp,
+      attempt: sparseAttempt,
+      containers: [],
+      containersError: true,
+      detail: null,
+    });
+    expect(await screen.findByText("Container records could not be loaded.")).toBeTruthy();
+    expect(screen.getByText("No outstanding resource requests.")).toBeTruthy();
+    expect(screen.queryByText("The RM reports no attempts yet.")).toBeNull();
+    expect(screen.getByText("In progress")).toBeTruthy();
+    expect(screen.getAllByText("Not available").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Unassigned").length).toBeGreaterThan(0);
+    expect(view.container.querySelector("details[open]")).toBeNull();
+  });
+
+  it("covers retained-container and request fallbacks for a finished attempt", async () => {
+    const request = {
+      priority: 3,
+      allocationRequestId: 0,
+      resourceName: null,
+      capability: undefined,
+      numContainers: 1,
+      relaxLocality: false,
+      nodeLabelExpression: "",
+      executionTypeRequest: undefined,
+      placementConstraint: "",
+      allocationTags: [],
+    } as ResourceRequestInfo;
+    const app = {
+      ...appPayload,
+      state: "FINISHED",
+      finalStatus: "SUCCEEDED",
+      trackingUI: "HISTORY",
+      trackingUrl: "http://rm:8088/proxy/application/",
+      resourceRequests: [request],
+    } as App;
+    const attemptRow = {
+      ...attempt,
+      containerId: "",
+      nodeId: "",
+      nodeHttpAddress: undefined,
+      exportPorts: "null",
+      logsLink: "http://rm:8088/jobhistory/logs/container",
+      finishedTime: 2_000,
+      appAttemptState: "FINISHED",
+    } as AppAttempt;
+    renderDetail({
+      app,
+      attempt: attemptRow,
+      containers: [],
+      containersUnavailable: true,
+      detail: { appAttemptId: attemptId, host: "N/A", rpcPort: -1, trackingUrl: "", appAttemptState: "FINISHED" },
+    });
+    expect(await screen.findByText("Container records are no longer retained for this finished attempt.")).toBeTruthy();
+    expect(screen.getByText(/Aggregated logs are available above/)).toBeTruthy();
+    expect(screen.getByText("None reported")).toBeTruthy();
+    expect(screen.getByRole("table", { name: "Outstanding resource requests" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open aggregated logs" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "History" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Application UI" })).toBeNull();
+  });
+
+  it("distinguishes an empty container response from errors and finished-history retention", async () => {
+    renderDetail({ containers: [], containersError: false, containersUnavailable: false });
+    expect(await screen.findByText("No container records are currently available.")).toBeTruthy();
+    expect(screen.getByText("The ResourceManager has not returned any containers for this attempt.")).toBeTruthy();
   });
 });

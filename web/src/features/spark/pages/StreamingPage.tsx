@@ -82,6 +82,13 @@ function LiveBatchDot() {
   );
 }
 
+/** Accept only usable batch-window sizes; the URL omits the default window size. */
+export function streamingBatchWindowSize(value: string): number | undefined {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 1) return undefined;
+  return Math.trunc(n);
+}
+
 export function StreamingPage() {
   const { appId } = route.useParams();
   const search = route.useSearch();
@@ -104,7 +111,7 @@ export function StreamingPage() {
   const receiversQ = useQuery({ ...sp.streamingReceivers(appId, kind, attempt), enabled: streaming });
 
   const stats = statsQ.data;
-  const size = Math.max(1, intParam(search.size, DEFAULT_SIZE) ?? DEFAULT_SIZE);
+  const size = Math.max(1, intParam(search.size, DEFAULT_SIZE));
   const statusFilter = strParam(search.status);
   const allBatches = useMemo(() => batchesQ.data ?? [], [batchesQ.data]);
   /** Spark returns batches newest-first; the window is the newest `size` rows. */
@@ -140,9 +147,9 @@ export function StreamingPage() {
         header: "Batch id",
         cell: (info) => {
           const b = info.row.original;
-          const t = batchTimeOf(b);
+          const t = batchTimeOf(b) as number;
           return (
-            <OptionalTooltip label={t != null ? fmtEpoch(t, tz) : undefined}>
+            <OptionalTooltip label={fmtEpoch(t, tz)}>
               <span className="font-mono text-micro">
                 <Datum field="spark.streaming.batches.batchId" raw={b.batchId} fmt="int" />
               </span>
@@ -152,7 +159,7 @@ export function StreamingPage() {
       },
       {
         id: "batchTime",
-        accessorFn: (b) => batchTimeOf(b) ?? -1,
+        accessorFn: (b) => batchTimeOf(b) as number,
         sortFn: "basic",
         size: 158,
         meta: { label: "Batch time", exportValue: (b: SparkStreamingBatch) => b.batchTime },
@@ -390,7 +397,7 @@ export function StreamingPage() {
     // columns that are missing from every receiver rather than filling the table with dashes.
     if (receivers.length === 0) return columns;
     return columns.filter((column) => {
-      const hasValue = column.id == null ? undefined : RECEIVER_OPTIONAL_COLUMNS[column.id];
+      const hasValue = RECEIVER_OPTIONAL_COLUMNS[column.id as string];
       return hasValue == null || receivers.some(hasValue);
     });
   }, [receivers, tz]);
@@ -433,10 +440,10 @@ export function StreamingPage() {
         <SparkStaleErrorBanner error={statsQ.error} subject="the streaming statistics" onRetry={() => void statsQ.refetch()} />
       )}
       <PageHeader title="Streaming" hideTitle>
-        {kind === "live" && newestTime != null && newestId != null && (
-          <Entity id={String(newestId)} as="span" className="text-small text-ink-3 tnum">
+        {kind === "live" && newest && newestTime != null && (
+          <Entity id={String(newest.batchId)} as="span" className="text-small text-ink-3 tnum">
             newest batch{" "}
-            <Datum field="spark.streaming.batches.batchTime" raw={newest?.batchTime} fmt="text">
+            <Datum field="spark.streaming.batches.batchTime" raw={newest.batchTime} fmt="text">
               {fmtRelative(newestTime, now)}
             </Datum>
           </Entity>
@@ -576,8 +583,8 @@ export function StreamingPage() {
                   value={sizeDraft ?? String(size)}
                   onChange={(e) => {
                     setSizeDraft(e.target.value);
-                    const n = Number(e.target.value);
-                    if (Number.isFinite(n) && n >= 1) patch({ size: Math.trunc(n) === DEFAULT_SIZE ? undefined : String(Math.trunc(n)) });
+                    const n = streamingBatchWindowSize(e.target.value);
+                    if (n != null) patch({ size: n === DEFAULT_SIZE ? undefined : String(n) });
                   }}
                   onBlur={() => setSizeDraft(null)}
                   aria-label="How many of the newest batches to load"

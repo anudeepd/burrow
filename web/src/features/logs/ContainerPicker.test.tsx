@@ -77,6 +77,8 @@ describe("ContainerPicker", () => {
     expect(retry).toHaveBeenCalledOnce();
     const input = screen.getByRole("textbox", { name: "Container id" });
     expect(screen.getByRole("button", { name: "Open pasted container" }).hasAttribute("disabled")).toBe(true);
+    fireEvent.submit(input.closest("form")!);
+    expect(onPick).not.toHaveBeenCalled();
     fireEvent.change(input, { target: { value: "bad-id" } });
     expect(screen.getByText(/Not a container id/)).toBeTruthy();
     fireEvent.change(input, { target: { value: baseAttempt.containerId } });
@@ -117,7 +119,11 @@ describe("ContainerPicker", () => {
       {
         data: {
           containers: {
-            container: [{ ...live, containerId: amId }, live],
+            container: [
+              { ...live, containerId: amId },
+              live,
+              { ...live, containerId: `${live.containerId}-no-address`, nodeHttpAddress: undefined },
+            ],
           },
         },
         isError: false,
@@ -126,9 +132,11 @@ describe("ContainerPicker", () => {
     render(<ContainerPicker appId="application_1791010984040_0002" onPick={onPick} />);
     expect(screen.getByRole("table", { name: "Live containers of application_1791010984040_0002" })).toBeTruthy();
     const table = screen.getByRole("table", { name: "Live containers of application_1791010984040_0002" });
-    expect(within(table).getAllByRole("row")).toHaveLength(2);
-    fireEvent.click(within(table).getByRole("button", { name: /Open logs/ }));
+    expect(within(table).getAllByRole("row")).toHaveLength(3);
+    fireEvent.click(within(table).getAllByRole("button", { name: /Open logs/ })[0]!);
     expect(onPick).toHaveBeenCalledWith(live.containerId, "http://worker:8042", null);
+    fireEvent.click(within(table).getAllByRole("button", { name: /Open logs/ })[1]!);
+    expect(onPick).toHaveBeenNthCalledWith(2, `${live.containerId}-no-address`, live.nodeId, null);
   });
 
   it("shows empty and partial lookup failures without hiding known ApplicationMaster rows", () => {
@@ -147,7 +155,7 @@ describe("ContainerPicker", () => {
       refetch: attemptsRefetch,
     });
     mockState.containers = [
-      { isError: true, error: new Error("worker A"), refetch },
+      { isError: true, error: new Error(""), refetch },
       { isError: true, error: "worker B", refetch },
       { isError: true, error: new Error("worker C"), refetch },
       { isError: true, error: new Error("worker D"), refetch },
@@ -155,6 +163,7 @@ describe("ContainerPicker", () => {
     render(<ContainerPicker appId="application_1791010984040_0002" onPick={vi.fn()} />);
     expect(screen.getByText(/4 attempt container lookup\(s\) failed/)).toBeTruthy();
     expect(screen.getByText(/1 more failed/)).toBeTruthy();
+    expect(screen.getByText(/Unknown error/)).toBeTruthy();
     expect(screen.getByText("refresh failed")).toBeTruthy();
     fireEvent.click(screen.getAllByRole("button", { name: /retry/i })[0]!);
     expect(attemptsRefetch).toHaveBeenCalledOnce();
@@ -168,5 +177,33 @@ describe("ContainerPicker", () => {
     render(<ContainerPicker appId="application_1791010984040_0002" onPick={vi.fn()} />);
     expect(screen.getByText("No container named by this application")).toBeTruthy();
     expect(screen.getByRole("textbox", { name: "Container id" })).toBeTruthy();
+  });
+
+  it("handles raw attempts errors and short partial-failure summaries", () => {
+    setAttempts({ data: undefined, isError: true, error: "raw RM failure" });
+    const failed = render(<ContainerPicker appId="application_1791010984040_0002" onPick={vi.fn()} />);
+    expect(screen.getByText("raw RM failure")).toBeTruthy();
+    failed.unmount();
+
+    setAttempts({
+      data: {
+        appAttempts: {
+          appAttempt: [
+            { ...baseAttempt, appAttemptId: "attempt-1", containerId: "" },
+            { ...baseAttempt, appAttemptId: "attempt-2", containerId: "" },
+          ],
+        },
+      },
+      isError: true,
+      error: "raw attempt refresh failure",
+    });
+    mockState.containers = [
+      { isError: true, error: new Error("first failure"), refetch: vi.fn() },
+      { isError: true, error: new Error("second failure"), refetch: vi.fn() },
+    ];
+    render(<ContainerPicker appId="application_1791010984040_0002" onPick={vi.fn()} />);
+    expect(screen.getByText("raw attempt refresh failure")).toBeTruthy();
+    expect(screen.getByText(/2 attempt container lookup\(s\) failed/)).toBeTruthy();
+    expect(screen.queryByText(/more failed/)).toBeNull();
   });
 });

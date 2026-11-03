@@ -1,10 +1,28 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AreaChart, Sparkline } from "./charts";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("AreaChart sample inspection", () => {
+  it("uses its default height and works when resize observation is unavailable", () => {
+    vi.stubGlobal("ResizeObserver", undefined);
+    const { container } = render(
+      <AreaChart
+        points={[
+          { t: 0, v: 1 },
+          { t: 1, v: 2 },
+        ]}
+        label="Default chart"
+      />,
+    );
+    expect(screen.getByRole("img", { name: "Default chart" }).getAttribute("viewBox")).toBe("0 0 320 96");
+    expect(container.querySelectorAll("path")).toHaveLength(2);
+  });
+
   it("keeps the plotted trace close to its axis labels", () => {
     const { container } = render(
       <AreaChart
@@ -65,6 +83,9 @@ describe("AreaChart sample inspection", () => {
 
     expect(slider.getAttribute("aria-valuetext")).toBe("5.0:15.0");
     expect(container.querySelector("circle")?.getAttribute("cx")).toBe("75");
+
+    fireEvent.pointerMove(slider, { clientX: 225, clientY: 36, pointerId: 1 });
+    expect(slider.getAttribute("aria-valuetext")).toBe("15.6:25.6");
   });
 
   it("labels both ends of the time axis when a formatter is provided", () => {
@@ -134,6 +155,59 @@ describe("AreaChart sample inspection", () => {
     expect(container.querySelectorAll("circle")).toHaveLength(0);
   });
 
+  it("uses the last sample for keyboard input and clears a stale sample after the series shrinks", () => {
+    const initial = [
+      { t: 0, v: 1 },
+      { t: 1, v: 2 },
+      { t: 2, v: 3 },
+    ];
+    const view = render(<AreaChart points={initial} label="Shrinking chart" sampleTooltip={(point) => String(point.v)} />);
+    const slider = screen.getByRole("slider", { name: "Chart samples" });
+    fireEvent.keyDown(slider, { key: "ArrowLeft" });
+    expect(slider.getAttribute("aria-valuenow")).toBe("1");
+
+    fireEvent.focus(slider);
+    view.rerender(<AreaChart points={[{ t: 0, v: 1 }]} label="Shrinking chart" sampleTooltip={(point) => String(point.v)} />);
+    expect(screen.queryByRole("slider", { name: "Chart samples" })).toBeNull();
+  });
+
+  it("handles zero-width pointer targets and repeated timestamps safely", () => {
+    const normal = render(
+      <AreaChart
+        points={[
+          { t: 0, v: 1 },
+          { t: 1, v: 2 },
+        ]}
+        label="Zero width"
+        sampleTooltip={(point) => String(point.v)}
+      />,
+    );
+    const slider = screen.getByRole("slider", { name: "Chart samples" });
+    fireEvent.pointerMove(slider, { clientX: 80, pointerId: 1 });
+    expect(slider.getAttribute("aria-valuenow")).toBe("1");
+    normal.unmount();
+
+    const repeated = render(
+      <AreaChart
+        points={[
+          { t: 1, v: 1 },
+          { t: 0, v: 2 },
+          { t: 0, v: 3 },
+          { t: 0, v: 4 },
+        ]}
+        label="Repeated timestamps"
+        sampleTooltip={(point) => `${point.t}:${point.v}`}
+      />,
+    );
+    const svg = screen.getByRole("group", { name: "Repeated timestamps" });
+    Object.defineProperty(svg, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, left: 0, top: 0, right: 320, bottom: 96, width: 320, height: 96, toJSON: () => ({}) }),
+    });
+    fireEvent.pointerMove(screen.getByRole("slider", { name: "Chart samples" }), { clientX: 217, pointerId: 1 });
+    expect(repeated.container.querySelector("circle")).not.toBeNull();
+  });
+
   it("uses a dashed fallback for short sparklines and a centered path for constant timestamps", () => {
     const { rerender, container } = render(<Sparkline points={[]} label="No samples" />);
     expect(screen.getByRole("img", { name: "No samples" }).querySelector("line")?.getAttribute("stroke-dasharray")).toBe("2 3");
@@ -154,6 +228,7 @@ describe("AreaChart sample inspection", () => {
 
   it("measures a flex chart panel and falls back to its intrinsic height when it stops filling", () => {
     let notifyResize: ResizeObserverCallback | undefined;
+    let panelHeight = 240;
     class TestResizeObserver {
       constructor(callback: ResizeObserverCallback) {
         notifyResize = callback;
@@ -180,7 +255,7 @@ describe("AreaChart sample inspection", () => {
     const panel = svg.parentElement!;
     Object.defineProperty(panel, "getBoundingClientRect", {
       configurable: true,
-      value: () => ({ x: 0, y: 0, left: 0, top: 0, right: 640, bottom: 240, width: 640, height: 240, toJSON: () => ({}) }),
+      value: () => ({ x: 0, y: 0, left: 0, top: 0, right: 640, bottom: panelHeight, width: 640, height: panelHeight, toJSON: () => ({}) }),
     });
     const observer = {} as ResizeObserver;
     act(() => {
@@ -195,10 +270,32 @@ describe("AreaChart sample inspection", () => {
     expect(svg.getAttribute("viewBox")).toBe("0 0 640 240");
     expect(svg.getAttribute("class")).toContain("h-full");
 
+    act(() =>
+      notifyResize?.(
+        [
+          { target: svg, contentRect: { width: 640, height: 80 } },
+          { target: panel, contentRect: { width: 640, height: 240 } },
+        ] as unknown as ResizeObserverEntry[],
+        observer,
+      ),
+    );
+    panelHeight = 0;
+    act(() =>
+      notifyResize?.(
+        [
+          { target: svg, contentRect: { width: 0, height: 80 } },
+          { target: panel, contentRect: { width: 640, height: 0 } },
+        ] as unknown as ResizeObserverEntry[],
+        observer,
+      ),
+    );
+    expect(svg.getAttribute("viewBox")).toBe("0 0 640 240");
+
     panel.style.display = "block";
     act(() => notifyResize?.([{ target: panel, contentRect: { width: 640, height: 240 } }] as unknown as ResizeObserverEntry[], observer));
     expect(svg.getAttribute("viewBox")).toBe("0 0 640 84");
     expect(svg.getAttribute("class")).toContain("h-auto");
     expect(container.querySelector("svg text")?.textContent).toBe("0%");
+    act(() => notifyResize?.([{ target: svg, contentRect: { width: 0, height: 80 } }] as unknown as ResizeObserverEntry[], observer));
   });
 });

@@ -54,6 +54,12 @@ describe("the captured RM configuration", () => {
     ]);
     expect(facets.reduce((sum, f) => sum + f.count, 0)).toBe(1709);
     expect(facets.find((f) => f.value === "programmatically")).toEqual({ value: "programmatically", count: 11, kind: "programmatic" });
+    expect(
+      resourceFacets([
+        { key: "z", value: "1", resource: "z-default.xml", isFinal: false },
+        { key: "a", value: "1", resource: "a-default.xml", isFinal: false },
+      ]).map((facet) => facet.value),
+    ).toEqual(["a-default.xml", "z-default.xml"]);
   });
 
   it("marks exactly the site-file and programmatic properties as overridden", () => {
@@ -80,6 +86,8 @@ describe("the captured RM configuration", () => {
     expect(multiline).toBeDefined();
     expect(lineCount(multiline!.value)).toBe(6);
     expect(multiline!.value?.startsWith("\n")).toBe(true);
+    expect(lineCount("")).toBe(0);
+    expect(lineCount(undefined)).toBe(0);
   });
 });
 
@@ -128,6 +136,9 @@ describe("filtering", () => {
     expect(properties.filter((p) => confMatches(p, { q: "CapacityScheduler" })).map((p) => p.key)).toEqual([
       "yarn.resourcemanager.scheduler.class",
     ]);
+    expect(confMatches({ key: "no-match", value: null, isFinal: false } as (typeof properties)[number], { q: "also-no-match" })).toBe(
+      false,
+    );
   });
 
   it("filters by overridden, final and resource together", () => {

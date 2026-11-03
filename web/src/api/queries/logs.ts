@@ -164,7 +164,7 @@ export async function fetchLogWindow(
     try {
       body = text ? JSON.parse(text) : null;
     } catch {
-      body = text || null;
+      body = text;
     }
     const e = (body as { error?: { code?: string; message?: string; hint?: string; upstream?: { url: string; status?: number } } } | null)
       ?.error;

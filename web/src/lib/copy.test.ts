@@ -3,12 +3,16 @@ import { copyText } from "~/lib/copy";
 
 const originalClipboard = Object.getOwnPropertyDescriptor(navigator, "clipboard");
 const originalExecCommand = Object.getOwnPropertyDescriptor(document, "execCommand");
+const originalActiveElement = Object.getOwnPropertyDescriptor(document, "activeElement");
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   if (originalClipboard) Object.defineProperty(navigator, "clipboard", originalClipboard);
   else Reflect.deleteProperty(navigator, "clipboard");
   if (originalExecCommand) Object.defineProperty(document, "execCommand", originalExecCommand);
   else Reflect.deleteProperty(document, "execCommand");
+  if (originalActiveElement) Object.defineProperty(document, "activeElement", originalActiveElement);
+  else Reflect.deleteProperty(document, "activeElement");
   vi.restoreAllMocks();
 });
 
@@ -37,6 +41,30 @@ describe("copyText", () => {
     await expect(copyText("plain HTTP plan")).resolves.toBe(true);
     expect(execCommand).toHaveBeenCalledOnce();
     expect(document.querySelector("textarea[aria-hidden='true']")).toBeNull();
+  });
+
+  it("uses the legacy copy path when navigator is unavailable or the Clipboard API rejects", async () => {
+    vi.stubGlobal("navigator", undefined);
+    Object.defineProperty(document, "execCommand", { configurable: true, value: vi.fn(() => true) });
+    await expect(copyText("no navigator")).resolves.toBe(true);
+    vi.unstubAllGlobals();
+
+    const writeText = vi.fn().mockRejectedValue(new Error("permission denied"));
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    await expect(copyText("denied by Clipboard API")).resolves.toBe(true);
+    expect(writeText).toHaveBeenCalledWith("denied by Clipboard API");
+  });
+
+  it("returns false when document is unavailable and skips refocusing a non-element active target", async () => {
+    vi.stubGlobal("navigator", undefined);
+    vi.stubGlobal("document", undefined);
+    await expect(copyText("server render")).resolves.toBe(false);
+    vi.unstubAllGlobals();
+
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+    Object.defineProperty(document, "activeElement", { configurable: true, value: { focus: vi.fn() } });
+    Object.defineProperty(document, "execCommand", { configurable: true, value: vi.fn(() => true) });
+    await expect(copyText("no active element")).resolves.toBe(true);
   });
 
   it("reports failure when neither clipboard path succeeds", async () => {

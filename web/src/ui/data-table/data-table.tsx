@@ -47,6 +47,7 @@ import { PopoverClose, PopoverContent, PopoverRoot, PopoverTrigger } from "../po
 import { Select } from "../select";
 import { HelpTip, Tooltip } from "../tooltip";
 import { type ColDef, type ColMeta, type TableFeatureSet, tableFeatureSet } from "./features";
+import { addSort, resolveUpdater } from "./updater";
 import { useElementWidth } from "~/lib/size";
 import { download, toCsv, toJson, type ExportColumn } from "./export";
 import type { Row } from "@tanstack/react-table";
@@ -60,7 +61,7 @@ type CompactStateProps = { compact?: boolean };
 const COARSE_POINTER_QUERY = "(pointer: coarse)";
 
 function subscribeCoarsePointer(onChange: () => void): () => void {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return () => {};
+  if (typeof window.matchMedia !== "function") return () => {};
   const media = window.matchMedia(COARSE_POINTER_QUERY);
   media.addEventListener("change", onChange);
   return () => media.removeEventListener("change", onChange);
@@ -195,8 +196,8 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     data: data as T[],
     getRowId: (row) => getRowId(row as T),
     state: { sorting, columnOrder, columnVisibility: effectiveVisibility, columnSizing, rowSelection },
-    onSortingChange: (u) => onSortingChange(typeof u === "function" ? u(sorting) : u),
-    onColumnVisibilityChange: (u) => onColumnVisibilityChange(typeof u === "function" ? u(columnVisibility ?? resetVisibility) : u),
+    onSortingChange: (u) => onSortingChange(resolveUpdater(u, sorting)),
+    onColumnVisibilityChange: (u) => onColumnVisibilityChange(resolveUpdater(u, columnVisibility ?? resetVisibility)),
     onColumnSizingChange: setColumnSizing,
     onRowSelectionChange: setRowSelection,
     columnResizeMode: "onChange",
@@ -214,6 +215,17 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const rows = table.getRowModel().rows as Row<TableFeatureSet, T>[];
   const leafCols = table.getVisibleLeafColumns();
   const [widthRef, viewportW] = useElementWidth<HTMLDivElement>(0);
+  const explicitlySizedColumns = useMemo(() => {
+    const ids = new Set<string>();
+    const collect = (definitions: ColDef<T>[]) => {
+      for (const definition of definitions) {
+        if ("columns" in definition && definition.columns) collect(definition.columns);
+        else if (definition.size != null) ids.add(columnId(definition));
+      }
+    };
+    collect(columns);
+    return ids;
+  }, [columns]);
   /* On a phone the table shows two whole columns and scrolls for the rest: a column and a half cut mid-cell reads as
      broken, and the columns that follow are one swipe away. A column that declares its own `size` is content-shaped
      (a 40px id column must not reserve half the screen), so it keeps that; only a default-width grid column takes the
@@ -221,12 +233,12 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
      and rows reach the right edge instead of stopping short of it. */
   const twoUp = viewportW > 0 && viewportW < 640 ? Math.floor(viewportW / 2) : 0;
   const baseWidths = leafCols.map((c, i) => {
-    if (twoUp > 0 && i < 2 && c.columnDef.size == null) return twoUp;
+    if (twoUp > 0 && i < 2 && !explicitlySizedColumns.has(c.id)) return twoUp;
     return c.getSize();
   });
   const rawWidth = baseWidths.reduce((a, w) => a + w, 0) + (selectable ? SELECT_W : 0);
   const grow = viewportW > 0 && rawWidth > 0 && rawWidth < viewportW ? viewportW / rawWidth : 1;
-  const widths = new Map(leafCols.map((c, i) => [c.id, Math.round((baseWidths[i] ?? c.getSize()) * grow)]));
+  const widths = new Map(leafCols.map((c, i) => [c.id, Math.round(baseWidths[i]! * grow)]));
   const totalWidth = Math.round(rawWidth * grow);
   const hasHorizontalOverflow = viewportW > 0 && totalWidth > viewportW;
   // `pinned` columns form a leading identity strip. Keep that strip in view while users scan wide tables.
@@ -240,7 +252,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
       continue;
     }
     pinnedOffsets.set(column.id, pinnedLeft);
-    pinnedLeft += widths.get(column.id) ?? Math.round(column.getSize() * grow);
+    pinnedLeft += widths.get(column.id)!;
   }
   const selectionPinned = !!selectable && pinnedOffsets.size > 0;
 
@@ -267,8 +279,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const moreRightRef = useRef(false);
   const [moreRight, setMoreRight] = useState(false);
   const syncOverflowCue = useCallback(() => {
-    const scroller = scrollRef.current;
-    if (!scroller) return;
+    const scroller = scrollRef.current!;
     const next = scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 1;
     if (next !== moreRightRef.current) {
       moreRightRef.current = next;
@@ -329,8 +340,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     });
     reflowAnimations.current = [];
 
-    const scroller = scrollRef.current;
-    if (!scroller) return;
+    const scroller = scrollRef.current!;
     const scrollerRect = scroller.getBoundingClientRect();
     const currentRows = new Map<string, VisibleRowSnapshot>();
     const rowElements = Array.from(scroller.querySelectorAll<HTMLElement>(".burrow-row[data-ye]"));
@@ -343,67 +353,63 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
         top: rect.top - scrollerRect.top - scroller.clientTop + scroller.scrollTop,
         width: rect.width,
         height: rect.height,
-        background: background === "rgba(0, 0, 0, 0)" ? getComputedStyle(scroller.parentElement ?? scroller).backgroundColor : background,
+        background: background === "rgba(0, 0, 0, 0)" ? getComputedStyle(scroller.parentElement!).backgroundColor : background,
         element: row,
       });
     }
 
     const previous = priorRows.current;
     const dataChanged = !previous || previous.data !== data;
-    const currentIds = dataChanged
-      ? new Set(data.map((item) => (entityKey ? entityKey(item) : getRowId(item))))
-      : (previous?.ids ?? new Set<string>());
+    const currentIds = dataChanged ? new Set(data.map((item) => (entityKey ? entityKey(item) : getRowId(item)))) : previous!.ids;
     // DataTable owns this behavior for every table. Compare row identities on data changes, but
     // refresh the visible-row snapshot on every commit so virtual scrolling cannot look like removal.
     if (previous && previous.data !== data && previous.ready && motionAllowed()) {
       const duration = tokenMs(scroller, "--dur-content", 220);
       if (duration > 0) {
-        const exitLayer = exitLayerRef.current;
-        if (exitLayer) {
-          for (const [id, snapshot] of previous.rows) {
-            if (currentRows.has(id) || currentIds.has(id) || typeof HTMLElement.prototype.animate !== "function") continue;
-            const exiting = snapshot.element.cloneNode(true) as HTMLElement;
-            exiting.removeAttribute("data-ye");
-            exiting.removeAttribute("id");
-            exiting.querySelectorAll("[id], [data-ye], [data-yf], [data-yv]").forEach((element) => {
-              element.removeAttribute("id");
-              element.removeAttribute("data-ye");
-              element.removeAttribute("data-yf");
-              element.removeAttribute("data-yv");
-            });
-            exiting.setAttribute("aria-hidden", "true");
-            exiting.setAttribute("inert", "");
-            exiting.setAttribute("role", "presentation");
-            Object.assign(exiting.style, {
-              position: "absolute",
-              top: `${snapshot.top - scroller.scrollTop}px`,
-              left: `${-scroller.scrollLeft}px`,
-              width: `${snapshot.width}px`,
-              height: `${snapshot.height}px`,
-              margin: "0",
-              backgroundColor: snapshot.background,
-              contentVisibility: "visible",
-              transform: "none",
-              pointerEvents: "none",
-              zIndex: "1",
-              willChange: "transform, opacity",
-            });
-            exitLayer.appendChild(exiting);
-            const animation = exiting.animate(
-              [
-                { opacity: 1, transform: "translateX(0)" },
-                { opacity: 0, transform: "translateX(-8px)" },
-              ],
-              { duration, easing: EASE_OUT },
-            );
-            exitAnimations.current.set(animation, exiting);
-            const removeExit = () => {
-              exiting.remove();
-              exitAnimations.current.delete(animation);
-            };
-            animation.onfinish = removeExit;
-            animation.oncancel = removeExit;
-          }
+        const exitLayer = exitLayerRef.current!;
+        for (const [id, snapshot] of previous.rows) {
+          if (currentRows.has(id) || currentIds.has(id) || typeof HTMLElement.prototype.animate !== "function") continue;
+          const exiting = snapshot.element.cloneNode(true) as HTMLElement;
+          exiting.removeAttribute("data-ye");
+          exiting.removeAttribute("id");
+          exiting.querySelectorAll("[id], [data-ye], [data-yf], [data-yv]").forEach((element) => {
+            element.removeAttribute("id");
+            element.removeAttribute("data-ye");
+            element.removeAttribute("data-yf");
+            element.removeAttribute("data-yv");
+          });
+          exiting.setAttribute("aria-hidden", "true");
+          exiting.setAttribute("inert", "");
+          exiting.setAttribute("role", "presentation");
+          Object.assign(exiting.style, {
+            position: "absolute",
+            top: `${snapshot.top - scroller.scrollTop}px`,
+            left: `${-scroller.scrollLeft}px`,
+            width: `${snapshot.width}px`,
+            height: `${snapshot.height}px`,
+            margin: "0",
+            backgroundColor: snapshot.background,
+            contentVisibility: "visible",
+            transform: "none",
+            pointerEvents: "none",
+            zIndex: "1",
+            willChange: "transform, opacity",
+          });
+          exitLayer.appendChild(exiting);
+          const animation = exiting.animate(
+            [
+              { opacity: 1, transform: "translateX(0)" },
+              { opacity: 0, transform: "translateX(-8px)" },
+            ],
+            { duration, easing: EASE_OUT },
+          );
+          exitAnimations.current.set(animation, exiting);
+          const removeExit = () => {
+            exiting.remove();
+            exitAnimations.current.delete(animation);
+          };
+          animation.onfinish = removeExit;
+          animation.oncancel = removeExit;
         }
 
         for (const row of rowElements) {
@@ -463,10 +469,9 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
      (toolbar, footer, borders) and the rendered content (header block + rows). Refresh-fed tables can opt into a
      stable viewport once they exceed a few rows, so later polls cannot keep growing or shrinking the page. */
   useEffect(() => {
-    const root = rootRef.current;
-    const scroller = scrollRef.current;
-    const content = contentRef.current;
-    if (!root || !scroller || !content) return;
+    const root = rootRef.current!;
+    const scroller = scrollRef.current!;
+    const content = contentRef.current!;
     setChromeH(Math.max(0, root.offsetHeight - scroller.offsetHeight));
     setFitH(content.offsetHeight);
     syncOverflowCue();
@@ -476,8 +481,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const vItems = parity ? null : virt.getVirtualItems();
 
   const renderRow = (index: number, offset: number | null) => {
-    const row = rows[index];
-    if (!row) return null;
+    const row = rows[index]!;
     return (
       <TableRow
         key={row.id}
@@ -496,7 +500,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
         version={rowVersion ? rowVersion(row.original as T) : undefined}
         onActivate={onRowActivate ? () => onRowActivate(row.original as T) : undefined}
         /* sizing/visibility are read in the row via columns, so re-render when they change */
-        layoutKey={`${columnSizing ? Object.values(columnSizing).join(".") : ""}|${leafCols.map((c) => `${c.id}:${widths.get(c.id)}:${pinnedOffsets.get(c.id) ?? ""}`).join(",")}|${totalWidth}`}
+        layoutKey={`${Object.values(columnSizing).join(".")}|${leafCols.map((c) => `${c.id}:${widths.get(c.id)}:${pinnedOffsets.get(c.id) ?? ""}`).join(",")}|${totalWidth}`}
       />
     );
   };
@@ -597,7 +601,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                     onValueChange={(id) => {
                       /* with only the caller's default active, the added column becomes the primary sort — appending to
                        the default would silently make every new sort secondary */
-                      if (id) onSortingChange(sortIsDefault ? [{ id, desc: false }] : [...sorting, { id, desc: false }]);
+                      addSort(id, sortIsDefault, sorting, onSortingChange);
                     }}
                     className="w-full"
                   />
@@ -880,8 +884,8 @@ const TableRowInner = <T extends RowData>({
   });
   const parity = useParity();
   useEffect(() => {
-    const row = flashRef.current?.closest<HTMLElement>(".burrow-row");
-    const hasPulsingStatus = Boolean(row?.querySelector(".burrow-dot-pulse"));
+    const row = flashRef.current!.closest<HTMLElement>(".burrow-row")!;
+    const hasPulsingStatus = Boolean(row.querySelector(".burrow-dot-pulse"));
     if (version === undefined || prev.current.version === version) {
       prev.current = { version, hasPulsingStatus };
       return;
@@ -891,7 +895,7 @@ const TableRowInner = <T extends RowData>({
     // The status pill is the live cue, as on Applications; don't stack a transient row flash under its pulse ring.
     if (wasPulsing || hasPulsingStatus) return;
     // one gate for JS motion (`~/lib/motion`), one duration (`--dur-flash`): the cue cannot drift from the token
-    const animation = flashRef.current ? flash(flashRef.current) : undefined;
+    const animation = flash(flashRef.current!);
     return () => animation?.cancel();
   }, [version]);
 
@@ -944,7 +948,7 @@ const TableRowInner = <T extends RowData>({
               meta?.align === "end" && "justify-end text-right",
             )}
             style={{
-              width: widths.get(cell.column.id) ?? Math.round(cell.column.getSize() * grow),
+              width: widths.get(cell.column.id)!,
               ...(pinnedLeft != null ? { position: "sticky", left: pinnedLeft, zIndex: 1 } : {}),
             }}
           >
@@ -1008,7 +1012,6 @@ function readSizing(key: string): ColumnSizingState {
   }
 }
 function writeSizing(key: string, s: ColumnSizingState): void {
-  if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(`burrow.cols.${key}`, JSON.stringify(s));
   } catch {

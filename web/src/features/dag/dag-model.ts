@@ -237,8 +237,7 @@ function crossStageEdges(b: Builder, dag: Dag, stages: readonly DagStage[]): voi
     return b.rddIdToNode.get(`${stageId}.${attempt}:${rddId}`);
   };
   /** The shuffle boundary: the producer's last RDD and the consumer's first RDD. */
-  const boundaryNodeId = (stageId: number | null, prefer: "first" | "last"): string | undefined => {
-    if (stageId == null) return undefined;
+  const boundaryNodeId = (stageId: number, prefer: "first" | "last"): string | undefined => {
     const attempt = attemptOf.get(stageId) ?? 0;
     const stage = prefer === "first" ? first.get(stageId) : last.get(stageId);
     const nodes = stage?.nodes ?? [];
@@ -257,11 +256,11 @@ function crossStageEdges(b: Builder, dag: Dag, stages: readonly DagStage[]): voi
     const toExact = e.to != null ? exactNodeId(toStage, e.to) : undefined;
     const fromNode =
       fromExact ??
-      (namedStages ? boundaryNodeId(fromStage, "last") : undefined) ??
+      (namedStages ? boundaryNodeId(fromStage as number, "last") : undefined) ??
       (e.from != null ? addGhost(b, `s${fromStage ?? "ext"}`, e.from) : undefined);
     const toNode =
       toExact ??
-      (namedStages ? boundaryNodeId(toStage, "first") : undefined) ??
+      (namedStages ? boundaryNodeId(toStage as number, "first") : undefined) ??
       (e.to != null ? addGhost(b, `s${toStage ?? "ext"}`, e.to) : undefined);
     if (!fromNode || !toNode) {
       b.warnings.push(`cross-stage edge ${e.from ?? "?"}→${e.to ?? "?"} has no resolvable endpoint on this page`);

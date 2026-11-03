@@ -63,6 +63,17 @@ describe("ActiveRail", () => {
     expect(retry).toHaveBeenCalledOnce();
   });
 
+  it("renders unexpected and empty active-app errors safely", () => {
+    setQuery({ isError: true, error: "raw response failure" });
+    const raw = render(<ActiveRail parity={false} />);
+    expect(screen.getByText("raw response failure")).toBeTruthy();
+    raw.unmount();
+
+    setQuery({ isError: true, error: null });
+    render(<ActiveRail parity={false} />);
+    expect(screen.getByText("The ResourceManager did not return active applications.")).toBeTruthy();
+  });
+
   it("shows the empty and stale states when the last response contains no active apps", () => {
     mockState.connection.lastCache = "stale";
     setQuery({ data: [], isError: true, error: new Error("refresh failed") });
@@ -77,6 +88,8 @@ describe("ActiveRail", () => {
       { ...app, id: "queued-old", name: "queued-old", state: "ACCEPTED", startedTime: 1 },
       { ...app, id: "running-late", name: "running-late", state: "RUNNING", startedTime: 3, progress: undefined } as unknown as App,
       { ...app, id: "running-early", name: "running-early", state: "RUNNING", startedTime: 2, applicationType: undefined },
+      { ...app, id: "queued-no-start-a", name: "queued-no-start-a", state: "SUBMITTED", startedTime: undefined, elapsedTime: undefined },
+      { ...app, id: "queued-no-start-b", name: "queued-no-start-b", state: "SUBMITTED", startedTime: undefined },
       ...Array.from({ length: 4 }, (_, i) => ({ ...app, id: `queued-${i}`, name: `queued-${i}`, state: "SUBMITTED", startedTime: 4 + i })),
     ];
     const retry = vi.fn();
@@ -87,15 +100,15 @@ describe("ActiveRail", () => {
     expect(rows).toHaveLength(5);
     expect(rows[0]?.getAttribute("data-testid")).toBe("app-row-running-early");
     expect(rows[1]?.getAttribute("data-testid")).toBe("app-row-running-late");
-    expect(screen.getByText("5 shown of 7 active applications")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "View all 7 active applications →" })).toBeTruthy();
+    expect(screen.getByText("5 shown of 9 active applications")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "View all 9 active applications →" })).toBeTruthy();
     defaultRail.unmount();
 
     mockState.connection.lastCache = "stale";
     render(<ActiveRail parity />);
-    expect(screen.getAllByRole("listitem")).toHaveLength(7);
-    expect(screen.getByText("7 shown active applications")).toBeTruthy();
-    expect(screen.getAllByText("Values may be out of date.").length).toBe(7);
+    expect(screen.getAllByRole("listitem")).toHaveLength(9);
+    expect(screen.getByText("9 shown active applications")).toBeTruthy();
+    expect(screen.getAllByText("Values may be out of date.").length).toBe(9);
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     expect(retry).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("link", { name: "Open application running-early" }));

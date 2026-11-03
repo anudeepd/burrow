@@ -33,6 +33,7 @@ describe("scheduler operator text", () => {
 
   it("uses a readable label for the default partition", () => {
     expect(partitionText("")).toBe("Default partition");
+    expect(partitionText(undefined)).toBe("Default partition");
     expect(partitionText("<DEFAULT_PARTITION>")).toBe("Default partition");
     expect(partitionText("gpu")).toBe("gpu");
   });
@@ -43,11 +44,14 @@ describe("scheduler operator text", () => {
     expect(fmtVcores(2)).toBe("2 vCores");
     expect(fmtMemory(undefined)).toBe("—");
     expect(fmtMemory(Number.POSITIVE_INFINITY)).toBe("—");
+    expect(fmtMemory(512)).toBe("512 MiB · 512 MB");
     expect(countText(null)).toBe("—");
     expect(countText(1200)).toBe("1,200");
     expect(pctText(62.5)).toBe("62.5%");
     expect(pctText(1200)).toBe("1200%");
     expect(resourceText(null)).toBe("—");
+    expect(resourceText({ memory: 512, vCores: 1 })).toBe("512 MiB · 1 vCore");
+    expect(resourceValueText(512, 1)).toBe("512 MiB · 1 vCore");
     expect(
       resourceValueText(1024, 1, [
         { name: "yarn.io/gpu", value: 2, units: "cards" },

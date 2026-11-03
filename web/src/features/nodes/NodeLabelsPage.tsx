@@ -130,40 +130,36 @@ export function NodeLabelsPage() {
       <TabContent value={view}>
         {view === "labels" ? (
           <Section>
-            {labelsQ.isPending ? (
-              <Skeleton className="h-40 w-full" />
-            ) : (
-              <DataTable
-                data={filtered}
-                columns={labelColumns(search.open)}
-                getRowId={(r) => r.label.name || "__default__"}
-                entityKey={(r) => r.label.name}
-                label="Node labels"
-                storageKey="burrow.node-labels"
-                sorting={parseSorting(search.sort)}
-                onSortingChange={(sort) => navigate({ search: (prev) => ({ ...prev, sort: serializeSorting(sort) }), replace: true })}
-                columnVisibility={visibilityFromHide(search.hide, {})}
-                onColumnVisibilityChange={(visibility) =>
-                  navigate({ search: (prev) => ({ ...prev, hide: hideFromVisibility(visibility) }), replace: true })
-                }
-                defaultVisibility={{ name: true, type: true, activeNMs: true, resource: true, nodes: true }}
-                onRowActivate={(r) =>
-                  navigate({ search: (prev) => ({ ...prev, open: prev.open === r.label.name ? undefined : r.label.name }), replace: true })
-                }
-                exportName="node-labels"
-                totalCount={rows.length}
-                toolbar={
-                  <SearchField
-                    value={search.q ?? ""}
-                    onChange={(q) => navigate({ search: (prev) => ({ ...prev, q: q || undefined }), replace: true })}
-                    label="Search labels"
-                    placeholder="label name…"
-                    className="w-56"
-                  />
-                }
-                empty={<EmptyState title="No node label matches">Clear the search box.</EmptyState>}
-              />
-            )}
+            <DataTable
+              data={filtered}
+              columns={labelColumns(search.open)}
+              getRowId={(r) => r.label.name || "__default__"}
+              entityKey={(r) => r.label.name}
+              label="Node labels"
+              storageKey="burrow.node-labels"
+              sorting={parseSorting(search.sort)}
+              onSortingChange={(sort) => navigate({ search: (prev) => ({ ...prev, sort: serializeSorting(sort) }), replace: true })}
+              columnVisibility={visibilityFromHide(search.hide, {})}
+              onColumnVisibilityChange={(visibility) =>
+                navigate({ search: (prev) => ({ ...prev, hide: hideFromVisibility(visibility) }), replace: true })
+              }
+              defaultVisibility={{ name: true, type: true, activeNMs: true, resource: true, nodes: true }}
+              onRowActivate={(r) =>
+                navigate({ search: (prev) => ({ ...prev, open: prev.open === r.label.name ? undefined : r.label.name }), replace: true })
+              }
+              exportName="node-labels"
+              totalCount={rows.length}
+              toolbar={
+                <SearchField
+                  value={search.q ?? ""}
+                  onChange={(q) => navigate({ search: (prev) => ({ ...prev, q: q || undefined }), replace: true })}
+                  label="Search labels"
+                  placeholder="label name…"
+                  className="w-56"
+                />
+              }
+              empty={<EmptyState title="No node label matches">Clear the search box.</EmptyState>}
+            />
 
             {openRow && (
               <div className="mt-3 rounded-lg border border-seam bg-fabric p-3">
@@ -213,7 +209,7 @@ export function NodeLabelsPage() {
   );
 }
 
-function labelColumns(open: string | undefined): ColDef<LabelRow>[] {
+export function labelColumns(open: string | undefined): ColDef<LabelRow>[] {
   return [
     {
       id: "name",

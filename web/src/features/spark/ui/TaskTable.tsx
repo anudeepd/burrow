@@ -229,7 +229,7 @@ export function taskColumns({ tz, showMore }: TaskColumnOptions): ColDef<SparkTa
         if (!message) return <span className="text-ink-4">—</span>;
         return (
           <Datum field="spark.task.errorMessage" raw={message} fmt="text" className="block max-w-[46ch] truncate text-fail" title={message}>
-            {message.split("\n")[0] ?? message}
+            {message.split("\n", 1)[0]!}
           </Datum>
         );
       },

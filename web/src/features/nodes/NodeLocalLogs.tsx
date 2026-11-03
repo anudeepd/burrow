@@ -43,7 +43,7 @@ export function NodeLocalLogs({ node }: { node: Node }) {
   const probe = useQuery({
     queryKey: ["logs", "containers", first?.id, address],
     queryFn: ({ signal }) =>
-      apiGet(`logs/containers/${encodeURIComponent(first?.id ?? "")}`, {
+      apiGet(`logs/containers/${encodeURIComponent(first!.id)}`, {
         signal,
         query: { node: address },
         schema: LogSourceSchema,

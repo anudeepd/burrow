@@ -102,7 +102,7 @@ export function SqlPage() {
 
   const parsedSize = intParam(search.size);
   const limit = parsedSize != null && parsedSize > 0 ? parsedSize : null;
-  const page = Math.max(0, intParam(search.page, 0) ?? 0);
+  const page = Math.max(0, intParam(search.page) ?? 0);
   const status = typeof search.status === "string" && search.status !== "" ? search.status : undefined;
   const q = typeof search.q === "string" ? search.q : "";
 

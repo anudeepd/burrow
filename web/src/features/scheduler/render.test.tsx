@@ -20,12 +20,19 @@ if (typeof Element.prototype.getAnimations !== "function") {
   Element.prototype.getAnimations = () => [];
 }
 
-const { render, cleanup, fireEvent, screen, waitFor, within } = await import("@testing-library/react");
+const { act, render, cleanup, fireEvent, screen, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { SchedulerPage } = await import("./SchedulerPage");
 const { QueuePage } = await import("./QueuePage");
 const { QueueTreemap, squarify } = await import("./Treemap");
+const { NodeLabelsCard } = await import("./NodeLabelsCard");
+const { HealthTables } = await import("./HealthTables");
+const { TreemapSection } = await import("./TreemapSection");
+const { SchedulerMetrics } = await import("./SchedulerMetrics");
+const { ov } = await import("~/api/queries/overview");
+const { schedulerQuery, schedulerActivitiesQuery, schedulerConfQuery } = await import("~/api/queries/scheduler");
+const { tq } = await import("~/api/queries/tools");
 type SchedulerSearch = import("./search").SchedulerSearch;
 
 const fixture = (rel: string): unknown => JSON.parse(readFileSync(`../fixtures/rm/scheduler/${rel}`, "utf8"));
@@ -90,6 +97,7 @@ function renderAt(element: ReactElement, entries: string[], configure?: (client:
       </QueryClientProvider>,
     ),
     router,
+    client,
   };
 }
 
@@ -112,7 +120,136 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+function failCachedQuery(client: InstanceType<typeof QueryClient>, queryKey: readonly unknown[], message: string, clearData = false) {
+  const query = client.getQueryCache().find({ queryKey });
+  expect(query).toBeTruthy();
+  act(() => {
+    query!.setState({
+      ...query!.state,
+      ...(clearData ? { data: undefined } : {}),
+      status: "error",
+      error: new Error(message),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: query!.state.errorUpdateCount + 1,
+      fetchStatus: "idle",
+    });
+  });
+}
+
 describe("SchedulerPage over captured payloads", () => {
+  it("shows unavailable scheduler metrics and then formats reported values", async () => {
+    const disableMetricQueries = (client: InstanceType<typeof QueryClient>, overview?: unknown) => {
+      for (const query of [ov.nodes(), ov.schedulerOverview(), tq.conf()]) {
+        client.setQueryDefaults(query.queryKey, { enabled: false });
+      }
+      if (overview !== undefined) client.setQueryData(ov.schedulerOverview().queryKey, overview as never);
+    };
+    const info = {
+      type: "capacityScheduler",
+      queueName: "root",
+      capacity: 100,
+      usedCapacity: 0,
+      maxCapacity: 100,
+    } as never;
+
+    renderAt(
+      <SchedulerMetrics info={info} queueCount={0} overShare={0} metrics={undefined} metricsError="metrics endpoint failed" />,
+      ["/scheduler"],
+      disableMetricQueries,
+    );
+    expect(await screen.findByText("Root queue")).toBeTruthy();
+    expect(screen.getByText("root")).toBeTruthy();
+    expect(screen.getAllByText("cluster metrics unavailable: metrics endpoint failed").length).toBe(3);
+    fireEvent.click(screen.getByRole("button", { name: "More scheduler metrics" }));
+    expect(screen.getByRole("button", { name: "Fewer metrics" })).toBeTruthy();
+    cleanup();
+
+    renderAt(
+      <SchedulerMetrics
+        info={{ ...info, queuePath: "root" } as never}
+        queueCount={1}
+        overShare={0}
+        metrics={{ allocatedMB: 0, totalMB: 0 } as never}
+      />,
+      ["/scheduler"],
+      disableMetricQueries,
+    );
+    expect(await screen.findByText("Scheduler load was not reported.")).toBeTruthy();
+    expect(screen.getByText("Default-partition YARN memory allocation").parentElement?.textContent).toContain("—");
+    cleanup();
+
+    renderAt(
+      <SchedulerMetrics
+        info={{ ...info, queuePath: "root" } as never}
+        queueCount={2}
+        overShare={1}
+        metrics={{ allocatedMB: 256, totalMB: 512, rmSchedulerBusyPercent: 35, rmEventQueueSize: 2, schedulerEventQueueSize: 4 } as never}
+      />,
+      ["/scheduler"],
+      disableMetricQueries,
+    );
+    expect(await screen.findByText("50.0%")).toBeTruthy();
+    expect(screen.getByText("35.0%")).toBeTruthy();
+    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("4").length).toBeGreaterThan(0);
+    expect(screen.getByText("Over their share").parentElement?.textContent).toContain("1");
+    cleanup();
+
+    renderAt(<SchedulerMetrics info={info} queueCount={1} overShare={0} metrics={undefined} />, ["/scheduler"], (client) =>
+      disableMetricQueries(client, {
+        schedulerType: "Capacity Scheduler",
+        schedulingResourceType: "memory-mb,vcores",
+        minimumAllocation: { memory: 512, vCores: 1 },
+        maximumAllocation: { memory: 4096, vCores: 4 },
+        applicationPriority: 10,
+        schedulerBusy: 25,
+        rmDispatcherEventQueueSize: 2,
+        schedulerDispatcherEventQueueSize: 3,
+      }),
+    );
+    expect(await screen.findByText("4 GiB · 4 vCores")).toBeTruthy();
+    expect(screen.getByText("10")).toBeTruthy();
+  });
+
+  it("switches treemap size basis and ends the geometry transition", async () => {
+    const root = {
+      id: "root",
+      name: "root",
+      depth: 0,
+      role: "root",
+      children: [
+        {
+          id: "root.empty",
+          name: "empty",
+          depth: 1,
+          role: "leaf",
+          children: [],
+          capacity: { minEffectiveCapacity: { memory: 512 } },
+        },
+      ],
+    } as never;
+    const onBasisChange = vi.fn();
+    try {
+      const view = renderAt(<TreemapSection root={root} basis="used" onBasisChange={onBasisChange} />, ["/scheduler"]);
+      expect(await screen.findByText("No memory in use")).toBeTruthy();
+      vi.useFakeTimers();
+      fireEvent.click(screen.getByRole("button", { name: "Used memory" }));
+      expect(onBasisChange).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "View guaranteed shares" }));
+      expect(onBasisChange).toHaveBeenCalledWith("capacity");
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+      });
+      expect(view.container.querySelector('svg[role="img"]')?.getAttribute("data-basis-transition")).toBe("false");
+
+      view.rerender(<TreemapSection root={root} basis="capacity" onBasisChange={onBasisChange} />);
+      expect(screen.queryByText("No memory in use")).toBeNull();
+      expect(screen.getByRole("button", { name: "Guaranteed share" })).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("lays out tall treemaps and follows a tile from the keyboard", async () => {
     const items = [
       { key: "root.large", value: 100, field: "queue.used", raw: 100, usedPct: 50, sub: "used" },
@@ -126,6 +263,72 @@ describe("SchedulerPage over captured payloads", () => {
     const tile = await screen.findByRole("link", { name: /root\.large/ });
     fireEvent.keyDown(tile, { key: "Enter" });
     await waitFor(() => expect(router.state.location.pathname).toBe("/scheduler/root.large"));
+  });
+
+  it("renders the treemap label bands at their height boundaries and supports Space navigation", async () => {
+    const longKey = `root.${"long-queue-name-".repeat(12)}`;
+    const item = { key: longKey, value: 100, field: "queue.used", raw: 100, usedPct: null };
+    const textCounts = new Map<number, number>();
+
+    for (const height of [15, 16, 21, 22, 53, 54, 81, 82, 127, 128]) {
+      const view = renderAt(<QueueTreemap items={[item]} basis="used" height={height} label="Queue map" />, ["/scheduler"]);
+      await screen.findByRole("img", { name: /Queue map/ });
+      textCounts.set(height, view.container.querySelectorAll("svg text").length);
+      view.unmount();
+    }
+
+    expect(textCounts.get(15)).toBe(0);
+    expect(textCounts.get(16)).toBe(1);
+    expect(textCounts.get(22)).toBe(1);
+    expect(textCounts.get(53)).toBe(1);
+    expect(textCounts.get(54)).toBe(2);
+    expect(textCounts.get(81)).toBe(2);
+    expect(textCounts.get(82)).toBe(3);
+    expect(textCounts.get(127)).toBe(3);
+    expect(textCounts.get(128)).toBe(3);
+
+    const { container, router } = renderAt(
+      <QueueTreemap items={[{ ...item, key: "root.keyboard", sub: undefined }]} basis="used" height={128} label="Queue map" />,
+      ["/scheduler"],
+    );
+    await screen.findByRole("img", { name: /Queue map/ });
+    const tile = container.querySelector('[role="link"]')!;
+    expect(tile).toBeTruthy();
+    fireEvent.keyDown(tile, { key: "x" });
+    expect(router.state.location.pathname).toBe("/scheduler");
+    fireEvent.keyDown(tile, { key: " " });
+    await waitFor(() => expect(router.state.location.pathname).toBe("/scheduler/root.keyboard"));
+  });
+
+  it("uses measured narrow widths when deciding whether a tile can show compact text", async () => {
+    let notify: ResizeObserverCallback | undefined;
+    class WidthResizeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        notify = callback;
+      }
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    }
+    vi.stubGlobal("ResizeObserver", WidthResizeObserver);
+
+    const view = renderAt(
+      <QueueTreemap
+        items={[{ key: "root.queue", value: 100, field: "queue.used", raw: 100, usedPct: 50 }]}
+        basis="capacity"
+        height={40}
+        label="Narrow queue map"
+      />,
+      ["/scheduler"],
+    );
+    await screen.findByRole("img", { name: /Narrow queue map/ });
+    const figure = view.container.querySelector("figure")!;
+    await act(async () => {
+      notify?.([{ target: figure, contentRect: { width: 120 } } as ResizeObserverEntry], {} as ResizeObserver);
+    });
+
+    expect(view.container.querySelector("svg")?.getAttribute("viewBox")).toBe("0 0 120 40");
+    expect(view.container.querySelectorAll("svg text")).toHaveLength(1);
   });
 
   it("capacity: renders the freeness tree, KPI strip and treemap without a single parity warning", async () => {
@@ -202,6 +405,14 @@ describe("SchedulerPage over captured payloads", () => {
     expect(row).toBeTruthy();
     fireEvent.click(row!);
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/nodes\//));
+  });
+
+  it("marks node-label data as stale while keeping its cached rows visible", async () => {
+    const nodes = ((other("nodes/nodes.json") as { nodes?: { node?: unknown[] } }).nodes?.node ?? []) as never[];
+    renderAt(<NodeLabelsCard nodes={nodes} stale />, ["/scheduler"]);
+
+    expect(await screen.findByText("showing cached nodes")).toBeTruthy();
+    expect(screen.getByRole("table", { name: "Nodes by label partition" }).textContent).toContain("127.0.0.2:8041");
   });
 
   it("capacity: formats queue resources and default partitions for operators while preserving raw data", async () => {
@@ -362,6 +573,9 @@ describe("SchedulerPage over captured payloads", () => {
     fireEvent.click(queueTree.querySelector('[role="columnheader"] button')!);
     const siblingOrder = within(screen.getByRole("group", { name: "Sibling order" }));
     for (const direction of ["Used", "Free", "Apps"]) fireEvent.click(siblingOrder.getByRole("button", { name: direction }));
+    const queueTableRoot = queueTree.closest("[data-burrow-table-root]")!;
+    fireEvent.click(within(queueTableRoot as HTMLElement).getByRole("button", { name: /Choose columns/ }));
+    fireEvent.click(screen.getByRole("menuitemcheckbox", { name: "Ordering Policy" }));
     const users = await screen.findByRole("table", { name: "Queue users" });
     fireEvent.click(users.querySelector('[data-col="username"] button')!);
     const usersTableRoot = users.closest("[data-burrow-table-root]")!;
@@ -389,6 +603,11 @@ describe("SchedulerPage over captured payloads", () => {
     fireEvent.pointerDown(nodeOption, { button: 0, pointerType: "mouse" });
     fireEvent.pointerUp(nodeOption, { button: 0, pointerType: "mouse" });
     fireEvent.click(nodeOption);
+    fireEvent.click(screen.getByRole("combobox", { name: "NodeManager" }));
+    const anyNode = await screen.findByRole("option", { name: "latest (any node)" });
+    fireEvent.pointerDown(anyNode, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(anyNode, { button: 0, pointerType: "mouse" });
+    fireEvent.click(anyNode);
 
     fireEvent.click(screen.getByRole("tab", { name: "Health" }));
     expect(await screen.findByText("Aggregate scheduler counts")).toBeTruthy();
@@ -460,9 +679,135 @@ describe("SchedulerPage over captured payloads", () => {
     renderAt(schedulerView(), ["/scheduler"]);
     expect(await screen.findByText("Cannot reach the ResourceManager")).toBeTruthy();
   });
+
+  it("keeps cached scheduler data visible and reports metrics and node request failures", async () => {
+    stubApi(CAPACITY);
+    const successfulFetch = globalThis.fetch;
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      const path =
+        url
+          .replace(/^https?:\/\/[^/]+/, "")
+          .replace(/^\/api\//, "")
+          .split("?")[0] ?? "";
+      if (path === "yarn/metrics" || path === "yarn/nodes") {
+        throw new TypeError(`${path} unavailable`);
+      }
+      return successfulFetch(input, init);
+    });
+    const view = renderAt(schedulerView(), ["/scheduler"]);
+    expect(await screen.findByText("Queue headroom")).toBeTruthy();
+    expect(await screen.findAllByText(/cluster metrics unavailable:/)).toHaveLength(3);
+    expect(await screen.findByText("Cannot reach the ResourceManager")).toBeTruthy();
+
+    failCachedQuery(view.client, schedulerQuery().queryKey, "scheduler refresh failed");
+    expect(await screen.findByText("cached — the ResourceManager is not answering")).toBeTruthy();
+  });
+
+  it("uses relative capacity metrics when absolute queue percentages are missing", async () => {
+    const payload = structuredClone(CAPACITY["yarn/scheduler"]) as {
+      scheduler: { schedulerInfo: Record<string, unknown> };
+    };
+    const clearAbsolute = (node: Record<string, unknown>, schedulerRoot = false) => {
+      const capacities = node.capacities as { queueCapacitiesByPartition?: Record<string, unknown>[] } | undefined;
+      for (const capacity of capacities?.queueCapacitiesByPartition ?? []) {
+        capacity.absoluteUsedCapacity = "NaN";
+        capacity.absoluteCapacity = "NaN";
+        capacity.absoluteMaxCapacity = "NaN";
+        if (node.queuePath === "root.default") {
+          capacity.usedCapacity = "NaN";
+          capacity.capacity = "NaN";
+          capacity.maxCapacity = "NaN";
+        }
+      }
+      if (!schedulerRoot) {
+        node.absoluteUsedCapacity = "NaN";
+        node.absoluteCapacity = "NaN";
+        node.absoluteMaxCapacity = "NaN";
+        if (node.queuePath === "root.default") {
+          node.usedCapacity = "NaN";
+          node.capacity = "NaN";
+          node.maxCapacity = "NaN";
+        }
+      }
+
+      const queues = (node.queues as { queue?: Record<string, unknown>[] } | undefined)?.queue ?? [];
+      queues.forEach(clearAbsolute);
+    };
+    clearAbsolute(payload.scheduler.schedulerInfo, true);
+    stubApi({ ...CAPACITY, "yarn/scheduler": payload });
+
+    renderAt(schedulerView(), ["/scheduler"]);
+    expect(await screen.findByText("Queue headroom")).toBeTruthy();
+  });
+
+  it("shows stale and fatal activity request errors on the activities tab", async () => {
+    stubApi(CAPACITY);
+    const view = renderAt(<SchedulerPage search={{ tab: "activities" }} patch={() => undefined} />, ["/scheduler"]);
+    expect(await screen.findByText("Queue does not need more resource")).toBeTruthy();
+    const key = schedulerActivitiesQuery({ nodeId: undefined, groupBy: undefined }).queryKey;
+
+    failCachedQuery(view.client, key, "activity refresh failed");
+    expect(await screen.findByText("activity refresh failed")).toBeTruthy();
+
+    failCachedQuery(view.client, key, "activity request failed", true);
+    expect(await screen.findByText("activity request failed")).toBeTruthy();
+  });
+
+  it("shows stale and fatal scheduler configuration request errors", async () => {
+    stubApi(CAPACITY);
+    const view = renderAt(<SchedulerPage search={{ tab: "conf" }} patch={() => undefined} />, ["/scheduler"]);
+    expect(await screen.findByRole("table", { name: "Scheduler configuration" })).toBeTruthy();
+    const key = schedulerConfQuery("capacityScheduler").queryKey;
+
+    failCachedQuery(view.client, key, "configuration refresh failed");
+    expect(await screen.findByText("configuration refresh failed")).toBeTruthy();
+
+    failCachedQuery(view.client, key, "configuration request failed", true);
+    expect(await screen.findByText("configuration request failed")).toBeTruthy();
+  });
 });
 
 describe("SchedulerPage health tab over captured payloads", () => {
+  it("renders health-table empty, zero, populated, and optional-value states", () => {
+    const { container } = render(<HealthTables health={undefined} aggregates={undefined} />);
+    expect(screen.getByText("No scheduler operation recorded yet")).toBeTruthy();
+    expect(container.textContent?.match(/N\/A/g)?.length).toBeGreaterThanOrEqual(3);
+    cleanup();
+
+    render(
+      <HealthTables
+        health={
+          {
+            lastrun: 0,
+            operationsInfo: [
+              { operation: "last-allocation", containerId: "container_1", nodeId: "worker-1:8041", queue: "root.default" },
+              { operation: "last-release" },
+              { operation: "last-preemption", containerId: "container_2" },
+              { operation: "last-reservation", nodeId: "worker-2:8041" },
+            ],
+            lastRunDetails: [
+              { operation: "allocations", count: 3, resources: { memory: 1024, vCores: 2 } },
+              { operation: "reservations", count: undefined },
+              { operation: "releases", count: 0, resources: { memory: 0, vCores: 0 } },
+            ],
+          } as never
+        }
+        aggregates={{ allocated: 3, released: null, preempted: 1, source: null }}
+        aggregateError="JMX endpoint is unavailable"
+      />,
+    );
+
+    expect(screen.getByText("Never")).toBeTruthy();
+    expect(screen.getByText("JMX unavailable: JMX endpoint is unavailable")).toBeTruthy();
+    expect(screen.getByText("container_1")).toBeTruthy();
+    expect(screen.getByText("worker-1:8041")).toBeTruthy();
+    expect(screen.getByText("root.default")).toBeTruthy();
+    expect(screen.getAllByText("N/A").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("3").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 GiB · 2 vCores")).toBeTruthy();
+  });
+
   it("capacity: renders the three QueueMetrics counters under the legacy labels, from the JMX bean", async () => {
     stubApi(CAPACITY);
     const { container } = renderAt(healthView(), ["/scheduler"]);

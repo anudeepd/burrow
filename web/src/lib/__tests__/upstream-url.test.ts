@@ -88,6 +88,14 @@ describe("rewriteUpstreamUrl", () => {
   });
 
   it("returns no proxy URL when the RM base is unavailable", () => {
+    expect(rmProxyUrl("app")).toBeNull();
     expect(rmProxyUrl("app", {})).toBeNull();
+    expect(rmProxyUrl("app", bases)).toBe("http://127.0.0.1:8088/proxy/app/");
+  });
+
+  it("uses default bases and classifies an RM URL with no configured origin", () => {
+    const r = rewriteUpstreamUrl("http://rm-host:8088/conf");
+    expect(r.kind).toBe("rm");
+    expect(r.href).toBe("http://rm-host:8088/conf");
   });
 });

@@ -34,4 +34,10 @@ describe("useInView", () => {
     act(() => notify?.([{ target, isIntersecting: true } as unknown as IntersectionObserverEntry], {} as IntersectionObserver));
     expect(target.getAttribute("data-visible")).toBe("true");
   });
+
+  it("keeps content visible when IntersectionObserver is unavailable", () => {
+    vi.stubGlobal("IntersectionObserver", undefined);
+    render(<Observed />);
+    expect(screen.getByTestId("observed").getAttribute("data-visible")).toBe("true");
+  });
 });

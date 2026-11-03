@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { parityStore } from "~/state/parity";
 
-const { ApiError, apiGetWithMeta, apiText, canonicalQuery } = await import("./client");
+const { ApiError, apiGet, apiGetWithMeta, apiText, canonicalQuery, topicOf } = await import("./client");
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   delete window.__BURROW_SCHEMA_ISSUES__;
+  parityStore.setState(() => ({ enabled: false }));
 });
 
 describe("API response handling", () => {
@@ -15,6 +17,7 @@ describe("API response handling", () => {
     expect(canonicalQuery({})).toBe("");
     expect(canonicalQuery({ empty: "", absent: null })).toBe("");
     expect(canonicalQuery({ tag: ["a", "b,c"], flag: false })).toBe("?flag=false&tag=a,b,c");
+    expect(topicOf("yarn/apps", { states: ["RUNNING", "ACCEPTED"] })).toBe("yarn/apps?states=RUNNING,ACCEPTED");
   });
 
   it("classifies network failures, timeouts, aborts, and unreachable API errors", async () => {
@@ -70,6 +73,12 @@ describe("API response handling", () => {
       vi.fn(async () => new Response(JSON.stringify({ RemoteException: {} }), { status: 500 })),
     );
     await expect(apiGetWithMeta("missing-remote-fields")).rejects.toMatchObject({ message: "HTTP 500", code: "RemoteException" });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("not-json", { status: 500 })),
+    );
+    await expect(apiGetWithMeta("plain-error-body")).rejects.toMatchObject({ body: "not-json" });
   });
 
   it("validates good schemas without changing their parsed data", async () => {
@@ -79,6 +88,30 @@ describe("API response handling", () => {
     );
     await expect(apiGetWithMeta("typed", { schema: z.object({ value: z.string() }) })).resolves.toMatchObject({
       data: { value: "ok" },
+    });
+  });
+
+  it("loads untyped data, applies a schema, and sends an explicit no-cache header", async () => {
+    const fetch = vi.fn(async () => new Response(JSON.stringify({ value: "ok" }), { status: 200 }));
+    vi.stubGlobal("fetch", fetch);
+    await expect(apiGet<{ value: string }>("plain")).resolves.toEqual({ value: "ok" });
+    await expect(apiGet("cached", { schema: z.object({ value: z.string() }), noCache: true })).resolves.toEqual({ value: "ok" });
+    expect(fetch.mock.calls[1]?.[1]).toMatchObject({ headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
+    parityStore.setState(() => ({ enabled: true }));
+    await apiGet("parity");
+    expect(fetch.mock.calls[2]?.[1]).toMatchObject({ headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
+  });
+
+  it("falls back when reading an HTTP error body itself fails", async () => {
+    const response = new Response("unreadable", { status: 500 });
+    vi.spyOn(response, "text").mockRejectedValue(new Error("stream closed"));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => response),
+    );
+    await expect(apiGetWithMeta("broken-body")).rejects.toMatchObject({
+      message: "HTTP 500 from /api/broken-body",
+      body: null,
     });
   });
 
@@ -148,14 +181,17 @@ describe("API response handling", () => {
 
     try {
       const result = await looseClient.apiGetWithMeta("example", { schema: z.object({ value: z.string() }) });
+      const nextResult = await looseClient.apiGetWithMeta("example-again", { schema: z.object({ value: z.string() }) });
       expect(result.data).toEqual({ wrong: true });
+      expect(nextResult.data).toEqual({ wrong: true });
       expect(window.__BURROW_SCHEMA_ISSUES__).toEqual([
         {
           path: "example",
           issues: expect.arrayContaining([expect.objectContaining({ path: "value", code: "invalid_type" })]),
         },
+        expect.objectContaining({ path: "example-again" }),
       ]);
-      expect(warning).toHaveBeenCalledOnce();
+      expect(warning).toHaveBeenCalledTimes(2);
     } finally {
       window.__BURROW_STRICT_SCHEMAS__ = originalStrict;
       vi.resetModules();

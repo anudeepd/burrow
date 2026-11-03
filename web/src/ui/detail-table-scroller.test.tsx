@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DetailTableScroller } from "./detail-table-scroller";
 
-const { cleanup, fireEvent, render, screen } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen } = await import("@testing-library/react");
 
 afterEach(() => {
   cleanup();
@@ -32,5 +32,25 @@ describe("DetailTableScroller", () => {
     (scroller as HTMLElement).scrollLeft = 240;
     fireEvent.scroll(scroller);
     expect(container.querySelector(".burrow-table-edge-fade")?.className).toContain("opacity-0");
+  });
+
+  it("observes a bare region and ignores a queued resize after unmount", () => {
+    let notify: ResizeObserverCallback | undefined;
+    const observed: Element[] = [];
+    class TestResizeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        notify = callback;
+      }
+      observe(element: Element) {
+        observed.push(element);
+      }
+      disconnect() {}
+    }
+    vi.stubGlobal("ResizeObserver", TestResizeObserver);
+
+    const view = render(<DetailTableScroller ariaLabel="Empty detail">{null}</DetailTableScroller>);
+    expect(observed).toEqual([screen.getByRole("region", { name: "Empty detail" })]);
+    view.unmount();
+    act(() => notify?.([], {} as ResizeObserver));
   });
 });

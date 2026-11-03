@@ -97,7 +97,7 @@ export function daemonDateSortKey(text: string | null): number | null {
   const normalized = text.replace(/\u00a0/g, " ").trim();
   const m = /^([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})(?:,?\s+(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)?)?$/.exec(normalized);
   if (!m) return null;
-  const month = MONTHS[(m[1] ?? "").slice(0, 3).toLowerCase()];
+  const month = MONTHS[m[1]!.slice(0, 3).toLowerCase()];
   if (month === undefined) return null;
   let hour = m[4] ? Number(m[4]) : 0;
   const ampm = (m[7] ?? "").toUpperCase();

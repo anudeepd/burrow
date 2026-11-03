@@ -46,4 +46,13 @@ describe("aggregateCounts", () => {
   it("ignores a non-numeric attribute instead of coercing it", () => {
     expect(aggregateCounts({ name: "b", AggregateContainersAllocated: "110" }).allocated).toBeNull();
   });
+
+  it("omits the source when a bean name has an unexpected type", () => {
+    expect(aggregateCounts({ name: 12, AggregateContainersAllocated: 110 })).toEqual({
+      allocated: 110,
+      released: null,
+      preempted: null,
+      source: null,
+    });
+  });
 });

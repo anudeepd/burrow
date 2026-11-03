@@ -27,7 +27,7 @@ vi.mock("@tanstack/react-virtual", () => ({
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { JmxView } = await import("./JmxView");
@@ -47,11 +47,34 @@ const jmxPayload = {
       Flags: [true, false],
       StartedAtMillis: 1_791_015_558_000,
     },
+    { name: "java.lang:type=Memory,name=Secondary", Value: 42 },
+    {
+      name: "java.lang:type=Runtime,name=",
+      modelerType: "Runtime",
+      StartTime: 1_791_015_558_000,
+      SampleTime: 2_500,
+      LongDescription: "A long JMX description that should be available in the value tooltip.",
+      EmptyValue: null,
+      Nested: { child: { value: 3 } },
+      EmptyArray: [],
+    },
+    { name: "org.example:type=Single", Only: true },
   ],
 };
 const stacksPayload = readFileSync(resolve(process.cwd(), "../fixtures/rm/tools/stacks.txt"), "utf8");
 
-function renderToolPage(path: "jmx" | "stacks", search = "") {
+function renderToolPage(
+  path: "jmx" | "stacks",
+  search = "",
+  options: {
+    stacksData?: string;
+    noStacksData?: boolean;
+    stacksFetching?: boolean;
+    stacksError?: unknown;
+    noJmxData?: boolean;
+    jmxFetching?: boolean;
+  } = {},
+) {
   const root = createRootRoute();
   const tools = createRoute({ getParentRoute: () => root, path: "/tools" });
   const jmx = createRoute({
@@ -72,9 +95,30 @@ function renderToolPage(path: "jmx" | "stacks", search = "") {
   });
   const client = new QueryClient({ defaultOptions: { queries: { enabled: false, retry: false, refetchOnMount: false } } });
   const host = new URLSearchParams(search.replace(/^\?/, "")).get("host");
-  client.setQueryData(tq.jmx("").queryKey, jmxPayload);
+  if (!options.noJmxData) client.setQueryData(tq.jmx("").queryKey, jmxPayload);
+  else if (options.jmxFetching) {
+    const query = client.getQueryCache().build(client, tq.jmx(""));
+    query.setState({ ...query.state, data: undefined, status: "pending", fetchStatus: "fetching", dataUpdatedAt: 0 });
+  }
   if (host) client.setQueryData(nq.nmJmx(host).queryKey, jmxPayload);
-  client.setQueryData(tq.stacks().queryKey, stacksPayload);
+  if (!options.noStacksData) client.setQueryData(tq.stacks().queryKey, options.stacksData ?? stacksPayload);
+  else {
+    const query = client.getQueryCache().build(client, tq.stacks());
+    if (options.stacksFetching) {
+      query.setState({ ...query.state, data: undefined, status: "pending", fetchStatus: "fetching", dataUpdatedAt: 0 });
+    }
+    if (options.stacksError !== undefined) {
+      query.setState({
+        ...query.state,
+        data: undefined,
+        error: options.stacksError as Error,
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: query.state.errorUpdateCount + 1,
+        status: "error",
+        fetchStatus: "idle",
+      });
+    }
+  }
   const view = render(
     <QueryClientProvider client={client}>
       <RouterProvider router={router} />
@@ -110,6 +154,11 @@ describe("JmxView", () => {
 
     fireEvent.change(screen.getByRole("searchbox", { name: "Search attributes and values" }), { target: { value: "Memory" } });
     await waitFor(() => expect(router.state.location.search.q).toBe("Memory"));
+    const searchbox = screen.getByRole("searchbox", { name: "Search attributes and values" });
+    fireEvent.change(searchbox, { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
+    fireEvent.change(searchbox, { target: { value: "Memory" } });
+    await waitFor(() => expect(router.state.location.search.q).toBe("Memory"));
     fireEvent.click(
       screen.getAllByRole("button", { name: "Clear search" }).find((button) => button.textContent?.trim() === "Clear search")!,
     );
@@ -123,6 +172,12 @@ describe("JmxView", () => {
     fireEvent.pointerUp(javaPattern, { button: 0, pointerType: "mouse" });
     fireEvent.click(javaPattern);
     await waitFor(() => expect(router.state.location.search.qry).toBe("java.lang:*"));
+    fireEvent.click(pattern);
+    const allPattern = await screen.findByRole("option", { name: "All beans" });
+    fireEvent.pointerDown(allPattern, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allPattern, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allPattern);
+    await waitFor(() => expect(router.state.location.search.qry).toBeUndefined());
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(JSON.stringify(jmxPayload), { headers: { "Content-Type": "application/json" } })),
@@ -134,6 +189,65 @@ describe("JmxView", () => {
     const { client } = renderToolPage("jmx");
     client.setQueryData(tq.jmx("").queryKey, { beans: [] });
     await screen.findByText("This JVM exposes no MBeans");
+  });
+
+  it("renders an initial pending read and a raw non-Error failure", async () => {
+    renderToolPage("jmx", "", { noJmxData: true });
+    expect(screen.queryByText("reading…")).toBeNull();
+    expect(await screen.findByRole("heading", { name: "JMX" })).toBeTruthy();
+    cleanup();
+
+    renderToolPage("jmx", "", { noJmxData: true, jmxFetching: true });
+    expect(await screen.findByText("reading…")).toBeTruthy();
+    cleanup();
+
+    const failed = renderToolPage("jmx");
+    await screen.findByRole("tree", { name: "JMX beans of the ResourceManager" });
+    const query = failed.client.getQueryCache().find({ queryKey: tq.jmx("").queryKey })!;
+    act(() => {
+      query.setState({
+        ...query.state,
+        data: undefined,
+        error: "raw JMX failure" as unknown as Error,
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: query.state.errorUpdateCount + 1,
+        status: "error",
+        fetchStatus: "idle",
+      });
+    });
+    expect(await screen.findByText("raw JMX failure")).toBeTruthy();
+    cleanup();
+
+    const nm = renderToolPage("jmx", "?host=worker%3A8041");
+    const nodeQuery = nm.client.getQueryCache().find({ queryKey: nq.nmJmx("worker:8041").queryKey })!;
+    nodeQuery.setState({
+      ...nodeQuery.state,
+      data: undefined,
+      error: new Error("NodeManager unavailable"),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: nodeQuery.state.errorUpdateCount + 1,
+      status: "error",
+      fetchStatus: "idle",
+    });
+    expect(await screen.findByText("NodeManager unavailable")).toBeTruthy();
+    expect(screen.getByText("Burrow proxies /api/nm/worker:8041/jmx (the node must be in the RM's node list).")).toBeTruthy();
+  });
+
+  it("handles missing bean and attribute deep links", async () => {
+    const missingAttribute = renderToolPage("jmx", "?bean=java.lang%3Atype%3DMemory&attr=MissingValue");
+    const tree = await screen.findByRole("tree", { name: "JMX beans of the ResourceManager" });
+    const bean = tree.querySelector<HTMLElement>('[data-burrow-jmx-node="b:java.lang:type=Memory"]');
+    expect(bean?.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      screen.getByText("Select a bean or an attribute to inspect its raw value, its parsed object name and a copy button."),
+    ).toBeTruthy();
+    missingAttribute.unmount();
+
+    renderToolPage("jmx", "?bean=missing.bean");
+    expect(await screen.findByRole("tree", { name: "JMX beans of the ResourceManager" })).toBeTruthy();
+    expect(
+      screen.getByText("Select a bean or an attribute to inspect its raw value, its parsed object name and a copy button."),
+    ).toBeTruthy();
   });
 
   it("selects a bean and drills from a nested object into a scalar value", async () => {
@@ -152,11 +266,47 @@ describe("JmxView", () => {
     expect(await screen.findByText("Raw JSON")).toBeTruthy();
   });
 
+  it("shows object-name gaps, time hints and nested child values", async () => {
+    const runtime = "java.lang:type=Runtime,name=";
+    renderToolPage("jmx", `?bean=${encodeURIComponent(runtime)}&attr=SampleTime`);
+    expect(await screen.findByRole("heading", { name: "SampleTime" })).toBeTruthy();
+    expect(screen.getByText("Duration")).toBeTruthy();
+    cleanup();
+
+    renderToolPage("jmx", `?bean=${encodeURIComponent(runtime)}&attr=StartTime`);
+    expect(await screen.findByRole("heading", { name: "StartTime" })).toBeTruthy();
+    expect(screen.getByText("Time")).toBeTruthy();
+    cleanup();
+
+    renderToolPage("jmx", `?bean=${encodeURIComponent(runtime)}`);
+    expect(await screen.findByRole("heading", { name: runtime })).toBeTruthy();
+    const objectName = screen.getByRole("heading", { name: "Object name" }).closest("section")!;
+    expect(objectName.textContent).toContain("name—");
+    fireEvent.click(screen.getByRole("button", { name: /Nested/ }));
+    expect(await screen.findByRole("heading", { name: "Nested" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /child/ }));
+    expect(await screen.findByRole("heading", { name: "Nested.child" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Nested.child" }).closest("aside")?.textContent).toContain("value");
+  });
+
   it("renders non-parity virtual rows and toggles a nested bean without activating the row", async () => {
     parityStore.setState(() => ({ enabled: false }));
     window.__BURROW_PARITY__ = false;
     renderToolPage("jmx");
     const tree = await screen.findByRole("tree", { name: "JMX beans of the ResourceManager" });
+    const group = tree.querySelector<HTMLElement>('[role="treeitem"][data-kind="group"]')!;
+    fireEvent.click(group.querySelector("button")!);
+    expect(group.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
+    expect(group.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.keyDown(tree, { key: "ArrowDown" });
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    expect(tree.getAttribute("aria-activedescendant")).toBe("jmx-row-0");
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    expect(group.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
+    fireEvent.keyDown(tree, { key: " " });
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
     const bean = tree.querySelector<HTMLElement>('[data-burrow-jmx-node="b:java.lang:type=Memory"]');
     expect(bean).not.toBeNull();
     expect(bean?.getAttribute("aria-expanded")).toBe("false");
@@ -178,6 +328,19 @@ describe("JmxView", () => {
     renderToolPage("jmx", "?q=nothing-matches-this-value");
     const tree = await screen.findByRole("tree", { name: "JMX beans of the ResourceManager" });
     await waitFor(() => expect(tree.getAttribute("data-burrow-jmx-rows")).toBe("0"));
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    fireEvent.keyDown(tree, { key: " " });
+    fireEvent.keyDown(tree, { key: "Enter" });
+  });
+
+  it("keeps a matching path open while navigating", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    renderToolPage("jmx", "?q=Memory");
+    const tree = await screen.findByRole("tree", { name: "JMX beans of the ResourceManager" });
+    await waitFor(() => expect(Number(tree.getAttribute("data-burrow-jmx-rows"))).toBeGreaterThan(0));
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
   });
 
   it("reads a NodeManager MBean list and returns to the ResourceManager", async () => {
@@ -196,6 +359,8 @@ describe("JmxView", () => {
     const rows = () => [...tree.querySelectorAll<HTMLElement>("[role=treeitem]")];
     expect(rows()[0]?.getAttribute("aria-expanded")).toBe("true");
 
+    fireEvent.keyDown(tree, { key: "Enter" });
+    expect(router.state.location.search.bean).toBeUndefined();
     fireEvent.keyDown(tree, { key: "ArrowDown" });
     const beanRow = rows().find((row) => row.getAttribute("data-kind") === "bean")!;
     expect(beanRow).toBeTruthy();
@@ -212,6 +377,10 @@ describe("JmxView", () => {
     fireEvent.keyDown(tree, { key: "x" });
     fireEvent.keyDown(beanRow, { key: "Enter" });
     expect(router.state.location.search.bean).toBe("java.lang:type=Memory");
+    fireEvent.keyDown(tree, { key: "End" });
+    const active = tree.querySelector<HTMLElement>(`#${tree.getAttribute("aria-activedescendant")}`);
+    expect(active?.getAttribute("data-kind")).toBe("value");
+    fireEvent.keyDown(tree, { key: " " });
   });
 
   it("keeps loaded beans visible when refresh fails and renders the fatal error when no data exists", async () => {
@@ -256,16 +425,27 @@ describe("StacksView", () => {
     expect(tree.getAttribute("data-burrow-stacks-rows")).not.toBe("0");
     expect(screen.getByText(/230 threads/)).toBeTruthy();
 
+    await router.navigate({ search: (prev) => ({ ...prev, thread: "3" }), replace: true });
+    await router.navigate({ search: (prev) => ({ ...prev, thread: "2" }), replace: true });
+
     const stateFilters = within(screen.getByRole("group", { name: "Thread state filter" }));
     fireEvent.click(stateFilters.getAllByRole("button").find((button) => button.textContent?.trim().startsWith("WAITING"))!);
     await waitFor(() => expect(router.state.location.search.state).toBe("WAITING"));
     expect(screen.getByText(/filtered to WAITING/)).toBeTruthy();
+    const hiddenThreadFrame = screen.getByRole("heading", { name: "Reference Handler" }).closest("aside")?.querySelector("ol button");
+    expect(hiddenThreadFrame).not.toBeNull();
+    fireEvent.click(hiddenThreadFrame!);
+    fireEvent.click(stateFilters.getAllByRole("button").find((button) => button.textContent?.trim().startsWith("WAITING"))!);
+    await waitFor(() => expect(router.state.location.search.state).toBeUndefined());
     fireEvent.click(stateFilters.getAllByRole("button").find((button) => button.textContent?.trim().startsWith("All states"))!);
     await waitFor(() => expect(router.state.location.search.state).toBeUndefined());
 
-    fireEvent.change(screen.getByRole("searchbox", { name: "Search threads and frames" }), { target: { value: "Finalizer" } });
+    const search = screen.getByRole("searchbox", { name: "Search threads and frames" });
+    fireEvent.change(search, { target: { value: "Finalizer" } });
     await waitFor(() => expect(router.state.location.search.q).toBe("Finalizer"));
     expect(screen.getByText(/1 of 230 threads match/)).toBeTruthy();
+    fireEvent.change(search, { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
   });
 
   it("shows an empty filtered tree when no thread or frame matches", { timeout: 30_000 }, async () => {
@@ -277,6 +457,48 @@ describe("StacksView", () => {
     await waitFor(() => expect(router.state.location.search.q).toBe("no-such-thread-or-frame"));
     await waitFor(() => expect(screen.getByRole("tree", { name: "Thread dump" }).getAttribute("data-burrow-stacks-rows")).toBe("0"));
     expect(screen.getByText(/0 of 230 threads match/)).toBeTruthy();
+    const tree = screen.getByRole("tree", { name: "Thread dump" });
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
+    fireEvent.keyDown(tree, { key: "Enter" });
+    fireEvent.keyDown(tree, { key: " " });
+    fireEvent.keyDown(tree, { key: "ArrowDown" });
+  });
+
+  it("shows the pending state and handles an empty daemon dump with a missing selection", async () => {
+    renderToolPage("stacks", "", { noStacksData: true, stacksFetching: true });
+    expect(await screen.findByText("reading…")).toBeTruthy();
+    cleanup();
+
+    renderToolPage("stacks", "?thread=999", { stacksData: "0 active threads\n" });
+    expect(await screen.findByText("The daemon returned an empty dump")).toBeTruthy();
+  });
+
+  it("renders unknown and absent thread states and a thread with no frames", async () => {
+    const payload = [
+      "Thread 9 (mystery):",
+      "  State: MYSTERY",
+      "  Stack:",
+      "    example.Mystery.run()",
+      "    example.Mystery.helper(Mystery.java)",
+      "Thread 10 (empty):",
+      "  Blocked count: 0",
+      "  Waited count: 0",
+    ].join("\n");
+    renderToolPage("stacks", "?thread=9", { stacksData: payload });
+    expect(await screen.findByRole("heading", { name: "mystery" })).toBeTruthy();
+    expect(screen.getAllByText("MYSTERY").length).toBeGreaterThan(0);
+    expect(screen.getByText("example.Mystery.run")).toBeTruthy();
+    cleanup();
+
+    renderToolPage("stacks", "?thread=10&state=UNKNOWN", { stacksData: payload });
+    expect(await screen.findByRole("heading", { name: "empty" })).toBeTruthy();
+    expect(screen.getAllByText("UNKNOWN").length).toBeGreaterThan(0);
+    expect(screen.getByText("This thread has no stack frames.")).toBeTruthy();
+  });
+
+  it("stringifies an unexpected non-Error failure", async () => {
+    renderToolPage("stacks", "", { noStacksData: true, stacksError: "raw stack failure" });
+    expect(await screen.findByText("raw stack failure")).toBeTruthy();
   });
 
   it("shows cached threads under a stale warning, then reports a total read failure", { timeout: 30_000 }, async () => {
@@ -338,7 +560,19 @@ describe("StacksView", () => {
     fireEvent.keyDown(tree, { key: "ArrowRight" });
     fireEvent.keyDown(tree, { key: "ArrowRight" });
     fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    fireEvent.keyDown(tree, { key: "Home" });
+    fireEvent.keyDown(tree, { key: "ArrowDown" });
+    expect(tree.querySelector(`[id="${tree.getAttribute("aria-activedescendant")}"]`)?.getAttribute("data-kind")).toBe("frame");
     fireEvent.keyDown(tree, { key: " " });
+    fireEvent.keyDown(tree, { key: "Home" });
+    fireEvent.keyDown(tree, { key: " " });
+    fireEvent.click(screen.getByRole("button", { name: "Contract" }));
+    fireEvent.keyDown(tree, { key: "ArrowRight" });
+    expect(tree.querySelector('[role="treeitem"][data-kind="thread"]')?.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.keyDown(tree, { key: "ArrowLeft" });
+    expect(tree.querySelector('[role="treeitem"][data-kind="thread"]')?.getAttribute("aria-expanded")).toBe("false");
+    const child = tree.querySelector<HTMLElement>("[role=treeitem]")!;
+    fireEvent.keyDown(child, { key: "Escape" });
     expect(stackVirtualizer.scrollToIndex).toHaveBeenCalled();
   });
 

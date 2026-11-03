@@ -203,8 +203,8 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
         <p role="status" className="m-0 rounded-md border border-warn/30 bg-warn/5 px-3 py-2 text-caption text-ink-2">
           ResourceManager snapshot: {fmtInt(numOf(node.numContainers))} containers, {fmtMB(numOf(node.usedMemoryMB))} and{" "}
           {fmtInt(numOf(node.usedVirtualCores))} vCores used. NodeManager list: {fmtInt(listedContainerCount)} running containers,{" "}
-          {containerMemoryMB == null ? "—" : fmtMB(containerMemoryMB)} and {containerVCores == null ? "—" : fmtInt(containerVCores)} vCores.
-          These endpoints update independently; refresh to compare newer values.
+          {fmtMB(containerMemoryMB!)} and {fmtInt(containerVCores!)} vCores. These endpoints update independently; refresh to compare newer
+          values.
         </p>
       )}
 
@@ -257,8 +257,8 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
             hint="Physical CPU usage reported by the NodeManager."
           />
           {node.subClusterId !== undefined && <Field label="Sub-cluster id" field="node.subClusterId" raw={node.subClusterId} />}
-          <Field label="Node labels" field="node.nodeLabels" raw={node.nodeLabels?.length ? node.nodeLabels : undefined}>
-            {(node.nodeLabels ?? []).length === 0 ? <span className="text-ink-4">—</span> : (node.nodeLabels ?? []).join(", ")}
+          <Field label="Node labels" field="node.nodeLabels" raw={node.nodeLabels.length ? node.nodeLabels : undefined}>
+            {node.nodeLabels.length === 0 ? <span className="text-ink-4">—</span> : node.nodeLabels.join(", ")}
           </Field>
           <Field
             label="Allocation tags"

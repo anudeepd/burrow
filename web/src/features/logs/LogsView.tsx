@@ -48,6 +48,15 @@ import { useFollow } from "./use-follow";
 
 const route = getRouteApi("/apps/$appId/logs");
 
+/** File metadata is fetched separately from the byte window; a click can race that metadata effect. */
+export function logDownloadSize(meta: { size: number } | null | undefined): number {
+  return meta?.size ?? 0;
+}
+
+export function logErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export function LogsView() {
   const { appId } = route.useParams();
   const search = route.useSearch();
@@ -200,19 +209,18 @@ export function LogsView() {
   // ── download ───────────────────────────────────────────────────────────────────────────────────────────────────
   const [downloading, setDownloading] = useState(false);
   const onDownload = useCallback(async () => {
-    if (!containerId || !file) return;
     setDownloading(true);
     setErrorNotice(null);
     try {
-      const blob = await downloadLogFile(containerId, file, meta?.size ?? 0, hints);
+      const blob = await downloadLogFile(containerId!, file!, logDownloadSize(meta), hints);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = file;
+      a.download = file!;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 10_000);
     } catch (error) {
-      setErrorNotice(`Download failed: ${error instanceof Error ? error.message : String(error)}`);
+      setErrorNotice(`Download failed: ${logErrorMessage(error)}`);
     } finally {
       setDownloading(false);
     }
@@ -247,7 +255,7 @@ export function LogsView() {
     return (
       <ErrorState
         title="Cannot list this container's log files"
-        message={listError instanceof Error ? listError.message : String(listError)}
+        message={logErrorMessage(listError)}
         hint="The file list is read from the NodeManager that ran the container, or from JobHistory once the logs are aggregated."
         onRetry={() => void filesQuery.refetch()}
       />
@@ -258,7 +266,7 @@ export function LogsView() {
   const windowMissing = isLogEndpointMissing(windowError);
   const windowNotice =
     hasDisplayedWindow && windowError
-      ? `The latest log window could not be loaded; showing the existing lines. ${windowError instanceof Error ? windowError.message : String(windowError)}`
+      ? `The latest log window could not be loaded; showing the existing lines. ${logErrorMessage(windowError)}`
       : null;
 
   return (
@@ -328,7 +336,7 @@ export function LogsView() {
       ) : windowError && !hasDisplayedWindow ? (
         <ErrorState
           title="Cannot read this log file"
-          message={windowError instanceof Error ? windowError.message : String(windowError)}
+          message={logErrorMessage(windowError)}
           hint="A running container's log comes from its NodeManager; a finished one from the aggregated JobHistory/ATS copy."
           onRetry={() => void initial.refetch()}
         />
@@ -390,11 +398,12 @@ function useSearchScan(
     setNonce((n) => n + 1);
   }, [spec, revision]);
 
+  const refreshSearch = useCallback(() => setNonce((n) => n + 1), []);
   useEffect(() => {
     if (!live) return;
-    const t = setInterval(() => setNonce((n) => n + 1), 1_500);
+    const t = setInterval(refreshSearch, 1_500);
     return () => clearInterval(t);
-  }, [live]);
+  }, [live, refreshSearch]);
 
   // When the stream stops, refresh the search once more so it covers the final bytes.
   const wasLive = useRef(live);

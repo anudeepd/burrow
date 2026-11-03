@@ -41,6 +41,8 @@ const { RddDetailPage } = await import("./RddDetailPage");
 const { SqlDetailPage } = await import("./SqlDetailPage");
 const { firstLine } = await import("../ui/StageTable");
 const { SparkProvider } = await import("../ui/context");
+const { nowStore } = await import("../ui/use-now");
+const initialNow = nowStore.get().now;
 const { sp } = await import("../data/queries");
 const { sparkSearch } = await import("../data/search");
 const { q } = await import("~/api/queries");
@@ -71,6 +73,8 @@ function renderListPage(
   page: "executors" | "jobs" | "stages" | "environment" | "storage" | "timeline" | "stage-detail" | "sql-detail",
   search = "",
   configure?: (client: InstanceType<typeof QueryClient>) => void,
+  kind: "static" | "live" = "static",
+  attempt: string | null = null,
 ) {
   const root = createRootRoute();
   const app = createRoute({ getParentRoute: () => root, path: "/apps/$appId" });
@@ -104,7 +108,6 @@ function renderListPage(
     history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/${pagePath}${search}`] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
-  const kind = "static" as const;
   client.setQueryData(sp.executors(APP_ID, kind, null).queryKey, executors);
   client.setQueryData(sp.allExecutors(APP_ID, kind, null).queryKey, allExecutors);
   client.setQueryData(sp.jobs(APP_ID, { status: "SUCCEEDED", kind, attempt: null }).queryKey, jobs);
@@ -112,7 +115,7 @@ function renderListPage(
   client.setQueryData(sp.environment(APP_ID, null).queryKey, environment);
   client.setQueryData(sp.rdds(APP_ID, kind, null).queryKey, rdds);
   client.setQueryData(sp.rdd(APP_ID, 52, kind, null).queryKey, { rdd: rdd52 });
-  client.setQueryData(sp.jobs(APP_ID, { kind, attempt: null }).queryKey, allJobs);
+  client.setQueryData(sp.jobs(APP_ID, { kind, attempt }).queryKey, allJobs);
   const sqlDetail = {
     id: 0,
     status: "COMPLETED",
@@ -121,7 +124,7 @@ function renderListPage(
     nodes: [],
     edges: [],
   } as SparkSqlExecution;
-  client.setQueryData(sp.sqlExecution(APP_ID, 0, { kind, attempt: null }).queryKey, sqlDetail);
+  client.setQueryData(sp.sqlExecution(APP_ID, 0, { kind, attempt }).queryKey, sqlDetail);
   client.setQueryData(sp.stages(APP_ID, { kind, attempt: null }).queryKey, allStages);
   client.setQueryData(
     sp.stageAttempt(APP_ID, 0, 0, { details: true, withSummaries: true, quantiles: [0.05, 0.25, 0.5, 0.75, 0.95], kind, attempt: null })
@@ -158,7 +161,7 @@ function renderListPage(
   configure?.(client);
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkProvider value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}>
+      <SparkProvider value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt, source: null, application: null, resolving: false }}>
         <RouterProvider router={router} />
       </SparkProvider>
     </QueryClientProvider>,
@@ -166,8 +169,8 @@ function renderListPage(
   return { ...view, router, client };
 }
 
-function markQueryError(client: InstanceType<typeof QueryClient>, queryKey: readonly unknown[], error: Error, keepData: boolean) {
-  const query = client.getQueryCache().find({ queryKey });
+function markQueryError(client: InstanceType<typeof QueryClient>, queryKey: readonly unknown[], error: Error | string, keepData: boolean) {
+  const query = client.getQueryCache().find({ queryKey, exact: true });
   if (!query) throw new Error("Expected query to be present in the cache");
   query.setState({
     ...query.state,
@@ -184,6 +187,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   parityStore.setState(() => ({ enabled: true }));
+  nowStore.setState(() => ({ now: initialNow }));
   if (originalCreateObjectURL) Object.defineProperty(URL, "createObjectURL", originalCreateObjectURL);
   else Reflect.deleteProperty(URL, "createObjectURL");
   if (originalRevokeObjectURL) Object.defineProperty(URL, "revokeObjectURL", originalRevokeObjectURL);
@@ -283,10 +287,12 @@ describe("Spark list pages", () => {
       isActive: true,
       isBlacklisted: true,
       blacklistedInStages: [3],
+      activeTasks: 2,
       isExcluded: true,
       excludedInStages: [5],
       totalCores: 8,
       maxTasks: 16,
+      memoryUsed: 1024,
       addTime: "2026-10-03T12:00:00.000GMT",
       peakMemoryMetrics: { JVMHeapMemory: 1024 },
       memoryMetrics: {
@@ -301,10 +307,38 @@ describe("Spark list pages", () => {
       removeTime: "2026-10-03T13:00:00.000GMT",
       removeReason: "Executor removed",
     };
+    const sparse: SparkExecutor = {
+      ...full,
+      id: "sparse",
+      hostPort: "sparse-host",
+      activeTasks: null,
+      totalCores: null,
+      memoryUsed: null,
+      totalShuffleRead: null,
+      totalShuffleWrite: null,
+      memoryMetrics: null,
+      peakMemoryMetrics: null,
+      isBlacklisted: null,
+      blacklistedInStages: null as unknown as number[],
+      resources: null,
+      attributes: null,
+    };
+    const offHeapOnly: SparkExecutor = {
+      ...full,
+      id: "off-heap-only",
+      memoryMetrics: {
+        usedOnHeapStorageMemory: null,
+        usedOffHeapStorageMemory: 64,
+        totalOnHeapStorageMemory: null,
+        totalOffHeapStorageMemory: 128,
+      },
+    };
     const { router } = renderListPage("executors", "?all=1", (client) => {
       client.setQueryData(sp.allExecutors(APP_ID, "static", null).queryKey, [
         full,
         { ...full, id: "complete-2", peakMemoryMetrics: { JVMHeapMemory: 2048 }, addTime: "2026-10-04T12:00:00.000GMT" },
+        sparse,
+        offHeapOnly,
       ]);
     });
     const table = await screen.findByRole("table", { name: "Spark executors" });
@@ -326,6 +360,12 @@ describe("Spark list pages", () => {
     ]) {
       expect(table.querySelector(`[data-yf="${field}"]`), field).not.toBeNull();
     }
+    for (const field of ["spark.executor.peakMemoryMetrics", "spark.executor.resources", "spark.executor.attributes"]) {
+      expect(
+        Array.from(table.querySelectorAll(`[data-yf="${field}"]`)).some((cell) => cell.textContent === "—"),
+        field,
+      ).toBe(true);
+    }
 
     fireEvent.click(table.querySelector('[data-col="peakJvmHeap"] button')!);
     await waitFor(() => expect(router.state.location.search.sort).toBe("peakJvmHeap"));
@@ -335,8 +375,11 @@ describe("Spark list pages", () => {
     fireEvent.click(table.querySelector('[data-col="status"] button')!);
     await waitFor(() => expect(router.state.location.search.sort).toBe("status"));
 
-    fireEvent.change(screen.getByPlaceholderText("Filter id / host…"), { target: { value: "complete" } });
-    await waitFor(() => expect(router.state.location.search.q).toBe("complete"));
+    const filter = screen.getByPlaceholderText("Filter id / host…");
+    fireEvent.change(filter, { target: { value: "complete-2" } });
+    await waitFor(() => expect(router.state.location.search.q).toBe("complete-2"));
+    fireEvent.change(filter, { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
 
     fireEvent.click(screen.getByRole("button", { name: "Export" }));
     fireEvent.click(screen.getAllByRole("menuitem", { name: /CSV/ }).at(-1)!);
@@ -453,13 +496,128 @@ describe("Spark list pages", () => {
     await waitFor(() => expect(container.querySelector('[data-burrow-table="spark-jobs"]')?.getAttribute("data-burrow-rows")).toBe("0"));
   });
 
+  it("renders sparse job metadata and clears status and text filters", async () => {
+    const sparseJobs = [
+      {
+        ...allJobs[0]!,
+        jobId: 80,
+        status: "FAILED",
+        description: "optimized query",
+        name: "original query",
+        submissionTime: null,
+        completionTime: null,
+        numCompletedIndices: 1,
+        numCompletedTasks: 2,
+        numActiveTasks: null,
+        numFailedTasks: null,
+        numKilledTasks: null,
+        numTasks: null,
+      },
+      {
+        ...allJobs[0]!,
+        jobId: 81,
+        status: "SUCCEEDED",
+        description: null,
+        name: "",
+        submissionTime: "1791822000000",
+        completionTime: null,
+        numCompletedIndices: null,
+        numCompletedTasks: 2,
+        numActiveTasks: 1,
+        numFailedTasks: 1,
+        numKilledTasks: 1,
+        numTasks: 4,
+      },
+      {
+        ...allJobs[0]!,
+        jobId: 82,
+        status: "RUNNING",
+        description: "same name",
+        name: "same name",
+        submissionTime: null,
+        completionTime: null,
+        numCompletedIndices: null,
+        numCompletedTasks: null,
+        numActiveTasks: null,
+        numFailedTasks: null,
+        numKilledTasks: null,
+        numTasks: null,
+      },
+    ] as SparkJob[];
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:sparse-jobs");
+    const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    const { container, router } = renderListPage("jobs", "?status=FAILED&q=missing", (client) => {
+      client.setQueryData(sp.jobs(APP_ID, { status: "FAILED", kind: "static", attempt: null }).queryKey, sparseJobs);
+      client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, sparseJobs);
+    });
+    const table = await screen.findByRole("table", { name: "Spark jobs" });
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Filter jobs by name or id" }), { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
+    fireEvent.click(screen.getByRole("combobox", { name: "Job status filter" }));
+    const allStatuses = await screen.findByRole("option", { name: "All statuses" });
+    fireEvent.pointerDown(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allStatuses);
+    await waitFor(() => expect(router.state.location.search.status).toBeUndefined());
+
+    expect(screen.getByText("optimized query")).toBeTruthy();
+    expect(screen.getByText("original query")).toBeTruthy();
+    const durationButton = table.querySelector<HTMLElement>('[data-col="duration"] button');
+    expect(durationButton).toBeTruthy();
+    fireEvent.click(durationButton!);
+    await waitFor(() => expect(router.state.location.search.sort).toBe("duration"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    expect(clickAnchor).toHaveBeenCalledOnce();
+    expect(container.querySelector('[data-burrow-table="spark-jobs"]')?.getAttribute("data-burrow-rows")).toBe("3");
+  });
+
+  it("shows both empty job states and the initial loading skeleton", async () => {
+    const failedEmpty = renderListPage("jobs", "?status=FAILED", (client) => {
+      client.setQueryData(sp.jobs(APP_ID, { status: "FAILED", kind: "static", attempt: null }).queryKey, []);
+    });
+    expect(await screen.findByRole("heading", { name: "No failed jobs" })).toBeTruthy();
+    expect(screen.getByText("Clear the status filter to see every job.")).toBeTruthy();
+    failedEmpty.unmount();
+
+    const empty = renderListPage("jobs", "", (client) => {
+      client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, []);
+    });
+    expect(await screen.findByRole("heading", { name: "No jobs yet" })).toBeTruthy();
+    expect(screen.getByText("Jobs appear as soon as the application submits one.")).toBeTruthy();
+    empty.unmount();
+
+    const queryKey = sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey;
+    const loading = renderListPage("jobs", "", (client) => {
+      client.setQueryDefaults(queryKey, { enabled: false });
+      client.removeQueries({ queryKey, exact: true });
+    });
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
+    loading.unmount();
+  });
+
   it("renders completed stage attempts in the grouped view", async () => {
     const repeated = { ...stages[0]!, attemptId: 1 };
+    const sparse = { ...stages[1]!, stageId: 900, attemptId: null, status: null };
+    const sparseZero = { ...sparse, attemptId: 0 };
+    const reverseZero = { ...sparse, stageId: 901, attemptId: 0 };
+    const reverseMissing = { ...sparse, stageId: 901, attemptId: null };
     const { router } = renderListPage("stages", "?status=COMPLETE&agg=1", (client) => {
-      client.setQueryData(sp.stages(APP_ID, { status: "COMPLETE", kind: "static", attempt: null }).queryKey, [...stages, repeated]);
+      client.setQueryData(sp.stages(APP_ID, { status: "COMPLETE", kind: "static", attempt: null }).queryKey, [
+        ...stages,
+        repeated,
+        sparse,
+        sparseZero,
+        reverseZero,
+        reverseMissing,
+      ]);
     });
     expect(await screen.findByRole("switch", { name: "Group attempts of the same stage" })).toBeTruthy();
     expect(router.state.location.search).toMatchObject({ status: "COMPLETE", agg: "1" });
+    expect(await screen.findByRole("combobox", { name: "Attempts of stage 900" })).toBeTruthy();
 
     const createObjectURL = vi.fn(() => "blob:stage-export");
     const revokeObjectURL = vi.fn();
@@ -496,6 +654,12 @@ describe("Spark list pages", () => {
     fireEvent.pointerUp(complete, { button: 0, pointerType: "mouse" });
     fireEvent.click(complete);
     await waitFor(() => expect(router.state.location.search.status).toBe("COMPLETE"));
+    fireEvent.click(statusFilter);
+    const allStatuses = await screen.findByRole("option", { name: "All statuses" });
+    fireEvent.pointerDown(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allStatuses);
+    await waitFor(() => expect(router.state.location.search.status).toBeUndefined());
 
     const search = screen.getByRole("searchbox", { name: "Filter stages by id, name or description" });
     fireEvent.change(search, { target: { value: "does-not-exist" } });
@@ -515,6 +679,42 @@ describe("Spark list pages", () => {
     await waitFor(() => expect(router.state.location.search.sort).toBe("duration"));
     fireEvent.click(table.querySelector('[data-col="attemptCount"] button')!);
     await waitFor(() => expect(router.state.location.search.sort).toBe("attemptCount"));
+  });
+
+  it("handles missing attempt metadata and navigates to attempt zero", async () => {
+    const incomplete: SparkStage = {
+      ...stages[0]!,
+      stageId: 909,
+      attemptId: null,
+      status: null,
+      numActiveTasks: null,
+      numCompleteTasks: null,
+    };
+    const { router } = renderListPage("stages", "", (client) => {
+      client.setQueryData(sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey, [incomplete]);
+    });
+    const table = await screen.findByRole("table", { name: "Spark stages" });
+    fireEvent.click(table.querySelectorAll('[role="row"]')[1]!);
+    await waitFor(() => expect(router.state.location.pathname).toContain("/stages/909/0"));
+  });
+
+  it("shows empty and loading states for the stage list", async () => {
+    const empty = renderListPage("stages", "", (client) => {
+      client.setQueryData(sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey, []);
+    });
+    expect(await screen.findByRole("heading", { name: "No stages yet" })).toBeTruthy();
+    empty.unmount();
+
+    const filtered = renderListPage("stages", "?status=FAILED", (client) => {
+      client.setQueryData(sp.stages(APP_ID, { status: "FAILED", kind: "static", attempt: null }).queryKey, []);
+    });
+    expect(await screen.findByRole("heading", { name: "No failed stages" })).toBeTruthy();
+    filtered.unmount();
+
+    renderListPage("stages", "", (client) => {
+      client.removeQueries({ queryKey: sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey });
+    });
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
   });
 
   it("renders and shortens multi-line stage failure reasons", async () => {
@@ -624,6 +824,48 @@ describe("Spark list pages", () => {
     expect(screen.getByText("Task gpu:")).toBeTruthy();
   });
 
+  it("handles missing environment keys, values, classpath parts, and resource maps", async () => {
+    const sparseEnvironment = {
+      runtime: {},
+      sparkProperties: [[], ["spark.nullValue"], ["spark.empty", ""], ["spark.present", "value"]],
+      systemProperties: undefined,
+      hadoopProperties: null,
+      metricsProperties: [],
+      classpathEntries: [[], ["/opt/lib", "jar"]],
+      resourceProfiles: [
+        { executorResources: null, taskResources: null },
+        { id: 1, executorResources: { gpu: { amount: 1 } }, taskResources: { gpu: { amount: 2 } } },
+      ],
+    } as unknown as SparkEnvironment;
+    const createUrl = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:sparse-environment");
+    const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    const { router } = renderListPage("environment", "", (client) => {
+      client.setQueryData(sp.environment(APP_ID, null).queryKey, sparseEnvironment);
+    });
+    await screen.findByText("Spark Properties");
+
+    const sparkSearch = screen.getByRole("searchbox", { name: "Filter Spark Properties" });
+    fireEvent.change(sparkSearch, { target: { value: "spark" } });
+    await waitFor(() => expect(router.state.location.search.q).toBe("spark"));
+    fireEvent.change(screen.getByRole("searchbox", { name: "Filter Spark Properties" }), { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
+    fireEvent.change(screen.getByRole("searchbox", { name: "Filter System Properties" }), { target: { value: "missing" } });
+
+    const propertyTable = screen.getByRole("table", { name: "Spark Properties" });
+    fireEvent.click(within(propertyTable).getByRole("button", { name: "Value" }));
+    fireEvent.click(within(propertyTable.closest("[data-burrow-table-root]")!).getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
+    expect(createUrl).toHaveBeenCalledOnce();
+    expect(clickAnchor).toHaveBeenCalledOnce();
+    const classpath = screen.getByRole("table", { name: "Classpath entries" });
+    fireEvent.click(within(classpath).getByRole("button", { name: "Kind" }));
+    fireEvent.click(within(classpath.closest("[data-burrow-table-root]")!).getByRole("button", { name: "Export" }));
+    fireEvent.click(screen.getAllByRole("menuitem", { name: /CSV/ }).at(-1)!);
+    expect(createUrl).toHaveBeenCalledTimes(2);
+    expect(clickAnchor).toHaveBeenCalledTimes(2);
+    expect(screen.getAllByText("Profile").length).toBeGreaterThan(1);
+  });
+
   it("renders an empty environment, and handles fatal and stale environment errors", async () => {
     const empty = renderListPage("environment", "", (client) => {
       client.setQueryData(sp.environment(APP_ID, null).queryKey, {
@@ -653,6 +895,7 @@ describe("Spark list pages", () => {
       errorUpdateCount: fatalQuery.state.errorUpdateCount + 1,
     });
     expect(await screen.findByRole("heading", { name: "Spark request failed" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     fatal.unmount();
 
     const stale = renderListPage("environment", "", (client) => {
@@ -670,6 +913,16 @@ describe("Spark list pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
+  it("shows the Spark environment loading skeleton before its first response", async () => {
+    const queryKey = sp.environment(APP_ID, null).queryKey;
+    const loading = renderListPage("environment", "", (client) => {
+      client.setQueryDefaults(queryKey, { enabled: false });
+      client.removeQueries({ queryKey, exact: true });
+    });
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
+    loading.unmount();
+  });
+
   it("filters cached RDDs and expands their captured partition details", async () => {
     renderListPage("storage");
     expect((await screen.findAllByText("PythonRDD")).length).toBeGreaterThan(0);
@@ -679,6 +932,42 @@ describe("Spark list pages", () => {
     const filter = screen.getByRole("searchbox", { name: "Filter RDDs by name, id or storage level" });
     fireEvent.change(filter, { target: { value: "absent" } });
     await waitFor(() => expect(document.querySelector('[data-burrow-table-root="spark-storage"]')?.textContent).toContain("0 of 5"));
+    fireEvent.change(filter, { target: { value: "" } });
+    await waitFor(() => expect(document.querySelector('[data-burrow-table-root="spark-storage"]')?.textContent).toContain("5 shown"));
+  });
+
+  it("handles missing RDD fields and starts with a URL-expanded detail row", async () => {
+    const incomplete: SparkRdd = {
+      ...rdds[0]!,
+      id: 999,
+      name: null,
+      numPartitions: 0,
+      numCachedPartitions: null,
+      memoryUsed: null,
+      diskUsed: null,
+      dataDistribution: [],
+      partitions: [],
+    };
+    const { router } = renderListPage("storage", "?rdd=999", (queryClient) => {
+      queryClient.setQueryData(sp.rdds(APP_ID, "static", null).queryKey, [...rdds, incomplete]);
+      queryClient.setQueryData(sp.rdd(APP_ID, 999, "static", null).queryKey, { rdd: incomplete });
+    });
+    const table = await screen.findByRole("table", { name: "Cached RDDs" });
+    fireEvent.click(table.querySelector('[data-col="fraction"] button')!);
+    const row = within(table).getByRole("row", { name: /999/ });
+    expect(row.textContent).toContain("—");
+    const hide = screen.getByRole("button", { name: "Hide partitions and executor distribution of RDD 999" });
+    expect(hide.getAttribute("aria-expanded")).toBe("true");
+    expect(await screen.findByRole("region", { name: "RDD 999 detail" })).toBeTruthy();
+    fireEvent.click(hide);
+    await waitFor(() => expect(router.state.location.search.rdd).toBeUndefined());
+  });
+
+  it("shows a loading skeleton while cached RDDs are still pending", async () => {
+    renderListPage("storage", "", (client) => {
+      client.removeQueries({ queryKey: sp.rdds(APP_ID, "static", null).queryKey });
+    });
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
   });
 
   it("sorts, exports, and opens cached RDDs while handling empty and unavailable lists", async () => {
@@ -781,6 +1070,79 @@ describe("Spark list pages", () => {
     expect(await screen.findByRole("heading", { name: "RDD 999 is not cached in this application" })).toBeTruthy();
   });
 
+  it("renders sparse RDD executor and partition details", async () => {
+    const sparse: SparkRdd = {
+      ...rdd52,
+      numPartitions: undefined,
+      numCachedPartitions: null,
+      dataDistribution: [
+        { ...rdd52.dataDistribution[0]!, address: null, memoryUsed: null, memoryRemaining: null },
+        { ...rdd52.dataDistribution[0]!, address: "worker-1", memoryUsed: 10, memoryRemaining: 10 },
+      ],
+      partitions: [
+        { ...rdd52.partitions[0]!, blockName: null, storageLevel: null, memoryUsed: null, diskUsed: null, executors: [] },
+        { ...rdd52.partitions[0]!, blockName: "rdd_52_1", executors: ["worker-1"] },
+      ],
+    };
+    const view = renderListPage("storage", "", (client) => {
+      client.setQueryData(sp.rdd(APP_ID, 52, "static", null).queryKey, { rdd: sparse });
+    });
+    await act(async () => {
+      await view.router.navigate({
+        to: "/apps/$appId/spark/storage/$rddId",
+        params: { appId: APP_ID, rddId: "52" },
+      });
+    });
+    expect(await screen.findByRole("heading", { name: "RDD 52" })).toBeTruthy();
+    expect(screen.getAllByRole("region", { name: "Partitions of RDD 52" }).some((region) => region.textContent?.includes("worker-1"))).toBe(
+      true,
+    );
+    expect(
+      screen
+        .getAllByRole("region", { name: "Executor distribution of RDD 52" })
+        .some((region) => region.querySelectorAll("tbody tr").length === 2),
+    ).toBe(true);
+  });
+
+  it("shows pending and fatal RDD detail states", async () => {
+    const queryKey = sp.rdd(APP_ID, 52, "static", null).queryKey;
+    const pending = renderListPage("storage", "", (client) => {
+      client.setQueryDefaults(queryKey, { enabled: false });
+      client.removeQueries({ queryKey, exact: true });
+    });
+    await act(async () => {
+      await pending.router.navigate({
+        to: "/apps/$appId/spark/storage/$rddId",
+        params: { appId: APP_ID, rddId: "52" },
+      });
+    });
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
+    pending.unmount();
+
+    const failed = renderListPage("storage", "", (client) => {
+      client.setQueryDefaults(queryKey, { enabled: false });
+      const query = client.getQueryCache().find({ queryKey, exact: true })!;
+      query.setState({
+        ...query.state,
+        data: undefined,
+        status: "error",
+        error: new Error("RDD detail unavailable"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: query.state.errorUpdateCount + 1,
+        fetchStatus: "idle",
+      });
+    });
+    await act(async () => {
+      await failed.router.navigate({
+        to: "/apps/$appId/spark/storage/$rddId",
+        params: { appId: APP_ID, rddId: "52" },
+      });
+    });
+    expect(await screen.findByRole("heading", { name: "Spark request failed" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    failed.unmount();
+  });
+
   it("renders the combined timeline and keeps zoom windows shareable", async () => {
     const { router } = renderListPage("timeline", "?zoom=2");
     const timeline = await screen.findByRole("region", { name: "Timeline" });
@@ -830,14 +1192,50 @@ describe("Spark list pages", () => {
     expect(screen.getByText("No time range")).toBeTruthy();
   });
 
+  it("extends live timeline bounds through now", async () => {
+    nowStore.setState(() => ({ now: Date.now() + 10_000_000 }));
+    const { container } = renderListPage("timeline", "", undefined, "live");
+    const timeline = await screen.findByRole("region", { name: "Timeline" });
+    expect(timeline.querySelector("svg")).toBeTruthy();
+    expect(container.textContent).toContain("rows");
+  });
+
+  it("shows the page skeleton while one timeline source is still pending", async () => {
+    renderListPage("timeline", "", (client) => {
+      client.removeQueries({ queryKey: sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey });
+    });
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
+  });
+
+  it("centers a single-time-point timeline in the minimum window", async () => {
+    const at = "2026-10-03T12:00:00.000GMT";
+    const { container } = renderListPage("timeline", "", (client) => {
+      client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, [
+        { ...jobs[0]!, submissionTime: at, completionTime: at, stageIds: [] },
+      ]);
+      client.setQueryData(sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey, []);
+      client.setQueryData(sp.executors(APP_ID, "static", null).queryKey, []);
+      client.setQueryData(sp.allExecutors(APP_ID, "static", null).queryKey, []);
+    });
+    const timeline = await screen.findByRole("region", { name: "Timeline" });
+    expect(timeline.querySelector("svg")).toBeTruthy();
+    expect(container.textContent).toContain("1 rows");
+  });
+
   it("reports stale, single-source, and multiple-source timeline failures", async () => {
-    const fail = (client: InstanceType<typeof QueryClient>, key: readonly unknown[], keepData: boolean) => {
+    const fail = async (
+      client: InstanceType<typeof QueryClient>,
+      key: readonly unknown[],
+      keepData: boolean,
+      error: Error | string = new Error("timeline source failed"),
+    ) => {
       const query = client.getQueryCache().find({ queryKey: key })!;
+      await query.cancel({ silent: true });
       query.setState({
         ...query.state,
         data: keepData ? query.state.data : undefined,
         status: "error",
-        error: new Error("timeline source failed"),
+        error: error as Error,
         errorUpdatedAt: Date.now(),
         errorUpdateCount: query.state.errorUpdateCount + 1,
         fetchStatus: "idle",
@@ -851,22 +1249,83 @@ describe("Spark list pages", () => {
     };
 
     const stale = renderListPage("timeline");
-    fail(stale.client, sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, true);
+    await screen.findByRole("region", { name: "Timeline" });
+    await fail(stale.client, sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, true);
     expect(await screen.findByText(/1 of four timeline sources failed/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry failed sources" }));
     stale.unmount();
 
     const single = renderListPage("timeline");
     empty(single.client);
-    fail(single.client, sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, false);
-    expect(await screen.findByText("The Spark source is unreachable")).toBeTruthy();
+    await screen.findByText("Nothing to plot yet");
+    await fail(single.client, sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, false);
+    expect(await screen.findByText("Spark request failed")).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toContain("timeline source failed");
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     single.unmount();
 
     const multiple = renderListPage("timeline");
     empty(multiple.client);
-    fail(multiple.client, sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, false);
-    fail(multiple.client, sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey, false);
-    expect(await screen.findByText("2 Spark timeline sources could not be loaded")).toBeTruthy();
+    await screen.findByText("Nothing to plot yet");
+    await fail(multiple.client, sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, false);
+    await fail(multiple.client, sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey, false, "stage source unavailable");
+    const multipleError = await screen.findByText("2 Spark timeline sources could not be loaded");
+    expect(multipleError.parentElement?.parentElement?.textContent).toContain("stages: stage source unavailable");
+  });
+
+  it("renders empty partial data and fills missing executor lists after failed queries", async () => {
+    const noBars = (client: InstanceType<typeof QueryClient>) => {
+      client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, []);
+      client.setQueryData(sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey, []);
+      client.setQueryData(sp.executors(APP_ID, "static", null).queryKey, []);
+      client.setQueryData(sp.allExecutors(APP_ID, "static", null).queryKey, []);
+    };
+    const staleEmpty = renderListPage("timeline", "", noBars);
+    await screen.findByRole("region", { name: "Timeline" });
+    const jobFailure = staleEmpty.client.getQueryCache().find({
+      queryKey: sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey,
+    })!;
+    await jobFailure.cancel({ silent: true });
+    jobFailure.setState({
+      ...jobFailure.state,
+      status: "error",
+      error: "job source unavailable" as Error,
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: jobFailure.state.errorUpdateCount + 1,
+      fetchStatus: "idle",
+    });
+    await waitFor(() =>
+      expect(screen.getAllByRole("status").some((node) => node.textContent?.includes("timeline sources failed"))).toBe(true),
+    );
+    const staleStatus = (await screen.findAllByRole("status")).find((node) => node.textContent?.includes("timeline sources failed"))!;
+    expect(staleStatus.textContent).toContain("jobs: job source unavailable");
+    expect(screen.getByText("0 rows")).toBeTruthy();
+    expect(screen.getByText("Nothing to plot yet")).toBeTruthy();
+    staleEmpty.unmount();
+
+    const missingExecutors = renderListPage("timeline");
+    await screen.findByRole("region", { name: "Timeline" });
+    for (const [queryKey, reason] of [
+      [sp.executors(APP_ID, "static", null).queryKey, "executor list failed"],
+      [sp.allExecutors(APP_ID, "static", null).queryKey, "all executor list failed"],
+    ] as const) {
+      const query = missingExecutors.client.getQueryCache().find({ queryKey })!;
+      await query.cancel({ silent: true });
+      query.setState({
+        ...query.state,
+        data: undefined,
+        status: "error",
+        error: new Error(reason),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: query.state.errorUpdateCount + 1,
+        fetchStatus: "idle",
+      });
+    }
+    await waitFor(() =>
+      expect(screen.getAllByRole("status").some((node) => node.textContent?.includes("2 of four timeline sources failed"))).toBe(true),
+    );
+    expect(screen.getByRole("region", { name: "Timeline" }).querySelector("svg")).toBeTruthy();
+    missingExecutors.unmount();
   });
 
   it("renders a stage attempt with metrics, task distributions, its DAG panel, and retained tasks", async () => {
@@ -879,6 +1338,104 @@ describe("Spark list pages", () => {
     expect(screen.getByText("Peak memory metrics")).toBeTruthy();
   });
 
+  it("covers sparse stage/task values and resets the server task controls", async () => {
+    const sparseStage: SparkStage = {
+      ...stageDetail,
+      description: null,
+      name: null,
+      numTasks: null,
+      numCompleteTasks: null,
+      numActiveTasks: null,
+      numFailedTasks: null,
+      numKilledTasks: null,
+      isShufflePushEnabled: null,
+    };
+    const sparseTask: SparkTask = { ...stageTasks[0]!, status: "KILLED", duration: null, attempt: null };
+    const pageOptions = {
+      offset: 50,
+      length: 25,
+      status: "KILLED",
+      kind: "static" as const,
+      attempt: null,
+    };
+    const { router } = renderListPage("stage-detail", "?size=25&page=3&taskStatus=KILLED&sort=status&dir=desc", (client) => {
+      client.setQueryData(
+        sp.stageAttempt(APP_ID, 0, 0, {
+          details: true,
+          withSummaries: true,
+          quantiles: [0.05, 0.25, 0.5, 0.75, 0.95],
+          kind: "static",
+          attempt: null,
+        }).queryKey,
+        sparseStage,
+      );
+      client.setQueryData(sp.taskList(APP_ID, 0, 0, pageOptions).queryKey, [sparseTask]);
+    });
+
+    expect(await screen.findByText("server sorts runtime only")).toBeTruthy();
+    fireEvent.click(screen.getByRole("switch", { name: "Show additional task metrics" }));
+    await waitFor(() => expect(router.state.location.search.level).toBe("more"));
+    fireEvent.click(screen.getByRole("switch", { name: "Show additional task metrics" }));
+    await waitFor(() => expect(router.state.location.search.level).toBeUndefined());
+
+    fireEvent.click(screen.getByRole("button", { name: "Previous" }));
+    await waitFor(() => expect(router.state.location.search.page).toBe("2"));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Task status filter" }));
+    const allStatuses = await screen.findByRole("option", { name: "All statuses" });
+    fireEvent.pointerDown(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allStatuses);
+    await waitFor(() => expect(router.state.location.search.taskStatus).toBeUndefined());
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Tasks per page" }));
+    const allTasks = await screen.findByRole("option", { name: "All tasks (client-sorted)" });
+    fireEvent.pointerDown(allTasks, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allTasks, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allTasks);
+    await waitFor(() => expect(router.state.location.search.size).toBeUndefined());
+  });
+
+  it("uses the running task count for a server-filtered task page", async () => {
+    const runningTask: SparkTask = { ...stageTasks[0]!, status: "RUNNING" };
+    renderListPage("stage-detail", "?size=25&taskStatus=RUNNING", (client) => {
+      client.setQueryData(sp.taskList(APP_ID, 0, 0, { offset: 0, length: 25, status: "RUNNING", kind: "static", attempt: null }).queryKey, [
+        runningTask,
+      ]);
+      client.setQueryData(
+        sp.stageAttempt(APP_ID, 0, 0, {
+          details: true,
+          withSummaries: true,
+          quantiles: [0.05, 0.25, 0.5, 0.75, 0.95],
+          kind: "static",
+          attempt: null,
+        }).queryKey,
+        { ...stageDetail, isShufflePushEnabled: true },
+      );
+    });
+    expect(await screen.findByRole("region", { name: "Tasks of stage 0 attempt 0" })).toBeTruthy();
+  });
+
+  it("uses the stage name as a fallback description and handles no description fields", async () => {
+    const stageOptions = sp.stageAttempt(APP_ID, 0, 0, {
+      details: true,
+      withSummaries: true,
+      quantiles: [0.05, 0.25, 0.5, 0.75, 0.95],
+      kind: "static",
+      attempt: null,
+    });
+    const named = renderListPage("stage-detail", "", (client) => {
+      client.setQueryData(stageOptions.queryKey, { ...stageDetail, description: null, name: "Fallback stage name" });
+    });
+    expect(await screen.findByText("Fallback stage name")).toBeTruthy();
+    named.unmount();
+
+    renderListPage("stage-detail", "", (client) => {
+      client.setQueryData(stageOptions.queryKey, { ...stageDetail, description: null, name: null });
+    });
+    expect(await screen.findByRole("heading", { name: /Stage 0 · attempt 0/ })).toBeTruthy();
+  });
+
   it("keeps SQL detail visible and retries a stale jobs lookup", async () => {
     const view = renderListPage("sql-detail");
     expect(await screen.findByRole("heading", { name: /SQL execution 0/ })).toBeTruthy();
@@ -886,6 +1443,139 @@ describe("Spark list pages", () => {
     markQueryError(view.client, queryKey, new Error("SQL jobs refresh failed"), true);
     expect(await screen.findByText(/Could not refresh the jobs for this SQL execution/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("keeps stale SQL execution data and renders missing or failed execution states", async () => {
+    const execKey = sp.sqlExecution(APP_ID, 0, { kind: "static", attempt: null }).queryKey;
+    const stale = renderListPage("sql-detail", "", (client) => {
+      markQueryError(client, execKey, new Error("SQL execution refresh failed"), true);
+    });
+    expect(await screen.findByText(/Could not refresh SQL execution 0/)).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: "Retry now" })[0]!);
+    stale.unmount();
+
+    const originalSqlExecution = sp.sqlExecution;
+    const sqlExecutionSpy = vi.spyOn(sp, "sqlExecution").mockImplementation((appId, executionId, opts) => ({
+      ...originalSqlExecution(appId, executionId, opts),
+      queryFn: async () => null as never,
+    }));
+    const missing = renderListPage("sql-detail", "", (client) => {
+      client.removeQueries({ queryKey: execKey, exact: true });
+    });
+    expect(await screen.findByText(/is not in this application/)).toBeTruthy();
+    missing.unmount();
+    sqlExecutionSpy.mockRestore();
+
+    const failed = renderListPage("sql-detail", "", (client) => {
+      markQueryError(client, execKey, new Error("SQL execution unavailable"), false);
+    });
+    expect((await screen.findAllByText(/Cannot reach Burrow at/)).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    failed.unmount();
+  });
+
+  it("renders optional SQL details, searches the plan, and links stages with the active attempt", async () => {
+    const attempt = "attempt-7";
+    const detail = {
+      id: 0,
+      status: null,
+      description: "Fixture SQL execution",
+      errorMessage: "Query failed",
+      successJobIds: [0],
+      nodes: [],
+      edges: null,
+      planDescription: "WholeStageCodegen\n+- Scan\n   +- FileScan",
+    } as SparkSqlExecution;
+    const view = renderListPage(
+      "sql-detail",
+      "",
+      (client) => {
+        client.setQueryData(sp.sqlExecution(APP_ID, 0, { kind: "static", attempt }).queryKey, detail);
+        client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt }).queryKey, [{ ...allJobs[0]!, jobId: 0, stageIds: [8] }]);
+      },
+      "static",
+      attempt,
+    );
+
+    expect((await screen.findAllByText("UNKNOWN")).length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: "Error of SQL execution 0" }).textContent).toContain("Query failed");
+    expect(screen.getByText(/0 nodes · 0 edges/)).toBeTruthy();
+    const stageLink = await screen.findByRole("link", { name: "stage 8" });
+    expect(stageLink.getAttribute("href")).toContain("&attempt=attempt-7");
+
+    const search = screen.getByRole("searchbox", { name: "Find in the SQL plan" });
+    fireEvent.change(search, { target: { value: "Scan" } });
+    await waitFor(() => expect(view.router.state.location.search.q).toBe("Scan"));
+    fireEvent.change(screen.getByRole("searchbox", { name: "Find in the SQL plan" }), { target: { value: "" } });
+    await waitFor(() => expect(view.router.state.location.search.q).toBeUndefined());
+    view.unmount();
+  });
+
+  it("shows no-job and missing-stage states and formats non-Error job failures", async () => {
+    const noJobs = renderListPage("sql-detail", "", (client) => {
+      client.setQueryData(sp.sqlExecution(APP_ID, 0, { kind: "static", attempt: null }).queryKey, {
+        id: 0,
+        status: "COMPLETED",
+        description: "No jobs",
+        nodes: [],
+        edges: undefined,
+      } satisfies SparkSqlExecution);
+    });
+    expect(await screen.findByText("This execution ran no jobs.")).toBeTruthy();
+    noJobs.unmount();
+
+    const jobWithoutStages = renderListPage("sql-detail", "", (client) => {
+      client.setQueryData(sp.sqlExecution(APP_ID, 0, { kind: "static", attempt: null }).queryKey, {
+        id: 0,
+        status: "COMPLETED",
+        successJobIds: [0],
+        nodes: [],
+      } satisfies SparkSqlExecution);
+      client.setQueryData(sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, [{ ...allJobs[0]!, jobId: 0, stageIds: null }]);
+    });
+    expect(await screen.findByText("No stage ids reported for these jobs.")).toBeTruthy();
+    jobWithoutStages.unmount();
+
+    const originalJobs = sp.jobs;
+    const jobsSpy = vi.spyOn(sp, "jobs").mockImplementation((appId, opts) => {
+      const query = originalJobs(appId, opts);
+      if (opts?.status) return query;
+      return { ...query, queryFn: async () => Promise.reject("job list unavailable") };
+    });
+    const failedJobs = renderListPage("sql-detail", "", (client) => {
+      client.setQueryData(sp.sqlExecution(APP_ID, 0, { kind: "static", attempt: null }).queryKey, {
+        id: 0,
+        status: "COMPLETED",
+        successJobIds: [0],
+        nodes: [],
+      } satisfies SparkSqlExecution);
+      client.removeQueries({ queryKey: sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, exact: true });
+    });
+    expect(await screen.findByText("job list unavailable")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    failedJobs.unmount();
+    jobsSpy.mockRestore();
+  });
+
+  it("shows an Error object from the SQL jobs lookup", async () => {
+    const jobsKey = sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey;
+    const originalJobs = sp.jobs;
+    const jobsSpy = vi.spyOn(sp, "jobs").mockImplementation((appId, opts) => ({
+      ...originalJobs(appId, opts),
+      queryFn: async () => Promise.reject(new Error("SQL job endpoint failed")),
+    }));
+    const view = renderListPage("sql-detail", "", (client) => {
+      client.setQueryData(sp.sqlExecution(APP_ID, 0, { kind: "static", attempt: null }).queryKey, {
+        id: 0,
+        status: "COMPLETED",
+        successJobIds: [0],
+        nodes: [],
+      } satisfies SparkSqlExecution);
+      client.removeQueries({ queryKey: jobsKey, exact: true });
+    });
+    expect(await screen.findByText("SQL job endpoint failed")).toBeTruthy();
+    view.unmount();
+    jobsSpy.mockRestore();
   });
 
   it("keeps stale stage data visible and retries each stale panel", async () => {
@@ -960,13 +1650,34 @@ describe("Spark list pages", () => {
     });
     await screen.findByRole("heading", { name: /Stage 0 · attempt 0/ });
     act(() => {
-      markQueryError(view.client, attemptsQuery.queryKey, new Error("attempt list failed"), false);
+      markQueryError(view.client, attemptsQuery.queryKey, "attempt list failed", false);
       markQueryError(view.client, tasksQuery.queryKey, new Error("task list failed"), false);
     });
 
     expect(await screen.findByText("attempt list failed")).toBeTruthy();
     expect((await screen.findAllByText("task list failed")).length).toBeGreaterThan(0);
     for (const button of screen.getAllByRole("button", { name: "Retry now" })) fireEvent.click(button);
+    view.unmount();
+
+    const fatalAttempts = renderListPage("stage-detail");
+    await screen.findByRole("heading", { name: /Stage 0 · attempt 0/ });
+    act(() => markQueryError(fatalAttempts.client, attemptsQuery.queryKey, new Error("attempt endpoint failed"), false));
+    expect(await screen.findByText("attempt endpoint failed")).toBeTruthy();
+    fatalAttempts.unmount();
+  });
+
+  it("formats missing stage attempt metadata with safe labels", async () => {
+    const attempts = [
+      { ...stageAttempts[0]!, attemptId: null, status: null },
+      { ...stageAttempts[0]!, attemptId: 1, status: "FAILED" },
+    ] as SparkStage[];
+    renderListPage("stage-detail", "", (client) => {
+      client.setQueryData(sp.stageAttempts(APP_ID, 0, "static", null).queryKey, attempts);
+    });
+    const selector = await screen.findByRole("combobox", { name: "Stage attempt" });
+    fireEvent.click(selector);
+    expect(await screen.findByRole("option", { name: "Attempt 0 · ?" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Attempt 1 · FAILED" })).toBeTruthy();
   });
 
   it("updates task filters, page size, sorting, columns, and follows a selected RDD", async () => {

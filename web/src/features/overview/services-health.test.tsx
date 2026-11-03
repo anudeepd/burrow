@@ -74,6 +74,12 @@ describe("ServicesHealthSection", () => {
     expect(refetch).toHaveBeenCalledOnce();
   });
 
+  it("uses the generic message for an empty non-Error metadata failure", () => {
+    setQuery({ data: undefined, isError: true, error: null });
+    render(<ServicesHealthSection />);
+    expect(screen.getByText("The ResourceManager did not return service details.")).toBeTruthy();
+  });
+
   it("shows compact service states and the stale-data banner", () => {
     const refetch = vi.fn();
     setQuery({ isError: true, error: new Error("refresh failed"), refetch });
@@ -101,5 +107,35 @@ describe("ServicesHealthSection", () => {
     expect(screen.getByRole("link", { name: "Open Configuration" }).getAttribute("href")).toBe("/tools/conf");
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(refetch).toHaveBeenCalledOnce();
+  });
+
+  it("covers unreported addresses, scheduler settings, write access, and successful API health", () => {
+    mockState.connection = { lastOkAt: 1_791_011_000_000, consecutiveFailures: 0 };
+    const sparseMeta = {
+      ...meta,
+      version: "0.0.0",
+      rm: { ...meta.rm, active: null, urls: [], hadoopVersion: null, haState: null },
+      services: {
+        sparkHistory: {
+          configured: true,
+          url: null,
+          urls: [],
+          reachable: false,
+          candidates: [{ url: "http://history-down:18080", reachable: false, reason: null }],
+        },
+        jobHistory: { configured: true, url: null, urls: [], reachable: true, candidates: [] },
+        timeline: { configured: false, url: null, urls: [], reachable: null, candidates: [] },
+      },
+      features: { sparkLive: false, sparkHistory: false, aggregatedLogs: false, nodeLogs: false, events: false, kerberos: false },
+      yarn: { ...meta.yarn, scheduler: null, httpPolicy: "HTTPS_ONLY" },
+      readOnly: false,
+    } as unknown as typeof meta;
+    setQuery({ data: sparseMeta, isError: true, error: "stale metadata" });
+    render(<ServicesHealthSection renderVersion="pre" />);
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("configured")).toHaveLength(2);
+    expect(screen.getByText("http HTTPS_ONLY")).toBeTruthy();
+    expect(screen.getByText("read/write")).toBeTruthy();
+    expect(screen.getByText(/API ok/)).toBeTruthy();
   });
 });

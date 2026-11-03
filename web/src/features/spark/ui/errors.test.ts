@@ -10,9 +10,18 @@ describe("Spark error classification", () => {
     const unavailable = classifySparkError(new ApiError("", "http", 503, "unavailable", { url: "http://history" }), "the job");
     expect(unavailable).toMatchObject({ kind: "unavailable", message: "The backend could not resolve a Spark REST source for the job." });
     expect(unavailable.detail).toContain("http://history");
+    const unavailableWithStatus = classifySparkError(
+      new ApiError("history failed", "http", 503, "unavailable", { url: "http://history", status: 502 }),
+      "the job",
+    );
+    expect(unavailableWithStatus.detail).toContain("http://history → 502");
     expect(classifySparkError(new ApiError("", "http", 404, "gone"), "job 4")).toMatchObject({
       kind: "not-found",
       message: "Spark reports no job 4.",
+    });
+    expect(classifySparkError(new ApiError("missing", "http", 404), "job 5")).toMatchObject({
+      kind: "not-found",
+      message: "missing",
     });
   });
 

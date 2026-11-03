@@ -58,8 +58,7 @@ export function stageVisual(id: string, segments: ProgressSegments, status: Stag
   return [id, { percent: segments.percent, status, failed: segments.failed }];
 }
 
-function flashFor(prev: StageVisual | undefined, next: StageVisual): Tone | null {
-  if (!prev) return null;
+function flashFor(prev: StageVisual, next: StageVisual): Tone | null {
   if (next.failed > prev.failed) return "fail";
   if (prev.status !== "COMPLETE" && next.status === "COMPLETE") return "ok";
   if (prev.status !== "FAILED" && next.status === "FAILED") return "fail";

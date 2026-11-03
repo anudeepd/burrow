@@ -50,6 +50,7 @@ describe("container log wire helpers", () => {
         { name: "zeta", size: "1,024", lastModified: "not a date" },
         { name: "stderr", size: null, lastModified: null },
         { name: "stdout", size: 10, lastModified: "1791010000000" },
+        { name: "numeric-time", size: 1, lastModified: 1791010000000 },
       ],
     });
     expect(parsed.source).toBe("nm");
@@ -57,8 +58,9 @@ describe("container log wire helpers", () => {
       ["zeta", 1024, null],
       ["stderr", 0, null],
       ["stdout", 10, 1791010000000],
+      ["numeric-time", 1, 1791010000000],
     ]);
-    expect(orderLogFiles(parsed.files).map((f) => f.name)).toEqual(["stdout", "stderr", "zeta"]);
+    expect(orderLogFiles(parsed.files).map((f) => f.name)).toEqual(["stdout", "stderr", "numeric-time", "zeta"]);
     expect(
       orderLogFiles([
         { name: "z", size: 1, lastModified: null },
@@ -66,6 +68,9 @@ describe("container log wire helpers", () => {
       ]).map((f) => f.name),
     ).toEqual(["a", "z"]);
     expect(LogFilesResponseSchema.parse({}).files).toEqual([]);
+    expect(
+      LogFilesResponseSchema.parse({ files: [{ name: "date", size: 1, lastModified: "Oct 3, 2026, 12:31:04 PM" }] }).files[0]?.lastModified,
+    ).toBe(Date.parse("Oct 3, 2026, 12:31:04 PM"));
   });
 
   it("only sends non-empty hints and builds encoded file, directory, and stream URLs", () => {
@@ -112,6 +117,16 @@ describe("container log wire helpers", () => {
     fetchMock.mockImplementationOnce(async () => new Response("abc"));
     const fallback = await fetchLogWindow("container", "stderr", { offset: 7 });
     expect(fallback).toMatchObject({ text: "abc", start: 7, end: 10, size: 10, source: null });
+
+    fetchMock.mockImplementationOnce(async () => new Response("xy"));
+    const defaultWindow = await fetchLogWindow("container", "stdout", {});
+    expect(defaultWindow).toMatchObject({ text: "xy", start: 0, end: 2, size: 2 });
+
+    fetchMock.mockImplementationOnce(async () => new Response("only length"));
+    const lengthOnly = await fetchLogWindow("container", "stdout", { length: 12 });
+    expect(String(fetchMock.mock.calls.at(-1)?.[0])).toContain("length=12");
+    expect(String(fetchMock.mock.calls.at(-1)?.[0])).not.toContain("offset=");
+    expect(lengthOnly.start).toBe(0);
   });
 
   it("gives tail reads priority over ranges and reports HTTP failures with the response body", async () => {
@@ -129,6 +144,23 @@ describe("container log wire helpers", () => {
     expect(String(fetchMock.mock.calls[0]?.[0])).not.toContain("offset=");
     expect(String(fetchMock.mock.calls[0]?.[0])).not.toContain("length=");
     expect(LOG_MAX_BYTES).toBe(8 * 1024 * 1024);
+  });
+
+  it("treats empty missing-route responses separately and tolerates unreadable error bodies", async () => {
+    const missing = new Response("", { status: 404 });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => missing),
+    );
+    await expect(fetchLogWindow("container", "gone", {})).rejects.toMatchObject({ status: 404, body: null });
+
+    const unreadable = new Response("ignored", { status: 500 });
+    vi.spyOn(unreadable, "text").mockRejectedValue(new Error("stream closed"));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => unreadable),
+    );
+    await expect(fetchLogWindow("container", "broken", {})).rejects.toMatchObject({ status: 500, body: null });
   });
 
   it("distinguishes cancelled, timed out, and unavailable log reads", async () => {

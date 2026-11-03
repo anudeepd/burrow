@@ -9,14 +9,16 @@ const { SparkAffordance } = await import("./SparkAffordance");
 
 function renderAffordance({
   appId = "application_1",
-  insideSpark = false,
+  insideSpark,
   source,
   error,
+  rawError = false,
 }: {
   appId?: string;
   insideSpark?: boolean;
   source?: unknown;
-  error?: string;
+  error?: unknown;
+  rawError?: boolean;
 } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { enabled: false, retry: false, refetchOnMount: false } } });
   if (source) client.setQueryData(appSparkSource(appId).queryKey, source as never);
@@ -26,14 +28,14 @@ function renderAffordance({
     query.setState({
       ...query.state,
       status: "error",
-      error: new Error(error),
+      error: rawError ? (error as Error) : error instanceof Error ? error : new Error(String(error)),
       errorUpdatedAt: Date.now(),
       errorUpdateCount: query.state.errorUpdateCount + 1,
     });
   }
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkAffordance appId={appId} insideSpark={insideSpark} />
+      <SparkAffordance appId={appId} {...(insideSpark === undefined ? {} : { insideSpark })} />
     </QueryClientProvider>,
   );
   return { ...view, client, appId };
@@ -66,6 +68,26 @@ describe("SparkAffordance", () => {
     const status = screen.getByRole("status");
     expect(within(status).getByText("source resolver is offline")).toBeTruthy();
     fireEvent.click(within(status).getByRole("button", { name: "Retry" }));
+  });
+
+  it("keeps resolver hints and cached errors visible when the error is a string", () => {
+    renderAffordance({
+      source: { mode: "none", available: false, reason: null, hint: "Configure the Spark History Server." },
+      error: "refresh failed",
+      rawError: true,
+    });
+    const status = screen.getByRole("status");
+    expect(within(status).getByText("no Spark source resolved")).toBeTruthy();
+    expect(within(status).getByText("Next: Configure the Spark History Server.")).toBeTruthy();
+    expect(within(status).getByText("Refresh failed: refresh failed")).toBeTruthy();
+  });
+
+  it("prints an Error object's message when an unavailable cached source has a refresh error", () => {
+    renderAffordance({
+      source: { mode: "none", available: false, reason: "source not configured", hint: null },
+      error: new Error("refresh failed"),
+    });
+    expect(screen.getByRole("status").textContent).toContain("Refresh failed: refresh failed");
   });
 
   it("links directly to the live Spark proxy", () => {

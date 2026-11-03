@@ -51,6 +51,11 @@ describe("LogStatusBar", () => {
     expect(screen.getByText(/1 byte gap/)).toBeTruthy();
     expect(screen.getByText(/KiB behind/)).toBeTruthy();
   });
+
+  it("uses the plural gap label for multiple skipped ranges", () => {
+    render(<LogStatusBar {...base} gaps={3} />);
+    expect(screen.getByText(/3 byte gaps skipped/)).toBeTruthy();
+  });
 });
 
 describe("parseLogsLink", () => {

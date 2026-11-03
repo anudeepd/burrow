@@ -359,6 +359,27 @@ describe("scheduler block", () => {
     expect(teasers[1]).toMatchObject({ pressurePct: null, barPct: 0 });
   });
 
+  it("normalizes numeric queue values and absent usage", () => {
+    const capacityPayload = JSON.parse(
+      readFileSync(resolve(process.cwd(), "../fixtures/rm/scheduler/capacity/scheduler.json"), "utf8"),
+    ) as { scheduler: { schedulerInfo: { queues: { queue: Record<string, unknown>[] } } } };
+    const [usedQueue, emptyQueue] = capacityPayload.scheduler.schedulerInfo.queues.queue;
+    Object.assign(usedQueue!, { usedCapacity: 20, absoluteCapacity: 50, absoluteUsedCapacity: 25 });
+    Object.assign(emptyQueue!, { usedCapacity: "NaN", absoluteUsedCapacity: "NaN", absoluteCapacity: 0, absoluteMaxCapacity: 0 });
+    const missingUsed = {
+      ...usedQueue,
+      queuePath: "root.absolute-only",
+      queueName: "absolute-only",
+      usedCapacity: "NaN",
+      absoluteUsedCapacity: 25,
+    };
+    capacityPayload.scheduler.schedulerInfo.queues.queue.push(missingUsed);
+    const capacity = queueTeasers(capacityPayload.scheduler.schedulerInfo as unknown as SchedulerInfo);
+    expect(capacity[0]).toMatchObject({ pressurePct: 20, used: { raw: 20 } });
+    expect(capacity[1]).toMatchObject({ pressurePct: null, barPct: 0 });
+    expect(capacity[3]).toMatchObject({ pressurePct: 50, used: { raw: null } });
+  });
+
   it("returns no teasers when malformed queue arrays fail schema validation", () => {
     expect(queueTeasers({ type: "capacityScheduler", queues: { queue: [null] } } as unknown as SchedulerInfo)).toEqual([]);
     expect(queueTeasers({ type: "fairScheduler", rootQueue: { childQueues: { queue: [null] } } } as unknown as SchedulerInfo)).toEqual([]);
@@ -386,6 +407,17 @@ describe("scheduler block", () => {
       pressurePct: null,
       barPct: 0,
       used: { raw: 0 },
+    });
+
+    queue.usedResources = { ...used, memory: "12" };
+    queue.minResources = { ...min, memory: "8" };
+    queue.maxResources = { ...max, memory: "20" };
+    expect(queueTeasers(payload.scheduler.schedulerInfo as unknown as SchedulerInfo)[0]).toMatchObject({
+      used: { raw: 12 },
+      guarantee: { raw: 8 },
+      ceiling: { raw: 20 },
+      pressurePct: 150,
+      barPct: 60,
     });
   });
 });

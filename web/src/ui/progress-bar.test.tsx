@@ -30,6 +30,11 @@ describe("progress bars", () => {
     expect(markers.map((marker) => marker.classList.contains("high"))).toEqual([false, false, true]);
   });
 
+  it("renders non-finite progress as zero", () => {
+    render(<ProgressBar label="Unknown progress" percent={Number.NaN} />);
+    expect(screen.getByRole("progressbar", { name: "Unknown progress" }).getAttribute("aria-valuenow")).toBe("0");
+  });
+
   it("normalizes segmented progress whether the sum is finite or overflows", () => {
     expect(
       normalizeSegments([

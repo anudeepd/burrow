@@ -36,7 +36,7 @@ export function parseLogsLink(link: string | null | undefined): LogsLinkParts {
   if (!link) return { node: null, containerId: null, user: null };
   const m = /\/(?:jobhistory\/)?logs\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)/.exec(link);
   if (!m) return { node: null, containerId: null, user: null };
-  return { node: m[1] ?? null, containerId: m[2] ?? null, user: m[4] ?? null };
+  return { node: m[1], containerId: m[2], user: m[4] };
 }
 
 export interface ContainerPickerProps {

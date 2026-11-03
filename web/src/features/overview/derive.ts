@@ -272,9 +272,9 @@ export interface QueueTeaser {
   /** used share/memory of the queue, in the queue's own reporting unit */
   used: TeasedValue;
   /** guaranteed share (Capacity: `absoluteCapacity`, Fair: `minResources.memory`) */
-  guarantee: TeasedValue | null;
+  guarantee: TeasedValue;
   /** ceiling share (Capacity: `absoluteMaxCapacity`, Fair: `maxResources.memory`) */
-  ceiling: TeasedValue | null;
+  ceiling: TeasedValue;
   /** bar geometry 0..100 — Capacity usage relative to guarantee; Fair usage relative to its ceiling */
   barPct: number;
   /** Used as percent of the guaranteed/fair share, for pressure coloring. */
@@ -285,10 +285,9 @@ export interface QueueTeaser {
   pendingApps: number | null;
 }
 
-/** Percentages/longs arrive as numbers or numeric strings depending on the Jersey marshaller. */
+/** Queue schemas coerce numeric strings before these validated queue values reach the derivation. */
 const numberOrNull = (v: unknown): number | null => {
-  const n = typeof v === "string" ? Number(v) : v;
-  return typeof n === "number" && Number.isFinite(n) ? n : null;
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
 };
 
 /**
@@ -377,7 +376,8 @@ export function queueTeasers(info: SchedulerInfo | undefined | null): QueueTease
         used: { field: "queue.usedResources.memory", raw: used, fmt: "mb", text: fmtMB(used, 1) },
         guarantee: { field: "queue.minResources.memory", raw: guarantee, fmt: "mb", text: fmtMB(guarantee, 1) },
         ceiling: { field: "queue.maxResources.memory", raw: ceiling, fmt: "mb", text: fmtMB(ceiling, 1) },
-        barPct: Math.min(100, used != null && used > 0 && (ceiling ?? guarantee) === 0 ? 100 : ratioPct(used, ceiling ?? guarantee)),
+        // FairQueueInfoSchema requires finite min/max resource values, so `ceiling` is never null here.
+        barPct: Math.min(100, used != null && used > 0 && ceiling === 0 ? 100 : ratioPct(used, ceiling)),
         pressurePct,
         pendingContainers: numberOrNull(q.pendingContainers),
         allocatedContainers: numberOrNull(q.allocatedContainers),

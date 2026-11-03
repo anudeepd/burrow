@@ -26,7 +26,7 @@ export function normalizeSegments(segments: readonly Segment[]): Segment[] {
   const largest = Math.max(...safe.map((segment) => segment.percent));
   const scaled = safe.map((segment) => segment.percent / largest);
   const scaledTotal = scaled.reduce((sum, percent) => sum + percent, 0);
-  return safe.map((segment, index) => ({ ...segment, percent: ((scaled[index] ?? 0) / scaledTotal) * 100 }));
+  return safe.map((segment, index) => ({ ...segment, percent: (scaled[index]! / scaledTotal) * 100 }));
 }
 export interface ProgressMarker {
   /** 0..100 */

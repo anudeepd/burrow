@@ -100,4 +100,61 @@ describe("LineViewer", () => {
     render(<LineViewer {...base} buffer={makeBuffer("INFO one\nINFO two\n")} follow />);
     expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(1, { align: "end" });
   });
+
+  it("renders unstamped stack lines, absolute timestamps, and active and inactive search hits", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const buffer = makeBuffer("2026-11-02T12:00:00.000Z INFO startup\nstack frame\nERROR task failed\n10:00:00.000 INFO clock only\n");
+    const { container } = render(
+      <LineViewer
+        {...base}
+        buffer={buffer}
+        matches={[
+          { line: 2, start: 6, end: 10 },
+          { line: 2, start: 11, end: 15 },
+        ]}
+        activeMatch={0}
+        search={{ query: "task|fail", regex: true, caseSensitive: false }}
+        timestamp="absolute"
+      />,
+    );
+
+    const rows = [...container.querySelectorAll<HTMLElement>("[data-line]")];
+    expect(rows).toHaveLength(4);
+    expect(rows[0]?.children[1]?.textContent).not.toBe("");
+    expect(rows[1]?.textContent).toContain("stack frame");
+    expect(rows[3]?.children[1]?.textContent).toBe("10:00:00.000");
+    expect(container.querySelectorAll("mark")).toHaveLength(2);
+    expect(container.querySelectorAll('mark[data-active="true"]')).toHaveLength(1);
+    expect(container.querySelectorAll('mark[data-active="false"]')).toHaveLength(0);
+  });
+
+  it("handles empty filtered results, scrolling back to bottom, and a no-op tail jump", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const { container } = render(
+      <LineViewer
+        {...base}
+        buffer={makeBuffer("")}
+        matches={[{ line: 0, start: 0, end: 1 }]}
+        visibleIdx={[]}
+        jumpLine={{ line: 0, n: 1 }}
+        follow
+      />,
+    );
+    const log = screen.getByRole("log", { name: "Container log" });
+    Object.defineProperties(log, {
+      scrollHeight: { configurable: true, value: 100 },
+      clientHeight: { configurable: true, value: 50 },
+      scrollTop: { configurable: true, value: 0 },
+    });
+    fireEvent.scroll(log);
+    fireEvent.click(screen.getByRole("button", { name: "Jump to tail" }));
+    expect(virtualizer.scrollToIndex).not.toHaveBeenCalled();
+
+    Object.defineProperty(log, "scrollTop", { configurable: true, value: 50 });
+    fireEvent.scroll(log);
+    fireEvent.scroll(log);
+    expect(container.querySelector("[data-line]")).toBeNull();
+  });
 });

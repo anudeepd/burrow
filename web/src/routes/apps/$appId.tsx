@@ -111,7 +111,7 @@ function AppLayout() {
   );
 }
 
-function ApplicationSectionNav({ tabs, current }: { tabs: ReturnType<typeof appTabs>; current: string }) {
+export function ApplicationSectionNav({ tabs, current }: { tabs: ReturnType<typeof appTabs>; current: string }) {
   const listRef = useRef<HTMLUListElement>(null);
   const cues = useHorizontalScrollCues(listRef, true, tabs);
   return (

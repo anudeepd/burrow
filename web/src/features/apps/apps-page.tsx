@@ -42,7 +42,7 @@ const APPS_SCAN_ORDER = ["id", "name", "state", "finalstatus"];
 const LEGACY_COLUMN_ORDER: string[] = [];
 const APPS_COMPACT_CONTENT_WIDTH = 900;
 
-function columnsParam(visibility: Record<string, boolean>): string | undefined {
+export function columnsParam(visibility: Record<string, boolean>): string | undefined {
   const matchesDefault = APPS_COLUMN_IDS.every((id) => (visibility[id] ?? true) === DEFAULT_VISIBILITY[id]);
   return matchesDefault ? undefined : colsToParam(visibility);
 }
@@ -50,6 +50,20 @@ function columnsParam(visibility: Record<string, boolean>): string | undefined {
 function statesParam(tab: AppTabId): string | undefined {
   const spec = APP_TABS.find((t) => t.id === tab);
   return spec?.states ? spec.states.join(",") : undefined;
+}
+
+export function stateSelectionPatch(value: AppTabId | null): Partial<AppsSearch> | undefined {
+  return value === null ? undefined : { states: statesParam(value) };
+}
+
+export function applyStateSelection(value: AppTabId | null, patch: Patch): void {
+  const update = stateSelectionPatch(value);
+  if (update) patch(update);
+}
+
+export function errorMessageView(message: string | undefined, renderVersion: "pre" | "post" | undefined) {
+  if (!message) return undefined;
+  return renderVersion === "pre" ? message : <span className="break-words">{message}</span>;
 }
 
 /**
@@ -112,7 +126,7 @@ export function AppsPage({
     () =>
       APP_TABS.map((t) => ({
         value: t.id,
-        label: hasData ? `${t.label} · ${(counts.get(t.id) ?? 0).toLocaleString("en-US")}` : t.label,
+        label: hasData ? `${t.label} · ${counts.get(t.id)!.toLocaleString("en-US")}` : t.label,
       })),
     [counts, hasData],
   );
@@ -184,7 +198,7 @@ export function AppsPage({
             value={tab}
             options={stateOptions}
             onValueChange={(value) => {
-              if (value !== null) patch({ states: statesParam(value) });
+              applyStateSelection(value as AppTabId | null, patch);
             }}
             className="min-w-0 flex-1"
           />
@@ -196,7 +210,7 @@ export function AppsPage({
               <Tab
                 key={t.id}
                 value={t.id}
-                badge={hasData ? (counts.get(t.id) ?? 0).toLocaleString("en-US") : undefined}
+                badge={hasData ? counts.get(t.id)!.toLocaleString("en-US") : undefined}
                 field={`app.tab.${t.id}`}
               >
                 {t.label}
@@ -279,9 +293,7 @@ export function AppsPage({
             error && !hasData ? (
               <ErrorState
                 title="Cannot load applications"
-                message={
-                  error.message ? renderVersion === "pre" ? error.message : <span className="break-words">{error.message}</span> : undefined
-                }
+                message={errorMessageView(error.message, renderVersion)}
                 hint={error.hint ? renderVersion === "pre" ? error.hint : <span className="break-words">{error.hint}</span> : undefined}
                 onRetry={() => void appsQuery.refetch()}
                 className={renderVersion === "pre" ? undefined : "max-w-lg min-w-0"}

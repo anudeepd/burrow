@@ -108,7 +108,7 @@ export function getElk(): Promise<ElkEngine> {
     })();
     elkPromise = pending;
     void pending.catch(() => {
-      if (elkPromise === pending) elkPromise = null;
+      elkPromise = null;
     });
   }
   return elkPromise;
@@ -274,17 +274,15 @@ function toElkGraph(req: LayoutRequest, options: Record<string, string>) {
   }
   const rootChildren: Box[] = [];
   // Deepest container first, so a nested scope exists before it is attached to its parent.
-  const ordered = [...req.graph.clusters].sort((a, b) => (depth.get(b.id) ?? 0) - (depth.get(a.id) ?? 0));
+  const ordered = [...req.graph.clusters].sort((a, b) => depth.get(b.id)! - depth.get(a.id)!);
   for (const c of ordered) {
-    const box = boxes.get(c.id);
-    if (!box) continue;
+    const box = boxes.get(c.id)!;
     const parent = c.parentId ? boxes.get(c.parentId) : undefined;
     if (parent) parent.children.push(box);
     else rootChildren.push(box);
   }
   for (const n of req.graph.nodes) {
-    const box = boxes.get(n.id);
-    if (!box) continue;
+    const box = boxes.get(n.id)!;
     const parent = n.clusterId ? boxes.get(n.clusterId) : undefined;
     if (parent) parent.children.push(box);
     else rootChildren.push(box);

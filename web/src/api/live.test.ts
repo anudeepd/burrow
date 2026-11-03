@@ -54,6 +54,39 @@ describe("metricHistorySample", () => {
 
     expect(sample).toMatchObject({ memPct: 10, vcorePct: 25 });
   });
+
+  it("handles optional cross-partition values and zero capacity safely", () => {
+    const partial = metricHistorySample(
+      {
+        totalMB: 1000,
+        allocatedMB: 10,
+        totalVirtualCores: 0,
+        allocatedVirtualCores: 2,
+        crossPartitionMetricsAvailable: true,
+        totalUsedResourcesAcrossPartition: { memory: 200, vCores: 4 },
+        appsRunning: 0,
+        appsPending: 0,
+        containersAllocated: 0,
+      },
+      1,
+    );
+    expect(partial).toMatchObject({ memPct: 20, vcorePct: 0 });
+    expect(
+      metricHistorySample(
+        {
+          totalMB: 0,
+          allocatedMB: 0,
+          totalVirtualCores: 0,
+          allocatedVirtualCores: 0,
+          crossPartitionMetricsAvailable: false,
+          appsRunning: 0,
+          appsPending: 0,
+          containersAllocated: 0,
+        },
+        1,
+      ),
+    ).toBeNull();
+  });
 });
 
 describe("startLive", () => {
@@ -72,6 +105,7 @@ describe("startLive", () => {
       expect(startEventsMock).toHaveBeenCalledOnce();
       const enabled = startEventsMock.mock.calls[0]![1] as () => boolean;
 
+      expect(enabled()).toBe(true);
       client.setQueryData(["meta"], { now: Date.now() + 500, features: { events: false } });
       expect(enabled()).toBe(false);
       client.setQueryData(["meta"], { now: Date.now() + 500, features: { events: true } });
@@ -94,6 +128,9 @@ describe("startLive", () => {
 
       client.setQueryData(["yarn", "metrics"], { clusterMetrics: { totalMB: 0 } });
       expect(historyStore.get().samples).toHaveLength(1);
+      client.setQueryData(["yarn", "metrics"], {});
+      client.setQueryData(["meta"], { features: { events: true } });
+      client.setQueryData(["other"], {});
 
       const refetch = vi.spyOn(client, "refetchQueries").mockResolvedValue(undefined);
       prefsStore.setState((p) => ({ ...p, livePaused: true }));
@@ -108,6 +145,10 @@ describe("startLive", () => {
       Object.defineProperty(document, "hidden", { configurable: true, value: false });
       document.dispatchEvent(new Event("visibilitychange"));
       expect(refetch).toHaveBeenCalledTimes(2);
+      Object.defineProperty(document, "hidden", { configurable: true, value: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+      expect(refetch).toHaveBeenCalledTimes(2);
+      Object.defineProperty(document, "hidden", { configurable: true, value: false });
       prefsStore.setState((p) => ({ ...p, liveIntervalMs: p.liveIntervalMs + 1000 }));
       expect(refetch).toHaveBeenCalledTimes(3);
     } finally {
@@ -117,6 +158,35 @@ describe("startLive", () => {
       historyStore.setState(() => ({ samples: [] }));
       if (hiddenDescriptor) Object.defineProperty(document, "hidden", hiddenDescriptor);
       else Reflect.deleteProperty(document, "hidden");
+    }
+  });
+
+  it("does not start in parity mode", async () => {
+    const parity = window.__BURROW_PARITY__;
+    window.__BURROW_PARITY__ = true;
+    vi.resetModules();
+    try {
+      const { startLive: startParityLive } = await import("./live");
+      startEventsMock.mockClear();
+      startParityLive(new QueryClient());
+      expect(startEventsMock).not.toHaveBeenCalled();
+    } finally {
+      window.__BURROW_PARITY__ = parity;
+      vi.resetModules();
+    }
+  });
+
+  it("returns before touching browser APIs during server rendering", async () => {
+    vi.stubGlobal("window", undefined);
+    vi.resetModules();
+    try {
+      const { startLive: startServerLive } = await import("./live");
+      startEventsMock.mockClear();
+      expect(() => startServerLive(new QueryClient())).not.toThrow();
+      expect(startEventsMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
     }
   });
 });

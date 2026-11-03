@@ -63,8 +63,8 @@ export function TabContent({ value, children, className }: { value: string; chil
   useEffect(() => {
     if (previousValue.current === value) return;
     previousValue.current = value;
-    const element = ref.current;
-    if (!element) return;
+    // This ref is attached to the content div rendered below before effects run.
+    const element = ref.current!;
     const from = animation.current?.playState === "running" ? Number.parseFloat(getComputedStyle(element).opacity) : 0;
     animation.current?.cancel();
     animation.current = fadeIn(element, Number.isFinite(from) ? from : 0);

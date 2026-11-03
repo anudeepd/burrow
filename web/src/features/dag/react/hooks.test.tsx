@@ -9,7 +9,8 @@
 import { StrictMode } from "react";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useElementSize, useMediaQuery, useRafValue, useSampleClock } from "./hooks";
+import { useElementSize, useMediaQuery, useMotion, useRafValue, useSampleClock } from "./hooks";
+import { parityStore, prefsMotionProbe } from "~/state/parity";
 
 const originalMatchMedia = Object.getOwnPropertyDescriptor(window, "matchMedia");
 const originalVisibility = Object.getOwnPropertyDescriptor(document, "visibilityState");
@@ -46,12 +47,25 @@ function SizeProbe() {
   );
 }
 
+function MissingSizeProbe() {
+  const [, size] = useElementSize<HTMLDivElement>();
+  return (
+    <span data-testid="missing-size">
+      {size.width}x{size.height}
+    </span>
+  );
+}
+
 function ClockProbe({ interval }: { interval: number }) {
   return <span data-testid="clock">{useSampleClock(interval)}</span>;
 }
 
-function MediaProbe({ query, fallback = false }: { query: string; fallback?: boolean }) {
+function MediaProbe({ query, fallback }: { query: string; fallback?: boolean }) {
   return <span data-testid="media">{useMediaQuery(query, fallback) ? "matches" : "no match"}</span>;
+}
+
+function MotionProbe() {
+  return <span data-testid="motion">{useMotion() ? "enabled" : "disabled"}</span>;
 }
 
 describe("useRafValue", () => {
@@ -90,6 +104,14 @@ describe("useRafValue", () => {
     await act(frame);
     expect(getByTestId("settled").textContent).toBe("2");
   });
+
+  it("coalesces multiple updates into the latest animation-frame value", async () => {
+    const { getByTestId, rerender } = render(<Probe value={1} />);
+    rerender(<Probe value={2} />);
+    rerender(<Probe value={3} />);
+    await act(frame);
+    expect(getByTestId("settled").textContent).toBe("3");
+  });
 });
 
 describe("DAG utility hooks", () => {
@@ -119,6 +141,8 @@ describe("DAG utility hooks", () => {
     height = 100;
     act(() => notifyResize?.([] as unknown as ResizeObserverEntry[], {} as ResizeObserver));
     expect(observed.getByTestId("size").textContent).toBe("200x100");
+    act(() => notifyResize?.([] as unknown as ResizeObserverEntry[], {} as ResizeObserver));
+    expect(observed.getByTestId("size").textContent).toBe("200x100");
     observed.unmount();
     expect(disconnect).toHaveBeenCalledOnce();
 
@@ -130,6 +154,10 @@ describe("DAG utility hooks", () => {
     expect(fallback.getByTestId("size").textContent).toBe("320x100");
   });
 
+  it("ignores a missing element ref", () => {
+    expect(render(<MissingSizeProbe />).getByTestId("missing-size").textContent).toBe("0x0");
+  });
+
   it("pauses its sample clock in hidden tabs and supports a disabled interval", () => {
     vi.useFakeTimers();
     vi.setSystemTime(1_000);
@@ -139,6 +167,9 @@ describe("DAG utility hooks", () => {
 
     vi.setSystemTime(1_100);
     act(() => vi.advanceTimersByTime(100));
+    expect(view.getByTestId("clock").textContent).toBe("1200");
+
+    act(() => document.dispatchEvent(new Event("visibilitychange")));
     expect(view.getByTestId("clock").textContent).toBe("1200");
 
     Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
@@ -154,6 +185,14 @@ describe("DAG utility hooks", () => {
     vi.setSystemTime(1_300);
     act(() => vi.advanceTimersByTime(200));
     expect(view.getByTestId("clock").textContent).toBe("1400");
+  });
+
+  it("starts no timer for a tab that is initially hidden and cleans up safely", () => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
+    const view = render(<ClockProbe interval={100} />);
+    expect(view.getByTestId("clock").textContent).toBe(String(Date.now()));
+    view.unmount();
   });
 
   it("uses the media-query fallback when unavailable and responds to changes when supported", () => {
@@ -190,5 +229,23 @@ describe("DAG utility hooks", () => {
     expect(supported.getByTestId("media").textContent).toBe("matches");
     supported.unmount();
     expect(removeEventListener).toHaveBeenCalledOnce();
+  });
+
+  it("gates motion on parity mode and the reduced-motion preference", () => {
+    act(() => {
+      parityStore.setState(() => ({ enabled: true }));
+      prefsMotionProbe.setState(() => ({ reduced: false }));
+    });
+    const view = render(<MotionProbe />);
+    expect(view.getByTestId("motion").textContent).toBe("disabled");
+
+    act(() => {
+      parityStore.setState(() => ({ enabled: false }));
+      prefsMotionProbe.setState(() => ({ reduced: true }));
+    });
+    expect(view.getByTestId("motion").textContent).toBe("disabled");
+
+    act(() => prefsMotionProbe.setState(() => ({ reduced: false })));
+    expect(view.getByTestId("motion").textContent).toBe("enabled");
   });
 });

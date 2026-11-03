@@ -9,6 +9,30 @@ afterEach(() => {
 });
 
 describe("scroll overflow cues", () => {
+  it("uses default observation settings and tolerates refs before their elements exist", () => {
+    const observed: Element[] = [];
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe(element: Element) {
+          observed.push(element);
+        }
+        disconnect() {}
+      },
+    );
+    const viewport = document.createElement("div");
+    const content = document.createElement("div");
+    viewport.append(content);
+    const { unmount } = renderHook(() => useHasMoreBelow({ current: viewport }));
+    expect(observed).toEqual([viewport, content]);
+    unmount();
+
+    const emptyViewport = document.createElement("div");
+    renderHook(() => useHasMoreBelow({ current: emptyViewport }));
+    expect(observed).toEqual([viewport, content, emptyViewport]);
+    renderHook(() => useHasMoreBelow({ current: null }));
+  });
+
   it("updates the bottom fade from the measured remaining content", () => {
     vi.stubGlobal(
       "ResizeObserver",

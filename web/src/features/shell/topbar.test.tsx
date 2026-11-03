@@ -17,6 +17,7 @@ const read = (path: string) => JSON.parse(readFileSync(resolve(process.cwd(), pa
 const meta = read("src/api/schemas/samples/meta.json") as Meta;
 const info = read("../fixtures/rm/overview/info.json") as { clusterInfo: ClusterInfo };
 const metrics = read("../fixtures/rm/overview/metrics.json") as { clusterMetrics: ClusterMetrics };
+const originalUserAgent = Object.getOwnPropertyDescriptor(navigator, "userAgent");
 
 function renderTopbar() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
@@ -46,6 +47,7 @@ afterEach(() => {
     lastUpstream: null,
     clockSkewMs: 0,
   }));
+  if (originalUserAgent) Object.defineProperty(navigator, "userAgent", originalUserAgent);
 });
 
 describe("Topbar", () => {
@@ -120,10 +122,33 @@ describe("Topbar", () => {
         errorUpdatedAt: Date.now(),
         errorUpdateCount: 1,
       });
+      const infoQuery = client.getQueryCache().find({ queryKey: q.info().queryKey })!;
+      infoQuery.setState({
+        ...infoQuery.state,
+        status: "error",
+        error: "raw identity refresh failed",
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: 1,
+      });
+      const metricsQuery = client.getQueryCache().find({ queryKey: q.metrics().queryKey })!;
+      metricsQuery.setState({
+        ...metricsQuery.state,
+        status: "error",
+        error: new Error("metrics refresh failed"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: 1,
+      });
     });
-    await waitFor(() => expect(screen.getByTestId("connection").getAttribute("aria-label")).toContain("1 failed"));
+    await waitFor(() => expect(screen.getByTestId("connection").getAttribute("aria-label")).toContain("3 failed"));
     fireEvent.click(screen.getByTestId("connection"));
-    expect((await screen.findByRole("alert")).textContent).toContain("Burrow service metadata failed");
+    const errors = await screen.findAllByRole("alert");
+    expect(errors.map((error) => error.textContent)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Burrow service metadata failed: metadata refresh failed"),
+        expect.stringContaining("ResourceManager cluster info failed: raw identity refresh failed"),
+        expect.stringContaining("ResourceManager cluster metrics failed: metrics refresh failed"),
+      ]),
+    );
 
     vi.stubGlobal(
       "fetch",
@@ -146,5 +171,32 @@ describe("Topbar", () => {
     fireEvent.pointerUp(utc, { button: 0, pointerType: "mouse" });
     fireEvent.click(utc);
     await waitFor(() => expect(prefsStore.get().tz).toBe("utc"));
+  });
+
+  it("formats missing upstream fields, unconfigured services and negative clock skew", async () => {
+    const { client } = renderTopbar();
+    client.setQueryData(q.info().queryKey, { clusterInfo: null } as never);
+    client.setQueryData(q.meta().queryKey, {
+      ...meta,
+      rm: { ...meta.rm, active: null, reachable: null },
+      services: {
+        sparkHistory: { configured: true, urls: [], url: null, reachable: null },
+        jobHistory: { configured: true, urls: [], url: "http://jhs:19888", reachable: null },
+        timeline: { configured: false },
+      },
+    } as never);
+    connectionStore.setState((state) => ({ ...state, clockSkewMs: -2300 }));
+    fireEvent.click(screen.getByRole("button", { name: "Connection: healthy" }));
+    expect(await screen.findByText("-2s")).toBeTruthy();
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    expect(screen.getByText("configured")).toBeTruthy();
+    expect(screen.getByText("http://jhs:19888")).toBeTruthy();
+    expect(screen.getByText("not configured")).toBeTruthy();
+  });
+
+  it("uses the Apple command key after mounting on macOS", async () => {
+    Object.defineProperty(navigator, "userAgent", { configurable: true, value: "Macintosh" });
+    renderTopbar();
+    await waitFor(() => expect(screen.getByRole("button", { name: /Search applications and pages \(⌘ K\)/ })).toBeTruthy());
   });
 });

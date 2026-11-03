@@ -31,14 +31,14 @@ import { Tile, TileLabel, Unavailable } from "./Chrome";
 import { Tooltip } from "~/ui/tooltip";
 import { pctText, resourceText, resourceValueText } from "./format";
 
-function Metric({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
+function Metric({ label, children, hint }: { label: string; children: React.ReactNode; hint: string }) {
   const tile = (
     <Tile className="flex flex-col justify-center gap-1">
       <TileLabel>{label}</TileLabel>
       <div className="flex min-w-0 flex-wrap items-baseline gap-x-1 text-body">{children}</div>
     </Tile>
   );
-  return hint ? <Tooltip label={hint}>{tile}</Tooltip> : tile;
+  return <Tooltip label={hint}>{tile}</Tooltip>;
 }
 
 export function SchedulerMetrics({
@@ -184,7 +184,7 @@ export function SchedulerMetrics({
               </Datum>
             ) : (
               <Datum field="scheduler.derived.minAllocationText" raw={minRawText} fmt="text" className="tnum">
-                {minDisplayText ?? minRawText}
+                {minDisplayText!}
               </Datum>
             )}
           </Metric>

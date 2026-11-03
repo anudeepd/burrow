@@ -120,7 +120,7 @@ export function layoutRequest(
       clusters: graph.clusters.map((c) => ({
         id: c.id,
         parentId: c.parentId,
-        depth: depth.get(c.id) ?? 0,
+        depth: depth.get(c.id)!,
         label: c.label,
       })),
     },

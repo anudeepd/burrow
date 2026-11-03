@@ -9,7 +9,7 @@ window.__BURROW_PARITY__ = true;
 const { cleanup, fireEvent, render, screen, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
-const { StreamingPage } = await import("./StreamingPage");
+const { StreamingPage, streamingBatchWindowSize } = await import("./StreamingPage");
 const { SparkProvider } = await import("../ui/context");
 const { sp } = await import("../data/queries");
 const { sparkSearch } = await import("../data/search");
@@ -21,7 +21,7 @@ const stats = JSON.parse(readFileSync(`${FIXTURE}/final.streaming.statistics.jso
 const batches = JSON.parse(readFileSync(`${FIXTURE}/final.streaming.batches.json`, "utf8")) as SparkStreamingBatch[];
 const receivers = JSON.parse(readFileSync(`${FIXTURE}/final.streaming.receivers.json`, "utf8")) as SparkStreamingReceiver[];
 
-function renderStreamingPage(search = "", configure?: (client: QueryClientType) => void) {
+function renderStreamingPage(search = "", configure?: (client: QueryClientType) => void, kind: "static" | "live" = "static") {
   const root = createRootRoute();
   const app = createRoute({ getParentRoute: () => root, path: "/apps/$appId" });
   const spark = createRoute({ getParentRoute: () => app, path: "spark" });
@@ -36,15 +36,13 @@ function renderStreamingPage(search = "", configure?: (client: QueryClientType) 
     history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/streaming${search}`] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, retryOnMount: false, refetchOnMount: false } } });
-  client.setQueryData(sp.streamingStatistics(APP_ID, "static", null).queryKey, stats);
-  client.setQueryData(sp.streamingBatches(APP_ID, "static", null).queryKey, batches);
-  client.setQueryData(sp.streamingReceivers(APP_ID, "static", null).queryKey, receivers);
+  client.setQueryData(sp.streamingStatistics(APP_ID, kind, null).queryKey, stats);
+  client.setQueryData(sp.streamingBatches(APP_ID, kind, null).queryKey, batches);
+  client.setQueryData(sp.streamingReceivers(APP_ID, kind, null).queryKey, receivers);
   configure?.(client);
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkProvider
-        value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
-      >
+      <SparkProvider value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}>
         <RouterProvider router={router} />
       </SparkProvider>
     </QueryClientProvider>,
@@ -98,6 +96,12 @@ describe("StreamingPage", () => {
     fireEvent.pointerUp(processing, { button: 0, pointerType: "mouse" });
     fireEvent.click(processing);
     await waitFor(() => expect(router.state.location.search.status).toBe("PROCESSING"));
+    fireEvent.click(within(batchRegion).getByRole("combobox", { name: "Batch status filter" }));
+    const allStatuses = await screen.findByRole("option", { name: "All statuses" });
+    fireEvent.pointerDown(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allStatuses);
+    await waitFor(() => expect(router.state.location.search.status).toBeUndefined());
 
     fireEvent.click(within(batchRegion).getByRole("button", { name: "Export" }));
     fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
@@ -118,6 +122,18 @@ describe("StreamingPage", () => {
     await waitFor(() => expect(router.state.location.search.size).toBe("2"));
     fireEvent.blur(newest);
     expect((newest as HTMLInputElement).value).toBe("2");
+    fireEvent.change(newest, { target: { value: "0" } });
+    expect(router.state.location.search.size).toBe("2");
+    fireEvent.change(newest, { target: { value: "200" } });
+    await waitFor(() => expect(router.state.location.search.size).toBeUndefined());
+    fireEvent.blur(newest);
+  });
+
+  it("accepts only valid streaming batch window sizes", () => {
+    expect(streamingBatchWindowSize("not a number")).toBeUndefined();
+    expect(streamingBatchWindowSize("0")).toBeUndefined();
+    expect(streamingBatchWindowSize("4.8")).toBe(4);
+    expect(streamingBatchWindowSize("200")).toBe(200);
   });
 
   it("distinguishes a non-streaming application from a missing Spark backend", async () => {
@@ -141,6 +157,27 @@ describe("StreamingPage", () => {
 
     renderStreamingPage("", (client) => markStatsError(client, new ApiError("unknown API group '/api/spark'", "http", 404, "not_found")));
     expect(await screen.findByText(/This Burrow binary has no/)).toBeTruthy();
+  });
+
+  it("shows loading skeletons while streaming statistics or batch data are pending", async () => {
+    const statsKey = sp.streamingStatistics(APP_ID, "static", null).queryKey;
+    const pendingStats = renderStreamingPage("", (client) => {
+      client.setQueryDefaults(statsKey, { enabled: false });
+      client.removeQueries({ queryKey: statsKey, exact: true });
+    });
+    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
+    pendingStats.unmount();
+
+    const originalBatches = sp.streamingBatches;
+    const batchesSpy = vi.spyOn(sp, "streamingBatches").mockImplementation((appId, kind, attempt) => ({
+      ...originalBatches(appId, kind, attempt),
+      queryFn: () => new Promise<SparkStreamingBatch[]>(() => {}),
+    }));
+    const batchesKey = originalBatches(APP_ID, "static", null).queryKey;
+    const pendingBatches = renderStreamingPage("", (client) => client.removeQueries({ queryKey: batchesKey, exact: true }));
+    expect((await screen.findAllByRole("status", { name: "Loading" })).length).toBeGreaterThan(0);
+    pendingBatches.unmount();
+    batchesSpy.mockRestore();
   });
 
   it("keeps captured statistics under stale errors and renders batch and receiver failures", async () => {
@@ -250,6 +287,79 @@ describe("StreamingPage", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: /CSV/ }));
     expect(createUrl).toHaveBeenCalledOnce();
     expect(clickAnchor).toHaveBeenCalledOnce();
+  });
+
+  it("handles sparse batch and receiver fields while keeping optional receiver columns for richer rows", async () => {
+    const sparseBatch: SparkStreamingBatch = {
+      ...batches[0]!,
+      batchId: 501,
+      batchTime: null,
+      status: null,
+      processingTime: null,
+      numCompletedOutputOps: null,
+    };
+    const sparseReceiver: SparkStreamingReceiver = {
+      ...receivers[0]!,
+      streamId: null,
+      streamName: "sparse receiver",
+      avgEventRateUnit: "events/second",
+      isActive: null,
+      executorId: null,
+      executorHost: null,
+      schedulerDelay: null,
+      lastErrorTime: null,
+      lastErrorMessage: null,
+      lastError: null,
+    };
+    const noIdentityReceiver: SparkStreamingReceiver = { ...sparseReceiver, streamName: null };
+    const richReceiver: SparkStreamingReceiver = {
+      ...sparseReceiver,
+      streamId: 503,
+      streamName: "column keeper",
+      isActive: true,
+      executorId: "executor-3",
+      schedulerDelay: 2,
+      lastErrorMessage: "retained error",
+    };
+    renderStreamingPage("", (client) => {
+      client.setQueryData(sp.streamingBatches(APP_ID, "static", null).queryKey, [sparseBatch, { ...batches[1]!, batchId: 500 }]);
+      client.setQueryData(sp.streamingReceivers(APP_ID, "static", null).queryKey, [sparseReceiver, noIdentityReceiver, richReceiver]);
+    });
+
+    const batchTable = await screen.findByRole("table", { name: "Streaming batches" });
+    expect(batchTable.querySelector('[data-yf="spark.streaming.batches.status"][data-yn="1"]')).not.toBeNull();
+    const receiverTable = await screen.findByRole("table", { name: "Streaming receivers" });
+    expect(receiverTable.textContent).toContain("events/second");
+    expect(receiverTable.textContent).toContain("sparse receiver");
+    expect(receiverTable.textContent).toContain("executor-3");
+    expect(receiverTable.querySelector('[data-yf="spark.streaming.receivers.isActive"][data-yn="1"]')).not.toBeNull();
+  });
+
+  it("omits receiver columns when every receiver leaves them empty", async () => {
+    const minimal: SparkStreamingReceiver = {
+      ...receivers[0]!,
+      streamId: 99,
+      streamName: "minimal receiver",
+      isActive: null,
+      executorId: null,
+      executorHost: null,
+      schedulerDelay: null,
+      lastErrorTime: null,
+      lastErrorMessage: null,
+      lastError: null,
+    };
+    renderStreamingPage("", (client) => {
+      client.setQueryData(sp.streamingReceivers(APP_ID, "static", null).queryKey, [minimal]);
+    });
+    const table = await screen.findByRole("table", { name: "Streaming receivers" });
+    for (const id of ["active", "executor", "receiverSchedulerDelay", "lastError"]) {
+      expect(table.querySelector(`[data-col="${id}"]`), id).toBeNull();
+    }
+  });
+
+  it("labels the newest batch on a live stream", async () => {
+    renderStreamingPage("", undefined, "live");
+    expect(await screen.findByText(/newest batch/)).toBeTruthy();
   });
 
   it("keeps the complete receiver schema visible when Spark reports no receivers", async () => {

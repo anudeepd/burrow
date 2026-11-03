@@ -18,9 +18,9 @@ export function DetailTableScroller({ children, className, ariaLabel }: { childr
   }, []);
 
   useEffect(() => {
-    const scroller = scrollerRef.current;
-    const content = scroller?.firstElementChild;
-    if (!scroller) return;
+    // The region is rendered unconditionally above, so its ref is set before this effect runs.
+    const scroller = scrollerRef.current!;
+    const content = scroller.firstElementChild;
     const observer = new ResizeObserver(syncOverflowCue);
     observer.observe(scroller);
     if (content) observer.observe(content);

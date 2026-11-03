@@ -22,7 +22,11 @@ const JOB = {
 const STAGES = JSON.parse(readFileSync(`${FIXTURE_ROOT}/rest/final.stages.details.json`, "utf8")) as never;
 const DAG = JSON.parse(readFileSync(`${FIXTURE_ROOT}/dag-job-2.json`, "utf8")) as never;
 
-function renderJobPage(initialUrl: string) {
+function renderJobPage(
+  initialUrl: string,
+  options: { kind?: "static" | "live"; job?: unknown; stages?: unknown; wrapScroll?: boolean } = {},
+) {
+  const kind = options.kind ?? "static";
   const rootRoute = createRootRoute();
   const appRoute = createRoute({ getParentRoute: () => rootRoute, path: "/apps/$appId" });
   const sparkRoute = createRoute({ getParentRoute: () => appRoute, path: "spark" });
@@ -31,7 +35,7 @@ function renderJobPage(initialUrl: string) {
     path: "jobs/$jobId",
     validateSearch: sparkSearch,
     component: () => (
-      <div className="burrow-page-scroll">
+      <div className={options.wrapScroll === false ? undefined : "burrow-page-scroll"}>
         <JobDetailPage />
       </div>
     ),
@@ -43,15 +47,13 @@ function renderJobPage(initialUrl: string) {
     history: createMemoryHistory({ initialEntries: [initialUrl] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
-  client.setQueryData(sp.job(APP_ID, JOB_ID, "static", null).queryKey, JOB);
-  client.setQueryData(sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey, STAGES);
+  client.setQueryData(sp.job(APP_ID, JOB_ID, kind, null).queryKey, options.job ?? JOB);
+  client.setQueryData(sp.stages(APP_ID, { kind, attempt: null }).queryKey, options.stages ?? STAGES);
   client.setQueryData(sp.dagJob(APP_ID, JOB_ID, null).queryKey, DAG);
 
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkProvider
-        value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
-      >
+      <SparkProvider value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}>
         <RouterProvider router={router} />
       </SparkProvider>
     </QueryClientProvider>,
@@ -111,6 +113,7 @@ describe("JobDetailPage DAG expansion URL state", () => {
       fetchStatus: "idle",
     });
     expect((await screen.findAllByText(/Cannot reach Burrow at \/api\/spark\//)).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     failed.unmount();
   });
 
@@ -199,5 +202,70 @@ describe("JobDetailPage DAG expansion URL state", () => {
 
     fireEvent.click(table.querySelectorAll('[role="row"]')[1]!);
     await waitFor(() => expect(router.state.location.pathname).toBe(`/apps/${APP_ID}/spark/stages/4/0`));
+  });
+
+  it("renders differing job names and failed stages with missing attempt metrics", { timeout: 30_000 }, async () => {
+    const stages = STAGES as unknown as Record<string, unknown>[];
+    const stage = {
+      ...stages.find((item) => item.stageId === 4)!,
+      attemptId: null,
+      status: "FAILED",
+      numActiveTasks: null,
+      numCompleteTasks: null,
+    };
+    const job = { ...(JOB as Record<string, unknown>), description: "optimized query", name: "original query", stageIds: [4] };
+    const { router } = renderJobPage(`/apps/${APP_ID}/spark/jobs/${JOB_ID}?stage=4`, { kind: "live", job, stages: [stage] });
+
+    expect(await screen.findByText("optimized query")).toBeTruthy();
+    expect(screen.getByText("original query")).toBeTruthy();
+    expect(screen.getByText(/1 failed/)).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: "4" }).some((link) => link.getAttribute("href")?.includes("/spark/stages/4/0"))).toBe(true);
+
+    const table = await screen.findByRole("table", { name: `Stages of job ${JOB_ID}` });
+    fireEvent.click(table.querySelectorAll('[role="row"]')[1]!);
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/apps/${APP_ID}/spark/stages/4/0`));
+  });
+
+  it("handles jobs with no stages and stages that are still loading", { timeout: 30_000 }, async () => {
+    const withoutStages = renderJobPage(`/apps/${APP_ID}/spark/jobs/${JOB_ID}`, {
+      job: { ...(JOB as Record<string, unknown>), stageIds: [] },
+    });
+    expect(await screen.findByRole("heading", { name: "Spark reports no stages for this job" })).toBeTruthy();
+    withoutStages.unmount();
+
+    const loading = renderJobPage(`/apps/${APP_ID}/spark/jobs/${JOB_ID}`);
+    const stagesQuery = loading.client.getQueryCache().find({
+      queryKey: sp.stages(APP_ID, { kind: "static", attempt: null }).queryKey,
+      exact: true,
+    })!;
+    stagesQuery.setState({ ...stagesQuery.state, data: undefined, status: "pending", error: null, fetchStatus: "fetching" });
+    expect((await screen.findAllByRole("status", { name: "Loading" })).length).toBeGreaterThan(0);
+    loading.unmount();
+  });
+
+  it("sorts without a page scroller and tolerates a scroller removed during navigation", { timeout: 30_000 }, async () => {
+    const noScroller = renderJobPage(`/apps/${APP_ID}/spark/jobs/${JOB_ID}`, { wrapScroll: false });
+    let table = await screen.findByRole("table", { name: `Stages of job ${JOB_ID}` });
+    fireEvent.click(table.querySelector('[data-col="stageId"] button')!);
+    await waitFor(() => expect(noScroller.router.state.location.search.sort).toBe("stageId"));
+    noScroller.unmount();
+
+    const withScroller = renderJobPage(`/apps/${APP_ID}/spark/jobs/${JOB_ID}`);
+    table = await screen.findByRole("table", { name: `Stages of job ${JOB_ID}` });
+    const scroller = withScroller.container.querySelector<HTMLElement>(".burrow-page-scroll")!;
+    const querySelector = document.querySelector.bind(document);
+    let scrollerQueries = 0;
+    const querySelectorSpy = vi.spyOn(document, "querySelector").mockImplementation(((selector: string) => {
+      if (selector === ".burrow-page-scroll") {
+        scrollerQueries += 1;
+        return (scrollerQueries === 1 ? scroller : null) as never;
+      }
+      return querySelector(selector);
+    }) as typeof document.querySelector);
+    fireEvent.click(table.querySelector('[data-col="stageId"] button')!);
+    await waitFor(() => expect(withScroller.router.state.location.search.sort).toBe("stageId"));
+    await waitFor(() => expect(scrollerQueries).toBeGreaterThan(1));
+    querySelectorSpy.mockRestore();
+    withScroller.unmount();
   });
 });

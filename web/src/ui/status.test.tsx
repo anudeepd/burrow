@@ -29,6 +29,14 @@ describe("StatusDot motion", () => {
     const { container } = render(<StatusDot domain="app.state" state="FINISHED" />);
     expect(container.querySelector(".burrow-dot-pulse")).toBeNull();
   });
+
+  it("can hide its accessible label when embedded beside visible text", () => {
+    const { container } = render(<StatusDot domain="node.state" state="UNKNOWN" label={false} className="custom-dot" />);
+    const dot = container.querySelector<HTMLElement>("span");
+    expect(dot?.getAttribute("aria-hidden")).toBe("true");
+    expect(dot?.getAttribute("aria-label")).toBeNull();
+    expect(dot?.className).toContain("custom-dot");
+  });
 });
 
 describe("StatusPill motion", () => {
@@ -68,6 +76,19 @@ describe("StatusPill motion", () => {
     const pill = container.querySelector<HTMLElement>(".burrow-pill");
     expect(pill?.className).toContain("burrow-drain");
     expect(pill?.dataset.visible).toBe("false");
+  });
+
+  it("uses compact sizing, custom labels, and the idle treatment for unknown states", () => {
+    const { container } = render(
+      <StatusPill domain="node.state" state="FUTURE_STATE" size="sm" className="custom-pill">
+        Unmapped
+      </StatusPill>,
+    );
+    const pill = container.querySelector<HTMLElement>(".burrow-pill");
+    expect(pill?.className).toContain("border-dashed");
+    expect(pill?.className).toContain("custom-pill");
+    expect(pill?.textContent).toContain("Unmapped");
+    expect(pill?.querySelector("svg")?.getAttribute("class")).toContain("size-3");
   });
 
   it("still stamps the parity datum when the pill is the datum (field given)", () => {

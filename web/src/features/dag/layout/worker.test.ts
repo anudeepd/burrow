@@ -50,9 +50,23 @@ afterEach(() => {
 describe("DAG layout worker protocol", () => {
   it("rejects malformed messages without invoking ELK", async () => {
     const worker = await loadWorker();
-    worker.dispatch({ requestId: 1, graph: { nodes: [], edges: [] } });
+    for (const malformed of [
+      null,
+      "message",
+      { graph: { nodes: [], edges: [], clusters: [] } },
+      { requestId: 1 },
+      { requestId: 1, graph: null },
+      { requestId: 1, graph: "graph" },
+      { requestId: 1, graph: {} },
+      { requestId: 1, graph: { edges: [], clusters: [] } },
+      { requestId: 1, graph: { nodes: [], clusters: [] } },
+      { requestId: 1, graph: { nodes: [], edges: [], clusters: {} } },
+    ]) {
+      worker.dispatch(malformed);
+    }
 
     expect(worker.postMessage).toHaveBeenCalledWith({ requestId: -1, ok: false, error: "malformed layout request" });
+    expect(worker.postMessage).toHaveBeenCalledTimes(10);
     expect(runLayout).not.toHaveBeenCalled();
   });
 

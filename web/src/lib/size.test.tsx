@@ -7,9 +7,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function WidthProbe({ fallback = 0 }: { fallback?: number }) {
+function WidthProbe({ fallback = 0, attach = true }: { fallback?: number; attach?: boolean }) {
   const [ref, width] = useElementWidth<HTMLDivElement>(fallback);
-  return <div ref={ref} data-testid="width" data-width={width} />;
+  return attach ? <div ref={ref} data-testid="width" data-width={width} /> : null;
 }
 
 describe("useElementWidth", () => {
@@ -17,6 +17,24 @@ describe("useElementWidth", () => {
     vi.stubGlobal("ResizeObserver", undefined);
     render(<WidthProbe fallback={24} />);
     expect(screen.getByTestId("width").getAttribute("data-width")).toBe("24");
+  });
+
+  it("defaults the initial width to zero", () => {
+    vi.stubGlobal("ResizeObserver", undefined);
+    render(<WidthProbeDefault />);
+    expect(screen.getByTestId("default-width").getAttribute("data-width")).toBe("0");
+  });
+
+  it("does not observe when the ref is not attached", () => {
+    const observe = vi.fn();
+    class TestResizeObserver {
+      observe = observe;
+      disconnect = vi.fn();
+      unobserve = vi.fn();
+    }
+    vi.stubGlobal("ResizeObserver", TestResizeObserver);
+    render(<WidthProbe attach={false} />);
+    expect(observe).not.toHaveBeenCalled();
   });
 
   it("updates only for positive observed widths and disconnects on unmount", () => {
@@ -53,3 +71,8 @@ describe("useElementWidth", () => {
     expect(disconnect).toHaveBeenCalledOnce();
   });
 });
+
+function WidthProbeDefault() {
+  const [ref, width] = useElementWidth<HTMLDivElement>();
+  return <div ref={ref} data-testid="default-width" data-width={width} />;
+}

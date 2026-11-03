@@ -20,7 +20,6 @@ import { useNow } from "./use-now";
 
 /** ⌘ on Apple hardware, Ctrl elsewhere. Read once on the client; the server render shows "Ctrl" (harmless). */
 function modKey(): string {
-  if (typeof navigator === "undefined") return "Ctrl";
   return /Mac|iPhone|iPad/.test(navigator.userAgent) ? "⌘" : "Ctrl";
 }
 
@@ -98,7 +97,7 @@ function LiveControls() {
   const updatedDot = useRef<HTMLSpanElement>(null);
   useResponsePulse(updatedDot, lastOkAt, interval);
   const now = useNow(1000);
-  const options = LIVE_INTERVALS.map((ms) => ({ value: String(ms), label: ms < 1000 ? `${ms} ms` : `${ms / 1000} s` }));
+  const options = LIVE_INTERVALS.map((ms) => ({ value: String(ms), label: `${ms / 1000} s` }));
   return (
     <div data-testid="live-controls" className="flex h-7 items-center gap-1 rounded-md border border-seam bg-well pr-1.5 pl-0.5">
       <Tooltip label={pausedNow ? "Resume live updates" : "Pause live updates"}>

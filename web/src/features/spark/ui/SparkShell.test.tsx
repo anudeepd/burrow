@@ -5,10 +5,13 @@ vi.mock("~/api/client", async (importOriginal) => {
   return { ...actual, apiGet: vi.fn().mockRejectedValue(new Error("offline")) };
 });
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
-const { SparkShell } = await import("./SparkShell");
+const { attemptValue, SparkShell } = await import("./SparkShell");
+const { apiGet, ApiError } = await import("~/api/client");
+const { parityStore } = await import("~/state/parity");
+const { prefsStore, setPrefs } = await import("~/state/prefs");
 const { sp } = await import("../data/queries");
 const { sparkSearch } = await import("../data/search");
 
@@ -40,6 +43,7 @@ function renderShell(
   search = "",
   mode: "live-proxy" | "history" | "none" = "live-proxy",
   configure?: (client: InstanceType<typeof QueryClient>) => void,
+  validate: (search: Record<string, unknown>) => Record<string, unknown> = sparkSearch,
 ) {
   const root = createRootRoute();
   const app = createRoute({ getParentRoute: () => root, path: "/apps/$appId" });
@@ -48,7 +52,7 @@ function renderShell(
     createRoute({
       getParentRoute: () => spark,
       path,
-      validateSearch: sparkSearch,
+      validateSearch: validate,
       component: () => (
         <SparkShell appId={APP_ID}>
           <p>Page content</p>
@@ -78,9 +82,25 @@ function renderShell(
   return { ...view, router, client };
 }
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.mocked(apiGet).mockReset().mockRejectedValue(new Error("offline"));
+  parityStore.setState(() => ({ enabled: false }));
+  prefsStore.setState(() => ({ ...prefsStore.get(), livePaused: false }));
+});
 
 describe("SparkShell", () => {
+  it("uses the attempt index when Spark does not supply an attempt id", () => {
+    expect(attemptValue({} as never, 0)).toBe("0");
+    expect(attemptValue({ attemptId: "7" } as never, 1)).toBe("7");
+  });
+
+  it("normalizes numeric attempt search values to strings", async () => {
+    const view = renderShell("", "live-proxy", undefined, (search) => ({ ...sparkSearch(search), attempt: 2 }));
+    expect(await screen.findByRole("heading", { name: "word count stream" })).toBeTruthy();
+    expect(view.container.textContent).toContain("4.0.0");
+  });
+
   it("shows resolved application/source details, selects the resolved attempt, and builds page navigation", async () => {
     const view = renderShell();
 
@@ -126,6 +146,55 @@ describe("SparkShell", () => {
     }
   });
 
+  it("ignores a click already handled by the browser", async () => {
+    const { client, router } = renderShell();
+    await screen.findByRole("heading", { name: "word count stream" });
+    const prefetch = vi.spyOn(client, "prefetchQuery");
+    const link = screen.getByRole("link", { name: "Stages" });
+    const nav = screen.getByRole("navigation", { name: "Spark pages" });
+    const preventClick = (event: Event) => event.preventDefault();
+    nav.addEventListener("click", preventClick, true);
+    fireEvent.click(link);
+    nav.removeEventListener("click", preventClick, true);
+    for (const init of [{ button: 1 }, { metaKey: true }, { ctrlKey: true }, { shiftKey: true }, { altKey: true }]) {
+      fireEvent.click(link, init);
+    }
+
+    expect(prefetch).not.toHaveBeenCalled();
+    expect(router.state.location.pathname).toContain("/spark/jobs");
+  });
+
+  it("reveals the active navigation tab at either edge", async () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => undefined);
+    renderShell();
+    await screen.findByRole("heading", { name: "word count stream" });
+    const nav = screen.getByRole("navigation", { name: "Spark pages" });
+    const activeTab = screen.getByRole("link", { name: "Jobs" });
+    Object.defineProperty(nav, "clientWidth", { configurable: true, value: 100 });
+    Object.defineProperty(nav, "scrollLeft", { configurable: true, writable: true, value: 30 });
+    vi.spyOn(nav, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 100, 40));
+    const tabBounds = vi.spyOn(activeTab, "getBoundingClientRect");
+    const reveal = frames.at(-1)!;
+
+    vi.spyOn(nav, "querySelector").mockReturnValue(null);
+    act(() => reveal(0));
+    vi.mocked(nav.querySelector).mockRestore();
+
+    tabBounds.mockReturnValue(new DOMRect(-20, 0, 40, 40));
+    act(() => reveal(0));
+    expect(nav.scrollLeft).toBe(10);
+
+    Object.defineProperty(nav, "scrollLeft", { configurable: true, writable: true, value: 0 });
+    tabBounds.mockReturnValue(new DOMRect(90, 0, 50, 40));
+    act(() => reveal(0));
+    expect(nav.scrollLeft).toBe(40);
+  });
+
   it("shows an unavailable source without a URL and selects an explicit valid attempt", async () => {
     const { container } = renderShell("?attempt=1", "none");
     expect(await screen.findByRole("heading", { name: "word count stream" })).toBeTruthy();
@@ -135,11 +204,94 @@ describe("SparkShell", () => {
     expect(container.textContent).toContain("alice");
   });
 
-  it("prefetches missing page data, shows the pending tab, and navigates after a failed prefetch settles", async () => {
+  it("explains missing Spark routes, honors source availability, and reflects paused parity modes", async () => {
+    vi.mocked(apiGet).mockRejectedValueOnce(new ApiError("unknown API group '/api/spark'", "http", 404, "not_found"));
+    renderShell("", "live-proxy", (client) => {
+      client.removeQueries({ queryKey: sp.source(APP_ID, null).queryKey });
+    });
+    expect(await screen.findByText("No Spark routes in this backend build")).toBeTruthy();
+    expect(screen.getByText("History")).toBeTruthy();
+    cleanup();
+
+    renderShell("", "none", (client) => {
+      client.setQueryData(sp.source(APP_ID, null).queryKey, {
+        mode: "none",
+        sparkAppId: APP_ID,
+        available: true,
+      });
+    });
+    expect(await screen.findByText("No source")).toBeTruthy();
+    cleanup();
+
+    setPrefs({ livePaused: true });
     renderShell();
+    expect(await screen.findByText("Live paused")).toBeTruthy();
+    cleanup();
+
+    parityStore.setState(() => ({ enabled: true }));
+    renderShell();
+    expect(await screen.findByText("Parity snapshot")).toBeTruthy();
+  });
+
+  it("shows the application placeholders while either query is unresolved", async () => {
+    const waitingApp = renderShell("", "live-proxy", (client) => {
+      client.removeQueries({ queryKey: sp.application(APP_ID, "live").queryKey });
+    });
+    expect(await screen.findByText("Spark application")).toBeTruthy();
+    expect(waitingApp.container.textContent).toContain(APP_ID);
+    waitingApp.unmount();
+    cleanup();
+
+    vi.mocked(apiGet).mockImplementation(() => new Promise(() => undefined) as never);
+    renderShell("", "live-proxy", (client) => {
+      client.removeQueries({ queryKey: sp.source(APP_ID, null).queryKey });
+      client.removeQueries({ queryKey: sp.application(APP_ID, "live").queryKey });
+    });
+    expect(await screen.findByText("Loading Spark application…")).toBeTruthy();
+  });
+
+  it("shows an application error when the application query has no loaded data", async () => {
+    vi.mocked(apiGet).mockRejectedValueOnce("permission denied");
+    renderShell("", "live-proxy", (client) => {
+      client.removeQueries({ queryKey: sp.application(APP_ID, "live").queryKey });
+    });
+    expect(await screen.findByRole("heading", { name: "Could not load Spark application details" })).toBeTruthy();
+    expect(screen.getByText("permission denied")).toBeTruthy();
+    expect(screen.queryByRole("combobox", { name: "Application attempt" })).toBeNull();
+  });
+
+  it("prefetches missing page data, shows the pending tab, and navigates after a failed prefetch settles", async () => {
+    const { router } = renderShell();
     await screen.findByRole("heading", { name: "word count stream" });
+    for (const label of ["Stages", "Executors", "Storage", "Environment", "SQL", "Streaming", "Timeline", "Jobs"]) {
+      fireEvent.click(screen.getByRole("link", { name: label }));
+      await waitFor(() => expect(screen.getByRole("link", { name: label }).getAttribute("aria-current")).toBe("page"));
+    }
+    expect(router.state.location.pathname).toContain("/spark/jobs");
+  });
+
+  it("drops an older prefetch navigation after the user chooses another page", async () => {
+    const { client, router } = renderShell();
+    await screen.findByRole("heading", { name: "word count stream" });
+    const completions: Array<() => void> = [];
+    vi.spyOn(client, "prefetchQuery").mockImplementation(() => new Promise<void>((resolve) => completions.push(resolve)) as never);
+
     fireEvent.click(screen.getByRole("link", { name: "Stages" }));
-    await waitFor(() => expect(screen.getByRole("link", { name: "Stages" }).getAttribute("aria-current")).toBe("page"));
+    await waitFor(() => expect(completions).toHaveLength(1));
+    fireEvent.click(screen.getByRole("link", { name: "Executors" }));
+    await waitFor(() => expect(completions).toHaveLength(2));
+
+    await act(async () => {
+      completions[0]?.();
+      await Promise.resolve();
+    });
+    expect(router.state.location.pathname).toContain("/spark/jobs");
+
+    await act(async () => {
+      completions[1]?.();
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(router.state.location.pathname).toContain("/spark/executors"));
   });
 
   it("selects another attempt and retries failed source and application refreshes", async () => {

@@ -21,6 +21,7 @@ import {
   logFileHref,
   logFilePath,
   logPage,
+  pageLengthFromSelect,
   parseLogWindow,
   sortLogFiles,
 } from "./logs";
@@ -61,6 +62,12 @@ describe("the captured log directory", () => {
 });
 
 describe("paging through a byte-addressed file", () => {
+  it("converts a selected KiB page size to bytes and clears it for the default", () => {
+    expect(pageLengthFromSelect("128")).toBe(128 * 1024);
+    expect(pageLengthFromSelect("")).toBeUndefined();
+    expect(pageLengthFromSelect(null)).toBeUndefined();
+  });
+
   it("computes the last page so it always ends exactly at the end of the file", () => {
     expect(lastPageOffset(348349)).toBe(262144);
     expect(lastPageOffset(348349) + (348349 - lastPageOffset(348349))).toBe(348349);
@@ -150,6 +157,22 @@ describe("the window the server actually served", () => {
     expect(info).toEqual({ size: 1024, start: 0, end: 1024, source: null, derived: true });
   });
 
+  it("ignores blank and invalid log headers and malformed content ranges", () => {
+    const headers = new Headers({
+      "x-burrow-log-size": " ",
+      "x-burrow-log-start": "-1",
+      "x-burrow-log-end": "NaN",
+      "content-range": "not a byte range",
+    });
+    expect(parseLogWindow(headers, { offset: 8, size: 16, byteLength: 4 })).toEqual({
+      size: 16,
+      start: 8,
+      end: 12,
+      source: null,
+      derived: true,
+    });
+  });
+
   it("labels an inclusive byte range with a human size", () => {
     expect(byteRangeLabel({ size: 222179, start: 0, end: 131072, source: null, derived: false })).toBe(
       "bytes 0–131,071 of 222,179 · 128 KiB",
@@ -203,6 +226,22 @@ describe("fetchLogChunk", () => {
     } finally {
       if (originalAny) Object.defineProperty(AbortSignal, "any", originalAny);
       else Reflect.deleteProperty(AbortSignal, "any");
+    }
+  });
+
+  it("uses no signal when the runtime has no timeout support and no caller signal", async () => {
+    const originalTimeout = Object.getOwnPropertyDescriptor(AbortSignal, "timeout");
+    Object.defineProperty(AbortSignal, "timeout", { configurable: true, value: undefined });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("ok")),
+    );
+    try {
+      await fetchLogChunk("a.log", { offset: 0, length: 8, size: 2 });
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/rm/logs/a.log?length=8&offset=0", expect.objectContaining({ signal: undefined }));
+    } finally {
+      if (originalTimeout) Object.defineProperty(AbortSignal, "timeout", originalTimeout);
+      else Reflect.deleteProperty(AbortSignal, "timeout");
     }
   });
 
@@ -291,6 +330,53 @@ describe("fetchLogChunk", () => {
     expect((err as ApiError).kind).toBe("network");
     expect((err as ApiError).message).toBe("Cannot reach Burrow to read rm/logs/resourcemanager.log");
   });
+
+  it.each(["TimeoutError", "AbortError"])("reports %s as a timeout", async (name) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new DOMException("request stopped", name);
+      }),
+    );
+    const err = await fetchLogChunk("resourcemanager.log", { offset: 0, length: 128, size: 0 }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).kind).toBe("timeout");
+    expect((err as ApiError).message).toBe("Timed out reading rm/logs/resourcemanager.log");
+  });
+
+  it("handles an empty error body and omitted envelope fields", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 500 })),
+    );
+    const empty = await fetchLogChunk("a.log", { offset: 0, length: 8, size: 0 }).catch((e: unknown) => e);
+    expect(empty).toMatchObject({ message: "HTTP 500 from /api/rm/logs/a.log?length=8&offset=0", body: null });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ error: {} }), { status: 400 })),
+    );
+    const errorEnvelope = await fetchLogChunk("a.log", { offset: 0, length: 8, size: 0 }).catch((e: unknown) => e);
+    expect(errorEnvelope).toMatchObject({ message: "HTTP 400", code: null, hint: null });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ RemoteException: {} }), { status: 500 })),
+    );
+    const remoteEnvelope = await fetchLogChunk("a.log", { offset: 0, length: 8, size: 0 }).catch((e: unknown) => e);
+    expect(remoteEnvelope).toMatchObject({ message: "HTTP 500", code: "RemoteException" });
+  });
+
+  it("uses the empty-body fallback when reading an error response fails", async () => {
+    const response = new Response("unreadable", { status: 500 });
+    vi.spyOn(response, "text").mockRejectedValue(new Error("body stream failed"));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => response),
+    );
+    const err = await fetchLogChunk("a.log", { offset: 0, length: 8, size: 0 }).catch((e: unknown) => e);
+    expect(err).toMatchObject({ message: "HTTP 500 from /api/rm/logs/a.log?length=8&offset=0", body: null });
+  });
 });
 
 describe("URLs and sorting", () => {
@@ -322,5 +408,11 @@ describe("URLs and sorting", () => {
   it("does not sort by display text: an unparsable date sorts last, not first", () => {
     const files = [entry({ name: "ok.log", modifiedSortKey: 5 }), entry({ name: "weird.log", modifiedText: "last Tuesday" })];
     expect(sortLogFiles(files, "lastModified", false).map((f) => f.name)).toEqual(["weird.log", "ok.log"]);
+  });
+
+  it("uses the filename to break ties for size and missing timestamps", () => {
+    const files = [entry({ name: "z.log", size: 7 }), entry({ name: "a.log", size: 7 })];
+    expect(sortLogFiles(files, "size", false).map((f) => f.name)).toEqual(["a.log", "z.log"]);
+    expect(sortLogFiles(files, "lastModified", false).map((f) => f.name)).toEqual(["a.log", "z.log"]);
   });
 });

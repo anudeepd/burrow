@@ -16,6 +16,11 @@ export type { LogFileEntry };
 
 export type LogSortKey = "name" | "size" | "lastModified";
 
+/** Convert the page-size select's KiB value to bytes; an empty selection restores the default. */
+export function pageLengthFromSelect(value: string | null): number | undefined {
+  return value ? Number(value) * 1024 : undefined;
+}
+
 /**
  * Pages are aligned blocks `[k·page, min(size, (k+1)·page))`, so the last page always ends exactly at the end of the file
  * and paging can never skip the tail. A tail window is simply the last page.
@@ -42,7 +47,7 @@ export interface LogPage {
 
 export function logPage(size: number, offset: number, pageBytes = LOG_PAGE_BYTES): LogPage {
   const { offset: start, length } = logWindow(size, offset, pageBytes);
-  const end = Math.min(size, start + length) || start + length;
+  const end = Math.min(size, start + length);
   const last = lastPageOffset(size, pageBytes);
   return {
     offset: start,
@@ -165,7 +170,7 @@ async function responseError(res: Response, path: string, responseMeta: BurrowHe
   try {
     body = raw ? JSON.parse(raw) : null;
   } catch {
-    body = raw || null;
+    body = raw;
   }
   const envelope = body as {
     error?: { code?: string; message?: string; hint?: string };

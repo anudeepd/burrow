@@ -7,6 +7,8 @@ import {
   attemptIdOf,
   attemptTrackingText,
   appTimeline,
+  appProgress,
+  attemptBands,
   blacklistedIds,
   blacklistedNodesText,
   containerResourceText,
@@ -15,6 +17,7 @@ import {
   finalStatusText,
   hadoopFormatTime,
   isAppFinal,
+  isAppLive,
   legacyTrackingText,
   labelExpressionText,
   parseContainerId,
@@ -100,6 +103,14 @@ describe("legacy text derivations", () => {
   it("keeps the legacy priority tooltip text", () => {
     expect(priorityText(0)).toBe("0 (Higher Integer value indicates higher priority)");
     expect(priorityText(-1)).toBe("-1 (Higher Integer value indicates higher priority)");
+    expect(priorityText(null)).toBe("N/A");
+  });
+
+  it("classifies live and final application states", () => {
+    expect(isAppLive("RUNNING")).toBe(true);
+    expect(isAppLive("FINISHED")).toBe(false);
+    expect(isAppLive(undefined)).toBe(false);
+    expect(isAppFinal("KILLED")).toBe(true);
   });
 
   it("formats elapsed exactly like org.apache.hadoop.util.StringUtils.formatTime", () => {
@@ -113,9 +124,11 @@ describe("legacy text derivations", () => {
   it("derives elapsed against now only while the app is unfinished", () => {
     expect(elapsedMs(1_000, 4_000, 999_999)).toBe(3_000);
     expect(elapsedMs(1_000, 0, 5_000)).toBe(4_000);
+    expect(elapsedMs(1_000, undefined, 5_000)).toBe(4_000);
     expect(elapsedMs(0, 0, 5_000)).toBe(0);
     // clock skew / finished before started never renders a negative duration
     expect(elapsedMs(5_000, 4_000, 9_000)).toBe(0);
+    expect(elapsedMs(undefined, undefined, 9_000)).toBe(0);
   });
 });
 
@@ -178,6 +191,11 @@ describe("resource strings", () => {
     expect(totalOutstandingText({ memoryMB: 768, vcores: 1 })).toBe("Total Outstanding Resource Requests: <memory:768, vCores:1>");
     expect(totalOutstandingResources([])).toBeNull();
     expect(totalOutstandingResources([{ resourceName: "*", numContainers: 0, capability: cap }])).toBeNull();
+    expect(totalOutstandingResources([{ resourceName: "*", numContainers: 2, capability: { memory: 512 } }])).toEqual({
+      memoryMB: 1_024,
+      vcores: 0,
+    });
+    expect(totalOutstandingResources([{ resourceName: "*", numContainers: 1 }])).toEqual({ memoryMB: 0, vcores: 0 });
   });
 
   it("falls back to zeros for a preempted map the RM did not populate", () => {
@@ -199,6 +217,7 @@ describe("tracking UI", () => {
   it("falls back to the state when trackingUI is missing", () => {
     expect(trackingKind(app({ state: "FINISHED", trackingUI: "", trackingUrl: "http://jhs/job/1" }))).toBe("history");
     expect(trackingKind(app({ state: "RUNNING", trackingUI: "", trackingUrl: "http://rm/proxy/x" }))).toBe("am");
+    expect(trackingKind(app({ state: "FINISHED", trackingUI: null as never, trackingUrl: "N/A" }))).toBe("unassigned");
   });
 });
 
@@ -311,6 +330,28 @@ describe("status timeline", () => {
     expect(isAppFinal("FAILED")).toBe(true);
     expect(isAppFinal("RUNNING")).toBe(false);
     expect(isAppFinal(undefined)).toBe(false);
+  });
+
+  it("handles missing milestones, no attempts and accepted applications", () => {
+    const steps = appTimeline(app({ state: "ACCEPTED", startedTime: 0, launchTime: 0 }), [], 20_000);
+    expect(steps.map((step) => step.at)).toEqual([null, null, null, null]);
+    expect(steps[1]).toMatchObject({ label: "Attempt created", detail: "No attempt has been created yet" });
+    expect(steps[3]).toMatchObject({ label: "In progress", detail: "The application has not finished yet." });
+
+    const retried = appTimeline(app({ state: "KILLED", startedTime: 1, finishedTime: 4 }), [attempt(3), attempt(1)], 10);
+    expect(retried[1]?.label).toBe("Attempt #1 created");
+    expect(retried[3]).toMatchObject({ label: "Killed", tone: "idle" });
+    expect(appTimeline(app({ startedTime: 1 }), [attempt(1), attempt(2)], 10)[1]?.label).toBe("Attempt #1 created");
+  });
+
+  it("clamps progress and builds attempt bands for finished, running and skewed clocks", () => {
+    expect(appProgress(app({ progress: Number.NaN }))).toBe(0);
+    expect(appProgress(app({ progress: -5 }))).toBe(0);
+    expect(appProgress(app({ progress: 150 }))).toBe(100);
+    expect(attemptBands([attempt(1, { startTime: 1_000, finishedTime: 2_000 }), attempt(2, { startTime: 5_000 })], 4_000)).toEqual([
+      { attemptId: "appattempt_1_0001_000001", num: 1, state: "RUNNING", startMs: 1_000, endMs: 2_000, durationMs: 1_000 },
+      { attemptId: "appattempt_1_0001_000002", num: 2, state: "RUNNING", startMs: 5_000, endMs: null, durationMs: 0 },
+    ]);
   });
 });
 

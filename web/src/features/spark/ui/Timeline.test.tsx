@@ -8,7 +8,7 @@
  * Parity mode is on (`window.__BURROW_PARITY__`) so the chart renders every row instead of a virtual window (jsdom has no
  * layout, so the virtualizer would otherwise render nothing).
  */
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { TimelineBar, TimelineRow } from "./Timeline";
 
@@ -44,11 +44,50 @@ const ROWS: TimelineRow[] = [
 ];
 
 afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
   document.body.innerHTML = "";
   parityStore.setState(() => ({ enabled: true }));
 });
 
 describe("TimelineChart", () => {
+  it("changes the label gutter with the viewport and removes its listener", () => {
+    let matches = true;
+    let onChange: (() => void) | undefined;
+    const media = {
+      get matches() {
+        return matches;
+      },
+      addEventListener: vi.fn((_type: string, listener: () => void) => {
+        onChange = listener;
+      }),
+      removeEventListener: vi.fn(),
+    } as unknown as MediaQueryList;
+    vi.spyOn(window, "matchMedia").mockReturnValue(media);
+    const { container, unmount } = render(
+      <TimelineChart
+        rows={[]}
+        window={[1_000, 1_000]}
+        tz="utc"
+        onZoom={() => undefined}
+        onPan={() => undefined}
+        onSelectRange={() => undefined}
+        onFit={() => undefined}
+        label="Equal time window"
+      />,
+    );
+    const gutter = container.querySelector(".sticky.top-0 .shrink-0") as HTMLDivElement;
+    expect(gutter.style.width).toBe("256px");
+
+    act(() => {
+      matches = false;
+      onChange?.();
+    });
+    expect(gutter.style.width).toBe("132px");
+    unmount();
+    expect(media.removeEventListener).toHaveBeenCalledWith("change", onChange);
+  });
+
   it("keeps the row tone in scope for every element that paints with var(--tone)", () => {
     const { container } = render(
       <TimelineChart
@@ -192,6 +231,8 @@ describe("TimelineChart", () => {
     const shiftedWheel = wheel(figure, { deltaY: 100, shiftKey: true });
     expect(shiftedWheel.defaultPrevented).toBe(true);
     expect(onPan).toHaveBeenCalledWith(0.1);
+    wheel(figure, { deltaY: -100, shiftKey: true });
+    expect(onPan).toHaveBeenLastCalledWith(-0.1);
     wheel(figure, { deltaY: -50, ctrlKey: true, clientX: 600 });
     expect(onZoom).toHaveBeenLastCalledWith(1.25, expect.any(Number));
 
@@ -209,6 +250,120 @@ describe("TimelineChart", () => {
     expect(start).toBeLessThan(end);
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeLessThanOrEqual(4_000);
+  });
+
+  it("keeps sparse row details accessible and positions tooltips for a later row", () => {
+    const { container } = render(
+      <TimelineChart
+        rows={[
+          { kind: "header", key: "header", group: "jobs", label: "Jobs (2)" },
+          bar({
+            key: "missing",
+            name: "Job with missing timestamps",
+            start: null,
+            end: null,
+            durationMs: null,
+            status: undefined,
+            note: undefined,
+          }),
+          bar({
+            key: "later",
+            name: "Later job",
+            sub: "retained description",
+            start: 3_000,
+            end: 4_000,
+            status: { raw: "CUSTOM", label: "CUSTOM", field: "spark.job.status" },
+            note: "derived from retained event data",
+          }),
+          bar({
+            key: "ghost",
+            group: "stages",
+            name: "Skipped stage",
+            start: 2_000,
+            end: 2_000,
+            durationMs: null,
+            ghost: true,
+            status: { domain: "spark.stage", raw: "SKIPPED", label: "SKIPPED", field: "spark.stage.status" },
+            note: "retained as a skipped marker",
+          }),
+        ]}
+        bounds={[0, 4_000]}
+        window={[0, 4_000]}
+        tz="local"
+        onZoom={() => undefined}
+        onPan={() => undefined}
+        onSelectRange={() => undefined}
+        onFit={() => undefined}
+        label="Sparse timeline"
+      />,
+    );
+    const missing = container.querySelector('[data-ye="missing"]')!;
+    const later = container.querySelector('[data-ye="later"]')!;
+    fireEvent.mouseOver(later);
+    expect(screen.getByRole("status").textContent).toContain("job Later job, CUSTOM, from");
+    const laterTooltip = later.querySelector(".burrow-enter-pop") as HTMLDivElement;
+    expect(laterTooltip.textContent).toContain("derived from retained event data");
+    expect(laterTooltip.style.right).toBe("4px");
+    expect(laterTooltip.className).toContain("bottom-full");
+    expect(container.querySelectorAll('[data-ye="ghost"] svg g line[stroke="var(--tone)"]')).toHaveLength(1);
+
+    const ghost = container.querySelector('[data-ye="ghost"]')!;
+    fireEvent.mouseOver(ghost);
+    const ghostTooltip = ghost.querySelector(".burrow-enter-pop") as HTMLDivElement;
+    expect(ghostTooltip.textContent).toContain("Skipped");
+    expect(ghostTooltip.textContent).toContain("retained as a skipped marker");
+
+    fireEvent.mouseOver(missing);
+    fireEvent.mouseLeave(later);
+    expect(screen.getByRole("status").textContent).toContain("no start, no end");
+    expect(screen.getByRole("table").textContent).toContain("—");
+  });
+
+  it("keeps zoom and drag handlers safe when the chart pane has no width", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    const onZoom = vi.fn();
+    const onSelectRange = vi.fn();
+    const { container } = render(
+      <TimelineChart
+        rows={ROWS}
+        bounds={[0, 4_000]}
+        window={[0, 4_000]}
+        now={-1}
+        tz="utc"
+        onZoom={onZoom}
+        onPan={() => undefined}
+        onSelectRange={onSelectRange}
+        onFit={() => undefined}
+        label="Narrow timeline"
+      />,
+    );
+    const figure = container.querySelector(".select-none") as HTMLDivElement;
+    const list = container.querySelector(".burrow-scroll > .relative") as HTMLDivElement;
+    let width = 20;
+    Object.defineProperty(list, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, top: 0, left: 0, right: width, bottom: 400, width, height: 400, toJSON: () => ({}) }),
+    });
+    const axis = container.querySelector(".z-rail .relative")!;
+    const wheel = new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: 200 });
+    Object.defineProperty(wheel, "ctrlKey", { value: true });
+    Object.defineProperty(wheel, "clientX", { value: 10 });
+    figure.dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).toBe(true);
+    expect(onZoom).toHaveBeenCalledWith(0.8, 2_000);
+
+    fireEvent.pointerMove(figure, { pointerId: 20, clientX: 10 });
+    fireEvent.pointerDown(figure, { pointerId: 20, clientX: 10 });
+    fireEvent.pointerUp(figure, { pointerId: 20, clientX: 30 });
+
+    Object.defineProperty(figure, "setPointerCapture", { configurable: true, value: () => undefined });
+    width = 400;
+    fireEvent.pointerDown(figure, { pointerId: 21, clientX: 300 });
+    width = 200;
+    fireEvent.pointerMove(figure, { pointerId: 21, clientX: 350 });
+    fireEvent.pointerCancel(figure, { pointerId: 21 });
+    expect(onSelectRange).not.toHaveBeenCalled();
+    expect(axis).toBeTruthy();
   });
 });
 
@@ -257,6 +412,7 @@ describe("buildTimelineRows", () => {
       }),
       SparkStageSchema.parse({ stageId: 11, status: "PENDING", submissionTime: "3000", rddIds: [], accumulatorUpdates: [] }),
       SparkStageSchema.parse({ stageId: 12, status: "ACTIVE", rddIds: [], accumulatorUpdates: [] }),
+      SparkStageSchema.parse({ stageId: 13, submissionTime: "6000", rddIds: [], accumulatorUpdates: [] }),
     ];
     const executors = [
       SparkExecutorSchema.parse({ id: "1", hostPort: "worker:1234", isActive: true, addTime: "1000", blacklistedInStages: [] }),
@@ -265,7 +421,7 @@ describe("buildTimelineRows", () => {
     ];
 
     const rows = buildTimelineRows({ jobs, stages, executors, now: 4_000 });
-    expect(rows.filter((row) => row.kind === "header").map((row) => row.label)).toEqual(["Executors (3)", "Jobs (3)", "Stages (6)"]);
+    expect(rows.filter((row) => row.kind === "header").map((row) => row.label)).toEqual(["Executors (3)", "Jobs (3)", "Stages (7)"]);
     const byKey = new Map(rows.filter((row) => row.kind === "bar").map((row) => [row.key, row]));
 
     expect(byKey.get("executor:1")).toMatchObject({
@@ -316,6 +472,7 @@ describe("buildTimelineRows", () => {
       note: "Spark reported no completionTime for this stage.",
     });
     expect(byKey.get("stage:12/0")).toMatchObject({ start: null, end: 4_000, durationMs: null, open: true, note: undefined });
+    expect(byKey.get("stage:13/0")).toMatchObject({ status: { label: "unknown" }, start: 6_000 });
   });
 
   it("anchors skipped stages to the earliest valid job and leaves closed unknown executors off the axis", () => {
@@ -323,6 +480,7 @@ describe("buildTimelineRows", () => {
       SparkJobSchema.parse({ jobId: 1, submissionTime: "3000", stageIds: [4], jobTags: [] }),
       SparkJobSchema.parse({ jobId: 2, submissionTime: "invalid", stageIds: [4], jobTags: [] }),
       SparkJobSchema.parse({ jobId: 3, submissionTime: "1000", stageIds: [4], jobTags: [] }),
+      SparkJobSchema.parse({ jobId: 4, submissionTime: "4000", stageIds: [4], jobTags: [] }),
     ];
     const stages = [SparkStageSchema.parse({ stageId: 4, status: "SKIPPED", rddIds: [], accumulatorUpdates: [] })];
     const executors = [
@@ -336,5 +494,16 @@ describe("buildTimelineRows", () => {
       open: false,
       note: "Spark reported no removeTime for this executor, so it has no end on the axis.",
     });
+  });
+
+  it("uses the current clock for an active stage when no clock value is supplied", () => {
+    vi.spyOn(Date, "now").mockReturnValue(3_000);
+    const rows = buildTimelineRows({
+      jobs: [],
+      stages: [SparkStageSchema.parse({ stageId: 20, status: "ACTIVE", submissionTime: "1000", rddIds: [], accumulatorUpdates: [] })],
+      executors: [],
+      now: null,
+    });
+    expect(rows.find((row) => row.kind === "bar" && row.key === "stage:20/0")).toMatchObject({ durationMs: 2_000 });
   });
 });

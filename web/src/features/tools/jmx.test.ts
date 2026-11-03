@@ -91,6 +91,7 @@ describe("payload + tree shape", () => {
     expect(jmxMemoryShape({ used: 1, other: 2 })).toBeNull();
     expect(jmxMemoryShape([1, 2, 3])).toBeNull();
     expect(jmxMemoryShape(null)).toBeNull();
+    expect(jmxMemoryShape({ used: "1" })).toBeNull();
   });
 });
 
@@ -176,18 +177,21 @@ describe("formatting", () => {
     expect(fmtJmxNumber(0)).toBe("0");
     expect(fmtJmxNumber(0.5)).toBe("0.5");
     expect(fmtJmxNumber(1234.5678)).toBe("1,234.5678");
+    expect(fmtJmxNumber(Number.POSITIVE_INFINITY)).toBe("Infinity");
   });
 
   it("renders scalars and branches", () => {
     expect(jmxScalarText(null)).toBe("—");
     expect(jmxScalarText(undefined)).toBe("—");
     expect(jmxScalarText(true)).toBe("true");
+    expect(jmxScalarText(false)).toBe("false");
     expect(jmxScalarText(12)).toBe("12");
     expect(jmxScalarText("hi")).toBe("hi");
     expect(jmxBranchSummary("object", 4)).toBe("{4 keys}");
     expect(jmxBranchSummary("object", 1)).toBe("{1 key}");
     expect(jmxBranchSummary("object", 0)).toBe("{}");
     expect(jmxBranchSummary("array", 150)).toBe("[150 items]");
+    expect(jmxBranchSummary("array", 1)).toBe("[1 item]");
     expect(jmxBranchSummary("array", 0)).toBe("[]");
   });
 
@@ -208,6 +212,9 @@ describe("formatting", () => {
     expect(jmxValueJson({ a: 1 })).toBe('{\n  "a": 1\n}');
     expect(jmxValueJson(1n)).toBe("1");
     expect(jmxValueJson(undefined)).toBe("");
+    const omittedByJson = { toJSON: () => undefined };
+    expect(jmxValueText(omittedByJson)).toBe("");
+    expect(jmxValueJson(omittedByJson)).toBe("[object Object]");
   });
 
   it("adds a 1024-based hint for Bytes/Memory/Size names only", () => {
@@ -224,6 +231,7 @@ describe("formatting", () => {
     expect(jmxNumberHint(["LastGcMillis"], 4200)).toEqual({ kind: "duration", text: "4s" });
     expect(jmxNumberHint(["LastGcMillis"], 420)).toEqual({ kind: "duration", text: "420 ms" });
     expect(jmxNumberHint(["UptimeSeconds"], 4200)).toBeNull();
+    expect(jmxNumberHint(["StartTime"], Number.POSITIVE_INFINITY)).toBeNull();
   });
   it("formats epoch hints in the selected timezone", () => {
     const startTime = Date.UTC(2026, 9, 3, 12, 4, 9);
@@ -241,6 +249,9 @@ describe("formatting", () => {
     expect(memoryPercent({ used: 512, max: 1024 })).toBe(50);
     expect(memoryPercent({ used: 1024, committed: 2048, max: -1 })).toBe(50);
     expect(memoryPercent({ used: 5 })).toBe(0);
+    expect(memoryPercent({})).toBe(0);
+    expect(memoryPercent({ used: -1, max: 1 })).toBe(0);
+    expect(memoryPercent({ used: Number.POSITIVE_INFINITY, max: 1 })).toBe(0);
     expect(Number.isNaN(memoryPercent({ used: 5, max: 0 }))).toBe(false);
     expect(memorySummary({ used: 512, max: 1024 })).toBe("used 512 B of 1 KiB (50%)");
     expect(memorySummary({ used: 2, committed: 4 })).toBe("used 2 B of 4 B committed (50%)");
@@ -267,6 +278,7 @@ describe("formatting", () => {
     const out = truncateMiddle(long, 12);
     expect(out).toHaveLength(12);
     expect(out).toContain("…");
+    expect(truncateMiddle("x".repeat(121))).toHaveLength(120);
   });
 });
 
@@ -303,5 +315,8 @@ describe("MBean names", () => {
       message: "No MBean matching Nope:*",
     });
     expect(jmxErrorBean({ name: "java.lang:type=Runtime" })).toBeNull();
+    expect(jmxErrorBean({ name: "Nope:*", result: "ERROR" })).toEqual({
+      message: "The daemon rejected the pattern Nope:*",
+    });
   });
 });

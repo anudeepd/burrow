@@ -11,7 +11,7 @@ import { fmtClock, fmtEpoch, fmtInt, fmtRelative } from "~/lib/format";
 import { usePref } from "~/state/prefs";
 import { Datum } from "~/ui/datum";
 import type { ColDef } from "~/ui/data-table/features";
-import { StatusDot, StatusPill } from "~/ui/status";
+import { StatusPill } from "~/ui/status";
 import { Tooltip } from "~/ui/tooltip";
 import { allocationTagSummary, customResourceNames, customResourceValue, healthOf, utilBand, UTIL_BAND_TONE, utilOf } from "./domain";
 
@@ -158,9 +158,6 @@ export function nodeColumns(customTypes: readonly string[] = []): ColDef<Node>[]
       cell: ({ row }) => (
         <span className="flex min-w-0 items-center gap-1.5">
           <StatusPill domain="node.state" state={row.original.state} field="node.state" size="sm" />
-          {row.original.state === "RUNNING" && healthOf(row.original) === "unhealthy" && (
-            <StatusDot domain="node.health" state="unhealthy" label={false} />
-          )}
         </span>
       ),
     },

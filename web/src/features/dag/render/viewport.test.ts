@@ -97,6 +97,8 @@ describe("pan and zoom", () => {
     const centre = screenToWorld(v, 500, 250);
     expect(centre.x).toBeCloseTo(500, 6);
     expect(centre.y).toBeCloseTo(250, 6);
+    const unchanged = { x: 12, y: 34, scale: 1.5 };
+    expect(zoomTo(unchanged, unchanged.scale, SIZE)).toBe(unchanged);
   });
 });
 
@@ -113,6 +115,7 @@ describe("fit and focus", () => {
   it("survives a zero-sized pane or empty content", () => {
     expect(fitViewport({ width: 0, height: 0 }, SIZE)).toBe(IDENTITY_VIEWPORT);
     expect(fitViewport({ width: 10, height: 10 }, { width: 0, height: 0 })).toBe(IDENTITY_VIEWPORT);
+    expect(initialViewport({ width: 0, height: 10 }, SIZE)).toBe(IDENTITY_VIEWPORT);
   });
 
   it("opens a wide chain at a legible zoom on the focus node, not at fit", () => {

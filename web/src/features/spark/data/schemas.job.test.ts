@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SparkJobSchema } from "./schemas";
+import { executorKey, jobKey, rddKey, SparkJobSchema, SparkRddResponseSchema, sqlKey, stageKey, taskKey } from "./schemas";
 
 describe("SparkJobSchema", () => {
   it("normalizes job details that omit jobTags", () => {
@@ -27,5 +27,23 @@ describe("SparkJobSchema", () => {
 
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.jobTags).toEqual([]);
+  });
+});
+
+describe("Spark entity keys", () => {
+  it("stringifies numeric identifiers and uses attempt zero when absent", () => {
+    expect(jobKey(12)).toBe("12");
+    expect(stageKey("4", undefined)).toBe("4/0");
+    expect(stageKey(4, 2)).toBe("4/2");
+    expect(taskKey(8)).toBe("8");
+    expect(executorKey("executor-1")).toBe("executor-1");
+    expect(rddKey(3)).toBe("3");
+    expect(sqlKey(5)).toBe("5");
+  });
+});
+
+describe("Spark RDD response compatibility", () => {
+  it("accepts the wrapped RDD form", () => {
+    expect(SparkRddResponseSchema.parse({ rdd: { id: 7, name: "cached" } })).toMatchObject({ rdd: { id: 7, name: "cached" } });
   });
 });

@@ -54,7 +54,7 @@ export function countText(n: number | null | undefined): string {
 /** Queue path → the segment shown as the row title. */
 export function queueTitle(path: string): string {
   const seg = path.split(".").filter(Boolean);
-  return seg.length ? (seg[seg.length - 1] ?? path) : path;
+  return seg.length ? seg[seg.length - 1]! : path;
 }
 
 /** Byte-ish label for a queue's guaranteed share of the cluster. */

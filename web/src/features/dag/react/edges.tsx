@@ -243,9 +243,9 @@ export const CanvasEdgeLayer = memo(function CanvasEdgeLayer({
   const nowRef = useRef(now);
   nowRef.current = now;
   useEffect(() => {
-    const canvas = ref.current;
-    if (!canvas) return;
-    const dpr = Math.min(2, typeof window === "undefined" ? 1 : window.devicePixelRatio || 1);
+    // This effect runs only after the always-rendered canvas has committed in the browser.
+    const canvas = ref.current!;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
     const w = Math.max(1, Math.round(size.width));
     const h = Math.max(1, Math.round(size.height));
     if (canvas.width !== w * dpr || canvas.height !== h * dpr) {

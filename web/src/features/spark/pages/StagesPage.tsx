@@ -101,7 +101,7 @@ export function StagesPage() {
         header: "Switch attempt",
         cell: (info) => {
           const s = info.row.original;
-          const list = attemptsByStage.get(s.stageId) ?? [];
+          const list = attemptsByStage.get(s.stageId)!;
           if (list.length <= 1) return <span className="text-ink-4">—</span>;
           return (
             <Select
@@ -109,15 +109,13 @@ export function StagesPage() {
               value={String(s.attemptId ?? 0)}
               onClick={(e) => e.stopPropagation()}
               stopPopupClickPropagation
-              onValueChange={(v) => {
-                if (v) {
-                  void navigate({
-                    to: "/apps/$appId/spark/stages/$stageId/$attemptId",
-                    params: { appId, stageId: String(s.stageId), attemptId: v },
-                    search: { attempt: attempt ?? undefined },
-                  });
-                }
-              }}
+              onValueChange={(v) =>
+                void navigate({
+                  to: "/apps/$appId/spark/stages/$stageId/$attemptId",
+                  params: { appId, stageId: String(s.stageId), attemptId: v },
+                  search: { attempt: attempt ?? undefined },
+                })
+              }
               options={list.map((a) => ({ value: String(a.attemptId ?? 0), label: `Attempt ${a.attemptId ?? 0} · ${a.status ?? "?"}` }))}
             />
           );
@@ -125,14 +123,14 @@ export function StagesPage() {
       },
       {
         id: "attemptCount",
-        accessorFn: (s) => attemptsByStage.get(s.stageId)?.length ?? 1,
+        accessorFn: (s) => attemptsByStage.get(s.stageId)!.length,
         sortFn: "basic",
-        meta: { label: "Attempts", align: "end", exportValue: (s: SparkStage) => attemptsByStage.get(s.stageId)?.length ?? 1 },
+        meta: { label: "Attempts", align: "end", exportValue: (s: SparkStage) => attemptsByStage.get(s.stageId)!.length },
         header: "Attempts",
         cell: (info) => (
           <Datum
             field="spark.stage.derived.attemptCount"
-            raw={attemptsByStage.get(info.row.original.stageId)?.length ?? 1}
+            raw={attemptsByStage.get(info.row.original.stageId)!.length}
             fmt="int"
             className="tnum"
           />

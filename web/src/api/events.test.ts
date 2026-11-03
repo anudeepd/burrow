@@ -104,6 +104,7 @@ describe("SSE topics and lifecycle", () => {
     source?.emit("invalidate", JSON.stringify({ topic }));
     source?.emit("invalidate", JSON.stringify({ topic }));
     source?.emit("invalidate", "malformed");
+    source?.emit("invalidate", JSON.stringify({ topic: 42 }));
     source?.emit("invalidate", JSON.stringify({ topic: "not-observed" }));
     expect(invalidate).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(999);
@@ -139,6 +140,90 @@ describe("SSE topics and lifecycle", () => {
     client.clear();
   });
 
+  it("keeps one stream for an unchanged topic set and ignores non-string topic values", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    const client = makeClient([{ topic: "rm/cluster" }]);
+    const invalidate = vi.spyOn(client, "invalidateQueries").mockResolvedValue(undefined);
+    const stop = startEvents(client, () => true);
+    await vi.advanceTimersByTimeAsync(250);
+    const source = FakeEventSource.instances[0]!;
+    source.emit("hello");
+    source.emit("invalidate", JSON.stringify({ topic: 42 }));
+    expect(invalidate).not.toHaveBeenCalled();
+
+    const extra = new QueryObserver(client, {
+      queryKey: ["same-topic"],
+      queryFn: async () => true,
+      enabled: false,
+      meta: { topic: "rm/cluster", refetchKind: "live" },
+    });
+    const unsubscribe = extra.subscribe(() => {});
+    observers.push(unsubscribe);
+    await vi.advanceTimersByTimeAsync(250);
+    expect(FakeEventSource.instances).toHaveLength(1);
+
+    stop();
+    client.clear();
+  });
+
+  it("replaces a delayed invalidation at the cadence boundary", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    setPrefs({ livePaused: false, liveIntervalMs: 1000 });
+    const client = makeClient([{ topic: "rm/cluster" }]);
+    const invalidate = vi.spyOn(client, "invalidateQueries").mockResolvedValue(undefined);
+    const stop = startEvents(client, () => true);
+    await vi.advanceTimersByTimeAsync(250);
+    const source = FakeEventSource.instances[0]!;
+    const firstAt = Date.now();
+    source.emit("invalidate", JSON.stringify({ topic: "rm/cluster" }));
+    await vi.advanceTimersByTimeAsync(100);
+    source.emit("invalidate", JSON.stringify({ topic: "rm/cluster" }));
+    vi.setSystemTime(firstAt + 1000);
+    source.emit("invalidate", JSON.stringify({ topic: "rm/cluster" }));
+
+    expect(invalidate).toHaveBeenCalledTimes(2);
+    stop();
+    client.clear();
+  });
+
+  it("drops pending invalidations when updates pause or the topic becomes inactive", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    setPrefs({ livePaused: false, liveIntervalMs: 20 });
+    const pausedClient = makeClient([{ topic: "rm/paused" }]);
+    const pausedInvalidate = vi.spyOn(pausedClient, "invalidateQueries").mockResolvedValue(undefined);
+    const stopPaused = startEvents(pausedClient, () => true);
+    await vi.advanceTimersByTimeAsync(250);
+    const pausedSource = FakeEventSource.instances[0]!;
+    pausedSource.emit("invalidate", JSON.stringify({ topic: "rm/paused" }));
+    await vi.advanceTimersByTimeAsync(5);
+    pausedSource.emit("invalidate", JSON.stringify({ topic: "rm/paused" }));
+    setPrefs({ livePaused: true });
+    pausedSource.emit("invalidate", JSON.stringify({ topic: "rm/paused" }));
+    await vi.advanceTimersByTimeAsync(15);
+    expect(pausedInvalidate).toHaveBeenCalledOnce();
+    stopPaused();
+    pausedClient.clear();
+
+    setPrefs({ livePaused: false, liveIntervalMs: 1000 });
+    const inactiveClient = makeClient([{ topic: "rm/inactive" }]);
+    const inactiveInvalidate = vi.spyOn(inactiveClient, "invalidateQueries").mockResolvedValue(undefined);
+    const stopInactive = startEvents(inactiveClient, () => true);
+    await vi.advanceTimersByTimeAsync(250);
+    const inactiveSource = FakeEventSource.instances.at(-1)!;
+    inactiveSource.emit("invalidate", JSON.stringify({ topic: "rm/inactive" }));
+    await vi.advanceTimersByTimeAsync(100);
+    inactiveSource.emit("invalidate", JSON.stringify({ topic: "rm/inactive" }));
+    const query = inactiveClient.getQueryCache().getAll()[0]!;
+    query.setOptions({ ...query.options, meta: { topic: "rm/inactive", refetchKind: "static" } });
+    await vi.advanceTimersByTimeAsync(900);
+    expect(inactiveInvalidate).toHaveBeenCalledOnce();
+    stopInactive();
+    inactiveClient.clear();
+  });
+
   it("responds to enablement, query removal, and document visibility changes", async () => {
     vi.useFakeTimers();
     globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
@@ -164,6 +249,9 @@ describe("SSE topics and lifecycle", () => {
     else Reflect.deleteProperty(document, "hidden");
 
     document.dispatchEvent(new Event("visibilitychange"));
+    await vi.advanceTimersByTimeAsync(250);
+    expect(FakeEventSource.instances).toHaveLength(2);
+    setPrefs({ motion: "reduced" });
     await vi.advanceTimersByTimeAsync(250);
     expect(FakeEventSource.instances).toHaveLength(2);
     client.clear();

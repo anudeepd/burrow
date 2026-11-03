@@ -27,6 +27,14 @@ describe("synthetic DAGs", () => {
     expect(pendingMetrics(sim)).toEqual([]);
     expect(simulatedCompletion(sim, 10_000)).toBe(0);
   });
+
+  it("defaults a missing stage attempt to zero in the simulated metrics", () => {
+    const dag = syntheticDag({ stages: 1, nodesPerStage: 1 });
+    delete dag.stages[0]!.attempt;
+    const sim = createSimulator(dag);
+
+    expect(sim.at(0)[0]?.attemptId).toBe(0);
+  });
 });
 
 describe("progress simulation", () => {
@@ -68,5 +76,11 @@ describe("progress simulation", () => {
     const base = syntheticDag({ stages: 3, nodesPerStage: 2 });
     const onlySkipped = createSimulator({ ...base, stages: base.stages.map((stage) => ({ ...stage, skipped: true })) });
     expect(simulatedCompletion(onlySkipped, onlySkipped.totalMs)).toBe(0);
+  });
+
+  it("skips a stage whose plan has been removed from the exposed plan map", () => {
+    const sim = createSimulator(syntheticDag({ stages: 1, nodesPerStage: 2 }));
+    sim.plans.delete(0);
+    expect(sim.at(0)).toEqual([]);
   });
 });

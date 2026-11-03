@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { createMemoryHistory, createRoute, createRouter } from "@tanstack/react-router";
 import { routerAt, RouterProvider, serveFixtures } from "~/__tests__/route-test-utils";
 import { parityStore } from "~/state/parity";
@@ -81,5 +82,33 @@ describe("top-level route screens", () => {
     expect(await screen.findByRole("heading", { name: "This view failed to render" })).toBeTruthy();
     expect(screen.getByText(/broken route fixture/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Retry now" })).toBeTruthy();
+  });
+
+  it("stringifies a non-Error thrown from a child route", async () => {
+    const failingRoute = createRoute({
+      getParentRoute: () => RootRoute,
+      path: "/fails-raw",
+      component: () => {
+        throw "broken route fixture";
+      },
+    });
+    const router = createRouter({
+      routeTree: RootRoute.addChildren([failingRoute]),
+      history: createMemoryHistory({ initialEntries: ["/fails-raw"] }),
+    });
+    render(<RouterProvider router={router} />);
+    expect(await screen.findByText(/broken route fixture/)).toBeTruthy();
+  });
+
+  it("renders the root document shell when no browser document exists", async () => {
+    vi.stubGlobal("document", undefined);
+    try {
+      const router = routerAt("/");
+      await router.load();
+      const html = renderToString(<RouterProvider router={router} />);
+      expect(html).toContain("<html");
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

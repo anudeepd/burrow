@@ -16,9 +16,10 @@ vi.mock("~/features/dag/react/DagViewLazy", () => ({
   ),
 }));
 
-const { cleanup, fireEvent, render, screen } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
-const { JobDagPanel, SqlPlanDag, StageDagPanel } = await import("./DagPanel");
+const { renderToStaticMarkup } = await import("react-dom/server");
+const { DagVizHeading, JobDagPanel, SqlPlanDag, StageDagPanel } = await import("./DagPanel");
 const { SparkProvider } = await import("./context");
 const { sp } = await import("../data/queries");
 
@@ -87,6 +88,43 @@ afterEach(() => {
 });
 
 describe("Spark job DAG panel", () => {
+  it("uses the server snapshot for the viewport store", () => {
+    const client = new QueryClient();
+    client.setQueryData(sp.dagJob(APP_ID, 12, null).queryKey, dag);
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <SparkProvider
+          value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
+        >
+          <JobDagPanel appId={APP_ID} jobId={12} />
+        </SparkProvider>
+      </QueryClientProvider>,
+    );
+    expect(html).toContain("RDD graph of Spark job 12");
+  });
+
+  it("uses the viewport fallback and skeleton while the graph request is pending", () => {
+    const matchMediaDescriptor = Object.getOwnPropertyDescriptor(window, "matchMedia");
+    Object.defineProperty(window, "matchMedia", { configurable: true, value: undefined });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    try {
+      render(
+        <QueryClientProvider client={client}>
+          <SparkProvider
+            value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
+          >
+            <JobDagPanel appId={APP_ID} jobId={12} />
+          </SparkProvider>
+        </QueryClientProvider>,
+      );
+      expect(screen.getByRole("status", { name: "Loading" })).toBeTruthy();
+    } finally {
+      cleanup();
+      if (matchMediaDescriptor) Object.defineProperty(window, "matchMedia", matchMediaDescriptor);
+      else Reflect.deleteProperty(window, "matchMedia");
+    }
+  });
+
   it("shows a mobile stage summary, selects a stage, and offers the complete graph", () => {
     const media = {
       matches: true,
@@ -153,6 +191,88 @@ describe("Spark job DAG panel", () => {
     );
     expect(screen.getByText("Loading stage summary…")).toBeTruthy();
   });
+
+  it("uses mobile fallback labels and shows the expanded graph hint", () => {
+    let notifyViewportChange: (() => void) | undefined;
+    let matches = true;
+    const media = {
+      get matches() {
+        return matches;
+      },
+      media: "(max-width: 639px)",
+      onchange: null,
+      addEventListener: vi.fn((_type: string, listener: EventListenerOrEventListenerObject) => {
+        notifyViewportChange = () => {
+          if (typeof listener === "function") listener(new Event("change") as MediaQueryListEvent);
+          else listener.handleEvent(new Event("change") as MediaQueryListEvent);
+        };
+      }),
+      removeEventListener: vi.fn(),
+    } as unknown as MediaQueryList;
+    vi.spyOn(window, "matchMedia").mockReturnValue(media);
+    const sparseStage = {
+      stageId: 9,
+      numTasks: 0,
+    } as SparkStage;
+    const summary = renderPanel(<JobDagPanel appId={APP_ID} jobId={12} stages={[sparseStage]} />);
+    const stageButton = screen.getByRole("button", { name: /Stage 9, unknown/ });
+    fireEvent.click(stageButton);
+    act(() => {
+      matches = false;
+      notifyViewportChange?.();
+    });
+    expect(screen.getByRole("img", { name: "RDD graph of Spark job 12" })).toBeTruthy();
+    summary.unmount();
+    cleanup();
+
+    matches = true;
+    renderPanel(<JobDagPanel appId={APP_ID} jobId={12} expandStages={false} />);
+    expect(screen.getByText("Stage details are unavailable. Show the full graph to explore this job.")).toBeTruthy();
+    cleanup();
+
+    const onExpandStagesChange = vi.fn();
+    renderPanel(<JobDagPanel appId={APP_ID} jobId={12} stages={[stage]} expandStages onExpandStagesChange={onExpandStagesChange} />);
+    expect(screen.getByTestId("mobile-dag-expanded-hint")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "RDD graph of Spark job 12" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show stage list" }));
+    expect(onExpandStagesChange).toHaveBeenCalledWith(false);
+  });
+
+  it("keeps stage fallback graphs compact and offers the desktop expansion threshold", () => {
+    const media = {
+      matches: false,
+      media: "(max-width: 639px)",
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as MediaQueryList;
+    vi.spyOn(window, "matchMedia").mockReturnValue(media);
+    const fallbackDag = { ...dag, kind: "stage", granularity: "stage", stages: [{ ...dag.stages[0]!, nodes: [] }] } as SparkDag;
+    renderPanel(<JobDagPanel appId={APP_ID} jobId={12} />, fallbackDag);
+    expect(screen.getByRole("img", { name: "RDD graph of Spark job 12" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /RDD details|stage summary/i })).toBeNull();
+    cleanup();
+
+    const onShowSummary = vi.fn();
+    renderPanel(<JobDagPanel appId={APP_ID} jobId={12} expandStages onExpandStagesChange={onShowSummary} />, dag);
+    fireEvent.click(screen.getByRole("button", { name: "Show stage summary" }));
+    expect(onShowSummary).toHaveBeenCalledWith(false);
+    cleanup();
+
+    const largeDag = {
+      ...dag,
+      stages: [
+        {
+          ...dag.stages[0]!,
+          nodes: Array.from({ length: 161 }, (_, id) => ({ id, name: `RDD ${id}`, clusterId: null })),
+        },
+      ],
+    } as SparkDag;
+    const onExpandStagesChange = vi.fn();
+    renderPanel(<JobDagPanel appId={APP_ID} jobId={12} onExpandStagesChange={onExpandStagesChange} />, largeDag);
+    fireEvent.click(screen.getByRole("button", { name: "Expand RDD details" }));
+    expect(onExpandStagesChange).toHaveBeenCalledWith(true);
+  });
 });
 
 describe("Spark stage and SQL DAG panels", () => {
@@ -175,6 +295,42 @@ describe("Spark stage and SQL DAG panels", () => {
     cleanup();
     render(<SqlPlanDag execution={{ id: 22, nodes: [], edges: [] } as never} />);
     expect(screen.getByText(/No plan graph for SQL execution 22/)).toBeTruthy();
+  });
+
+  it("renders the DagViz heading and a non-empty SQL plan graph", () => {
+    render(
+      <>
+        <DagVizHeading title="SQL plan" />
+        <SqlPlanDag
+          execution={
+            {
+              id: 33,
+              nodes: [{ nodeId: 1, nodeName: "Scan" }],
+              edges: [],
+            } as never
+          }
+        />
+      </>,
+    );
+    expect(screen.getByText("Powered by Burrow DagViz")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Spark SQL plan for execution 33" })).toBeTruthy();
+  });
+
+  it("shows pending stage and SQL graph fallbacks when payload fields are absent", () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <SparkProvider
+          value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application: null, resolving: false }}
+        >
+          <StageDagPanel appId={APP_ID} stageId={4} attemptId={0} />
+        </SparkProvider>
+      </QueryClientProvider>,
+    );
+    expect(screen.getByRole("status", { name: "Loading" })).toBeTruthy();
+    cleanup();
+    render(<SqlPlanDag execution={{ id: 34 } as never} />);
+    expect(screen.getByText(/No plan graph for SQL execution 34/)).toBeTruthy();
   });
 
   it("shows retryable graph failures and preserves cached graphs after refresh errors", async () => {

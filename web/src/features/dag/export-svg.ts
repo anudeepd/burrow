@@ -169,13 +169,14 @@ export function serializeDagSvg(
   const originals = [source, ...Array.from(source.querySelectorAll("*"))];
   const copies = [clone, ...Array.from(clone.querySelectorAll("*"))];
   for (let index = 0; index < originals.length; index += 1) {
-    const original = originals[index];
-    const copy = copies[index] as SVGElement | undefined;
-    if (!original || !copy) continue;
+    // cloneNode preserves the full element tree, so these parallel arrays always have matching entries.
+    const original = originals[index]!;
+    const copy = copies[index] as SVGElement;
     const styles = window.getComputedStyle(original);
     for (const property of SVG_EXPORT_STYLES) {
       const value = styles.getPropertyValue(property);
-      if (value) copy.style.setProperty(property, value);
+      // An empty value clears the property, matching the cloned element's computed style.
+      copy.style.setProperty(property, value);
     }
   }
 

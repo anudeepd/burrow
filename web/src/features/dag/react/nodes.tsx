@@ -335,7 +335,7 @@ export const DagNode = memo(function DagNode({ visual, labels, tabbable, onActiv
           ) : null}
           {secondMetaText && row.metaY > 0 ? (
             <text className="burrow-dag-meta" x={textPad} y={row.metaY} data-row="metadata-secondary">
-              {secondMeta && secondMeta !== secondMetaText ? <title>{secondMeta}</title> : null}
+              {secondMeta !== secondMetaText ? <title>{secondMeta}</title> : null}
               {secondMetaText}
             </text>
           ) : null}

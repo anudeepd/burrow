@@ -8,6 +8,11 @@ import { stripAnsi } from "./model";
 const textOf = (segs: { text: string }[]) => segs.map((s) => s.text).join("");
 
 describe("splitSegments", () => {
+  it("handles empty and ANSI-only source text without emitting empty runs", () => {
+    expect(splitSegments("", [])).toEqual([]);
+    expect(splitSegments("\u001b[31m\u001b[0m", [])).toEqual([]);
+  });
+
   it("returns one plain run when there is no ANSI and no match", () => {
     const segs = splitSegments("hello world", []);
     expect(segs).toHaveLength(1);

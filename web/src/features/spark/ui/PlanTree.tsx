@@ -136,16 +136,6 @@ export function PlanTree({
       return next;
     });
 
-  const copy = async () => {
-    try {
-      const didCopy = await copyText(plan ?? "");
-      setCopied(didCopy);
-      if (didCopy) window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      setCopied(false);
-    }
-  };
-
   if (!plan) {
     return (
       <p className={cn("rounded-md border border-dashed border-seam-strong bg-well px-2.5 py-2 text-small text-ink-3", className)}>
@@ -153,6 +143,16 @@ export function PlanTree({
       </p>
     );
   }
+
+  const copy = async () => {
+    try {
+      const didCopy = await copyText(plan);
+      setCopied(didCopy);
+      if (didCopy) window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   const nodeCount = lines.filter((l) => l.children.length > 0).length;
 

@@ -75,6 +75,32 @@ describe("ELK browser asset worker bootstrap", () => {
     expect((globalThis as unknown as { document: unknown }).document).toBeUndefined();
   });
 
+  it("temporarily supplies and removes document when no descriptor exists", async () => {
+    saveGlobals();
+    const Worker = exposedWorker();
+    setGlobal("location", { origin: "https://burrow.test" });
+    Reflect.deleteProperty(globalThis, "document");
+    setGlobal("importScripts", () => {
+      const commonJs = (globalThis as unknown as { module: { exports: { Worker?: new () => object } } }).module;
+      commonJs.exports.Worker = Worker;
+    });
+
+    await expect(loadInlineWorkerAsset()).resolves.toBe(Worker);
+    expect(Object.getOwnPropertyDescriptor(globalThis, "document")).toBeUndefined();
+  });
+
+  it("loads the inline worker when SSR starts without a document global", async () => {
+    saveGlobals();
+    vi.stubEnv("MODE", "test");
+    vi.stubEnv("SSR", true);
+    vi.resetModules();
+    Reflect.deleteProperty(globalThis, "document");
+
+    const { getElk: getFreshElk } = await import("./elk");
+    await expect(getFreshElk()).resolves.toBeTruthy();
+    expect(Object.getOwnPropertyDescriptor(globalThis, "document")).toBeUndefined();
+  });
+
   it("loads through a script element and removes the temporary script", async () => {
     saveGlobals();
     const Worker = exposedWorker();

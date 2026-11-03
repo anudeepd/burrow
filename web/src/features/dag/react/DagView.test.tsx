@@ -7,15 +7,19 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { DagView } from "./DagView";
 import { DagMinimap, EdgeDrawer } from "./chrome";
 import { toRenderGraph } from "../layout";
 import { layoutClient } from "../layout/client";
 import { createSimulator, syntheticDag } from "../simulate";
 import { stageMetricsFromRest } from "../metrics";
+import { download } from "~/ui/data-table/export";
 import type { Dag, DagInput, SqlPlanExecution, SqlPlanMetric } from "../types";
 import type { EdgeVisual, Scene } from "../render/scene";
+import type { LayoutResult } from "../types";
+
+vi.mock("~/ui/data-table/export", () => ({ download: vi.fn() }));
 
 const FIXTURES = join(process.cwd(), "..", "fixtures", "spark");
 
@@ -223,9 +227,32 @@ describe("keyboard navigation", () => {
     const zoomed = screen.getByTestId("dag-zoom").textContent;
     fireEvent.keyDown(canvas, { key: "_" });
     await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(zoomed));
+    const underscored = screen.getByTestId("dag-zoom").textContent;
+    fireEvent.keyDown(canvas, { key: "-" });
+    await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(underscored));
     fireEvent.keyDown(canvas, { key: "x" });
     expect(tabbable()).toBeTruthy();
     expect(afterRight).toBeTruthy();
+  });
+
+  it("handles keyboard navigation with no nodes and a stale focused id after graph changes", async () => {
+    const empty: Dag = { kind: "job", granularity: "stage", stages: [], edges: [] };
+    render(<DagView dag={empty} />);
+    await waitFor(() => expect(screen.getByText(/has no nodes/)).toBeTruthy());
+    for (const key of ["ArrowDown", "Home", "End"]) fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key });
+    cleanup();
+
+    const wide = syntheticDag({ stages: 2, nodesPerStage: 3, skipEvery: 0, seed: 33 });
+    const short = syntheticDag({ stages: 1, nodesPerStage: 3, skipEvery: 0, seed: 33 });
+    const view = await mount(wide, { expandStages: true });
+    fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key: "End" });
+    fireEvent.click(screen.getAllByRole("treeitem").at(-1)!);
+    expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("true");
+    view.rerender(<DagView dag={short} height={400} expandStages />);
+    await waitFor(() => expect(screen.getAllByRole("treeitem").length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("false"));
+    fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key: "ArrowDown" });
+    expect(screen.getAllByRole("treeitem").some((item) => item.getAttribute("tabindex") === "0")).toBe(true);
   });
 
   it("scrolls its page on Shift-wheel and ignores a zero wheel delta", async () => {
@@ -262,6 +289,79 @@ describe("keyboard navigation", () => {
     stage.dispatchEvent(shiftWheel);
     expect(shiftWheel.defaultPrevented).toBe(false);
     expect(screen.getByTestId("dag-zoom").textContent).toBe(zoom);
+  });
+
+  it("handles upward Shift-wheel, horizontal wheel deltas, modifiers, and line-mode zoom", async () => {
+    const view = render(
+      <div className="burrow-page-scroll" style={{ overflowY: "auto" }}>
+        <DagView dag={wordcountStage()} height={400} />
+      </div>,
+    );
+    await waitFor(() => expect(screen.getAllByRole("treeitem").length).toBeGreaterThan(0));
+    const scroller = view.container.firstElementChild as HTMLElement;
+    Object.defineProperties(scroller, {
+      scrollHeight: { configurable: true, value: 1000 },
+      clientHeight: { configurable: true, value: 400 },
+      scrollTop: { configurable: true, writable: true, value: 100 },
+    });
+    const stage = screen.getByTestId("dag-stage");
+    const up = new WheelEvent("wheel", { deltaY: -20, bubbles: true, cancelable: true });
+    Object.defineProperty(up, "shiftKey", { value: true });
+    stage.dispatchEvent(up);
+    expect(scroller.scrollTop).toBe(80);
+    expect(up.defaultPrevented).toBe(true);
+
+    Object.defineProperty(scroller, "scrollTop", { configurable: true, writable: true, value: 0 });
+    const atTop = new WheelEvent("wheel", { deltaY: -20, bubbles: true, cancelable: true });
+    Object.defineProperty(atTop, "shiftKey", { value: true });
+    stage.dispatchEvent(atTop);
+    expect(atTop.defaultPrevented).toBe(false);
+
+    const horizontal = new WheelEvent("wheel", { deltaY: 0, deltaX: 12, bubbles: true, cancelable: true });
+    Object.defineProperty(horizontal, "shiftKey", { value: true });
+    stage.dispatchEvent(horizontal);
+    expect(scroller.scrollTop).toBe(12);
+
+    const before = screen.getByTestId("dag-zoom").textContent;
+    const modified = new WheelEvent("wheel", { deltaY: -3, deltaMode: 1, bubbles: true, cancelable: true });
+    Object.defineProperties(modified, { shiftKey: { value: true }, ctrlKey: { value: true } });
+    stage.dispatchEvent(modified);
+    await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(before));
+  });
+
+  it("ignores secondary and chrome pointer presses and releases lazy pointer capture", async () => {
+    await mount(wordcountStage());
+    const stage = screen.getByTestId("dag-stage");
+    const canvas = screen.getByTestId("dag-canvas");
+    fireEvent.pointerDown(stage, { button: 2, pointerId: 7, clientX: 5, clientY: 5 });
+    fireEvent.pointerMove(stage, { pointerId: 7, clientX: 30, clientY: 30 });
+    expect(canvas.getAttribute("data-panning")).toBe("false");
+
+    const capture = vi.fn();
+    const release = vi.fn();
+    const hasCapture = vi.fn().mockReturnValueOnce(false).mockReturnValueOnce(true);
+    Object.defineProperty(stage, "hasPointerCapture", { configurable: true, value: hasCapture });
+    Object.defineProperty(stage, "setPointerCapture", { configurable: true, value: capture });
+    Object.defineProperty(stage, "releasePointerCapture", { configurable: true, value: release });
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Zoom in" }), { button: 0, pointerId: 8, clientX: 1, clientY: 1 });
+    fireEvent.pointerMove(stage, { pointerId: 8, clientX: 20, clientY: 20 });
+    expect(canvas.getAttribute("data-panning")).toBe("false");
+
+    fireEvent.pointerDown(stage, { button: 0, pointerId: 9, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(stage, { pointerId: 9, clientX: 20, clientY: 20 });
+    expect(canvas.getAttribute("data-panning")).toBe("true");
+    fireEvent.pointerMove(stage, { pointerId: 9, clientX: 24, clientY: 24 });
+    fireEvent.pointerUp(stage, { pointerId: 9, clientX: 20, clientY: 20 });
+    expect(capture).toHaveBeenCalledWith(9);
+    expect(release).toHaveBeenCalledWith(9);
+    expect(canvas.getAttribute("data-panning")).toBe("false");
+
+    const alreadyCaptured = vi.fn().mockReturnValue(true);
+    Object.defineProperty(stage, "hasPointerCapture", { configurable: true, value: alreadyCaptured });
+    fireEvent.pointerDown(stage, { button: 0, pointerId: 10, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(stage, { pointerId: 10, clientX: 20, clientY: 20 });
+    expect(capture).toHaveBeenCalledTimes(1);
+    fireEvent.pointerUp(stage, { pointerId: 10, clientX: 20, clientY: 20 });
   });
 
   it("opens the drawer with Enter and closes it with Escape", async () => {
@@ -335,6 +435,22 @@ describe("interaction", () => {
     expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("true");
     fireEvent.click(within(screen.getByTestId("dag-edge-drawer")).getByRole("button", { name: "Close details" }));
     expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("false");
+  });
+
+  it("focuses a stage from its node bounds when cluster bounds are absent", async () => {
+    Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, top: 0, left: 0, right: 320, bottom: 400, width: 320, height: 400, toJSON: () => ({}) }),
+    });
+    const dag = wordcountStage();
+    dag.stages[0]!.attempt = undefined;
+    const client = layoutClient();
+    const layout = await client.layout(toRenderGraph(dag));
+    vi.spyOn(client, "layout").mockResolvedValue({ ...layout, clusters: new Map() });
+    await mount(dag, { selectedStageId: 0 });
+
+    fireEvent.click(screen.getByRole("button", { name: "Focus stage 0" }));
+    await waitFor(() => expect(Number.parseInt(screen.getByTestId("dag-zoom").textContent ?? "0", 10)).toBeLessThanOrEqual(75));
   });
 
   it("shows a layout failure and retries it", async () => {
@@ -463,6 +579,13 @@ describe("interaction", () => {
     expect(note.textContent).toContain("no RDD detail");
   });
 
+  it("uses singular wording for a single provenance note", async () => {
+    const dag = fallbackJob();
+    dag.edgesInferred = false;
+    await mount(dag);
+    expect(screen.getByRole("button", { name: /provenance note$/ }).textContent).toContain("1 provenance note");
+  });
+
   it("selects a node on click and reports the stage to the host", async () => {
     const seen: number[] = [];
     await mount(wordcountStage(), { onSelectStage: (stageId: number) => seen.push(stageId) });
@@ -470,6 +593,103 @@ describe("interaction", () => {
     expect(seen).toContain(0);
     const drawer = screen.getByTestId("dag-drawer");
     expect(drawer.getAttribute("data-open")).toBe("true");
+  });
+
+  it("passes stage and RDD deep links to the selected-node drawer", async () => {
+    const dag = wordcountStage();
+    dag.stages[0]!.attempt = undefined;
+    const stageHref = vi.fn((stageId: number, attempt: number) => `/stage/${stageId}/${attempt}`);
+    const rddHref = vi.fn((rddId: number) => `/rdd/${rddId}`);
+    const onSelectRdd = vi.fn();
+    const onSelectStage = vi.fn();
+    await mount(dag, { stageHref, rddHref, onSelectRdd, onSelectStage });
+    fireEvent.click(screen.getAllByRole("treeitem")[0]!);
+    expect(screen.getByRole("link", { name: "Open stage task list" }).getAttribute("href")).toMatch(/^\/stage\/0\//);
+    expect(screen.getByRole("link", { name: "Open RDD storage detail" }).getAttribute("href")).toMatch(/^\/rdd\//);
+    expect(onSelectStage).toHaveBeenCalledOnce();
+    expect(onSelectRdd).toHaveBeenCalledOnce();
+  });
+
+  it("uses zero fallback refs for an inferred stage-summary edge and closes the node drawer for the edge menu", async () => {
+    const selected: unknown[] = [];
+    await mount(fallbackJob(), { expandStages: true, onSelectEdge: (value: unknown) => selected.push(value) });
+    fireEvent.click(screen.getAllByRole("treeitem")[0]!);
+    expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: /^Edges \(/ }));
+    await waitFor(() => expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("false"));
+    const item = within(screen.getByTestId("dag-edge-list")).getAllByRole("menuitem")[0]!;
+    fireEvent.click(item);
+    expect(selected[0]).toEqual(expect.objectContaining({ from: 0, to: 0 }));
+  });
+
+  it("sorts a selected stage chain when RDD references are missing", async () => {
+    const dag = syntheticDag({ stages: 2, nodesPerStage: 4, skipEvery: 0, seed: 41 });
+    const secondStage = dag.stages[1]!;
+    expect(secondStage.stageId).not.toBe(0);
+    secondStage.nodes[0]!.id = 0;
+    secondStage.nodes[1]!.id = null as unknown as number;
+    await mount(dag, { expandStages: true });
+    const secondStageNode = screen.getAllByRole("treeitem").find((item) => item.getAttribute("data-node-id")?.startsWith("1.0."))!;
+    fireEvent.click(secondStageNode);
+    expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("true");
+  });
+
+  it("breaks equal-position navigation ties by node id", async () => {
+    const dag = wordcountStage();
+    const graph = toRenderGraph(dag);
+    const client = layoutClient();
+    const layout = await client.layout(graph);
+    vi.spyOn(client, "layout").mockResolvedValue({
+      ...layout,
+      nodes: new Map(graph.nodes.map((node) => [node.id, { x: 0, y: 0, width: 200, height: 84 }])),
+    });
+    await mount(dag);
+    fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key: "ArrowDown" });
+    expect(screen.getAllByRole("treeitem").filter((item) => item.getAttribute("tabindex") === "0")).toHaveLength(1);
+  });
+
+  it("shows one and plural graph warnings", async () => {
+    const one = wordcountStage();
+    one.stages[0]!.edges.push({ from: 99_991, to: 99_992 });
+    const single = await mount(one);
+    await waitFor(() => expect(screen.getByTestId("dag-warnings").textContent).toContain("1 data warning"));
+    single.unmount();
+
+    const many = wordcountStage();
+    many.stages[0]!.edges.push({ from: 99_991, to: 99_992 }, { from: 99_993, to: 99_994 });
+    await mount(many);
+    await waitFor(() => expect(screen.getByTestId("dag-warnings").textContent).toContain("data warnings"));
+  });
+
+  it("uses the canvas edge layer and dense-card mode for large expanded graphs", { timeout: 30_000 }, async () => {
+    const dag = syntheticDag({ stages: 1, nodesPerStage: 460, skipEvery: 0, seed: 1 });
+    const graph = toRenderGraph(dag, { expandStages: true });
+    const geometry: LayoutResult = {
+      hash: graph.hash,
+      width: 20_000,
+      height: 800,
+      nodes: new Map(graph.nodes.map((item, index) => [item.id, { x: index * 220, y: 20, width: 200, height: 84 }])),
+      clusters: new Map(graph.clusters.map((cluster) => [cluster.id, { x: 0, y: 0, width: 20_000, height: 500 }])),
+      edges: new Map(
+        graph.edges.map((item, index) => [
+          item.id,
+          [
+            { x: index * 100, y: 100 },
+            { x: index * 100 + 80, y: 100 },
+          ],
+        ]),
+      ),
+      durationMs: 1,
+      ran: "main",
+      rung: 0,
+      ladderName: "coverage",
+    };
+    vi.spyOn(layoutClient(), "layout").mockResolvedValue(geometry);
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    await mount(dag, { expandStages: true });
+    expect(screen.getByTestId("dag-canvas").getAttribute("data-strategy")).toBe("canvas");
+    expect(screen.getByTestId("dag-canvas").getAttribute("data-dense")).toBe("true");
+    expect(document.querySelector("canvas.burrow-dag-edges-canvas, canvas")).not.toBeNull();
   });
 
   it("closes the drawer on a background click and keeps it on a node click", async () => {
@@ -490,7 +710,8 @@ describe("interaction", () => {
   });
 
   it("pans after the drag threshold and suppresses the click that follows a drag", async () => {
-    await mount(wordcountStage());
+    const onSelectEdge = vi.fn();
+    await mount(wordcountStage(), { onSelectEdge });
     const stage = screen.getByTestId("dag-stage");
     const node = screen.getAllByRole("treeitem")[0]!;
     fireEvent.pointerDown(node, { button: 0, pointerId: 9, clientX: 10, clientY: 10 });
@@ -498,9 +719,14 @@ describe("interaction", () => {
     expect(screen.getByTestId("dag-canvas").getAttribute("data-panning")).toBe("false");
     fireEvent.pointerMove(stage, { pointerId: 9, clientX: 22, clientY: 20 });
     expect(screen.getByTestId("dag-canvas").getAttribute("data-panning")).toBe("true");
+    vi.spyOn(Date, "now").mockReturnValue(1_000);
     fireEvent.pointerUp(stage, { pointerId: 9, clientX: 22, clientY: 20 });
     fireEvent.click(node);
+    const edge = screen.getByRole("tree").querySelector(".burrow-dag-edge-hit");
+    expect(edge).not.toBeNull();
+    fireEvent.click(edge!);
     expect(screen.getByTestId("dag-drawer").getAttribute("data-open")).toBe("false");
+    expect(onSelectEdge).not.toHaveBeenCalled();
   });
 
   it("selects an edge from the hover target", async () => {
@@ -513,6 +739,20 @@ describe("interaction", () => {
     fireEvent.click(hit!);
     expect(seen).toHaveLength(1);
     expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("true");
+  });
+
+  it("closes a stale edge selection after its edge disappears from the graph", async () => {
+    const original = barrierJob();
+    const view = await mount(original, { expandStages: true });
+    fireEvent.click(screen.getByRole("tree").querySelector(".burrow-dag-edge-hit")!);
+    expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("true");
+
+    const changed = barrierJob();
+    changed.edges = [];
+    for (const stage of changed.stages) stage.edges = [];
+    view.rerender(<DagView dag={changed} height={400} expandStages />);
+    await waitFor(() => expect(screen.getByTestId("dag-canvas").getAttribute("data-dag-layout")).toBe("ready"));
+    expect(screen.getByTestId("dag-edge-drawer").getAttribute("data-open")).toBe("false");
   });
 
   it("nests groups by compound scope, mirroring the layout hierarchy", async () => {
@@ -715,6 +955,247 @@ describe("metrics and parity attributes", () => {
       expect(drawer.querySelectorAll('[data-yf^="spark.sql.metrics"]')).toHaveLength(0);
       unmount();
     }
+  });
+});
+
+describe("layout lifecycle, exports, and progress announcements", () => {
+  it("uses the default height and safely handles shortcuts before layout resolves", async () => {
+    const client = layoutClient();
+    const original = client.layout.bind(client);
+    const layout = await original(toRenderGraph(wordcountStage()));
+    let resolveLayout: ((value: LayoutResult) => void) | undefined;
+    const pending = vi.spyOn(client, "layout").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveLayout = resolve;
+        }),
+    );
+    const view = render(<DagView dag={wordcountStage()} />);
+    expect(view.container.querySelector(".burrow-dag-frame")?.getAttribute("style")).toContain("420px");
+    const canvas = screen.getByTestId("dag-canvas");
+    fireEvent.keyDown(canvas, { key: "+" });
+    fireEvent.keyDown(canvas, { key: "0" });
+    await act(async () => {
+      resolveLayout?.(layout);
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(screen.getAllByRole("treeitem").length).toBeGreaterThan(0));
+    pending.mockRestore();
+  });
+
+  it("keeps zoom and stage-focus controls safe when the measured pane has zero width", async () => {
+    Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+      configurable: true,
+      value: () => ({ x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, toJSON: () => ({}) }),
+    });
+    render(<DagView dag={wordcountStage()} height={400} selectedStageId={0} />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Zoom in" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    fireEvent.click(screen.getByRole("button", { name: "Focus stage 0" }));
+    fireEvent.pointerDown(screen.getByTestId("dag-minimap"), { pointerId: 1, clientX: 10, clientY: 10 });
+    fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key: "ArrowDown" });
+    expect(screen.getByTestId("dag-canvas").getAttribute("data-dag-layout")).toBe("ready");
+  });
+
+  it("uses identity viewports for keyboard, wheel, and drag input before layout resolves", async () => {
+    const client = layoutClient();
+    vi.spyOn(client, "layout").mockImplementation(() => new Promise(() => {}));
+    const pendingView = () => render(<DagView dag={wordcountStage()} height={400} />);
+
+    let view = pendingView();
+    fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key: "ArrowDown", shiftKey: true });
+    view.unmount();
+
+    view = pendingView();
+    fireEvent.keyDown(screen.getByTestId("dag-canvas"), { key: "ArrowUp", shiftKey: true });
+    view.unmount();
+
+    view = pendingView();
+    const wheel = new WheelEvent("wheel", { deltaY: -20, bubbles: true, cancelable: true });
+    await act(() => {
+      screen.getByTestId("dag-stage").dispatchEvent(wheel);
+    });
+    expect(wheel.defaultPrevented).toBe(true);
+    view.unmount();
+
+    view = pendingView();
+    const stage = screen.getByTestId("dag-stage");
+    fireEvent.pointerDown(stage, { button: 0, pointerId: 21, clientX: 2, clientY: 2 });
+    fireEvent.pointerMove(stage, { pointerId: 21, clientX: 12, clientY: 12 });
+    expect(screen.getByTestId("dag-canvas").getAttribute("data-panning")).toBe("true");
+    view.unmount();
+  });
+
+  it("initializes an empty graph without a focus node", async () => {
+    const empty: Dag = { kind: "job", granularity: "stage", stages: [], edges: [] };
+    const graph = toRenderGraph(empty);
+    vi.spyOn(layoutClient(), "layout").mockResolvedValue({
+      hash: graph.hash,
+      width: 100,
+      height: 100,
+      nodes: new Map(),
+      clusters: new Map(),
+      edges: new Map(),
+      durationMs: 1,
+      ran: "main",
+      rung: 0,
+      ladderName: "coverage",
+    });
+    render(<DagView dag={empty} height={400} />);
+    await waitFor(() => expect(screen.getByTestId("dag-canvas").getAttribute("data-dag-layout")).toBe("ready"));
+  });
+
+  it("reports worker layouts and formats Error failures", async () => {
+    const client = layoutClient();
+    const original = client.layout.bind(client);
+    const workerLayout = vi.spyOn(client, "layout").mockImplementation(async (graph) => ({ ...(await original(graph)), ran: "worker" }));
+    const workerView = render(<DagView dag={wordcountStage()} height={400} />);
+    await waitFor(() => expect(screen.getAllByRole("treeitem").length).toBeGreaterThan(0), { timeout: 10_000 });
+    expect(screen.getByRole("toolbar").textContent).toContain("worker");
+    workerView.unmount();
+    workerLayout.mockRestore();
+
+    const failed = vi.spyOn(client, "layout").mockRejectedValueOnce(new Error("layout exploded"));
+    render(<DagView dag={wordcountStage()} height={400} />);
+    expect(await screen.findByText(/layout exploded/)).toBeTruthy();
+    failed.mockRestore();
+  });
+
+  it("ignores layout completion and errors after unmount", async () => {
+    const client = layoutClient();
+    let resolveLayout: ((layout: LayoutResult) => void) | undefined;
+    const pendingSuccess = vi.spyOn(client, "layout").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveLayout = resolve;
+        }),
+    );
+    const successView = render(<DagView dag={wordcountStage()} height={400} />);
+    successView.unmount();
+    await act(async () => {
+      resolveLayout?.({} as LayoutResult);
+      await Promise.resolve();
+    });
+    pendingSuccess.mockRestore();
+
+    let rejectLayout: ((error: unknown) => void) | undefined;
+    const pendingFailure = vi.spyOn(client, "layout").mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectLayout = reject;
+        }),
+    );
+    const failureView = render(<DagView dag={wordcountStage()} height={400} />);
+    failureView.unmount();
+    await act(async () => {
+      rejectLayout?.(new Error("late layout error"));
+      await Promise.resolve();
+    });
+    pendingFailure.mockRestore();
+  });
+
+  it("announces singular failure and completion transitions", async () => {
+    const dag = wordcountStage();
+    const before = stageMetricsFromRest([{ stageId: 0, status: "ACTIVE", numTasks: 10, numActiveTasks: 2, numCompleteTasks: 5 }]);
+    const view = await mount(dag, { metrics: before });
+    const live = () => view.container.querySelector('[aria-live="polite"]')?.textContent ?? "";
+    view.rerender(
+      <DagView
+        dag={dag}
+        height={400}
+        metrics={stageMetricsFromRest([{ stageId: 0, status: "FAILED", numTasks: 10, numFailedTasks: 1, numCompleteTasks: 5 }])}
+      />,
+    );
+    await waitFor(() => expect(live()).toContain("1 stage failed"));
+    view.rerender(
+      <DagView
+        dag={dag}
+        height={400}
+        metrics={stageMetricsFromRest([{ stageId: 0, status: "COMPLETE", numTasks: 10, numCompleteTasks: 10 }])}
+      />,
+    );
+    await waitFor(() => expect(live()).toContain("1 stage completed"));
+  });
+
+  it("announces plural failures and completions across stages", async () => {
+    const dag = syntheticDag({ stages: 2, nodesPerStage: 2, skipEvery: 0, seed: 19 });
+    const stageIds = dag.stages.map((stage) => stage.stageId);
+    const active = () =>
+      stageMetricsFromRest(
+        stageIds.map((stageId) => ({ stageId, status: "ACTIVE", numTasks: 10, numActiveTasks: 2, numCompleteTasks: 5 })),
+      );
+    const failed = () =>
+      stageMetricsFromRest(
+        stageIds.map((stageId) => ({ stageId, status: "FAILED", numTasks: 10, numFailedTasks: 1, numCompleteTasks: 5 })),
+      );
+    const complete = () =>
+      stageMetricsFromRest(stageIds.map((stageId) => ({ stageId, status: "COMPLETE", numTasks: 10, numCompleteTasks: 10 })));
+    const view = await mount(dag, { metrics: active() });
+    const live = () => view.container.querySelector('[aria-live="polite"]')?.textContent ?? "";
+    view.rerender(<DagView dag={dag} height={400} metrics={failed()} />);
+    await waitFor(() => expect(live()).toContain("2 stages failed"));
+    view.rerender(<DagView dag={dag} height={400} metrics={complete()} />);
+    await waitFor(() => expect(live()).toContain("2 stages completed"));
+  });
+
+  it("announces progress while layout is pending and clears the flash after its timer", async () => {
+    const dag = wordcountStage();
+    const client = layoutClient();
+    vi.spyOn(client, "layout").mockImplementation(() => new Promise(() => {}));
+    const active = stageMetricsFromRest([{ stageId: 0, status: "ACTIVE", numTasks: 10, numActiveTasks: 2, numCompleteTasks: 5 }]);
+    const complete = stageMetricsFromRest([{ stageId: 0, status: "COMPLETE", numTasks: 10, numCompleteTasks: 10 }]);
+    const view = render(<DagView dag={dag} height={400} metrics={active} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    view.rerender(<DagView dag={dag} height={400} metrics={complete} />);
+    const live = () => view.container.querySelector('[aria-live="polite"]')?.textContent ?? "";
+    await waitFor(() => expect(live()).toContain("1 stage completed. 0 of 0 tasks complete"));
+
+    view.unmount();
+    vi.restoreAllMocks();
+
+    const ready = await mount(dag, { metrics: active });
+    ready.rerender(<DagView dag={dag} height={400} metrics={complete} />);
+    await waitFor(() => expect(ready.container.querySelector('[data-flash="true"]')).not.toBeNull());
+    await act(async () => {
+      await new Promise((resolve) => window.setTimeout(resolve, 950));
+    });
+    expect(ready.container.querySelector('[data-flash="true"]')).toBeNull();
+  });
+
+  it("flashes newly reported stages as they enter the metrics stream", async () => {
+    const dag = wordcountStage();
+    const view = await mount(dag);
+    const metrics = stageMetricsFromRest([{ stageId: 0, status: "ACTIVE", numTasks: 10, numActiveTasks: 1 }]);
+    view.rerender(<DagView dag={dag} height={400} metrics={metrics} />);
+    await waitFor(() => expect(view.container.querySelector('[data-flash="true"]')).not.toBeNull());
+  });
+
+  it("exports the interactive graph and falls back to a safe filename", async () => {
+    vi.mocked(download).mockClear();
+    const dag = wordcountStage();
+    const view = await mount(dag, { ariaLabel: "$$$", showLegend: false, toolbarExtras: <button type="button">Preview control</button> });
+    expect(screen.queryByText("cached RDD")).toBeNull();
+    expect(screen.getByRole("button", { name: "Preview control" })).toBeTruthy();
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, "getComputedStyle").mockImplementation((element) => {
+      if (element === screen.getByTestId("dag-stage")) {
+        return { getPropertyValue: (name: string) => (name === "--ground" ? " #123456 " : "") } as CSSStyleDeclaration;
+      }
+      return originalGetComputedStyle(element);
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Download interactive DAG snapshot (HTML)" }));
+    await waitFor(() => expect(download).toHaveBeenCalledOnce());
+    const [filename, mime, html] = vi.mocked(download).mock.calls[0]!;
+    expect(filename).toBe("dag.html");
+    expect(mime).toBe("text/html");
+    expect(html).toContain("#123456");
+    expect(html).toContain("burrow-dagviz-export");
+    view.rerender(<DagView dag={dag} height={400} />);
+    fireEvent.click(screen.getByRole("button", { name: "Download interactive DAG snapshot (HTML)" }));
+    await waitFor(() => expect(download).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(download).mock.calls[1]?.[0]).toBe("stage-dag.html");
   });
 });
 

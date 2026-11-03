@@ -29,7 +29,7 @@ const sparkModules: Record<string, { sparkAppTab?: SparkTabContribution }> = imp
 
 const SPARK_TAB = Object.values(sparkModules)[0]?.sparkAppTab;
 
-export function appTabs(appId: string): AppTabDef[] {
+export function appTabs(appId: string, sparkTab: SparkTabContribution | null = SPARK_TAB): AppTabDef[] {
   const base = `/apps/${appId}`;
   const tabs: AppTabDef[] = [
     { value: "overview", label: "Overview", href: base, available: true },
@@ -38,8 +38,8 @@ export function appTabs(appId: string): AppTabDef[] {
     { value: "logs", label: "Logs", href: `${base}/logs`, available: true },
   ];
   tabs.push(
-    SPARK_TAB
-      ? { value: SPARK_TAB.value, label: SPARK_TAB.label, href: SPARK_TAB.href.replace("$appId", appId), available: true }
+    sparkTab
+      ? { value: sparkTab.value, label: sparkTab.label, href: sparkTab.href.replace("$appId", appId), available: true }
       : {
           value: "spark",
           label: "Spark",
@@ -52,9 +52,9 @@ export function appTabs(appId: string): AppTabDef[] {
 }
 
 /** Which tab is active for the current location. `attempts/$attemptId` and `containers/$containerId` both live in Attempts. */
-export function activeTab(pathname: string, appId: string): string {
+export function activeTab(pathname: string, appId: string, sparkValue: string | null = SPARK_TAB?.value): string {
   const rest = pathname.slice(`/apps/${appId}`.length);
-  if (rest.startsWith("/spark")) return SPARK_TAB?.value ?? "spark";
+  if (rest.startsWith("/spark")) return sparkValue ?? "spark";
   if (rest.startsWith("/logs")) return "logs";
   if (rest.startsWith("/attempts") || rest.startsWith("/containers")) return "attempts";
   return "overview";

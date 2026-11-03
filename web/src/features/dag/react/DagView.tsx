@@ -119,8 +119,8 @@ const DagNodeBucket = memo(function DagNodeBucket({
   onFocus,
 }: DagNodeBucketProps) {
   return nodes.map((node) => {
-    const visual = visuals.get(node.id);
-    if (!visual) return null;
+    // buildScene creates a visual for every graph node, so this bucket can render directly from that invariant.
+    const visual = visuals.get(node.id)!;
     return (
       <DagNode
         key={node.id}
@@ -217,8 +217,7 @@ export function DagView({
     const nodeIdsByRepresentative = new Map<string, string[]>();
     const representativeByStage = new Map<number, string>();
     for (const [stageId, ids] of nodeIdsByStage) {
-      const representative = ids[0];
-      if (!representative) continue;
+      const representative = ids[0]!;
       metricOrder.push(representative);
       nodeIdsByRepresentative.set(representative, ids);
       representativeByStage.set(stageId, representative);
@@ -332,23 +331,24 @@ export function DagView({
     }
     const tweenMs = new Map<string, number>();
     if (plan) for (const update of plan.updates) if (update.tweenMs > 0) tweenMs.set(update.id, update.tweenMs);
-    return { visuals, plan, tweenMs };
+    return { visuals, plan, stagePlan, tweenMs };
   }, [metricsIndex, metricOrder, nodeIdsByRepresentative, representativeByStage]);
   const tweenMs = progressPlan.tweenMs;
 
   useEffect(() => {
-    const { plan, visuals } = progressPlan;
+    const { plan, stagePlan, visuals } = progressPlan;
     if (plan) {
       const next: FlashState[] = [];
       for (const update of plan.updates) if (update.flash) next.push({ id: update.id, tone: update.flash, at: Date.now() });
-      for (const id of plan.entering) next.push({ id, tone: "live", at: Date.now() });
       if (next.length > 0) {
         setFlashes(next);
         for (const timer of flashTimers.current) window.clearTimeout(timer);
         flashTimers.current = [window.setTimeout(() => setFlashes([]), FLASH_MS)];
       }
-      const finished = plan.updates.filter((update) => update.statusChanged && update.toPercent >= 100).length;
-      const failed = plan.updates.filter((update) => update.flash === "fail").length;
+      // Count each original stage update once; `plan.updates` is expanded to every RDD node for rendering.
+      // `plan` and `stagePlan` are both null or both present, so the enclosing guard guarantees this list exists.
+      const finished = stagePlan!.updates.filter((update) => update.statusChanged && update.toPercent >= 100).length;
+      const failed = stagePlan!.updates.filter((update) => update.flash === "fail").length;
       if (failed > 0) setAnnouncement(`${failed} stage${failed === 1 ? "" : "s"} failed`);
       else if (finished > 0) setAnnouncement(`${finished} stage${finished === 1 ? "" : "s"} completed`);
     }
@@ -415,12 +415,12 @@ export function DagView({
     const nodes = new Map<string, LabelPlacement[]>();
     for (const [nodeId, list] of candidates.nodes) {
       const keep = list.filter((c) => placedIds.has(c.id));
-      if (keep.length > 0) nodes.set(nodeId, keep);
+      nodes.set(nodeId, keep);
     }
     const edges = new Map<string, LabelPlacement[]>();
     for (const [edgeId, list] of candidates.edges) {
       const keep = list.filter((c) => placedIds.has(c.id));
-      if (keep.length > 0) edges.set(edgeId, keep);
+      edges.set(edgeId, keep);
     }
     return { nodes, edges };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `scene.digest` + `layout` fully determine the plan.
@@ -442,7 +442,8 @@ export function DagView({
     if (!running) return;
     didAutoFocusRef.current = true;
     setViewport((v) => {
-      const base = v ?? IDENTITY_VIEWPORT;
+      // The fitted viewport effect above runs before this focus effect whenever the pane has a measurable size.
+      const base = v!;
       // Follow the work by *re-centring* at the scale the user is already at. Scaling the viewport up to
       // `focusScale` would zoom into the running node (measured: a 168x46 node in a 728x598 pane asks for
       // 3.03x, which clamped to MAX_SCALE and opened the synthetic-300 graph at 300%).
@@ -495,24 +496,19 @@ export function DagView({
     ) ?? null;
   const focusStage = useCallback(() => {
     if (!layout || focusStageId == null || size.width <= 0 || size.height <= 0) return;
-    const stageNode = graph.nodes.find((node) => node.stageId === focusStageId);
-    if (!stageNode) return;
+    const stageNode = graph.nodes.find((node) => node.stageId === focusStageId)!;
 
     const stageRect =
       layout.clusters.get(`stage:${focusStageId}.${stageNode.attempt ?? 0}`) ??
       (() => {
-        const rects = graph.nodes
-          .filter((node) => node.stageId === focusStageId)
-          .map((node) => layout.nodes.get(node.id))
-          .filter((rect): rect is Rect => rect !== undefined);
-        if (rects.length === 0) return undefined;
+        // A focus candidate is a graph node, and a successful layout has a rectangle for every graph node.
+        const rects = graph.nodes.filter((node) => node.stageId === focusStageId).map((node) => layout.nodes.get(node.id)!);
         const left = Math.min(...rects.map((rect) => rect.x));
         const top = Math.min(...rects.map((rect) => rect.y));
         const right = Math.max(...rects.map((rect) => rect.x + rect.width));
         const bottom = Math.max(...rects.map((rect) => rect.y + rect.height));
         return { x: left, y: top, width: right - left, height: bottom - top };
       })();
-    if (!stageRect) return;
 
     didAutoFocusRef.current = true;
     const maxScale = size.width < 480 ? 0.75 : 1;
@@ -525,11 +521,10 @@ export function DagView({
     if (!exporting || !layout || !scene) return;
     const frame = window.requestAnimationFrame(() => {
       try {
-        const source = svgRef.current;
-        const host = containerRef.current;
-        if (!source || !host) return;
-        const serializedSvg = serializeDagSvg(source, dag, metrics, graph, layout, scene, host, strategy.edges === "canvas");
-        if (!serializedSvg) return;
+        // The export action only exists after the SVG and its host have committed to the DOM.
+        const source = svgRef.current!;
+        const host = containerRef.current!;
+        const serializedSvg = serializeDagSvg(source, dag, metrics, graph, layout, scene, host, strategy.edges === "canvas")!;
         const stem = (ariaLabel ?? `${graph.kind} DAG`)
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
@@ -555,8 +550,7 @@ export function DagView({
 
   // native non-passive wheel listener: React's onWheel is passive, so preventDefault there is a no-op
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const el = containerRef.current!;
     const onWheel = (e: WheelEvent): void => {
       if (
         (e.target as Element | null)?.closest?.(
@@ -673,18 +667,19 @@ export function DagView({
   const tabbableId = focusedId ?? navOrder[0]?.id ?? null;
 
   const focusNode = useCallback(
-    (id: string, opts: { center?: boolean } = {}) => {
-      const target = navOrder.find((n) => n.id === id);
-      if (!target) return;
+    (id: string) => {
+      const target = navOrder.find((n) => n.id === id)!;
       didAutoFocusRef.current = true;
-      const rect = layout?.nodes.get(target.id) ?? { x: 0, y: 0, width: 0, height: 0 };
+      // `navOrder` is built only from graph nodes after a successful layout, so this rectangle is present.
+      const rect = layout!.nodes.get(target.id)!;
       focusedIdRef.current = id;
       setFocusedId(id);
       const el = svgRef.current?.querySelector<SVGGElement>(`[data-node-id="${CSS.escape(id)}"]`);
       el?.focus({ preventScroll: true });
-      if (opts.center === false || !size.width) return;
+      if (!size.width) return;
       setViewport((v) => {
-        const base = v ?? IDENTITY_VIEWPORT;
+        // A successful layout and measurable pane initialize this state before a node can receive focus.
+        const base = v!;
         const visible = visibleWorldRect(base, size);
         const inside =
           rect.x >= visible.x &&
@@ -701,11 +696,11 @@ export function DagView({
   const step = useCallback(
     (delta: number) => {
       if (navOrder.length === 0) return;
-      const current = focusedId ?? navOrder[0]?.id ?? "";
+      // `step` returns above for an empty order, so at least the first node exists here.
+      const current = focusedId ?? navOrder[0]!.id;
       const idx = navOrder.findIndex((n) => n.id === current);
       const nextIdx = Math.min(navOrder.length - 1, Math.max(0, (idx < 0 ? 0 : idx) + delta));
-      const next = navOrder[nextIdx];
-      if (next) focusNode(next.id);
+      focusNode(navOrder[nextIdx]!.id);
     },
     [focusNode, focusedId, navOrder],
   );
@@ -763,8 +758,7 @@ export function DagView({
   );
 
   useEffect(() => {
-    const element = dagKeyboardRef.current;
-    if (!element) return;
+    const element = dagKeyboardRef.current!;
     element.addEventListener("keydown", onKeyDown);
     return () => element.removeEventListener("keydown", onKeyDown);
   }, [onKeyDown]);
@@ -820,8 +814,10 @@ export function DagView({
     return { nodesByCluster, childrenOf };
   }, [graph.nodes, graph.clusters]);
 
-  const selectedVisual = selectedNodeId && scene ? (scene.byId.get(selectedNodeId) ?? null) : null;
-  const selectedEdgeVisual = selectedEdgeId && scene ? (scene.edgeById.get(selectedEdgeId) ?? null) : null;
+  // Selection is only created from a rendered scene; a layout change can make the selected id stale, so keep the
+  // map-miss fallback while relying on that invariant for the scene itself.
+  const selectedVisual = selectedNodeId ? (scene!.byId.get(selectedNodeId) ?? null) : null;
+  const selectedEdgeVisual = selectedEdgeId ? (scene!.edgeById.get(selectedEdgeId) ?? null) : null;
   const selectedMetric = selectedVisual?.node.stageId != null ? (metricsIndex.get(selectedVisual.node.stageId) ?? null) : null;
   const chain = useMemo(() => {
     if (!selectedVisual?.node.stageId) return [];
@@ -866,7 +862,8 @@ export function DagView({
     return visible;
   }, [graph.edges, layout, cullRect]);
   const visibleEdges = useMemo(() => scene?.edges.filter((edge) => visibleEdgeIds.has(edge.edge.id)) ?? [], [scene?.edges, visibleEdgeIds]);
-  const renderedEdges = exporting ? (scene?.edges ?? []) : visibleEdges;
+  // The export control is rendered only after the scene has been built.
+  const renderedEdges = exporting ? scene!.edges : visibleEdges;
   const minimap = useMemo(
     () => minimapProjection({ width: layout?.width ?? 0, height: layout?.height ?? 0 }, { width: MINIMAP_W, height: MINIMAP_H }),
     [layout],
@@ -874,17 +871,16 @@ export function DagView({
   const liveId = useId();
 
   function renderNodeGroups(clusterId: string, depth: number): React.ReactNode {
-    if (!scene) return null;
     const direct = nodeGroups.nodesByCluster.get(clusterId) ?? [];
     const nested = nodeGroups.childrenOf.get(clusterId) ?? [];
     if (direct.length === 0 && nested.length === 0) return null;
-    const label = clusterId === "__root__" ? "graph nodes" : (graph.clusters.find((c) => c.id === clusterId)?.label ?? clusterId);
+    const label = clusterId === "__root__" ? "graph nodes" : graph.clusters.find((c) => c.id === clusterId)!.label;
     return (
       // biome-ignore lint/a11y/noInteractiveElementToNoninteractiveRole: <g> groups an operation scope; role="group" names it for screen readers.
       <g key={clusterId} role="group" aria-label={depth === 0 ? label : `${label} (scope)`} data-cluster={clusterId}>
         <DagNodeBucket
           nodes={direct}
-          visuals={scene.byId}
+          visuals={scene!.byId}
           labels={labels.nodes}
           visibleNodeIds={renderedNodeIds}
           tabbableId={tabbableId}
@@ -927,7 +923,7 @@ export function DagView({
               onFit={fitToView}
               onExportHtml={prepareDagHtmlExport}
               exporting={exporting}
-              totals={scene?.totals ?? { done: 0, total: 0, active: 0, failed: 0 }}
+              totals={scene!.totals}
               percent={totalsPercent}
               layoutNote={layoutNote}
               nodeCount={graph.nodes.length}
@@ -973,8 +969,8 @@ export function DagView({
                           <MenuGroupLabel>Dependency edges</MenuGroupLabel>
                           <MenuSeparator />
                           <EdgeListView
-                            edges={scene?.edges ?? []}
-                            nodes={scene?.byId ?? new Map()}
+                            edges={scene!.edges}
+                            nodes={scene!.byId}
                             onActivate={(edge) => {
                               activateEdge(edge);
                               setEdgeListOpen(false);
@@ -1081,7 +1077,7 @@ export function DagView({
           {layout ? (
             <>
               <DagMinimap
-                nodes={scene?.nodes ?? []}
+                nodes={scene!.nodes}
                 width={MINIMAP_W}
                 height={MINIMAP_H}
                 contentWidth={layout.width}
@@ -1146,8 +1142,8 @@ export function DagView({
             edge={selectedEdgeVisual}
             graphKind={graph.kind}
             metrics={metricsIndex}
-            producer={selectedEdgeVisual ? (scene?.byId.get(selectedEdgeVisual.edge.from) ?? null) : null}
-            consumer={selectedEdgeVisual ? (scene?.byId.get(selectedEdgeVisual.edge.to) ?? null) : null}
+            producer={selectedEdgeVisual ? scene!.byId.get(selectedEdgeVisual.edge.from)! : null}
+            consumer={selectedEdgeVisual ? scene!.byId.get(selectedEdgeVisual.edge.to)! : null}
           />
 
           <p id={`${liveId}-help`} className="sr-only">

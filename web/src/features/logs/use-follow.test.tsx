@@ -57,13 +57,117 @@ function options(overrides: Partial<FollowOptions> = {}): FollowOptions {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  fetchWindow.mockReset();
+  streamUrl.mockClear();
   FakeEventSource.instances = [];
   if (originalEventSource) globalThis.EventSource = originalEventSource;
   else Reflect.deleteProperty(globalThis, "EventSource");
 });
 
 describe("useFollow", () => {
+  it.each([
+    ["paused", { paused: true }],
+    ["missing container", { containerId: null }],
+    ["missing log name", { name: null }],
+  ])("stays off when follow is %s", (_reason, overrides) => {
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    const opts = options(overrides);
+    const { result } = renderHook(() => useFollow(opts));
+    expect(result.current.status.mode).toBe("off");
+    expect(FakeEventSource.instances).toHaveLength(0);
+  });
+
+  it("restarts the stream when the user retries", () => {
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    const opts = options();
+    const { result } = renderHook(() => useFollow(opts));
+    const first = FakeEventSource.instances[0];
+    act(() => result.current.retry());
+    expect(first?.closed).toBe(true);
+    expect(FakeEventSource.instances).toHaveLength(2);
+  });
+
+  it("ignores late stream and poll callbacks after the follow effect is cleaned up", async () => {
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    const timers: { callback: () => void; delay: number; id: number }[] = [];
+    const clearTimer = vi.fn();
+    let nextTimerId = 1;
+    vi.stubGlobal("setTimeout", ((callback: TimerHandler, delay?: number) => {
+      const id = nextTimerId++;
+      if (typeof callback === "function") timers.push({ callback: callback as () => void, delay: Number(delay), id });
+      return id;
+    }) as unknown as typeof setTimeout);
+    vi.stubGlobal("clearTimeout", clearTimer);
+    let rejectPoll!: (reason: Error) => void;
+    fetchWindow.mockReturnValue(new Promise((_, reject) => (rejectPoll = reject)));
+    const opts = options({ hints: undefined });
+    const { unmount } = renderHook(() => useFollow(opts));
+
+    const first = FakeEventSource.instances[0]!;
+    act(() => first.emit("error"));
+    act(() => timers.find((timer) => timer.delay === 1_000)?.callback());
+    const second = FakeEventSource.instances[1]!;
+    act(() => second.emit("error"));
+    act(() => timers.find((timer) => timer.delay === 2_000)?.callback());
+    const third = FakeEventSource.instances[2]!;
+    act(() => third.emit("error"));
+
+    const pollTimer = timers.find((timer) => timer.delay === 250)!;
+    const streamRetry = timers.find((timer) => timer.delay === 30_000)!;
+    act(() => pollTimer.callback());
+    expect(fetchWindow).toHaveBeenCalledOnce();
+    unmount();
+
+    act(() => {
+      timers.find((timer) => timer.delay === 1_000)?.callback();
+      timers.find((timer) => timer.delay === 2_000)?.callback();
+      pollTimer.callback();
+      streamRetry.callback();
+      third.emit("open");
+      third.emit("chunk", JSON.stringify({ start: 0, text: "late" }));
+      third.emit("eof");
+      third.emit("error");
+    });
+    await act(async () => {
+      rejectPoll(new Error("late poll failure"));
+      await Promise.resolve();
+    });
+    expect(opts.onAppend).not.toHaveBeenCalled();
+    expect(opts.onEnded).not.toHaveBeenCalled();
+    expect(clearTimer).toHaveBeenCalled();
+  });
+
+  it("does not append a successful poll that resolves after unmount", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    let resolvePoll!: (value: Awaited<ReturnType<typeof fetchLogWindow>>) => void;
+    fetchWindow.mockReturnValue(new Promise((resolve) => (resolvePoll = resolve)));
+    const opts = options();
+    const { unmount } = renderHook(() => useFollow(opts));
+    act(() => FakeEventSource.instances[0]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    act(() => FakeEventSource.instances[1]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    act(() => FakeEventSource.instances[2]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+    unmount();
+    await act(async () => {
+      resolvePoll({
+        text: "late poll bytes",
+        start: 0,
+        end: 15,
+        size: 15,
+        source: "node",
+        responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+      });
+      await Promise.resolve();
+    });
+    expect(opts.buffer.toLines()).toEqual([]);
+    expect(opts.onAppend).not.toHaveBeenCalled();
+  });
+
   it("starts off when disabled, then streams chunks and marks EOF", () => {
     globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
     const opts = options({ enabled: false });
@@ -160,6 +264,35 @@ describe("useFollow", () => {
     await act(async () => vi.advanceTimersByTimeAsync(500));
     expect(result.current.status).toMatchObject({ mode: "polling", detail: "log stream error", reconnects: 3 });
     expect(opts.buffer.toLines()).toEqual(["INFO recovered"]);
+    unmount();
+  });
+
+  it("handles empty poll windows and JSON stream errors without messages", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    fetchWindow.mockRejectedValueOnce(new Error("poll failed")).mockResolvedValueOnce({
+      text: "",
+      start: 0,
+      end: 0,
+      size: 0,
+      source: "node",
+      responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+    });
+    const opts = options({ intervalMs: 100 });
+    const { result, unmount } = renderHook(() => useFollow(opts));
+
+    act(() => FakeEventSource.instances[0]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    act(() => FakeEventSource.instances[1]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    act(() => FakeEventSource.instances[2]?.emit("error", JSON.stringify({ error: {} })));
+    expect(result.current.status).toMatchObject({ mode: "polling", detail: "log stream error", reconnects: 3 });
+
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+    expect(result.current.status.detail).toBe("poll read failed: poll failed");
+    await act(async () => vi.advanceTimersByTimeAsync(500));
+    expect(result.current.status.detail).toBe("log stream error");
+    expect(opts.onAppend).not.toHaveBeenCalled();
     unmount();
   });
 });

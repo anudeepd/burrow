@@ -10,9 +10,10 @@ const { act, cleanup, fireEvent, render, screen, waitFor, within } = await impor
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { nq } = await import("~/api/queries/nodes");
-const { NodesPage } = await import("./NodesPage");
+const { setPrefs } = await import("~/state/prefs");
+const { NodesPage, nodeVisibilityPatch } = await import("./NodesPage");
 const { CopyButton } = await import("./page");
-const { NodeLabelsPage } = await import("./NodeLabelsPage");
+const { NodeLabelsPage, labelColumns } = await import("./NodeLabelsPage");
 const { NodeDetail } = await import("./NodeDetail");
 const { NodeContainers } = await import("./NodeContainers");
 const { RackHeatmap } = await import("./RackHeatmap");
@@ -61,7 +62,16 @@ function renderNodeRoute(page: "nodes" | "labels", search = "") {
   };
 }
 
-function renderNodeDetail(seedNode = true) {
+function renderNodeDetail(
+  seedNode = true,
+  overrides: {
+    node?: Partial<Node>;
+    nmInfo?: Record<string, unknown>;
+    containers?: NmContainer[];
+    omitNmInfo?: boolean;
+    omitContainers?: boolean;
+  } = {},
+) {
   const root = createRootRoute();
   const detail = createRoute({ getParentRoute: () => root, path: "/nodes/$nodeId", component: NodeDetail });
   const nodesRoute = createRoute({ getParentRoute: () => root, path: "/nodes", component: () => null });
@@ -70,11 +80,19 @@ function renderNodeDetail(seedNode = true) {
     history: createMemoryHistory({ initialEntries: [`/nodes/${encodeURIComponent(detailNode.id)}`] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
-  if (seedNode) client.setQueryData(nq.node(detailNode.id).queryKey, nodeDetailResponse as never);
+  const seededNode = { ...detailNode, ...overrides.node };
+  if (seedNode) client.setQueryData(nq.node(detailNode.id).queryKey, { node: seededNode } as never);
   const nmInfo = readJson("nm-127.0.0.2_8042-info.json") as { nodeInfo: unknown };
   const nmContainers = readJson("nm-127.0.0.2_8042-containers.json") as { containers?: { container?: unknown[] } };
-  client.setQueryData(nq.nmInfo(detailNodeAddress).queryKey, nmInfo.nodeInfo as never);
-  client.setQueryData(nq.nmContainers(detailNodeAddress).queryKey, (nmContainers.containers?.container ?? []) as never);
+  if (!overrides.omitNmInfo) {
+    client.setQueryData(nq.nmInfo(seededNode.nodeHTTPAddress).queryKey, { ...(nmInfo.nodeInfo as object), ...overrides.nmInfo } as never);
+  }
+  if (!overrides.omitContainers) {
+    client.setQueryData(
+      nq.nmContainers(seededNode.nodeHTTPAddress).queryKey,
+      (overrides.containers ?? nmContainers.containers?.container ?? []) as never,
+    );
+  }
   const view = render(
     <QueryClientProvider client={client}>
       <RouterProvider router={router} />
@@ -86,6 +104,7 @@ function renderNodeDetail(seedNode = true) {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  setPrefs({ livePaused: false });
 });
 
 describe("node pages", () => {
@@ -169,8 +188,12 @@ describe("node pages", () => {
     };
     await choose("Label filter", "gpu");
     await waitFor(() => expect(router.state.location.search.label).toBe("gpu"));
+    await choose("Label filter", "All labels");
+    await waitFor(() => expect(router.state.location.search.label).toBeUndefined());
     await choose("Rack filter", "/rack1");
     await waitFor(() => expect(router.state.location.search.rack).toBe("/rack1"));
+    await choose("Rack filter", "All racks");
+    await waitFor(() => expect(router.state.location.search.rack).toBeUndefined());
     fireEvent.change(screen.getByRole("searchbox", { name: "Search nodes" }), { target: { value: "missing-node" } });
     await waitFor(() => expect(router.state.location.search.q).toBe("missing-node"));
     fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
@@ -184,6 +207,57 @@ describe("node pages", () => {
 
     fireEvent.click(screen.getAllByTestId("top-consumer-row")[0]!);
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/nodes\//));
+  });
+
+  it("shows paused and stale status for unhealthy clusters and discovers custom resources", async () => {
+    const { client, router } = renderNodeRoute("nodes", "?cols=");
+    expect(await screen.findByRole("table", { name: "Cluster nodes" })).toBeTruthy();
+    await router.navigate({ search: (prev) => ({ ...prev, cols: undefined }) });
+
+    const query = client.getQueryCache().find({ queryKey: nq.nodes().queryKey })!;
+    const response = client.getQueryData(nq.nodes().queryKey) as NodesResponse;
+    const loaded = response.nodes?.node as Node[];
+    const original = loaded[0]!;
+    const gpuInfo = { name: "yarn.io/gpu", value: 4, resourceType: "COUNTABLE", units: "", tags: [] };
+    const custom: Node = {
+      ...original,
+      id: "gpu-worker:8041",
+      nodeHostName: "gpu-worker",
+      state: "UNHEALTHY",
+      rack: "",
+      nodeLabels: [],
+      numContainers: 1,
+      totalResource: {
+        memory: original.totalResource?.memory ?? 0,
+        vCores: original.totalResource?.vCores ?? 0,
+        resourceInformations: { resourceInformation: [gpuInfo] },
+      },
+      usedResource: {
+        memory: original.usedResource?.memory ?? 0,
+        vCores: original.usedResource?.vCores ?? 0,
+        resourceInformations: { resourceInformation: [{ ...gpuInfo, value: 2 }] },
+      },
+      availableResource: {
+        memory: original.availableResource?.memory ?? 0,
+        vCores: original.availableResource?.vCores ?? 0,
+        resourceInformations: { resourceInformation: [{ ...gpuInfo, value: 2 }] },
+      },
+    };
+    const lost: Node = { ...loaded[1]!, id: "lost-worker:8041", state: "LOST", nodeHTTPAddress: "", nodeLabels: [] };
+    act(() => {
+      client.setQueryData(nq.nodes().queryKey, { nodes: { node: [...loaded, custom, lost] } });
+    });
+    act(() => setPrefs({ livePaused: true }));
+    expect(await screen.findByText("live paused")).toBeTruthy();
+    expect(screen.getByText("1 lost")).toBeTruthy();
+    expect(screen.getByText("yarn.io/gpu Used")).toBeTruthy();
+    expect(nodeVisibilityPatch({})).toEqual({ cols: "" });
+
+    act(() => {
+      query.setState({ ...query.state, fetchStatus: "fetching", dataUpdatedAt: Date.now() - 20_000 });
+    });
+    act(() => setPrefs({ livePaused: false }));
+    expect(await screen.findByText("stale")).toBeTruthy();
   });
 
   it("copies a value and clears the confirmation timer when the control unmounts", async () => {
@@ -220,6 +294,31 @@ describe("node pages", () => {
     }
   });
 
+  it("opens default and empty label partitions with their documented fallbacks", async () => {
+    const { router, client } = renderNodeRoute("labels");
+    const response = client.getQueryData(nq.nodeLabels().queryKey) as NodeLabelsResponse;
+    act(() => {
+      client.setQueryData(nq.nodeLabels().queryKey, {
+        ...response,
+        nodeLabelInfo: [...(response.nodeLabelInfo ?? []), { name: "empty-partition", exclusivity: false }],
+      });
+    });
+    const table = await screen.findByRole("table", { name: "Node labels" });
+    const emptyRow = [...table.querySelectorAll('[role="row"]')].find((row) => row.textContent?.includes("empty-partition"));
+    expect(emptyRow).toBeTruthy();
+    fireEvent.click(emptyRow!);
+    await waitFor(() => expect(router.state.location.search.open).toBe("empty-partition"));
+    expect(await screen.findByRole("heading", { name: "Nodes in empty-partition" })).toBeTruthy();
+    expect(screen.getByText("No live node is in this partition right now.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Filter the node table by this label" }).getAttribute("href")).toContain(
+      "label=empty-partition",
+    );
+
+    await router.navigate({ search: (prev) => ({ ...prev, open: "" }) });
+    expect(await screen.findByRole("heading", { name: "Nodes in DEFAULT" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Filter the node table by this label" }).getAttribute("href")).toContain("label=(none)");
+  });
+
   it("sorts, hides optional columns, and filters the node label catalogue", async () => {
     const { router } = renderNodeRoute("labels");
     const table = await screen.findByRole("table", { name: "Node labels" });
@@ -240,6 +339,21 @@ describe("node pages", () => {
     await waitFor(() => expect(router.state.location.search.q).toBe("gpu"));
     expect(table.textContent).toContain("gpu");
     expect(table.textContent).not.toContain("<DEFAULT_PARTITION>");
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search labels" }), { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
+  });
+
+  it("uses label-column fallbacks for a non-exclusive label without partition resources", () => {
+    const nonExclusive = {
+      label: { name: "shared", exclusivity: false },
+      activeNMs: 0,
+      nodes: [],
+    };
+    const columns = labelColumns(undefined);
+    const type = columns.find((column) => column.id === "type")!;
+    const resource = columns.find((column) => column.id === "resource")!;
+    expect(type.accessorFn?.(nonExclusive as never, 0)).toBe("Non Exclusive Partition");
+    expect(resource.accessorFn?.(nonExclusive as never, 0)).toBe(0);
   });
 
   it("shows stale label-source warnings and fatal label or node read errors", async () => {
@@ -268,6 +382,15 @@ describe("node pages", () => {
       errorUpdateCount: missingLabels.state.errorUpdateCount + 1,
     });
     expect(await screen.findByRole("heading", { name: "Cannot read the node labels" })).toBeTruthy();
+    act(() => {
+      missingLabels.setState({
+        ...missingLabels.state,
+        error: "raw label failure",
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: missingLabels.state.errorUpdateCount + 1,
+      });
+    });
+    expect(await screen.findByText("raw label failure")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     labelFailure.unmount();
     cleanup();
@@ -283,6 +406,15 @@ describe("node pages", () => {
       errorUpdateCount: missingNodes.state.errorUpdateCount + 1,
     });
     expect(await screen.findByRole("heading", { name: "Cannot read nodes for label membership" })).toBeTruthy();
+    act(() => {
+      missingNodes.setState({
+        ...missingNodes.state,
+        error: "raw node membership failure",
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: missingNodes.state.errorUpdateCount + 1,
+      });
+    });
+    expect(await screen.findByText("raw node membership failure")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
@@ -298,6 +430,15 @@ describe("node pages", () => {
     });
     expect(await screen.findByText(/Node list refresh failed/)).toBeTruthy();
     expect(screen.getByRole("table", { name: "Node labels" })).toBeTruthy();
+    act(() => {
+      nodes.setState({
+        ...nodes.state,
+        error: "membership string failure",
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: nodes.state.errorUpdateCount + 1,
+      });
+    });
+    expect(await screen.findByText("membership string failure")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
@@ -328,6 +469,15 @@ describe("node pages", () => {
       errorUpdateCount: missingNodes.state.errorUpdateCount + 1,
     });
     expect(await screen.findByRole("heading", { name: "Cannot read the node list" })).toBeTruthy();
+    act(() => {
+      missingNodes.setState({
+        ...missingNodes.state,
+        error: "node list unavailable raw",
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: missingNodes.state.errorUpdateCount + 1,
+      });
+    });
+    expect(await screen.findByText("node list unavailable raw")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
@@ -349,6 +499,8 @@ describe("node pages", () => {
     fireEvent.change(screen.getByPlaceholderText("host, rack, label…"), { target: { value: "no-such-node" } });
     await waitFor(() => expect(router.state.location.search.q).toBe("no-such-node"));
     expect(await screen.findByText("Clear the search box.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
   });
 
   it("shows NodeManager container details and handles missing addresses", () => {
@@ -416,6 +568,38 @@ describe("node pages", () => {
     withCachedRows.unmount();
   });
 
+  it("handles non-Error failures, absent container data, and one-file links", async () => {
+    const onRetry = vi.fn();
+    const nonError = render(<NodeContainers node={node} loading={false} error="upstream failed" onRetry={onRetry} />);
+    expect(screen.getByRole("heading", { name: "Cannot read the NodeManager's container list" })).toBeTruthy();
+    nonError.unmount();
+
+    const loading = render(<NodeContainers node={node} loading containers={undefined} error={null} onRetry={onRetry} />);
+    expect(screen.getByRole("table", { name: "Containers on this node" })).toBeTruthy();
+    loading.unmount();
+
+    const oneFile: NmContainer = {
+      id: "container_1791010984040_0002_01_000002",
+      nodeId: node.id,
+      state: "RUNNING",
+      exitCode: -1000,
+      user: "alice",
+      totalMemoryNeededMB: 512,
+      totalVCoresNeeded: 1,
+      containerLogFiles: ["stdout"],
+    };
+    const linkWithoutNames: NmContainer = {
+      ...oneFile,
+      id: "container_1791010984040_0002_01_000003",
+      containerLogFiles: [],
+      containerLogsLink: "/api/logs/containers/container_1791010984040_0002_01_000003",
+    };
+    render(<NodeContainers node={node} containers={[oneFile, linkWithoutNames]} loading={false} error={null} onRetry={onRetry} />);
+    const link = await screen.findByRole("link", { name: "1 file" });
+    expect(link.getAttribute("href")).toContain("/apps/application_");
+    expect(screen.getByRole("link", { name: "view" })).toBeTruthy();
+  });
+
   it("renders ResourceManager and NodeManager details with the captured node snapshot", async () => {
     renderNodeDetail();
     expect(await screen.findByLabelText("Node details")).toBeTruthy();
@@ -423,6 +607,107 @@ describe("node pages", () => {
     expect(screen.getByText("NodeManager")).toBeTruthy();
     expect(screen.getByText("Node-local logs")).toBeTruthy();
     expect(screen.getByRole("link", { name: /NodeManager UI/ })).toBeTruthy();
+  });
+
+  it("renders inactive-node fallbacks, sparse metadata, and custom resource limits", async () => {
+    const sparse: Node = {
+      ...detailNode,
+      state: "LOST",
+      nodeHTTPAddress: "",
+      rack: "",
+      subClusterId: "cluster-west",
+      numContainers: 0,
+      usedMemoryMB: 0,
+      availMemoryMB: 0,
+      usedVirtualCores: 0,
+      availableVirtualCores: 0,
+      nodeLabels: [],
+      allocationTags: { allocationTagInfo: [{ allocationTag: "batch", allocationsCount: 2 }] },
+      nodeAttributesInfo: {
+        nodeAttributeInfo: [{ name: "missing-value" }, { prefix: "rack.", name: "gpu", type: "STRING", value: "a100" }],
+      },
+      totalResource: {
+        memory: 0,
+        vCores: 0,
+        resourceInformations: {
+          resourceInformation: [
+            {
+              name: "yarn.io/gpu",
+              value: 4,
+              units: "",
+              resourceType: "",
+              minimumAllocation: 1,
+              maximumAllocation: Number.MAX_SAFE_INTEGER + 1,
+              tags: ["accelerator"],
+            },
+            { name: "yarn.io/fpga", value: 1, tags: [] },
+          ],
+        },
+      },
+    };
+    renderNodeDetail(true, { node: sparse, omitContainers: true });
+    expect(await screen.findByLabelText("Node details")).toBeTruthy();
+    expect(screen.getByText("This node is lost")).toBeTruthy();
+    expect(screen.getByText("/default-rack")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /NodeManager UI/ })).toBeNull();
+    expect(screen.getByText("cluster-west")).toBeTruthy();
+    expect(screen.getByText("batch(2)")).toBeTruthy();
+    expect(screen.getByText("a100")).toBeTruthy();
+    expect(screen.getByText("unbounded")).toBeTruthy();
+    expect(screen.getByText("yarn.io/fpga")).toBeTruthy();
+    expect(screen.getAllByText("No NodeManager address")).toHaveLength(2);
+    expect(document.querySelector('[data-yf="node.derived.nmContainerMemoryMB"]')?.textContent).toBe("—");
+    expect(document.querySelector('[data-yf="node.derived.nmContainerVCores"]')?.textContent).toBe("—");
+  });
+
+  it("omits the custom-resource table when no resource types are advertised", async () => {
+    renderNodeDetail(true, {
+      node: {
+        totalResource: { memory: 3072, vCores: 4, resourceInformations: { resourceInformation: [] } },
+      },
+    });
+    expect(await screen.findByLabelText("Node details")).toBeTruthy();
+    expect(screen.queryByRole("table", { name: "Node resource totals" })).toBeNull();
+  });
+
+  it("compares running containers, handles a zero startup time, and formats non-Error NM failures", async () => {
+    const running: NmContainer = {
+      id: "container_1791010984040_0002_01_000010",
+      nodeId: detailNode.id,
+      state: "RUNNING",
+      exitCode: -1000,
+      user: "alice",
+      totalMemoryNeededMB: 1024,
+      totalVCoresNeeded: 1,
+    };
+    const view = renderNodeDetail(true, { node: { state: "UNHEALTHY", rack: "" }, nmInfo: { nmStartupTime: 0 }, containers: [running] });
+    expect(await screen.findByText(/ResourceManager snapshot:/)).toBeTruthy();
+    const uptime = screen.getByText("Uptime", { exact: true });
+    expect(uptime.parentElement?.querySelector("dd")?.textContent).toBe("—");
+
+    const infoQuery = view.client.getQueryCache().find({ queryKey: nq.nmInfo(detailNodeAddress).queryKey })!;
+    act(() => {
+      infoQuery.setState({
+        ...infoQuery.state,
+        data: undefined,
+        status: "error",
+        error: "node manager failed",
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: infoQuery.state.errorUpdateCount + 1,
+        fetchStatus: "idle",
+      });
+    });
+    expect(await screen.findByText("node manager failed")).toBeTruthy();
+  });
+
+  it("shows NodeManager loading while its metadata query is pending", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => {})),
+    );
+    renderNodeDetail(true, { omitNmInfo: true });
+    expect(await screen.findByLabelText("Node details")).toBeTruthy();
+    expect(screen.getByText("NodeManager").parentElement?.parentElement?.textContent).toContain("NodeManager");
   });
 
   it("keeps stale NodeManager details and retries the refresh", async () => {
@@ -447,7 +732,18 @@ describe("node pages", () => {
       });
     });
     expect(await screen.findByText("NodeManager refresh failed; showing the last loaded details")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    const nodeQuery = stale.client.getQueryCache().find({ queryKey: nq.node(detailNode.id).queryKey })!;
+    act(() => {
+      nodeQuery.setState({
+        ...nodeQuery.state,
+        status: "error",
+        error: new Error("ResourceManager refresh failed"),
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: nodeQuery.state.errorUpdateCount + 1,
+      });
+    });
+    expect(await screen.findByText("Node refresh failed; showing the last loaded details")).toBeTruthy();
+    for (const retry of screen.getAllByRole("button", { name: "Retry now" })) fireEvent.click(retry);
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     stale.unmount();
   });
@@ -480,6 +776,19 @@ describe("node pages", () => {
       fetchStatus: "idle",
     });
     expect(await screen.findByRole("heading", { name: "Cannot read this node" })).toBeTruthy();
+    expect(screen.getByText("node endpoint failed")).toBeTruthy();
+    act(() => {
+      nodeQuery.setState({
+        ...nodeQuery.state,
+        data: undefined,
+        status: "error",
+        error: "non-Error node failure",
+        errorUpdatedAt: Date.now(),
+        errorUpdateCount: nodeQuery.state.errorUpdateCount + 1,
+        fetchStatus: "idle",
+      });
+    });
+    expect(await screen.findByText("non-Error node failure")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     failed.unmount();
     cleanup();

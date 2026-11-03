@@ -45,7 +45,7 @@ export const ContainersResponseSchema = obj({
   containers: ContainersInnerSchema.nullable().optional(),
   container: list(ContainerSchema).optional(),
 }).transform((v): { containers?: { container: Container[] } } => ({
-  containers: v.containers ?? (v.container ? { container: v.container } : undefined),
+  containers: v.containers ?? { container: v.container },
 }));
 export type ContainersResponse = z.infer<typeof ContainersResponseSchema>;
 export const selectContainers = (r: ContainersResponse): Container[] => r.containers?.container ?? [];

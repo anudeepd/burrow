@@ -8,7 +8,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnVisibilityState, SortingState } from "@tanstack/react-table";
 import { useState } from "react";
-import { ApiError } from "~/api/client";
 import { tq } from "~/api/queries/tools";
 import { errorReason, isSourceUnavailable, ov } from "~/api/queries/overview";
 import { Datum, Entity, SINGLETON } from "~/ui/datum";
@@ -51,6 +50,10 @@ function Cell({ label, children }: { label: string; children: React.ReactNode })
 
 const numeric = (value: number | null | undefined): number => value ?? -1;
 
+export function clusterMetricsUnavailableReason(error: unknown): string | null {
+  return error ? `Cluster metrics unavailable: ${errorReason(error)}` : null;
+}
+
 const QUEUE_COLUMNS: ColDef<QueueTeaser>[] = [
   {
     id: "queue",
@@ -72,32 +75,24 @@ const QUEUE_COLUMNS: ColDef<QueueTeaser>[] = [
   },
   {
     id: "share",
-    accessorFn: (queue) => numeric(queue.guarantee?.raw),
+    accessorFn: (queue) => numeric(queue.guarantee.raw),
     size: 130,
     meta: {
       label: "Guarantee / max",
       hint: "Guaranteed capacity and maximum capacity. Capacity schedulers show shares; fair schedulers may report resources.",
-      exportValue: (queue: QueueTeaser) => `${queue.guarantee?.text ?? "—"} / ${queue.ceiling?.text ?? "—"}`,
+      exportValue: (queue: QueueTeaser) => `${queue.guarantee.text} / ${queue.ceiling.text}`,
     },
     cell: ({ row }) => {
       const queue = row.original;
       return (
         <span className="whitespace-nowrap text-small tnum">
-          {queue.guarantee ? (
-            <Datum field={queue.guarantee.field} raw={queue.guarantee.raw} fmt={queue.guarantee.fmt}>
-              {queue.guarantee.text}
-            </Datum>
-          ) : (
-            <span className="text-ink-4">—</span>
-          )}
+          <Datum field={queue.guarantee.field} raw={queue.guarantee.raw} fmt={queue.guarantee.fmt}>
+            {queue.guarantee.text}
+          </Datum>
           <span className="text-ink-4"> / </span>
-          {queue.ceiling ? (
-            <Datum field={queue.ceiling.field} raw={queue.ceiling.raw} fmt={queue.ceiling.fmt}>
-              {queue.ceiling.text}
-            </Datum>
-          ) : (
-            <span className="text-ink-4">—</span>
-          )}
+          <Datum field={queue.ceiling.field} raw={queue.ceiling.raw} fmt={queue.ceiling.fmt}>
+            {queue.ceiling.text}
+          </Datum>
         </span>
       );
     },
@@ -213,9 +208,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
   const info: SchedulerInfo | undefined = response?.scheduler?.schedulerInfo;
   const so = overview.data;
   const overviewUnavailableReason =
-    overview.error && !so && isSourceUnavailable(overview.error)
-      ? `HTTP ${overview.error instanceof ApiError ? overview.error.status : "unknown"}: ${errorReason(overview.error)}`
-      : null;
+    overview.error && !so && isSourceUnavailable(overview.error) ? `HTTP ${overview.error.status}: ${errorReason(overview.error)}` : null;
   const teasers = queueTeasers(info);
   const confQ = useQuery(tq.conf());
   const conf = confQ.data;
@@ -233,15 +226,14 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
   const maxResource = schedulerMaxAllocation(info) ?? so?.maximumAllocation;
   const minMemory = configuredMinText ? confValue(conf, "yarn.scheduler.minimum-allocation-mb") : so?.minimumAllocation.memory;
   const minVCores = configuredMinText ? confValue(conf, "yarn.scheduler.minimum-allocation-vcores") : so?.minimumAllocation.vCores;
-  const maxDisplayText = maxText == null || parity || maxResource == null ? maxText : resourceText(maxResource);
-  const minDisplayText =
-    minText == null || parity || minMemory == null || minVCores == null ? minText : resourceValueText(Number(minMemory), Number(minVCores));
+  const maxDisplayText = maxText == null || parity ? maxText : resourceText(maxResource!);
+  const minDisplayText = minText == null || parity ? minText : resourceValueText(Number(minMemory), Number(minVCores));
   const priority = maximumClusterPriority(conf) ?? so?.applicationPriority ?? null;
   const metrics = metricsQ.data;
   const busy = metrics == null ? null : schedulerBusyPercent(metrics);
   const rmQueue = metrics?.rmEventQueueSize ?? null;
   const schedulerQueue = metrics?.schedulerEventQueueSize ?? null;
-  const metricsUnavailableReason = metricsQ.error ? `Cluster metrics unavailable: ${errorReason(metricsQ.error)}` : null;
+  const metricsUnavailableReason = clusterMetricsUnavailableReason(metricsQ.error);
   const queueTable = (
     <DataTable
       data={teasers}
@@ -409,13 +401,13 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
 
         <Cell label="Minimum Allocation">
           <Datum field="scheduler.derived.minAllocationText" raw={minText} fmt="text" className={parity ? "mono" : "tnum"}>
-            {minText == null ? <Unavailable variant="info" reason="Minimum allocation was not reported." /> : (minDisplayText ?? minText)}
+            {minText == null ? <Unavailable variant="info" reason="Minimum allocation was not reported." /> : minDisplayText}
           </Datum>
         </Cell>
 
         <Cell label="Maximum Allocation">
           <Datum field="scheduler.derived.maxAllocationText" raw={maxText} fmt="text" className={parity ? "mono" : "tnum"}>
-            {maxText == null ? <Unavailable variant="info" reason="Maximum allocation was not reported." /> : (maxDisplayText ?? maxText)}
+            {maxText == null ? <Unavailable variant="info" reason="Maximum allocation was not reported." /> : maxDisplayText}
           </Datum>
         </Cell>
 
@@ -461,7 +453,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
 
         {missing && (
           <div className="col-span-full flex flex-wrap items-center gap-2">
-            <Unavailable reason={why ?? "Detailed scheduler information is unavailable."} />
+            <Unavailable reason={why!} />
             <CrossLink href="/scheduler" className="text-small text-live hover:underline">
               Full scheduler view →
             </CrossLink>

@@ -134,8 +134,8 @@ export function LineViewer(props: LineViewerProps) {
   }, [jumpLine, count, virtualizer, visibleIndexOf]);
 
   const onScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
+    // React only dispatches this handler from the mounted scroll element, so the ref is present here.
+    const el = scrollRef.current!;
     const near = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
     setAtBottom((prev) => (prev === near ? prev : near));
   }, []);

@@ -584,7 +584,7 @@ export function buildScene(input: SceneInput): Scene {
     clusters.push({
       cluster,
       rect,
-      depth: clusterDepths.get(cluster.id) ?? 1,
+      depth: clusterDepths.get(cluster.id)!,
       dimmed: input.selectedNodeId != null && !nodes.some((n) => n.node.clusterId === cluster.id && n.related),
     });
   }
@@ -597,7 +597,7 @@ export function buildScene(input: SceneInput): Scene {
     const points = layout.edges.get(edge.id) ?? straightEdge(fromVisual?.rect ?? EMPTY_RECT, toVisual?.rect ?? EMPTY_RECT);
     const reading = flow.get(edge.from);
     const flowing = reading?.active === true;
-    const dash = flowDash(flowing ? (reading?.intensity ?? 0) : 0, reducedMotion);
+    const dash = flowDash(flowing ? reading!.intensity : 0, reducedMotion);
     const consumerMetric = edge.toStage != null ? metrics.get(edge.toStage) : undefined;
     const shuffleLabel =
       level === "detail" && edge.kind === "cross-stage" && consumerMetric?.shuffleReadBytes
@@ -743,17 +743,16 @@ export function labelCandidates(input: LabelPlanInput): { nodes: Map<string, Lab
       if (v.subText && v.rect.height >= 56 && subUsable > 40) {
         const subSize = compact ? 10.5 : roomy ? 14 : 12.5;
         const text = ellipsize(v.subText, subSize, subUsable);
-        if (text) {
-          titleCandidates.push({
-            id: `${v.node.id}#sub`,
-            text,
-            x: textX,
-            y: v.rect.y + nodeRowGeometry(v.rect.height, v.node.kind).subY - subSize + 1,
-            width: measureText(text, subSize),
-            height: subSize + 3,
-            priority: 40 + (v.selected ? 30 : 0),
-          });
-        }
+        // A truthy source string plus >40px of room always leaves space for ellipsize's ellipsis.
+        titleCandidates.push({
+          id: `${v.node.id}#sub`,
+          text,
+          x: textX,
+          y: v.rect.y + nodeRowGeometry(v.rect.height, v.node.kind).subY - subSize + 1,
+          width: measureText(text, subSize),
+          height: subSize + 3,
+          priority: 40 + (v.selected ? 30 : 0),
+        });
       }
       if (titleCandidates.length > 0) {
         nodeCandidates.set(v.node.id, titleCandidates);

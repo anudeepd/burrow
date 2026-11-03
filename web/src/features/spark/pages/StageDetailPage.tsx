@@ -104,7 +104,7 @@ export function StageDetailPage() {
   // The failed+killed union must be filtered before paging, so load it as a complete task set.
   const paged = size != null && statusFilter !== "errors";
   const pageSize = size ?? 0;
-  const page = Math.max(1, intParam(search.page, 1) ?? 1);
+  const page = Math.max(1, intParam(search.page, 1));
   const sortId = typeof search.sort === "string" ? search.sort : undefined;
   const sorting = parseSort(search);
   const columnVisibility = parseColumns(search);

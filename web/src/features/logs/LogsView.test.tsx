@@ -5,7 +5,7 @@ window.__BURROW_PARITY__ = true;
 const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
-const { LogsView } = await import("./LogsView");
+const { LogsView, logDownloadSize, logErrorMessage } = await import("./LogsView");
 const { lq } = await import("~/api/queries/logs");
 const { q } = await import("~/api/queries");
 const { ApiError } = await import("~/api/client");
@@ -23,7 +23,14 @@ const LOG_TEXT = `2026-10-31 10:00:00,000 INFO [main] startup complete
 
 function renderLogs(
   search = "",
-  options: { containerId?: string | null; filesError?: Error; windowError?: Error; logText?: string; omitFile?: boolean } = {},
+  options: {
+    containerId?: string | null;
+    filesError?: unknown;
+    windowError?: unknown;
+    logText?: string;
+    omitFile?: boolean;
+    omitFileSize?: boolean;
+  } = {},
 ) {
   const containerId = options.containerId === undefined ? CONTAINER_ID : options.containerId;
   const logText = options.logText ?? LOG_TEXT;
@@ -58,7 +65,7 @@ function renderLogs(
       node: "worker:8041",
       files: [
         { name: "stderr", size: 9, lastModified: null },
-        { name: "stdout", size: logText.length, lastModified: null },
+        { name: "stdout", ...(options.omitFileSize ? {} : { size: logText.length }), lastModified: null },
       ],
     });
     const windowKey = ["logs", "window", containerId, "stdout", 0, "", "", ""];
@@ -96,6 +103,7 @@ function renderLogs(
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   parityStore.setState(() => ({ enabled: true }));
   window.__BURROW_PARITY__ = true;
@@ -137,6 +145,17 @@ function stubLogFetch(listStatus = 200, fileStatus = 200) {
 }
 
 describe("LogsView", () => {
+  it("uses zero until file metadata arrives", () => {
+    expect(logDownloadSize(null)).toBe(0);
+    expect(logDownloadSize(undefined)).toBe(0);
+    expect(logDownloadSize({ size: 42 })).toBe(42);
+  });
+
+  it("formats API errors and raw log failures", () => {
+    expect(logErrorMessage(new Error("request failed"))).toBe("request failed");
+    expect(logErrorMessage("raw log failure")).toBe("raw log failure");
+  });
+
   it("renders a byte window, searches it, navigates hits, and jumps to the first error", async () => {
     const { router } = renderLogs();
     const log = await screen.findByRole("log", { name: "Container log" });
@@ -176,14 +195,21 @@ describe("LogsView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next match" }));
     fireEvent.click(screen.getByRole("button", { name: "Regular expression search" }));
     await waitFor(() => expect(router.state.location.search.re).toBe(true));
+    fireEvent.click(screen.getByRole("button", { name: "Regular expression search" }));
+    await waitFor(() => expect(router.state.location.search.re).toBeUndefined());
     fireEvent.click(screen.getByRole("button", { name: "Case-sensitive search" }));
     await waitFor(() => expect(router.state.location.search.cs).toBe(true));
+    fireEvent.click(screen.getByRole("button", { name: "Case-sensitive search" }));
+    await waitFor(() => expect(router.state.location.search.cs).toBeUndefined());
     fireEvent.click(screen.getByRole("button", { name: "Wrap long lines" }));
     await waitFor(() => expect(router.state.location.search.wrap).toBe(true));
     fireEvent.click(screen.getByRole("button", { name: "Show elapsed time since previous timestamp" }));
     await waitFor(() => expect(router.state.location.search.ts).toBe("relative"));
     fireEvent.click(screen.getByRole("button", { name: "Show clock time" }));
     await waitFor(() => expect(router.state.location.search.ts).toBeUndefined());
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search the log" }), { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
 
     const filter = screen.getByRole("combobox", { name: "Minimum log level" });
     fireEvent.click(filter);
@@ -192,6 +218,12 @@ describe("LogsView", () => {
     fireEvent.pointerUp(level, { button: 0, pointerType: "mouse" });
     fireEvent.click(level);
     await waitFor(() => expect(router.state.location.search.filter).toBe("ERROR"));
+    fireEvent.click(filter);
+    const allLevels = await screen.findByRole("option", { name: "All levels" });
+    fireEvent.pointerDown(allLevels, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allLevels, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allLevels);
+    await waitFor(() => expect(router.state.location.search.filter).toBeUndefined());
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh window" }));
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalled());
@@ -295,6 +327,15 @@ describe("LogsView", () => {
     expect(requests.some((url) => url.searchParams.has("offset") && url.searchParams.has("length"))).toBe(true);
   });
 
+  it("does not invent a range when a tail request fails without a known file size", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("tail unsupported", { status: 400, headers: { "content-type": "text/plain" } })),
+    );
+    renderLogs("&tail=1", { omitFileSize: true });
+    expect(await screen.findByRole("heading", { name: "Cannot read this log file" })).toBeTruthy();
+  });
+
   it("shows a download error without losing the loaded log window", async () => {
     stubLogFetch(200, 500);
     renderLogs();
@@ -303,6 +344,17 @@ describe("LogsView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Download stdout" }));
     expect(await screen.findByText(/Download failed: HTTP 500/)).toBeTruthy();
     expect(viewer.textContent).toContain("startup complete");
+  });
+
+  it("shows a download transport failure without losing the loaded log window", async () => {
+    stubLogFetch();
+    const viewer = renderLogs();
+    await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(screen.getByRole("log", { name: "Container log" }).textContent).toContain("startup complete"));
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue("download endpoint unavailable"));
+    fireEvent.click(screen.getByRole("button", { name: "Download stdout" }));
+    expect(await screen.findByText(/Download failed: Cannot reach Burrow at \/api\/logs\/containers/)).toBeTruthy();
+    expect(viewer.container.textContent).toContain("startup complete");
   });
 
   it("downloads the loaded log through a temporary object URL", async () => {
@@ -316,9 +368,15 @@ describe("LogsView", () => {
     const log = await screen.findByRole("log", { name: "Container log" });
     await waitFor(() => expect(log.textContent).toContain("startup complete"));
 
-    fireEvent.click(screen.getByRole("button", { name: "Download stdout" }));
-    await waitFor(() => expect(createObjectURL).toHaveBeenCalledOnce());
+    vi.useFakeTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Download stdout" }));
+      for (let i = 0; i < 8; i++) await Promise.resolve();
+    });
+    expect(createObjectURL).toHaveBeenCalledOnce();
     expect(click).toHaveBeenCalledOnce();
+    await act(async () => vi.advanceTimersByTimeAsync(10_000));
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:burrow-log");
   });
 
   it("keeps the current files visible after a refresh error", async () => {
@@ -335,6 +393,22 @@ describe("LogsView", () => {
     expect(await screen.findByText(/Could not refresh this container's log files/)).toBeTruthy();
     expect(screen.getByRole("log", { name: "Container log" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("keeps a stale byte window visible and shows its raw refresh failure", async () => {
+    const { client } = renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(log.textContent).toContain("startup complete"));
+    const query = client.getQueryCache().find({ queryKey: ["logs", "window", CONTAINER_ID, "stdout", 0, "", "", ""] })!;
+    query.setState({
+      ...query.state,
+      status: "error",
+      error: "raw window refresh failure",
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: query.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByText(/latest log window could not be loaded.*raw window refresh failure/)).toBeTruthy();
+    expect(screen.getByRole("log", { name: "Container log" })).toBeTruthy();
   });
 
   it("starts live search follow and tears down its refresh timer on unmount", async () => {
@@ -358,11 +432,26 @@ describe("LogsView", () => {
     stubLogFetch();
     const { router, unmount } = renderLogs();
     await screen.findByRole("log", { name: "Container log" });
+    const setInterval = vi.fn((callback: TimerHandler) => {
+      void callback;
+      return 77;
+    });
+    const clearInterval = vi.fn();
+    vi.stubGlobal("setInterval", setInterval);
+    vi.stubGlobal("clearInterval", clearInterval);
     fireEvent.click(screen.getByRole("switch", { name: "Follow new log output" }));
     await waitFor(() => expect(router.state.location.search.follow).toBe(true));
     await waitFor(() => expect(TestEventSource.instances.length).toBeGreaterThan(0));
     act(() => TestEventSource.instances[0]!.emit("open"));
     await waitFor(() => expect(document.querySelector('[data-burrow-log-follow="streaming"]')).toBeTruthy());
+    const refreshTimer = setInterval.mock.calls.find(([, delay]) => delay === 1_500);
+    const refreshCallback = refreshTimer?.[0] as (() => void) | undefined;
+    expect(refreshCallback).toBeTypeOf("function");
+    if (!refreshCallback) throw new Error("Expected a scheduled log refresh callback");
+    act(() => refreshCallback());
+    fireEvent.click(screen.getByRole("switch", { name: "Follow new log output" }));
+    await waitFor(() => expect(router.state.location.search.follow).toBe(false));
+    expect(clearInterval).toHaveBeenCalledWith(77);
     unmount();
   });
 });

@@ -12,7 +12,7 @@ import { getElk, LAYOUT_LADDER, LAYOUT_OPTIONS, layoutRequest, runLayout } from 
 import { layoutGraphSync, layoutSync, toRenderGraph } from "./layout";
 import { syntheticDag } from "./simulate";
 import { goldensFor, overlappingPairs, readGolden } from "./testing/fixtures.node";
-import type { Dag, GraphCluster, GraphEdge, GraphNode, LayoutResult, NodeSize, Rect, RenderGraph } from "./types";
+import type { Dag, GraphCluster, GraphEdge, GraphNode, LayoutRequest, LayoutResult, NodeSize, Rect, RenderGraph } from "./types";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const GOLDEN_FILE = join(HERE, "__goldens__", "positions.json");
@@ -130,6 +130,15 @@ describe("layout determinism and policy", () => {
     expect(LAYOUT_OPTIONS["elk.layered.crossingMinimization.forceNodeModelOrder"]).toBeUndefined();
   });
 
+  it("reports rectangles with positive overlap", () => {
+    expect(
+      overlappingPairs([
+        { id: "left", x: 0, y: 0, width: 10, height: 10 },
+        { id: "right", x: 9, y: 9, width: 10, height: 10 },
+      ]),
+    ).toEqual([["left", "right"]]);
+  });
+
   it("never overlaps nodes in a 300-node graph and stays inside the layout budget", { timeout: 180_000 }, async () => {
     const dag = syntheticDag({ stages: 28, nodesPerStage: 12, skipEvery: 6, failStage: 9, seed: 3 });
     const graph = toRenderGraph(dag, { expandStages: true });
@@ -152,6 +161,69 @@ describe("layout determinism and policy", () => {
     const b = await layoutSync(dag);
     expect(b.width).toBe(a.width);
     expect(b.height).toBe(a.height);
+  });
+
+  it("harvests incomplete ELK geometry and repeated or sectionless edges", async () => {
+    const engine = await getElk();
+    const layout = vi.spyOn(engine, "layout").mockResolvedValue({
+      id: "__root__",
+      children: [
+        {
+          id: "scope",
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 80,
+          children: [{ id: "node", x: 5, y: 7 }, { id: "missing-box", width: 30, height: 40 }, { id: "" }],
+          edges: [
+            { id: "node>missing-box", container: "scope", sections: [{ startPoint: { x: 50, y: 60 }, endPoint: { x: 70, y: 80 } }] },
+            { id: "node>other", container: "scope", sections: [{ startPoint: { x: 1, y: 2 }, endPoint: { x: 3, y: 4 } }] },
+            { id: "node>fallback-frame", container: "unknown", sections: [{ startPoint: { x: 1, y: 2 }, endPoint: { x: 3, y: 4 } }] },
+            { id: "node>empty", sections: [] },
+          ],
+        },
+      ],
+      edges: [{ id: "node>missing-box", sections: [{ startPoint: { x: 4, y: 5 }, endPoint: { x: 6, y: 7 } }] }],
+    } as never);
+    try {
+      const graph: RenderGraph = {
+        hash: "sparse-harvest",
+        kind: "stage",
+        granularity: "stage",
+        nodes: [
+          { id: "node", label: "node", kind: "rdd", clusterId: "scope" },
+          { id: "missing-box", label: "missing", kind: "rdd", clusterId: null },
+        ],
+        edges: [
+          { id: "node>missing-box", from: "node", to: "missing-box", kind: "rdd" },
+          { id: "node>other", from: "node", to: "other", kind: "rdd" },
+          { id: "node>empty", from: "node", to: "empty", kind: "rdd" },
+          { id: "node>fallback-frame", from: "node", to: "fallback-frame", kind: "rdd" },
+        ],
+        clusters: [
+          { id: "scope", label: "scope", parentId: null },
+          { id: "scope", label: "scope", parentId: null },
+        ],
+        sizes: new Map(),
+        large: false,
+        warnings: [],
+        notes: [],
+        inferred: false,
+        source: { kind: "stage", granularity: "stage", stages: [], edges: [] },
+      };
+      const request = layoutRequest(graph, 102) as LayoutRequest;
+      const wire = await runLayout(request);
+
+      expect(wire.width).toBe(0);
+      expect(wire.height).toBe(0);
+      expect(Array.from(wire.nodeBoxes)).toEqual([15, 27, 0, 0, 10, 20, 30, 40]);
+      expect(Array.from(wire.clusterBoxes)).toEqual([10, 20, 100, 80, 10, 20, 100, 80]);
+      expect(wire.edgeIds).toEqual(["node>missing-box", "node>other", "node>fallback-frame"]);
+      expect(Array.from(wire.edgePoints.slice(4, 8))).toEqual([11, 22, 13, 24]);
+      expect(layout).toHaveBeenCalledOnce();
+    } finally {
+      layout.mockRestore();
+    }
   });
 
   it("falls back to the next ELK option rung when the requested options fail", async () => {

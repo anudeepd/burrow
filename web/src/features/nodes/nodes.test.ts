@@ -225,6 +225,22 @@ describe("derived values", () => {
     const gpu = withGpu[1];
     expect(gpu).toMatchObject({ total: 4, used: 3, available: 1, units: "", resourceType: "" });
     expect(withGpu[0]?.used).toBeUndefined();
+
+    expect(resourceMatrix({})).toEqual([]);
+    const missingUsage = resourceMatrix({
+      totalResource: {
+        resourceInformations: { resourceInformation: [{ name: "yarn.io/fpga", value: 2, tags: [] }] },
+      },
+    });
+    expect(missingUsage[0]).toMatchObject({
+      name: "yarn.io/fpga",
+      units: "",
+      resourceType: "",
+      total: 2,
+      used: undefined,
+      available: undefined,
+      tags: [],
+    });
   });
 
   it("derives the application id from a container id", () => {
@@ -312,6 +328,39 @@ describe("label payloads (live capture)", () => {
     const rows = buildLabelRows([{ name: "", exclusivity: false }], nodes);
     expect(rows.filter((r) => r.label.name === DEFAULT_LABEL)).toHaveLength(1);
     expect(rows[0]?.derived).toBe(false);
+  });
+
+  it("covers label text, resource formatting, missing node labels, and non-default ordering", () => {
+    expect(labelTypeText(false)).toBe("Non Exclusive Partition");
+    expect(resourceText(1536, 2)).toBe("<memory:1.5 GB, vCores:2>");
+    const unlabelled = { ...nodes[0]!, nodeLabels: undefined };
+    const defaults = buildLabelRows([{ name: "", exclusivity: true }], [unlabelled]);
+    expect(defaults[0]?.nodes).toEqual([unlabelled]);
+    const sorted = buildLabelRows([{ name: "zeta" }, { name: "alpha" }], []);
+    expect(sorted.map((row) => row.label.name)).toEqual(["alpha", "zeta"]);
+    const withDefault = buildLabelRows([{ name: "" }, { name: "zeta" }], []);
+    expect(withDefault.map((row) => row.label.name)).toEqual(["", "zeta"]);
+  });
+
+  it("summarizes every lifecycle state and keeps only the highest running utilization", () => {
+    const stateNode = (state: string, memUtilization = 0) => ({ state, memUtilization, cpuUtilization: 0, numContainers: 1 }) as Node;
+    const summary = summarize([
+      stateNode("RUNNING", 90),
+      stateNode("RUNNING", 30),
+      stateNode("UNHEALTHY"),
+      stateNode("LOST"),
+      stateNode("DECOMMISSIONED"),
+      stateNode("REBOOTED"),
+      stateNode("SHUTDOWN"),
+      stateNode("NEW"),
+    ]);
+    expect(summary).toMatchObject({ running: 2, unhealthy: 1, lost: 1, inactive: 4, worst: 90 });
+  });
+
+  it("matches a missing rack and version using the documented defaults", () => {
+    const missing = { ...nodes[0]!, rack: "", version: undefined } as Node;
+    expect(matchesFilter(missing, { rack: "/default-rack" })).toBe(true);
+    expect(matchesFilter(missing, { q: "no-version" })).toBe(false);
   });
 });
 

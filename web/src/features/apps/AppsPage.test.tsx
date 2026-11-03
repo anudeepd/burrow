@@ -9,8 +9,9 @@ const { cleanup, render, screen, fireEvent, waitFor, within } = await import("@t
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
+const { connectionStore } = await import("~/api/connection");
 const { parityStore } = await import("~/state/parity");
-const { AppsPage } = await import("./apps-page");
+const { AppsPage, applyStateSelection, columnsParam, errorMessageView, stateSelectionPatch } = await import("./apps-page");
 const { appsSearchSchema } = await import("./search");
 
 const FIXTURE = resolve(process.cwd(), "../fixtures/rm/overview/apps.json");
@@ -21,6 +22,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   window.__BURROW_PARITY__ = true;
   parityStore.setState(() => ({ enabled: true }));
+  connectionStore.setState((state) => ({ ...state, lastCache: null }));
 });
 
 describe("AppsPage", () => {
@@ -107,6 +109,56 @@ describe("AppsPage", () => {
     parityStore.setState(() => ({ enabled: false }));
     renderAppsPage({ search: { user: "no-such-user" }, previewApps: apps });
     expect(await screen.findByText("Relax a filter to widen the view.")).toBeTruthy();
+  });
+
+  it("handles sparse visibility state and an empty lifecycle selection", () => {
+    expect(columnsParam({})).toBeDefined();
+    expect(stateSelectionPatch(null)).toBeUndefined();
+    expect(stateSelectionPatch("completed")).toEqual({ states: "FINISHED,FAILED,KILLED" });
+    const patch = vi.fn();
+    applyStateSelection(null, patch);
+    expect(patch).not.toHaveBeenCalled();
+    applyStateSelection("completed", patch);
+    expect(patch).toHaveBeenCalledWith({ states: "FINISHED,FAILED,KILLED" });
+    expect(errorMessageView("", "post")).toBeUndefined();
+  });
+
+  it("treats a sort-only URL as a custom view", async () => {
+    const { patch } = renderAppsPage({ search: { sort: "name" }, previewApps: apps });
+    expect(await screen.findByRole("button", { name: "Reset view" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Reset view" }));
+    expect(patch).toHaveBeenCalledWith(expect.objectContaining({ sort: undefined }));
+  });
+
+  it("clears an active final-status toggle", async () => {
+    const { patch } = renderAppsPage({ search: { sort: "name", final: "SUCCEEDED" }, previewApps: apps });
+    const succeeded = await screen.findByRole("button", { name: "Filter by final status: Succeeded" });
+    expect(succeeded.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(succeeded);
+    expect(patch).toHaveBeenCalledWith({ final: undefined });
+  });
+
+  it("uses the cached stale response label when a live cache is stale", async () => {
+    connectionStore.setState((state) => ({ ...state, lastCache: "stale" }));
+    renderAppsPage({ live: true, previewApps: apps });
+    expect(await screen.findByText("stale")).toBeTruthy();
+  });
+
+  it("renders the legacy unavailable error and handles an empty error message", async () => {
+    const legacy = renderAppsPage({ renderVersion: "pre", previewState: "unavailable" });
+    expect(await screen.findByRole("heading", { name: "Cannot load applications" })).toBeTruthy();
+    expect(screen.getByText(/Cannot reach the ResourceManager/)).toBeTruthy();
+    legacy.unmount();
+
+    renderAppsPage({ live: true, queryError: new Error(""), queryHasData: false });
+    expect(await screen.findByRole("heading", { name: "Cannot load applications" })).toBeTruthy();
+    expect(screen.queryByText(/Cannot reach the ResourceManager/)).toBeNull();
+  });
+
+  it("uses an empty preview when loaded review data is omitted", async () => {
+    const view = renderAppsPage({ omitPreviewApps: true });
+    expect(await screen.findByText("The ResourceManager reported no applications at all.")).toBeTruthy();
+    view.unmount();
   });
 
   it("uses the lifecycle picker when the measured content area is compact", async () => {
@@ -231,6 +283,7 @@ function renderAppsPage(
     renderVersion?: "pre" | "post";
     previewState?: "loaded" | "loading" | "unavailable";
     previewApps?: App[];
+    omitPreviewApps?: boolean;
     live?: boolean;
     queryError?: Error;
     queryHasData?: boolean;
@@ -267,7 +320,7 @@ function renderAppsPage(
         onOpenApp={onOpenApp}
         renderVersion={renderVersion}
         previewState={options.previewState ?? "loaded"}
-        previewApps={options.previewApps ?? apps}
+        previewApps={options.omitPreviewApps ? undefined : (options.previewApps ?? apps)}
       />
     ),
   });

@@ -32,7 +32,7 @@ export interface CollisionResult {
 export function measureText(text: string, fontSize: number): number {
   let units = 0;
   for (const ch of text) {
-    const code = ch.codePointAt(0) ?? 32;
+    const code = ch.codePointAt(0)!;
     if (code >= 0x3000) units += 1;
     else if ("iljtfr.,:;'|!".includes(ch)) units += 0.34;
     else if ("mwMW@".includes(ch)) units += 1.02;
@@ -46,7 +46,7 @@ export function measureText(text: string, fontSize: number): number {
 export function measureMonospaceText(text: string, fontSize: number): number {
   let units = 0;
   for (const ch of text) {
-    const code = ch.codePointAt(0) ?? 32;
+    const code = ch.codePointAt(0)!;
     units += code >= 0x3000 ? 1 : 0.62;
   }
   return units * fontSize;

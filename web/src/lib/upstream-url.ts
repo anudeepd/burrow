@@ -93,7 +93,8 @@ export function rewriteUpstreamUrl(url: string | null | undefined, bases: Upstre
     return { href: raw, internal: false, kind: "spark-history", raw };
   }
   if (rmPort && (u.port === rmPort || u.pathname.startsWith("/ws/v1/cluster/"))) {
-    const href = rmOrigin ? rmOrigin + u.pathname + u.search + u.hash : raw;
+    // rmPort is derived from rmOrigin, so this match guarantees a configured rewrite origin.
+    const href = rmOrigin! + u.pathname + u.search + u.hash;
     return { href, internal: false, kind: "rm", raw };
   }
   return fallback;

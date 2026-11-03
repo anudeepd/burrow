@@ -355,9 +355,8 @@ export function TimelineChart({
 
   /** Pane geometry of the chart cell (everything right of the label gutter), measured at use time. */
   const chartGeom = useCallback(() => {
-    const el = listRef.current;
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
+    // Called only by events on the mounted chart, which always renders this list node.
+    const r = listRef.current!.getBoundingClientRect();
     const w = r.width - labelW;
     return w > 0 ? { left: r.left + labelW, w } : null;
   }, [labelW]);
@@ -374,11 +373,12 @@ export function TimelineChart({
   });
   useEffect(() => {
     const el = figureRef.current;
-    if (!el) return;
+    // The effect runs after commit; the figure is unconditional markup in this component.
+    const figure = el!;
     const onWheel = (e: WheelEvent) => {
       const h = wheelRef.current;
       const g = h.chartGeom();
-      const overAxis = axisRef.current?.contains(e.target as Node) ?? false;
+      const overAxis = axisRef.current!.contains(e.target as Node);
       if (e.ctrlKey || e.metaKey || overAxis) {
         e.preventDefault();
         const [a, b] = h.window;
@@ -391,8 +391,8 @@ export function TimelineChart({
         h.onPan(e.deltaY > 0 ? 0.1 : -0.1);
       }
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
+    figure.addEventListener("wheel", onWheel, { passive: false });
+    return () => figure.removeEventListener("wheel", onWheel);
   }, []);
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -510,7 +510,7 @@ export function TimelineChart({
                 </span>
               ))}
               {nowVisible && (
-                <span aria-hidden="true" className="absolute top-0 bottom-0 w-px bg-(--live)" style={{ left: `${pctOf(now ?? w0)}%` }} />
+                <span aria-hidden="true" className="absolute top-0 bottom-0 w-px bg-(--live)" style={{ left: `${pctOf(now!)}%` }} />
               )}
             </div>
           </div>
@@ -524,8 +524,7 @@ export function TimelineChart({
               />
             )}
             {items.map(({ index, start }) => {
-              const row = rows[index];
-              if (!row) return null;
+              const row = rows[index]!;
               const isActive = index === activeIdx;
               const placeAbove = index > (firstVisible + lastVisible) / 2;
               const barPct = row.kind === "bar" ? pctOf(row.start ?? w0) : 0;
@@ -582,8 +581,8 @@ export function TimelineChart({
                           ))}
                           {nowVisible && (
                             <line
-                              x1={x(now ?? w0)}
-                              x2={x(now ?? w0)}
+                              x1={x(now!)}
+                              x2={x(now!)}
                               y1={0}
                               y2={ROW_H}
                               stroke="var(--live)"

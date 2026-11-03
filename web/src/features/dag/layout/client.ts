@@ -56,9 +56,8 @@ function lruSet(cache: Map<string, LayoutResult>, key: string, value: LayoutResu
   cache.delete(key);
   cache.set(key, value);
   while (cache.size > CACHE_LIMIT) {
-    const oldest = cache.keys().next();
-    if (oldest.done) break;
-    cache.delete(oldest.value);
+    const oldest = cache.keys().next().value!;
+    cache.delete(oldest);
   }
 }
 

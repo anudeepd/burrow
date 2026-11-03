@@ -118,7 +118,7 @@ async function toApiError(res: Response, responseMeta: BurrowHeaders, url: strin
   try {
     body = text ? JSON.parse(text) : null;
   } catch {
-    body = text || null;
+    body = text;
   }
   const b = body as {
     error?: { code?: string; message?: string; upstream?: { url: string; status?: number }; hint?: string };

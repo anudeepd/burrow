@@ -5,7 +5,12 @@ import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { NodeResponseSchema, NodesResponseSchema, type Node } from "~/api/schemas";
 
-afterEach(cleanup);
+let setPrefs: typeof import("~/state/prefs").setPrefs;
+
+afterEach(() => {
+  cleanup();
+  setPrefs({ tz: "local" });
+});
 
 /**
  * The parity contract (docs/contracts/parity-dom.md) is verified on the REAL table. Parity mode is switched on BEFORE
@@ -22,10 +27,12 @@ window.__BURROW_PARITY__ = true;
 let DataTable: typeof import("~/ui/data-table/data-table").DataTable;
 let nodeColumns: typeof import("./columns").nodeColumns;
 let nodeDefaultVisibility: typeof import("./columns").defaultVisibility;
+let healthUpdatedText: typeof import("./columns").healthUpdatedText;
 
 beforeAll(async () => {
   ({ DataTable } = await import("~/ui/data-table/data-table"));
-  ({ nodeColumns, defaultVisibility: nodeDefaultVisibility } = await import("./columns"));
+  ({ nodeColumns, defaultVisibility: nodeDefaultVisibility, healthUpdatedText } = await import("./columns"));
+  ({ setPrefs } = await import("~/state/prefs"));
 });
 
 // vitest runs with cwd = web/, and Vite rewrites `new URL(..., import.meta.url)` into an asset request (denied outside root)
@@ -216,6 +223,28 @@ describe("nodes table column contract", () => {
     const columns = nodeColumns(["yarn.io/gpu"]);
     for (const column of columns) {
       if ("accessorFn" in column && typeof column.accessorFn === "function") column.accessorFn(inactive, 0);
+    }
+  });
+
+  it("handles missing optional cell values and UTC health timestamps", async () => {
+    const partial = {
+      ...sampleNode,
+      id: "127.0.0.11:8041",
+      lastHealthUpdate: 0,
+      nodeLabels: undefined,
+      allocationTags: undefined,
+      healthReport: undefined,
+    } as unknown as Node;
+    const reported = { ...gpuNode, id: "127.0.0.12:8041", healthReport: "disk check warning" };
+    setPrefs({ tz: "utc" });
+    const view = await renderTable([partial, reported]);
+
+    expect(view.container.textContent).toContain("disk check warning");
+    expect(nodeDefaultVisibility([partial])).toMatchObject({ nodeLabels: false, healthReport: false, allocationTags: false });
+    expect(healthUpdatedText(partial)).toBe("—");
+    const columns = nodeColumns();
+    for (const column of columns) {
+      if ("accessorFn" in column && typeof column.accessorFn === "function") column.accessorFn(partial, 0);
     }
   });
 });

@@ -25,8 +25,17 @@ describe("app detail primitives", () => {
         <FieldShell label={<span>custom label</span>} hint="Custom detail">
           custom value
         </FieldShell>
+        <FieldShell label="No hint:">plain value</FieldShell>
         <UnavailableField label="Unavailable:" field="app.missing" reason="This endpoint omits it." />
         <ResourcePair label="Preempted:" memoryMB={512} vcores={2} memoryField="app.preempted.memory" vcoresField="app.preempted.vcores" />
+        <ResourcePair
+          label={<span>Unavailable resources</span>}
+          hint="The RM omitted both components."
+          memoryMB={undefined}
+          vcores={null}
+          memoryField="app.missing.memory"
+          vcoresField="app.missing.vcores"
+        />
       </dl>,
     );
     expect(container.querySelector('[data-yf="app.user"][data-yv="alice"]')).toBeTruthy();
@@ -34,6 +43,8 @@ describe("app detail primitives", () => {
     expect(screen.getByText("not exposed")).toBeTruthy();
     expect(container.querySelector('[data-yf="app.preempted.memory"][data-yv="512"]')).toBeTruthy();
     expect(container.querySelector('[data-yf="app.preempted.vcores"][data-yv="2"]')).toBeTruthy();
+    expect(screen.getByText("Unavailable resources")).toBeTruthy();
+    expect(screen.getByText("plain value")).toBeTruthy();
   });
 
   it("copies text, acknowledges success, clears the prior timer, and handles failure", async () => {
@@ -58,6 +69,11 @@ describe("app detail primitives", () => {
     });
     expect(screen.getByText("Copied")).toBeTruthy();
 
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1200);
+    });
+    expect(screen.queryByText("Copied")).toBeNull();
+
     fireEvent.click(screen.getByRole("button", { name: "Copy diagnostics to clipboard" }));
     await act(async () => {
       await Promise.resolve();
@@ -71,7 +87,13 @@ describe("app detail primitives", () => {
     expect(screen.queryByText("Copied")).toBeNull();
 
     view.unmount();
-    render(<CopyButton text="id" label="Copy application id" iconOnly />);
+    render(
+      <>
+        <CopyButton text="default label" />
+        <CopyButton text="id" label="Copy application id" iconOnly />
+      </>,
+    );
+    expect(screen.getByRole("button", { name: "Copy to clipboard" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Copy application id to clipboard" }));
     await act(async () => {
       await Promise.resolve();
@@ -80,7 +102,7 @@ describe("app detail primitives", () => {
   });
 });
 
-function renderLogLink(seed?: unknown, error?: unknown) {
+function renderLogLink(seed?: unknown, error?: unknown, options: { compact?: boolean; withLocation?: boolean } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { enabled: false, retry: false, refetchOnMount: false } } });
   if (seed !== undefined) client.setQueryData(q.meta().queryKey, seed as never);
   if (error !== undefined) {
@@ -90,14 +112,20 @@ function renderLogLink(seed?: unknown, error?: unknown) {
       ...query.state,
       data: undefined,
       status: "error",
-      error: error instanceof Error ? error : new Error(String(error)),
+      error: error as Error,
       errorUpdatedAt: Date.now(),
       fetchStatus: "idle",
     });
   }
   const view = render(
     <QueryClientProvider client={client}>
-      <LogLink appId="application_1_2" containerId="container_1_2_01_000003" node="worker:8042" user="alice" />
+      <LogLink
+        appId="application_1_2"
+        containerId="container_1_2_01_000003"
+        node={options.withLocation === false ? undefined : "worker:8042"}
+        user={options.withLocation === false ? undefined : "alice"}
+        compact={options.compact}
+      />
     </QueryClientProvider>,
   );
   return { ...view, client };
@@ -128,5 +156,20 @@ describe("LogLink", () => {
     button.dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
     unavailable.unmount();
+  });
+
+  it("formats compact states and omits absent node and user query values", () => {
+    renderLogLink({ features: { nodeLogs: true, aggregatedLogs: false } }, undefined, { withLocation: false });
+    expect(screen.getByRole("link", { name: "Logs" }).getAttribute("href")).toBe(
+      "/apps/application_1_2/logs?container=container_1_2_01_000003",
+    );
+
+    cleanup();
+    renderLogLink(undefined, "metadata unavailable", { compact: true });
+    expect(screen.getByRole("button", { name: "Retry checking log support" }).textContent).toContain("Retry");
+
+    cleanup();
+    renderLogLink({ features: { nodeLogs: false, aggregatedLogs: false } }, undefined, { compact: true });
+    expect(screen.getByRole("button", { name: "Logs" }).textContent).toContain("Logs");
   });
 });

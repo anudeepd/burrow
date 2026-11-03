@@ -54,6 +54,7 @@ describe("sort and column codecs", () => {
   it("round-trips column visibility", () => {
     expect(parseCols("id,rack")).toEqual({ id: true, rack: true });
     expect(parseCols(undefined)).toBeUndefined();
+    expect(parseCols(" , \t")).toBeUndefined();
     expect(formatCols({ id: true, rack: false })).toBe("id");
     expect(formatCols({})).toBeUndefined();
   });

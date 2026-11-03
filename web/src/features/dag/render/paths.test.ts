@@ -61,6 +61,17 @@ describe("straightEdge", () => {
     expect(pts[0]).toEqual({ x: 50, y: 40 });
     expect(pts[1]).toEqual({ x: 50, y: 200 });
   });
+
+  it("chooses the left and upper facing sides for reverse edges", () => {
+    expect(straightEdge({ x: 300, y: 0, width: 100, height: 40 }, { x: 0, y: 0, width: 100, height: 40 })).toEqual([
+      { x: 300, y: 20 },
+      { x: 100, y: 20 },
+    ]);
+    expect(straightEdge({ x: 0, y: 200, width: 100, height: 40 }, { x: 0, y: 0, width: 100, height: 40 })).toEqual([
+      { x: 50, y: 200 },
+      { x: 50, y: 40 },
+    ]);
+  });
 });
 
 describe("arrowAt", () => {
@@ -84,6 +95,16 @@ describe("arrowAt", () => {
   it("is null without two distinct points", () => {
     expect(arrowAt([{ x: 0, y: 0 }])).toBeNull();
     expect(arrowAt([])).toBeNull();
+  });
+
+  it("skips a duplicate final point when finding the arrow direction", () => {
+    expect(
+      arrowAt([
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 0 },
+      ])?.angleDeg,
+    ).toBeCloseTo(0, 6);
   });
 });
 
@@ -132,6 +153,15 @@ describe("pointAlong", () => {
   it("handles degenerate input", () => {
     expect(pointAlong([], 0.5)).toEqual({ x: 0, y: 0 });
     expect(pointAlong([{ x: 7, y: 8 }], 0.5)).toEqual({ x: 7, y: 8 });
+    expect(
+      pointAlong(
+        [
+          { x: 7, y: 8 },
+          { x: 7, y: 8 },
+        ],
+        0,
+      ),
+    ).toEqual({ x: 7, y: 8 });
     expect(
       pointAlong(
         [

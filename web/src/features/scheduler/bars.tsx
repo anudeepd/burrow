@@ -21,7 +21,7 @@ const scaleOf = (values: (number | null | undefined)[]): number => {
 };
 
 function addMarker(markers: ProgressMarker[], percent: number | null, className: string, atTrackEnd = false) {
-  if (percent == null || percent > 100 || (percent === 100 && !atTrackEnd) || markers.some((marker) => marker.percent === percent)) return;
+  if (percent == null || (percent === 100 && !atTrackEnd) || markers.some((marker) => marker.percent === percent)) return;
   markers.push({ percent, className });
 }
 

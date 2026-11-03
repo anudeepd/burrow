@@ -3,9 +3,9 @@
  * ghost stubs, cycle defence and hash stability. Uses real fixtures for every shape it asserts.
  */
 import { describe, expect, it } from "vitest";
-import { buildGraph, hashGraph, reduceTransitive, stageFlags, EXPAND_LIMIT } from "./dag-model";
+import { breakCycles, buildGraph, clusterDepth, hashGraph, reduceTransitive, stageFlags, EXPAND_LIMIT } from "./dag-model";
 import { goldensFor, readGolden, sqlPlans, readSqlPlan } from "./testing/fixtures.node";
-import { buildSqlPlanGraph, isCodegenBoundary, parsePlanText, planOperatorCount, sqlMetricSummary } from "./sql-plan";
+import { buildSqlPlanGraph, isCodegenBoundary, matchPlanDetails, parsePlanText, planOperatorCount, sqlMetricSummary } from "./sql-plan";
 import type { Dag, DagInput, DagStage, GraphEdge, SqlPlanExecution } from "./types";
 
 function golden(workload: string, file: string, version = "4.2.0"): Dag {
@@ -155,6 +155,21 @@ describe("REST fallback", () => {
 });
 
 describe("defensive handling", () => {
+  it("ignores an edge whose target is not in the cycle-break node set", () => {
+    const edges: GraphEdge[] = [{ id: "external", from: "a", to: "outside", kind: "rdd" }];
+    expect(breakCycles(["a"], edges)).toEqual([]);
+    expect(edges).toHaveLength(1);
+  });
+
+  it("preserves nullable endpoint refs on an intra-stage edge", () => {
+    const nullable = stage({
+      nodes: [{ id: null, name: "Nullable", callsite: "c", cached: false, clusterId: null } as never],
+      edges: [{ from: null, to: null } as never],
+    });
+    const graph = buildGraph({ kind: "stage", granularity: "rdd", stages: [nullable], edges: [] });
+    expect(graph.warnings.some((warning) => warning.includes("cyclic"))).toBe(true);
+  });
+
   it("drops duplicate node ids and reports a missing operation-scope parent", () => {
     const duplicate = stage({
       stageId: 4,
@@ -209,6 +224,27 @@ describe("defensive handling", () => {
       edges: [{ from: null, to: null, fromStage: 9, toStage: 0 }],
     };
     expect(buildGraph(dag).warnings).toContain("cross-stage edge 9→0 references an unknown stage");
+  });
+
+  it("infers summary edge stages from RDD endpoints and deduplicates stage pairs", () => {
+    const dag: Dag = {
+      kind: "job",
+      granularity: "stage",
+      stages: [
+        stage({ stageId: 2, nodes: [{ id: 20, name: "R20", callsite: "c", cached: false, clusterId: null }] }),
+        stage({ stageId: 3, nodes: [{ id: 30, name: "R30", callsite: "c", cached: false, clusterId: null }] }),
+      ],
+      edges: [
+        { from: 20, to: 30 },
+        { from: 20, to: 30 },
+        { from: 20, to: 20 },
+        { from: 999, to: 30 },
+        { from: null, to: null },
+        { from: null, to: null, fromStage: 2, toStage: 3 },
+      ],
+    };
+    const graph = buildGraph(dag);
+    expect(graph.edges.map((edge) => [edge.from, edge.to])).toEqual([["st.2.0", "st.3.0"]]);
   });
 
   it("rejects a SQL plan that was not adapted into a render graph", () => {
@@ -273,6 +309,36 @@ describe("defensive handling", () => {
     expect(graph.edges[0]!.from).toBe(ghost!.id);
   });
 
+  it("caps ghost nodes and warns when the payload exceeds the cap", () => {
+    const dag: Dag = {
+      kind: "stage",
+      granularity: "rdd",
+      stages: [stage({ nodes: [{ id: 5, name: "R5", callsite: "c", cached: false, clusterId: null }] })],
+      edges: Array.from({ length: 25 }, (_, id) => ({ from: 100 + id, to: 5, fromStage: null, toStage: null })),
+    };
+    const graph = buildGraph(dag);
+    expect(graph.nodes.filter((node) => node.kind === "ghost")).toHaveLength(24);
+    expect(graph.warnings).toContain("cross-stage edge 124→5 has no resolvable endpoint on this page");
+  });
+
+  it("uses stage boundary lookup defaults for an unnamed stage and drops edges resolving to one node", () => {
+    const dag: Dag = {
+      kind: "job",
+      granularity: "rdd",
+      stages: [stage({ stageId: 3, nodes: [{ id: 1, name: "R1", callsite: "c", cached: false, clusterId: null }] })],
+      edges: [
+        { from: 42, to: 1, fromStage: 99, toStage: 3 },
+        { from: 1, to: 1, fromStage: 3, toStage: 3 },
+        { from: null, to: 1 },
+        { from: 1, to: null },
+      ],
+    };
+    const graph = buildGraph(dag);
+    expect(graph.edges).toHaveLength(1);
+    expect(graph.edges[0]?.from).toBe("ghost.s99.42");
+    expect(graph.edges[0]?.to).toBe("3.0.n1");
+  });
+
   it("warns when an edge has neither a resolvable node nor a stage", () => {
     const dag: Dag = {
       kind: "job",
@@ -313,6 +379,12 @@ describe("hash stability", () => {
     });
     expect(sameShape).toBe(graph.hash);
   });
+
+  it("hashes nodes that have no cached size", () => {
+    const graph = buildGraph(golden("rdd-wordcount", "dag-stage-0-0.json"));
+    const hash = hashGraph(graph.kind, graph.granularity, { ...graph, sizes: new Map() });
+    expect(hash).not.toBe(graph.hash);
+  });
 });
 
 describe("reduceTransitive", () => {
@@ -338,6 +410,32 @@ describe("reduceTransitive", () => {
     // all three hop-1 shortcuts AND n1→n4 are implied by the chain; the chain itself is the covering set
     expect(kept.map((e) => e.id)).toEqual(["f0", "f1", "f2", "f3", "f4", "f5", "f6"]);
   });
+
+  it("keeps the original edges when every edge has a parallel alternate path", () => {
+    const edges: GraphEdge[] = [
+      { id: "xy1", from: "x", to: "y", kind: "cross-stage" },
+      { id: "xy2", from: "x", to: "y", kind: "cross-stage" },
+      { id: "yx1", from: "y", to: "x", kind: "cross-stage" },
+      { id: "yx2", from: "y", to: "x", kind: "cross-stage" },
+    ];
+    expect(reduceTransitive(["x", "y"], edges)).toEqual(edges);
+  });
+});
+
+describe("cluster depth", () => {
+  it("stops safely when malformed cluster parents form a cycle", () => {
+    expect(
+      clusterDepth([
+        { id: "a", label: "A", parentId: "b" },
+        { id: "b", label: "B", parentId: "a" },
+      ]),
+    ).toEqual(
+      new Map([
+        ["a", 2],
+        ["b", 1],
+      ]),
+    );
+  });
 });
 
 describe("SQL plan adaptation", () => {
@@ -358,6 +456,12 @@ describe("SQL plan adaptation", () => {
     });
 
     expect(graph.nodes[0]?.detail).toBe("Range (0, 10000, step=1, splits=4)");
+  });
+
+  it("counts nullable or unnamed operators without inventing codegen boundary nodes", () => {
+    expect(planOperatorCount(undefined)).toBe(0);
+    expect(planOperatorCount(null)).toBe(0);
+    expect(planOperatorCount([{}, { nodeName: null }, { nodeName: "WholeStageCodegen (3)" }])).toBe(2);
   });
 
   it("recovers operator plan lines from a legacy physical tree when History Server REST has no appendix", () => {
@@ -486,9 +590,24 @@ describe("SQL plan adaptation", () => {
   });
 
   it("ignores non-numeric appendix headings and falls back to physical plan lines", () => {
-    const parsed = parsePlanText("(1x) Project [id#1]\n== Physical Plan ==\n* Range (0, 10)");
+    const parsed = parsePlanText("(1x) Project [id#1]\n== Physical Plan ==\n* Range (0, 10)\n== Optimized Logical Plan ==\nRange");
     expect(parsed.appendix.size).toBe(0);
     expect(parsed.tree).toEqual([{ id: 0, name: "Range", line: "Range (0, 10)" }]);
+  });
+
+  it("does not attach a differently named appendix entry or a tree entry without a line", () => {
+    const graph = buildSqlPlanGraph({
+      id: 13,
+      status: "COMPLETED",
+      description: "select key",
+      planDescription: "Project (3)\n(3) Exchange [key]\nOutput [1]: [key]",
+      nodes: [{ nodeId: 1, nodeName: "Project" }],
+      edges: [],
+    });
+    expect(graph.nodes[0]?.detail).toBeUndefined();
+    expect(matchPlanDetails([{ nodeId: 1, nodeName: "Range" }], { tree: [{ id: 1, name: "Range" }], appendix: new Map() })).toEqual(
+      new Map(),
+    );
   });
 
   it("drops duplicate operator ids and edges that point to missing operators", () => {

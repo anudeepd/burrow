@@ -50,6 +50,13 @@ describe("ScrollArea", () => {
     expect(bars()).toEqual(["vertical"]);
 
     view.rerender(
+      <ScrollArea>
+        <div>default vertical content</div>
+      </ScrollArea>,
+    );
+    expect(bars()).toEqual(["vertical"]);
+
+    view.rerender(
       <ScrollArea orientation="horizontal">
         <div>wide content</div>
       </ScrollArea>,

@@ -1,6 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
-import { isParity, parityStore, useParity } from "~/state/parity";
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { isParity, parityStore, prefsMotionProbe, useAnimationsEnabled, useParity } from "~/state/parity";
 import { LIVE_INTERVALS, prefsStore, resolvedTheme, setPrefs } from "~/state/prefs";
+
+afterEach(() => {
+  parityStore.setState(() => ({ enabled: false }));
+  prefsMotionProbe.setState(() => ({ reduced: false }));
+});
 
 describe("parity mode", () => {
   it("is off by default in a plain page load", () => {
@@ -15,9 +21,37 @@ describe("parity mode", () => {
     expect(isParity()).toBe(false);
   });
 
+  it("sets the parity document marker when enabled before module initialization", async () => {
+    const original = window.__BURROW_PARITY__;
+    vi.resetModules();
+    window.__BURROW_PARITY__ = true;
+    try {
+      const freshParity = await import("~/state/parity");
+      expect(freshParity.isParity()).toBe(true);
+      expect(document.documentElement.getAttribute("data-parity")).toBe("1");
+    } finally {
+      window.__BURROW_PARITY__ = original;
+      document.documentElement.removeAttribute("data-parity");
+    }
+  });
+
   it("exports the hook and store used by consumers", () => {
     expect(typeof useParity).toBe("function");
     expect(parityStore.get().enabled).toBe(false);
+  });
+
+  it("disables JavaScript animation for parity mode and reduced motion", () => {
+    const { result } = renderHook(() => useAnimationsEnabled());
+    expect(result.current).toBe(true);
+
+    act(() => prefsMotionProbe.setState(() => ({ reduced: true })));
+    expect(result.current).toBe(false);
+
+    act(() => {
+      prefsMotionProbe.setState(() => ({ reduced: false }));
+      parityStore.setState(() => ({ enabled: true }));
+    });
+    expect(result.current).toBe(false);
   });
 });
 

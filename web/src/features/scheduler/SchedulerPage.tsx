@@ -20,7 +20,8 @@ import { cn } from "~/lib/cn";
 import { fmtMB, fmtPct } from "~/lib/format";
 import { q } from "~/api/queries";
 import { nodesQuery, schedulerActivitiesQuery, schedulerConfQuery, schedulerQuery } from "~/api/queries/scheduler";
-import { isCapacityScheduler, isFifoScheduler } from "~/api/schemas";
+import { isFifoScheduler } from "~/api/schemas";
+import type { CapacitySchedulerInfo } from "~/api/schemas";
 import { PageHeader, Section, StateNote, Tile, TileLabel } from "./Chrome";
 import { QueueTree, type SiblingSort } from "./QueueTree";
 import { TreemapSection, type TreemapBasis } from "./TreemapSection";
@@ -70,7 +71,8 @@ export function SchedulerPage({
           ? [metrics.absUsedPct ?? metrics.usedPct, metrics.absCapPct ?? metrics.capPct, metrics.absMaxPct ?? metrics.maxPct]
           : [metrics.usedMb, metrics.minMb, metrics.fairMb, metrics.maxMb];
       for (const value of values) {
-        if (value != null && Number.isFinite(value)) largest = Math.max(largest, value);
+        // Queue metrics are normalized by `num`, which has already rejected non-finite values.
+        if (value != null) largest = Math.max(largest, value);
       }
     }
     return largest;
@@ -83,7 +85,8 @@ export function SchedulerPage({
   const isOpen = useCallback((path: string) => (open === null ? true : open.includes(path)), [open]);
   const toggle = useCallback(
     (path: string) => {
-      const all = root ? walkTree(root).map((n) => n.id) : [];
+      // QueueTree only renders this callback when a root exists.
+      const all = walkTree(root!).map((n) => n.id);
       const current = open ?? all;
       const next = current.includes(path) ? current.filter((p) => p !== path) : [...current, path];
       patch({ openQueues: serializeOpenQueues(next) });
@@ -354,7 +357,7 @@ export function SchedulerPage({
         <TabsPanel value="health" data-burrow-scheduler-tab-panel="health" className="mt-2 min-w-0">
           {kind === "capacity" ? (
             <HealthTables
-              health={isCapacityScheduler(info) ? info.health : undefined}
+              health={(info as CapacitySchedulerInfo).health}
               aggregates={jmxQ.data ? aggregateCounts(jmxQ.data.beans?.[0]) : undefined}
               aggregateError={jmxQ.error ? errorInfo(jmxQ.error).message : null}
             />

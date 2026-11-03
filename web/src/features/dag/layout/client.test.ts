@@ -23,8 +23,13 @@ class FailedWorker {
 }
 
 class SuccessfulWorker {
+  static last: SuccessfulWorker | undefined;
   protected readonly listeners = new Map<string, (event: { data?: unknown; message?: string }) => void>();
   readonly terminate = vi.fn();
+
+  constructor() {
+    SuccessfulWorker.last = this;
+  }
 
   addEventListener(type: string, listener: (event: { data?: unknown; message?: string }) => void) {
     this.listeners.set(type, listener);
@@ -36,6 +41,14 @@ class SuccessfulWorker {
 
   protected emit(data: unknown) {
     this.listeners.get("message")?.({ data });
+  }
+
+  emitMessage(data: unknown) {
+    this.emit(data);
+  }
+
+  emitError(message?: string) {
+    this.listeners.get("error")?.({ message });
   }
 }
 
@@ -120,6 +133,15 @@ describe("LayoutClient worker failure", () => {
     expect(await client.layout(graph)).toBe(result);
     expect(client.getStats()).toMatchObject({ requests: 1, misses: 1, coalesced: 1, hits: 1, workerReady: true });
 
+    const worker = SuccessfulWorker.last!;
+    worker.emitMessage(null);
+    worker.emitMessage("invalid");
+    worker.emitMessage({ requestId: -1 });
+    expect((await client.layout({ ...graph, hash: "second-graph" })).ran).toBe("worker");
+    worker.emitError();
+    expect(client.workerReady).toBe(false);
+    expect((await client.layout({ ...graph, hash: "after-worker-error" })).ran).toBe("worker");
+
     client.resetStats();
     expect(client.getStats()).toMatchObject({ requests: 0, hits: 0, workerReady: true });
     expect(client.workerReady).toBe(true);
@@ -166,6 +188,7 @@ describe("LayoutClient worker failure", () => {
     const shared = layoutClient();
     expect(layoutClient()).toBe(shared);
     expect((await layout(syntheticDag({ stages: 1, nodesPerStage: 2, skipEvery: 0, seed: 4 }), { expandStages: true })).ran).toBe("main");
+    expect((await layout(syntheticDag({ stages: 1, nodesPerStage: 2, skipEvery: 0, seed: 4 }))).ran).toBe("main");
     expect((await layoutDag(graph)).ran).toBe("main");
     expect((await layoutDagSync(graph)).ran).toBe("main");
     shared.dispose();

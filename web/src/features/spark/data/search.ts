@@ -113,6 +113,8 @@ export function compact<T extends Record<string, unknown>>(o: T): T {
   return out as T;
 }
 
+export function intParam(v: unknown, fallback: number): number;
+export function intParam(v: unknown, fallback?: number): number | undefined;
 export function intParam(v: unknown, fallback?: number): number | undefined {
   if (v == null || v === "") return fallback;
   const n = Number(v);

@@ -388,7 +388,7 @@ export interface AttemptBand {
   state: string;
   startMs: number;
   endMs: number | null;
-  durationMs: number | null;
+  durationMs: number;
 }
 
 export function attemptBands(attempts: readonly AppAttempt[], now: number): AttemptBand[] {

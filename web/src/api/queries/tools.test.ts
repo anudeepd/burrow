@@ -54,6 +54,21 @@ describe("RmLogsSchema", () => {
     expect(files.find((f) => f.name === "a.log")?.size).toBe(1712);
     expect(files.find((f) => f.name === "b.log")?.size).toBe(0);
     expect(files.find((f) => f.name === "b.log")?.modifiedSortKey).toBeNull();
+    const invalidSize = RmLogsSchema.parse({ files: [{ name: "c.log", size: "not a number" }] });
+    expect(invalidSize[0]?.size).toBe(0);
+  });
+
+  it("sorts a directory that appears before a file and parses date-only text", () => {
+    const files = RmLogsSchema.parse({
+      files: [
+        { name: "directory", size: 0, isDir: true },
+        { name: "file", size: 1, isDir: false },
+      ],
+    });
+    expect(files.map((file) => file.name)).toEqual(["file", "directory"]);
+    expect(daemonDateSortKey("Oct 3 2026")).toBe(Date.UTC(2026, 9, 3));
+    expect(daemonDateSortKey("Oct 3, 2026 1:00:00 PM")).toBe(Date.UTC(2026, 9, 3, 13));
+    expect(daemonDateSortKey("Fob 3, 2026")).toBeNull();
   });
 });
 

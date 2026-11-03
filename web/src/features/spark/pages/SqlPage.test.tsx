@@ -234,6 +234,7 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
       .querySelector<HTMLElement>('[data-col="duration"] button');
     expect(durationButton).toBeTruthy();
     fireEvent.click(durationButton!);
+    await waitFor(() => expect(router.state.location.search.sort).toBe("duration"));
     await waitFor(() => expect((router.state.location.search as { sort?: string }).sort).toBe("duration"));
 
     fireEvent.click(screen.getByRole("combobox", { name: "SQL status filter" }));
@@ -243,7 +244,7 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     fireEvent.click(completed);
     await waitFor(() => expect((router.state.location.search as { status?: string }).status).toBe("COMPLETED"));
 
-    fireEvent.click(screen.getByRole("combobox", { name: "Rows per page" }));
+    fireEvent.click(await screen.findByRole("combobox", { name: "Rows per page" }));
     const pageSize = await screen.findByRole("option", { name: "25 / page" });
     fireEvent.pointerDown(pageSize, { button: 0, pointerType: "mouse" });
     fireEvent.pointerUp(pageSize, { button: 0, pointerType: "mouse" });
@@ -378,5 +379,68 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     renderSqlDetail({ jobs: "error" });
     expect(await screen.findByText("Could not resolve stage ids")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("handles sparse SQL rows and clears every active list filter", async () => {
+    const longError = `Execution failed: ${"x".repeat(70)}`;
+    stubApi({
+      [`spark/${APP_ID}/sql`]: [
+        {
+          id: 9,
+          status: null,
+          description: null,
+          submissionTime: null,
+          completionTime: null,
+          duration: null,
+          runningJobIds: null,
+          successJobIds: null,
+          failedJobIds: null,
+          errorMessage: longError,
+        },
+        {
+          id: 10,
+          status: "RUNNING",
+          description: "Second SQL execution",
+          submissionTime: "1791822000000",
+          runningJobIds: [],
+          successJobIds: [3],
+          failedJobIds: [],
+          errorMessage: "",
+        },
+      ],
+    });
+    const { router } = renderSqlTab(null, "?status=FAILED&q=missing");
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Filter SQL executions" }), { target: { value: "" } });
+    await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
+    fireEvent.click(screen.getByRole("combobox", { name: "SQL status filter" }));
+    const allStatuses = await screen.findByRole("option", { name: "All statuses" });
+    fireEvent.pointerDown(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allStatuses, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allStatuses);
+    await waitFor(() => expect(router.state.location.search.status).toBeUndefined());
+
+    expect(await screen.findByText("UNKNOWN")).toBeTruthy();
+    expect(screen.getByRole("link", { name: longError })).toBeTruthy();
+    const durationButton = screen
+      .getByRole("table", { name: "Spark SQL executions" })
+      .querySelector<HTMLElement>('[data-col="duration"] button');
+    expect(durationButton).toBeTruthy();
+    fireEvent.click(durationButton!);
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Rows per page" }));
+    const pageSize = await screen.findByRole("option", { name: "25 / page" });
+    fireEvent.pointerDown(pageSize, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(pageSize, { button: 0, pointerType: "mouse" });
+    fireEvent.click(pageSize);
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ size: "25", page: "0" }));
+
+    fireEvent.click(await screen.findByRole("combobox", { name: "Rows per page" }));
+    const allRows = await screen.findByRole("option", { name: "All rows" });
+    fireEvent.pointerDown(allRows, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(allRows, { button: 0, pointerType: "mouse" });
+    fireEvent.click(allRows);
+    await waitFor(() => expect(router.state.location.search.size).toBeUndefined());
   });
 });

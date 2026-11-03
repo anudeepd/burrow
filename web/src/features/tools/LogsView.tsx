@@ -45,6 +45,7 @@ import {
   logFileHref,
   logPage,
   type LogSortKey,
+  pageLengthFromSelect,
   sortLogFiles,
 } from "./logs";
 
@@ -78,14 +79,14 @@ function SortHeader({
   sortKey: LogSortKey;
   sortDesc: boolean;
   onSort: (k: LogSortKey) => void;
-  className?: string;
+  className: string;
 }) {
   const active = sortKey === k;
   return (
     <th
       scope="col"
       aria-sort={active ? (sortDesc ? "descending" : "ascending") : "none"}
-      className={`px-3 py-1 font-medium text-ink-4 ${className ?? "text-left"}`}
+      className={`px-3 py-1 font-medium text-ink-4 ${className}`}
     >
       <OptionalTooltip label={`Sort by ${label}`}>
         <button type="button" onClick={() => onSort(k)} className="inline-flex items-center gap-1 hover:text-ink">
@@ -136,8 +137,8 @@ export function LogsView() {
   // No file in the URL: land on the most recent one (replace, so Back does not bounce through an empty view).
   useEffect(() => {
     if (search.file || files.length === 0) return;
-    const first = files.find((f) => !f.isDir) ?? files[0];
-    if (first) void navigate({ search: (prev) => ({ ...prev, file: first.name, offset: undefined }), replace: true });
+    const first = files.find((f) => !f.isDir) ?? files[0]!;
+    void navigate({ search: (prev) => ({ ...prev, file: first.name, offset: undefined }), replace: true });
   }, [search.file, files, navigate]);
 
   const size = selected?.size ?? 0;
@@ -146,7 +147,7 @@ export function LogsView() {
 
   const chunk = useQuery({
     queryKey: ["tools", "logs", "chunk", selected?.name ?? "", page.offset, page.length],
-    queryFn: ({ signal }) => fetchLogChunk(selected?.name ?? "", { offset: page.offset, length: page.length, size }, signal),
+    queryFn: ({ signal }) => fetchLogChunk(selected!.name, { offset: page.offset, length: page.length, size }, signal),
     meta: { refetchKind: "live" },
     enabled: !!selected,
     retry: false,
@@ -363,7 +364,7 @@ export function LogsView() {
                     aria-label="Previous page"
                     title="Previous page"
                     disabled={page.prev === null || tail}
-                    onClick={() => setSearch({ offset: page.prev ?? 0 })}
+                    onClick={() => setSearch({ offset: page.prev! })}
                   >
                     <ChevronLeft className="size-3.5" aria-hidden="true" />
                   </Button>
@@ -373,7 +374,7 @@ export function LogsView() {
                     aria-label="Next page"
                     title="Next page"
                     disabled={page.next === null || tail}
-                    onClick={() => setSearch({ offset: page.next ?? 0 })}
+                    onClick={() => setSearch({ offset: page.next! })}
                   >
                     <ChevronRight className="size-3.5" aria-hidden="true" />
                   </Button>
@@ -430,7 +431,7 @@ export function LogsView() {
                 <Select
                   label="Bytes per page"
                   value={String(Math.round(pageBytes / 1024))}
-                  onValueChange={(v) => setSearch({ len: v ? Number(v) * 1024 : undefined, offset: undefined })}
+                  onValueChange={(v) => setSearch({ len: pageLengthFromSelect(v), offset: undefined })}
                   options={PAGE_SIZES.map((kib) => ({ value: String(kib), label: `${kib} KiB per page` }))}
                   className="w-40"
                 />
@@ -480,7 +481,7 @@ export function LogsView() {
 
               {chunk.error && (!chunk.data || chunk.isPlaceholderData) ? (
                 <ErrorState
-                  title={`Cannot read ${selected?.name ?? "that file"}`}
+                  title={`Cannot read ${selected!.name}`}
                   message={chunk.error instanceof Error ? chunk.error.message : String(chunk.error)}
                   hint="Burrow streams a byte range from the daemon's own log directory."
                   onRetry={() => void chunk.refetch()}
@@ -509,7 +510,7 @@ export function LogsView() {
                     // biome-ignore lint/a11y/noNoninteractiveTabindex: the pane scrolls, so keyboard users need it focusable (axe scrollable-region-focusable).
                     tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
                     aria-live="off"
-                    aria-label={`${selected.name}, ${chunk.data ? byteRangeLabel(chunk.data) : "loading"}`}
+                    aria-label={`${selected.name}, ${byteRangeLabel(chunk.data!)}`}
                     aria-busy={chunk.isFetching || undefined}
                     className="burrow-scroll h-[min(34dvh,18rem)] min-h-56 shrink-0 overflow-auto rounded-lg border border-seam bg-well p-2 font-mono text-small break-words whitespace-pre-wrap text-ink lg:h-auto lg:min-h-[18rem] lg:flex-1 lg:shrink"
                   >

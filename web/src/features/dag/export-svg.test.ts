@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { serializeDagSvg } from "./export-svg";
 import type { EdgeVisual, Scene } from "./render/scene";
 import type { DagInput, LayoutResult, RenderGraph } from "./types";
@@ -120,7 +120,7 @@ describe("serializeDagSvg", () => {
     const source = sourceSvg();
     const host = document.createElement("div");
     const visuals = [
-      edge({ id: "plain", kind: "rdd" }),
+      edge({ id: "plain", kind: "rdd", arrow: { d: "M 1 1 L 2 2" } as never }),
       edge({ id: "dim", kind: "sql", dimmed: true }),
       edge({ id: "cross", kind: "cross-stage", flowing: true, opacity: 0.6, arrow: { d: "M 9 9 L 10 10" } as never }),
       edge({ id: "flow", kind: "flow", flowing: true, arrow: { d: "M 5 5 L 6 6" } as never, opacity: 0.8 }),
@@ -131,6 +131,7 @@ describe("serializeDagSvg", () => {
 
     expect(groups).toHaveLength(4);
     expect(groups[0]?.querySelector(".burrow-dag-edge-track")?.getAttribute("stroke-width")).toBe("1.25");
+    expect(groups[0]?.querySelector(".burrow-dag-arrow")?.getAttribute("fill")).toBeTruthy();
     expect(groups[1]?.getAttribute("opacity")).toBe("0.25");
     expect(groups[1]?.querySelector(".burrow-dag-edge-track")?.getAttribute("stroke-width")).toBe("1.5");
     expect(groups[2]?.querySelector(".burrow-dag-edge-flow")?.getAttribute("opacity")).toBe("0.6");
@@ -147,5 +148,23 @@ describe("serializeDagSvg", () => {
     const output = serializeDagSvg(source, dag, undefined, graph(), layout(), scene(), document.createElement("div"), true)!;
     const exported = new DOMParser().parseFromString(output, "image/svg+xml");
     expect(exported.querySelector("g.burrow-dag-edges")).not.toBeNull();
+  });
+
+  it("skips computed style values that the browser leaves empty", () => {
+    const getPropertyValue = vi.fn(() => "");
+    const computedStyle = vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      backgroundColor: "transparent",
+      getPropertyValue,
+    } as CSSStyleDeclaration);
+    const source = sourceSvg();
+    expect(window.getComputedStyle(source).getPropertyValue("fill")).toBe("");
+    const output = serializeDagSvg(source, dag, undefined, graph(), layout(), scene(), document.createElement("div"), false)!;
+    const exported = new DOMParser().parseFromString(output, "image/svg+xml");
+
+    expect(computedStyle).toHaveBeenCalled();
+    expect(getPropertyValue).toHaveBeenCalled();
+    expect(exported.querySelector("rect")?.getAttribute("fill")).toBe("transparent");
+    expect(exported.querySelector(".burrow-dag-cluster-layer")?.getAttribute("style")).toBeNull();
+    expect(getPropertyValue).toHaveBeenCalledTimes(97);
   });
 });

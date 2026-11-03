@@ -7,6 +7,20 @@ const APP = "application_123_0001";
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Spark task capture", () => {
+  it("executes a Spark query through the API client and validates its payload", async () => {
+    const requests: URL[] = [];
+    vi.stubGlobal("fetch", async (input: string) => {
+      requests.push(new URL(input, "http://localhost"));
+      return new Response(JSON.stringify({ mode: "none" }), { headers: { "content-type": "application/json" } });
+    });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await expect(client.fetchQuery(sp.source(APP))).resolves.toMatchObject({ mode: "none" });
+    expect(requests).toHaveLength(1);
+    expect(requests[0]?.pathname).toContain(`/spark/${APP}/source`);
+    client.clear();
+  });
+
   it("loads explicit pages past Spark's 20-row default and keeps the application attempt", async () => {
     const requests: URL[] = [];
     const tasks = Array.from({ length: 1005 }, (_, taskId) => ({ taskId, index: taskId, status: "SUCCESS", accumulatorUpdates: [] }));
@@ -26,6 +40,19 @@ describe("Spark task capture", () => {
     client.clear();
   });
 
+  it("loads task pages without adding an empty attempt filter", async () => {
+    const requests: URL[] = [];
+    vi.stubGlobal("fetch", async (input: string) => {
+      requests.push(new URL(input, "http://localhost"));
+      return new Response("[]", { headers: { "content-type": "application/json" } });
+    });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await expect(client.fetchQuery(sp.allTasks(APP, 3, 1))).resolves.toEqual([]);
+    expect(requests[0]?.searchParams.has("attempt")).toBe(false);
+    client.clear();
+  });
+
   it("clears explicit columns when the table resets to defaults", () => {
     expect(compact({ cols: "-host", ...serializeColumns({}) })).toEqual({});
   });
@@ -36,8 +63,10 @@ describe("Spark task capture", () => {
       sp.application(APP),
       sp.jobs(APP),
       sp.job(APP, 3),
+      sp.job(APP, 3, "static", "2"),
       sp.stages(APP),
       sp.stageAttempts(APP, 3),
+      sp.stageAttempts(APP, 3, "static", "2"),
       sp.stageAttempt(APP, 3, 1),
       sp.taskSummary(APP, 3, 1),
       sp.taskList(APP, 3, 1),

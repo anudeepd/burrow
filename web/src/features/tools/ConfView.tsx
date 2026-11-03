@@ -55,21 +55,18 @@ const CHIP =
   "inline-flex max-w-full items-center gap-1 rounded-full border border-seam-strong bg-well px-1.5 text-micro text-ink-2 hover:text-live";
 const BADGE = "inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 text-micro";
 const OVERRIDDEN_TINT = "bg-[color-mix(in_oklch,var(--live)_8%,transparent)]";
+type BadgeTone = "live" | "ink" | "fail" | "warn";
+const BADGE_TONES: Record<BadgeTone, string> = {
+  live: "border-[color-mix(in_oklch,var(--live)_35%,transparent)] text-live",
+  ink: "border-seam-strong text-ink-4",
+  warn: "border-[color-mix(in_oklch,var(--warn)_35%,transparent)] text-warn",
+  fail: "border-[color-mix(in_oklch,var(--fail)_35%,transparent)] text-fail",
+};
 
-function Badge({ tone, children, title }: { tone: "live" | "ink" | "fail" | "warn"; children: React.ReactNode; title?: string }) {
+function Badge({ tone, children, title }: { tone: BadgeTone; children: React.ReactNode; title?: string }) {
   return (
     <OptionalTooltip label={title}>
-      <span
-        className={cn(
-          BADGE,
-          tone === "live" && "border-[color-mix(in_oklch,var(--live)_35%,transparent)] text-live",
-          tone === "ink" && "border-seam-strong text-ink-4",
-          tone === "warn" && "border-[color-mix(in_oklch,var(--warn)_35%,transparent)] text-warn",
-          tone === "fail" && "border-[color-mix(in_oklch,var(--fail)_35%,transparent)] text-fail",
-        )}
-      >
-        {children}
-      </span>
+      <span className={cn(BADGE, BADGE_TONES[tone])}>{children}</span>
     </OptionalTooltip>
   );
 }
@@ -104,7 +101,7 @@ function KeyCell({ p, selected }: { p: ConfProperty; selected: boolean }) {
 function ValueCell({ p }: { p: ConfProperty }) {
   const redacted = isRedacted(p);
   const lines = lineCount(p.value);
-  const first = (p.value ?? "").trim().split("\n")[0] ?? "";
+  const first = (p.value ?? "").trim().split("\n")[0]!;
   return (
     <Datum
       field="conf.value"

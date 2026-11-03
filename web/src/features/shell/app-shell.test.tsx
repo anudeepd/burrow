@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+const shellHotkeys = vi.hoisted(() => ({
+  current: null as null | { onPalette: () => void; onHelp: () => void },
+}));
+
 vi.mock("./rail", () => ({ Rail: () => <nav aria-label="Desktop navigation" /> }));
 vi.mock("./topbar", () => ({
   Topbar: ({ onOpenRail, onOpenPalette }: { onOpenRail: () => void; onOpenPalette: () => void }) => (
@@ -10,10 +14,20 @@ vi.mock("./topbar", () => ({
       <button type="button" onClick={onOpenPalette}>
         Open command palette
       </button>
+      <button type="button" onClick={() => shellHotkeys.current?.onPalette()}>
+        Open palette shortcut
+      </button>
+      <button type="button" onClick={() => shellHotkeys.current?.onHelp()}>
+        Open keyboard shortcuts
+      </button>
     </header>
   ),
 }));
-vi.mock("./shortcuts", () => ({ useShellHotkeys: () => {} }));
+vi.mock("./shortcuts", () => ({
+  useShellHotkeys: (callbacks: NonNullable<typeof shellHotkeys.current>) => {
+    shellHotkeys.current = callbacks;
+  },
+}));
 vi.mock("./rail-drawer", () => ({
   RailDrawer: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
     open ? (
@@ -49,7 +63,10 @@ const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-l
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { AppShell } = await import("./app-shell");
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  shellHotkeys.current = null;
+});
 
 function renderShell() {
   const root = createRootRoute();
@@ -62,13 +79,22 @@ function renderShell() {
       </AppShell>
     ),
   });
-  const router = createRouter({ routeTree: root.addChildren([index]), history: createMemoryHistory({ initialEntries: ["/"] }) });
-  return render(<RouterProvider router={router} />);
+  const nodes = createRoute({
+    getParentRoute: () => root,
+    path: "/nodes",
+    component: () => (
+      <AppShell>
+        <div>Node shell content</div>
+      </AppShell>
+    ),
+  });
+  const router = createRouter({ routeTree: root.addChildren([index, nodes]), history: createMemoryHistory({ initialEntries: ["/"] }) });
+  return { ...render(<RouterProvider router={router} />), router };
 }
 
 describe("AppShell overlays", () => {
   it("mounts and closes the navigation drawer and command palette", async () => {
-    renderShell();
+    const { router } = renderShell();
     expect(await screen.findByText("Shell content")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
@@ -80,5 +106,18 @@ describe("AppShell overlays", () => {
     expect(await screen.findByRole("dialog", { name: "Command palette" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Close command palette" }));
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Command palette" })).toBeNull());
+
+    fireEvent.click(screen.getByRole("button", { name: "Open palette shortcut" }));
+    expect(await screen.findByRole("dialog", { name: "Command palette" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Close command palette" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Command palette" })).toBeNull());
+
+    fireEvent.click(screen.getByRole("button", { name: "Open keyboard shortcuts" }));
+    expect(await screen.findByRole("dialog", { name: "Keyboard shortcuts" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Close keyboard shortcuts" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).toBeNull());
+
+    await router.navigate({ to: "/nodes" });
+    await waitFor(() => expect(document.querySelector('[data-page-transition="none"]')).not.toBeNull());
   });
 });

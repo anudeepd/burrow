@@ -17,7 +17,7 @@ import {
 import { buildGraph } from "../dag-model";
 import { syntheticDag } from "../simulate";
 import { toStageMetric } from "../metrics";
-import type { Dag, LayoutResult, RenderGraph } from "../types";
+import type { Dag, GraphEdge, GraphNode, LayoutResult, RenderGraph } from "../types";
 import type { NodeBadge } from "./scene";
 
 const badge = (text: string): NodeBadge => ({ key: text, text, tone: "idle" });
@@ -117,6 +117,24 @@ function layoutFor(graph: RenderGraph, height = 158): LayoutResult {
   };
 }
 
+function renderGraph(nodes: GraphNode[], edges: GraphEdge[] = []): RenderGraph {
+  const source: Dag = { kind: "stage", granularity: "stage", stages: [], edges: [] };
+  return {
+    hash: `manual:${nodes.map((node) => node.id).join(",")}`,
+    kind: "stage",
+    granularity: "stage",
+    nodes,
+    edges,
+    clusters: [],
+    sizes: new Map(),
+    large: nodes.length > 300,
+    warnings: [],
+    notes: [],
+    inferred: false,
+    source,
+  };
+}
+
 function metric(stageId: number, status = "ACTIVE") {
   return toStageMetric({
     stageId,
@@ -156,6 +174,81 @@ function sceneInput(graph: RenderGraph, layout = layoutFor(graph)): SceneInput {
 }
 
 describe("scene derivation", () => {
+  it("covers sparse stage, SQL, RDD and ghost labels plus missing edge geometry", () => {
+    const nodes: GraphNode[] = [
+      { id: "zero", label: "Tiny", kind: "fallback", stageId: 44, rddCount: 1, clusterId: "missing-cluster" },
+      { id: "active", label: "Active stage", kind: "fallback", stageId: 45, rddCount: 2 },
+      { id: "active-skipped", label: "Skipped sibling", kind: "fallback", stageId: 45, skipped: true },
+      { id: "compact", label: "Compact stage", kind: "fallback", stageId: 46 },
+      { id: "narrow", label: "Narrow stage", kind: "fallback", stageId: 47 },
+      { id: "sql", label: "SQL operator", kind: "sql", sublabel: "scan detail" },
+      { id: "rdd", label: "RDD without callsite", kind: "rdd", clusterId: "missing-cluster" },
+      { id: "ghost", label: "Missing node", kind: "ghost", clusterId: "missing-cluster" },
+    ];
+    const edges: GraphEdge[] = [
+      { id: "incoming", from: "active", to: "rdd", kind: "rdd" },
+      { id: "missing-from", from: "absent", to: "rdd", kind: "rdd" },
+      { id: "missing-to", from: "active", to: "absent", kind: "rdd" },
+    ];
+    const graph = renderGraph(nodes, edges);
+    const layout = layoutFor(graph);
+    layout.nodes.set("zero", { x: 0, y: 0, width: 53, height: 158 });
+    layout.nodes.set("active", { x: 80, y: 0, width: 200, height: 100 });
+    layout.nodes.set("compact", { x: 300, y: 0, width: 200, height: 52 });
+    layout.nodes.set("narrow", { x: 520, y: 0, width: 70, height: 158 });
+    layout.edges.delete("missing-from");
+    layout.edges.delete("missing-to");
+    const zeroMetric = { ...metric(44), numTasks: 0, numActiveTasks: 0, numCompleteTasks: 0, numCompletedIndices: 0, numFailedTasks: 0 };
+    const input = {
+      ...sceneInput(graph, layout),
+      metrics: new Map([
+        [44, zeroMetric],
+        [45, metric(45)],
+        [46, metric(46)],
+        [47, metric(47)],
+      ]),
+      selectedNodeId: "rdd",
+      focusStageId: 45,
+    };
+    const scene = buildScene(input);
+
+    expect(scene.byId.get("zero")?.taskSummary).toBeNull();
+    expect(scene.byId.get("zero")?.badges).toContainEqual(expect.objectContaining({ key: "rdds", text: "1 RDD" }));
+    expect(scene.byId.get("active")?.badges).toContainEqual(expect.objectContaining({ key: "rdds", text: "2 RDDs" }));
+    expect(scene.byId.get("active")?.ariaLabel).toContain("tasks complete");
+    expect(scene.byId.get("rdd")?.related).toBe(true);
+    expect(scene.byId.get("rdd")?.depth).toBe(1);
+    expect(scene.edges.find((edge) => edge.edge.id === "missing-from")?.points).toBeDefined();
+    expect(scene.edges.find((edge) => edge.edge.id === "missing-to")?.points).toBeDefined();
+
+    const labels = labelCandidates({ scene, level: "detail", showEdgeLabels: false });
+    expect(labels.nodes.has("zero")).toBe(false);
+    expect(labels.nodes.get("active")?.some((candidate) => candidate.id === "active#sub")).toBe(true);
+    expect(labels.nodes.get("compact")?.some((candidate) => candidate.id === "compact#sub")).toBe(false);
+
+    const overview = buildScene({ ...input, level: "overview" });
+    expect(overview.byId.get("active")?.subText).toBeNull();
+    expect(overview.byId.get("sql")?.subText).toBeNull();
+    expect(overview.byId.get("rdd")?.subText).toBeNull();
+  });
+
+  it("clears bounded scene caches when their size limits are reached", () => {
+    const nodes = Array.from(
+      { length: 4_100 },
+      (_, stageId): GraphNode => ({
+        id: `cache-stage-${stageId}`,
+        label: `Stage ${stageId}`,
+        kind: "stage",
+        stageId: stageId + 10_000,
+        rddCount: stageId % 2 === 0 ? 1 : 2,
+        status: "PENDING",
+      }),
+    );
+    const graph = renderGraph(nodes);
+    const input = { ...sceneInput(graph), metrics: new Map() };
+    expect(buildScene(input).nodes).toHaveLength(nodes.length);
+  });
+
   it("adds a metric-count badge to SQL operator nodes at detail zoom", () => {
     const graph = buildGraph(syntheticDag({ stages: 1, nodesPerStage: 2, skipEvery: 0, seed: 12 }), { expandStages: true });
     const node = graph.nodes[0]!;

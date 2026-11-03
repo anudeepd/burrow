@@ -176,7 +176,8 @@ export function TimelinePage() {
             now={liveNow}
             onZoom={(factor, anchor) => {
               const span = viewWindow[1] - viewWindow[0];
-              const rel = span > 0 ? (anchor - viewWindow[0]) / span : 0.5;
+              // The chart only renders for data with a positive axis extent; applyWindow and bounds preserve that invariant.
+              const rel = (anchor - viewWindow[0]) / span;
               const nspan = span / factor;
               applyWindow(anchor - rel * nspan, anchor - rel * nspan + nspan);
             }}

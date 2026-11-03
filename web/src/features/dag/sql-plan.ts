@@ -171,7 +171,7 @@ export function matchPlanDetails(nodes: readonly SqlPlanNode[], text: PlanText):
     const lines = text.appendix.get(entry.id);
     if (lines?.length) {
       const head = lines[0]!.replace(/^\(\d+\)\s*/, "");
-      if (planTextName(head.split("[")[0] ?? "") !== wanted) continue;
+      if (planTextName(head.split("[")[0]!) !== wanted) continue;
       out.set(node.nodeId, [head, ...lines.slice(1)].join("\n"));
     } else if (entry.line) {
       out.set(node.nodeId, entry.line);
@@ -218,7 +218,7 @@ export function buildSqlPlanGraph(plan: SqlPlanExecution): RenderGraph {
   const nodes: GraphNode[] = [];
   const sizes = new Map<string, NodeSize>();
   const seen = new Set<string>();
-  const planLines = matchPlanDetails(plan.nodes ?? [], parsePlanText(plan.planDescription));
+  const planLines = matchPlanDetails(plan.nodes, parsePlanText(plan.planDescription));
   for (const n of plan.nodes) {
     // The codegen boundary is drawn as the cluster, not as an operator card; see `isCodegenBoundary`.
     if (isCodegenBoundary(n.nodeName)) continue;

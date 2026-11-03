@@ -30,7 +30,7 @@ import { blacklistedNodesCount } from "./view";
 /** Values the legacy table printed as `N/A` because the RM reports a sentinel. */
 const isSentinel = (v: number | undefined): boolean => v === -1 || v === undefined || Number.isNaN(v);
 
-function NumCell({ field, value, fmt = "int", na = false }: { field: string; value: number | undefined; fmt?: Fmt; na?: boolean }) {
+function NumCell({ field, value, fmt, na }: { field: string; value: number | undefined; fmt: Fmt; na: boolean }) {
   return (
     <Datum field={field} raw={value} fmt={fmt} className={na ? "text-ink-4" : undefined}>
       {na ? "N/A" : undefined}
@@ -56,12 +56,12 @@ function gpuCell(app: App, field: string, value: number | undefined) {
  * virtualizes; parity mode mounts them all) and refreshed slowly, never on the live-poll cadence of the list itself.
  * `data-yn` marks "no value": no attempt yet (legacy `N/A`), still loading, or the attempts request failed.
  */
-function BlacklistedCell({ appId }: { appId: string }) {
+export function BlacklistedCell({ appId }: { appId: string }) {
   const parity = useParity();
   const query = q.appAttempts(appId);
   const attempts = useQuery({
     ...query,
-    ...adaptive("slow", query.meta ?? {}),
+    ...adaptive("slow", query.meta),
     staleTime: parity ? Number.POSITIVE_INFINITY : 60_000,
   });
   const count = attempts.data ? blacklistedNodesCount(selectAppAttempts(attempts.data)) : undefined;
@@ -253,7 +253,12 @@ export const APPS_COLUMNS: ColDef<App>[] = [
     size: 144,
     meta: { label: "Running Containers", hint: "-1 means the RM had no resource report (shown as N/A)" },
     cell: ({ row }) => (
-      <NumCell field="app.runningContainers" value={row.original.runningContainers} na={isSentinel(row.original.runningContainers)} />
+      <NumCell
+        field="app.runningContainers"
+        value={row.original.runningContainers}
+        fmt="int"
+        na={isSentinel(row.original.runningContainers)}
+      />
     ),
   },
   {

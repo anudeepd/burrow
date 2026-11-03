@@ -202,6 +202,20 @@ describe("edge cases", () => {
     expect(threadToText(parsed.threads[1] as NonNullable<(typeof parsed.threads)[1]>)).toContain("  Locked ownable synchronizers:");
   });
 
+  it("stops a lock section at a non-lock diagnostic and keeps parsing the thread", () => {
+    const parsed = parseThreadDump(
+      [
+        "1 active thread",
+        "Thread 1 (worker):",
+        "  Locked ownable synchronizers:",
+        "    vendor-specific lock detail",
+        "  State: WAITING",
+      ].join("\n"),
+    );
+    expect(parsed.threads[0]).toMatchObject({ state: "WAITING", locks: [] });
+    expect(parsed.threads[0]?.frames).toMatchObject([{ className: "vendor-specific lock detail" }]);
+  });
+
   it("returns nothing for empty or junk input", () => {
     expect(parseThreadDump("")).toEqual({ process: "", active: null, threads: [] });
     expect(parseThreadDump("total garbage\nwith no threads").threads).toEqual([]);
@@ -229,11 +243,49 @@ describe("edge cases", () => {
     expect(parseStackFrame("    no-dots-here(Weird)")).toMatchObject({ className: "no-dots-here", method: "" });
   });
 
+  it("keeps unusual and incomplete frame strings without inventing parsed fields", () => {
+    expect(parseStackFrame("plain frame text")).toMatchObject({
+      className: "plain frame text",
+      method: "",
+      native: false,
+      raw: "plain frame text",
+    });
+    expect(parseStackFrame("(leading paren)")).toMatchObject({ className: "(leading paren)", method: "" });
+    expect(parseStackFrame("pkg.Foo.run(Source.java:not-a-line)")).toMatchObject({
+      className: "pkg.Foo",
+      method: "run",
+      file: "Source.java:not-a-line",
+    });
+    expect(parseStackFrame("pkg.Foo.run(Source.java")).toMatchObject({
+      className: "pkg.Foo.run(Source",
+      method: "java",
+    });
+    expect(parseStackFrame("pkg.Foo.run()")).toMatchObject({ className: "pkg.Foo", method: "run" });
+  });
+
   it("renders frames back to their canonical text", () => {
     expect(frameText(parseStackFrame("    java.base@17.0.20.1/java.lang.Object.wait(Native Method)"))).toBe(
       "java.base@17.0.20.1/java.lang.Object.wait(Native Method)",
     );
     expect(frameText(parseStackFrame("    app//org.example.Main.main(Main.java:12)"))).toBe("app/org.example.Main.main(Main.java:12)");
+  });
+
+  it("renders fallback frame targets and absent locations", () => {
+    expect(frameText({ className: "", method: "run", native: false, raw: "raw frame" })).toBe("run");
+    expect(frameText({ className: "", method: "", native: false, raw: "raw frame" })).toBe("raw frame");
+    expect(frameText({ className: "pkg.Foo", method: "run", native: false, line: 12, raw: "raw frame" })).toBe("pkg.Foo.run(undefined:12)");
+  });
+});
+
+describe("state summaries and serialization fallbacks", () => {
+  it("counts missing states as UNKNOWN and orders equal counts by state name", () => {
+    const parsed = parseThreadDump(["Thread 1 (idle):", "Thread 2 (worker):", "  State: RUNNABLE"].join("\n"));
+    expect(stateHistogram(parsed.threads)).toEqual([
+      { state: "RUNNABLE", count: 1 },
+      { state: "UNKNOWN", count: 1 },
+    ]);
+    expect(threadToText(parsed.threads[0]!)).not.toContain("State:");
+    expect(dumpToText(parsed)).toContain("2 active threads");
   });
 });
 

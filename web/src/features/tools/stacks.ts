@@ -105,7 +105,7 @@ export function parseThreadDump(text: string): ThreadDump {
 
   // header (tolerant: either line may be missing, and the RM's `Process Thread Dump:` value is empty)
   while (i < lines.length) {
-    const line = (lines[i] ?? "").trim();
+    const line = lines[i]!.trim();
     if (!line) {
       i++;
       continue;
@@ -127,7 +127,7 @@ export function parseThreadDump(text: string): ThreadDump {
 
   const threads: DumpThread[] = [];
   while (i < lines.length) {
-    const line = lines[i] ?? "";
+    const line = lines[i]!;
     const head = THREAD_RE.exec(line.trim());
     if (!head) {
       i++;
@@ -135,7 +135,7 @@ export function parseThreadDump(text: string): ThreadDump {
     }
     const thread: DumpThread = {
       id: Number(head[1]),
-      name: head[2] ?? "",
+      name: head[2]!,
       state: "",
       blocked: 0,
       waited: 0,
@@ -144,7 +144,7 @@ export function parseThreadDump(text: string): ThreadDump {
     };
     i++;
     while (i < lines.length) {
-      const cur = lines[i] ?? "";
+      const cur = lines[i]!;
       if (THREAD_RE.test(cur.trim())) break;
       const trimmed = cur.trim();
       if (!trimmed) {
@@ -181,7 +181,7 @@ export function parseThreadDump(text: string): ThreadDump {
       if (/^Stack:\s*$/.test(trimmed)) {
         i++;
         while (i < lines.length) {
-          const frame = lines[i] ?? "";
+          const frame = lines[i]!;
           if (THREAD_RE.test(frame.trim())) break;
           if (!frame.trim()) {
             i++;
@@ -196,7 +196,7 @@ export function parseThreadDump(text: string): ThreadDump {
       if (/^Locked ownable synchronizers:\s*$/.test(trimmed)) {
         i++;
         while (i < lines.length) {
-          const entry = lines[i] ?? "";
+          const entry = lines[i]!;
           if (THREAD_RE.test(entry.trim())) break;
           const et = entry.trim();
           if (!et) {

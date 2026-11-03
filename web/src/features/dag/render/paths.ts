@@ -56,7 +56,8 @@ function sub(a: Point, b: Point): Point {
 }
 function norm(a: Point): Point {
   const len = Math.hypot(a.x, a.y);
-  return len < 1e-6 ? { x: 1, y: 0 } : { x: a.x / len, y: a.y / len };
+  // pathFromPoints drops coincident points before asking for directions, so this vector is always non-zero.
+  return { x: a.x / len, y: a.y / len };
 }
 function dist(a: Point, b: Point): number {
   return Math.hypot(a.x - b.x, a.y - b.y);

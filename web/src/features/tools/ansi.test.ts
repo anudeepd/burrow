@@ -2,8 +2,12 @@
  * Unit tests for the ANSI SGR parser. The important guarantees are: style is applied where it is asked for, and *nothing is
  * ever dropped* — a truncated escape at a chunk boundary, a non-SGR CSI, or an OSC title all survive as text.
  */
-import { describe, expect, it } from "vitest";
-import { parseAnsi, segmentAnsi } from "./Ansi";
+import { createElement } from "react";
+import { cleanup, render } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { Ansi, ansiClass, parseAnsi, segmentAnsi } from "./Ansi";
+
+afterEach(() => cleanup());
 
 const ESC = "\u001b";
 const plain = (spans: readonly { text: string }[]) => spans.map((s) => s.text).join("");
@@ -51,6 +55,7 @@ describe("parseAnsi", () => {
     expect(parseAnsi(`${ESC}[38;2;10;20;30mx${ESC}[0m`)).toEqual([{ text: "x" }]);
     // …and the surrounding colour is untouched by the ignored one
     expect(parseAnsi(`${ESC}[33m${ESC}[38;5;9my${ESC}[0m`)).toEqual([{ text: "y", fg: 33 }]);
+    expect(parseAnsi(`${ESC}[38;1mplain`)).toEqual([{ text: "plain" }]);
   });
 
   it("ignores background codes but keeps the text", () => {
@@ -84,6 +89,28 @@ describe("parseAnsi", () => {
     const spans = parseAnsi(text);
     expect(spans).toEqual([{ text }]);
     expect(text.includes(ESC)).toBe(false);
+  });
+});
+
+describe("ANSI rendering", () => {
+  it("builds classes only for recognized styles", () => {
+    expect(ansiClass({})).toBe("");
+    expect(ansiClass({ dim: true, bold: true, fg: 31 })).toContain("opacity-70 font-semibold");
+    expect(ansiClass({ dim: false, bold: false, fg: 999 })).toBe("");
+  });
+
+  it("renders plain spans and marks the active search hit", () => {
+    const segments = [
+      { text: "prefix ", hit: null },
+      { text: "ERROR", hit: 0, fg: 31 },
+    ] as const;
+    const { container, rerender } = render(createElement(Ansi, { segments, activeHit: 0, className: "log-line" }));
+    expect(container.querySelector(".log-line")?.textContent).toBe("prefix ERROR");
+    expect(container.querySelector(".log-line > span")?.hasAttribute("data-ansi-hit")).toBe(false);
+    expect(container.querySelector("mark[data-ansi-mark='0']")?.getAttribute("data-active")).toBe("true");
+
+    rerender(createElement(Ansi, { segments, className: "log-line" }));
+    expect(container.querySelector("mark[data-ansi-mark='0']")?.hasAttribute("data-active")).toBe(false);
   });
 });
 

@@ -41,6 +41,7 @@ describe("stageMetricsFromRest", () => {
     expect(stageMetricsFromRest(null)).toEqual([]);
     expect(stageMetricsFromRest("nonsense")).toEqual([]);
     expect(stageMetricsFromRest({})).toEqual([]);
+    expect(stageMetricsFromRest([null, "not a row", { status: "COMPLETE" }])).toEqual([]);
   });
 
   it("drops rows without a stage id instead of inventing one", () => {
@@ -52,6 +53,9 @@ describe("stageMetricsFromRest", () => {
     expect(m.inputBytes).toBeNull();
     expect(m.outputBytes).toBe(0);
     expect(m.resultSize).toBeNull();
+    expect(toStageMetric(null)).toBeNull();
+    expect(toStageMetric("not a row" as never)).toBeNull();
+    expect(toStageMetric({ stageId: Number.POSITIVE_INFINITY })).toBeNull();
   });
 
   it("indexes by stage id, latest attempt winning", () => {
@@ -62,6 +66,7 @@ describe("stageMetricsFromRest", () => {
     ]);
     expect(index.get(1)?.numCompleteTasks).toBe(2);
     expect(index.get(2)?.numCompleteTasks).toBe(0);
+    expect(indexStageMetrics([{ ...mk(1, 1) }, { ...mk(1, 0) }]).get(1)?.attemptId).toBe(1);
   });
 });
 
@@ -115,9 +120,11 @@ describe("status normalisation", () => {
 
   it("maps status to a tone, keeping failed counts visible on running stages", () => {
     expect(stageTone(undefined, true)).toBe("idle");
+    expect(stageTone(undefined, false)).toBe("idle");
     expect(stageTone(mk(1, 0), false)).toBe("live");
     expect(stageTone({ ...mk(1, 0), numFailedTasks: 1 }, false)).toBe("warn");
     expect(stageTone({ ...mk(1, 0), status: "COMPLETE" }, false)).toBe("ok");
+    expect(stageTone({ ...mk(1, 0), status: "COMPLETE", numFailedTasks: 1 }, false)).toBe("warn");
     expect(stageTone({ ...mk(1, 0), status: "FAILED" }, false)).toBe("fail");
     expect(stageTone({ ...mk(1, 0), status: "PENDING" }, false)).toBe("wait");
     expect(stageTone({ ...mk(1, 0), status: "FUTURE_STATUS" as never }, false)).toBe("idle");
@@ -129,6 +136,7 @@ describe("timestamps", () => {
     expect(parseSparkTime("2026-10-03T06:50:15.695GMT")).toBe(Date.parse("2026-10-03T06:50:15.695Z"));
     expect(parseSparkTime(1_767_225_600_000)).toBe(1_767_225_600_000);
     expect(parseSparkTime("1767225600000")).toBe(1_767_225_600_000);
+    expect(parseSparkTime("0")).toBeNull();
   });
 
   it("returns null for absent or nonsensical values", () => {
@@ -137,6 +145,7 @@ describe("timestamps", () => {
     expect(parseSparkTime("-")).toBeNull();
     expect(parseSparkTime(0)).toBeNull();
     expect(parseSparkTime(-5)).toBeNull();
+    expect(parseSparkTime(Number.POSITIVE_INFINITY)).toBeNull();
     expect(parseSparkTime("not a date")).toBeNull();
   });
 });
@@ -155,6 +164,7 @@ describe("progress", () => {
 
   it("treats a completed zero-task stage as 100%", () => {
     expect(stageProgress({ ...mk(1, 0), status: "COMPLETE", numTasks: 0, numCompleteTasks: 0 }).percent).toBe(100);
+    expect(stageProgress({ ...mk(1, 0), status: "ACTIVE", numTasks: 0, numCompleteTasks: 0 }).percent).toBe(0);
   });
 
   it("builds bar segments in a stable order and drops empty ones", () => {
@@ -162,6 +172,7 @@ describe("progress", () => {
     expect(segs.map((s) => s.tone)).toEqual(["ok", "live", "wait"]);
     expect(segs.map((s) => s.percent).reduce((a, b) => a + b, 0)).toBeCloseTo(100, 6);
     expect(segs[0]?.label).toBe("4 completed");
+    expect(progressSegments({ total: 0, done: 0, active: 0, failed: 0, killed: 0, pending: 0, percent: 0 })).toEqual([]);
   });
 
   it("summarises duration from submission to completion or now", () => {
@@ -223,14 +234,18 @@ describe("flow", () => {
   it("never flows for a stage with no active tasks and no progress", () => {
     const stalled = { ...mk(1, 0), numActiveTasks: 0, numCompleteTasks: 0 };
     expect(flowReading(before, stalled, false, 1000).active).toBe(false);
+    expect(flowReading(undefined, after, false, 1000).active).toBe(true);
   });
 
   it("keys readings by producer node id", () => {
     const map = flowByProducer(
       [
         { id: "st.1.0", stageId: 1 },
+        { id: "st.1.0-again", stageId: 1, skipped: true },
+        { id: "st.1.0-skipped-again", stageId: 1, skipped: true },
         { id: "st.2.0", stageId: 2 },
         { id: "st.3.0", stageId: 3, skipped: true },
+        { id: "without-stage" },
       ],
       new Map([
         [1, after],

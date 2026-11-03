@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Meta } from "~/api/schemas";
+import { connectionStore } from "~/api/connection";
 import { ov } from "~/api/queries/overview";
 import { BurrowCapabilities } from "./BurrowCapabilities";
 
@@ -27,7 +28,19 @@ const meta: Meta = {
   yarn: { logServerUrl: null, httpPolicy: "HTTP_ONLY", scheduler: "capacity" },
 };
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  connectionStore.setState(() => ({
+    lastOkAt: null,
+    lastErrorAt: null,
+    lastError: null,
+    consecutiveFailures: 0,
+    lastCache: null,
+    lastUpstream: null,
+    clockSkewMs: 0,
+  }));
+});
 
 describe("BurrowCapabilities service status", () => {
   it("uses the shared status treatment for reachable, unreachable, and unprobed services", () => {
@@ -50,5 +63,114 @@ describe("BurrowCapabilities service status", () => {
       expect(pill?.querySelector("svg"), `${label} has its status icon`).not.toBeNull();
     }
     expect(container.querySelectorAll(".burrow-pill")).toHaveLength(3);
+  });
+
+  it("shows current API health, write access, endpoint candidates, and configured fallbacks", () => {
+    connectionStore.setState((state) => ({ ...state, lastOkAt: 1_791_000_000_000 }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
+    client.setQueryData(ov.meta().queryKey, {
+      ...meta,
+      readOnly: false,
+      services: {
+        sparkHistory: {
+          configured: true,
+          candidates: [
+            { url: "http://shs-a:18080", reachable: true },
+            { url: "http://shs-b:18080", reachable: false, reason: "connection refused" },
+            { url: "http://shs-c:18080", reachable: false },
+          ],
+        },
+        jobHistory: { configured: true, reachable: false, reason: "not responding" },
+        timeline: { configured: false },
+      },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <BurrowCapabilities />
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByText("Read/write")).toBeTruthy();
+    expect(screen.getByText(/OK /)).toBeTruthy();
+    expect(screen.getByText("not responding")).toBeTruthy();
+    expect(screen.getByText("No URL configured or discovered")).toBeTruthy();
+    expect(screen.getByText("Not supported")).toBeTruthy();
+    expect(document.querySelector('[data-burrow-help="Spark History Server endpoint probes"]')).not.toBeNull();
+  });
+
+  it("shows the initial-load failure and lets the user retry", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ error: { code: "offline", message: "meta unavailable" } }), {
+          status: 503,
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <QueryClientProvider client={client}>
+        <BurrowCapabilities />
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText("Could not load Burrow capabilities")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  });
+
+  it("shows the unavailable placeholder while metadata has not loaded", () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryDefaults(ov.meta().queryKey, { enabled: false });
+    render(
+      <QueryClientProvider client={client}>
+        <BurrowCapabilities />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByText("Capability details are unavailable.")).toBeTruthy();
+  });
+
+  it("keeps cached capabilities visible after a failed refresh", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
+    client.setQueryData(ov.meta().queryKey, meta);
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ error: { code: "offline", message: "refresh failed" } }), {
+          status: 503,
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <QueryClientProvider client={client}>
+        <BurrowCapabilities />
+      </QueryClientProvider>,
+    );
+
+    await client.refetchQueries({ queryKey: ov.meta().queryKey });
+    expect(await screen.findByText("Capability refresh failed; showing the last loaded data")).toBeTruthy();
+    expect(screen.getByText("Read-only")).toBeTruthy();
+    expect(screen.getByText("refresh failed")).toBeTruthy();
+  });
+
+  it("stringifies a non-Error refresh failure", () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const queryKey = ov.meta().queryKey;
+    client.setQueryDefaults(queryKey, { enabled: false });
+    client.setQueryData(queryKey, meta);
+    const query = client.getQueryCache().find({ queryKey });
+    query?.setState({
+      ...query.state,
+      error: "raw refresh failure" as unknown as Error,
+      status: "error",
+      fetchStatus: "idle",
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <BurrowCapabilities />
+      </QueryClientProvider>,
+    );
+    expect(screen.getByText("Capability refresh failed; showing the last loaded data")).toBeTruthy();
+    expect(screen.getByText("raw refresh failure")).toBeTruthy();
   });
 });

@@ -152,7 +152,7 @@ export function StacksView() {
   }, [focusFrame, rows, move]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (handleTreeNavigationEvent(e, scrollRef.current?.clientHeight ?? 400, rowH, activeIndex, rows.length, move)) return;
+    if (handleTreeNavigationEvent(e, scrollRef.current!.clientHeight, rowH, activeIndex, rows.length, move)) return;
     if (e.target !== e.currentTarget) return;
     const row = rows[activeIndex];
     switch (e.key) {
@@ -317,8 +317,9 @@ export function StacksView() {
                       : virt
                           .getVirtualItems()
                           .map((v) => ({ row: rows[v.index] as Row | undefined, index: v.index, start: v.start as number | null }))
-                    ).map(({ row, index, start }) =>
-                      row ? (
+                    ).map(({ index, start }) => {
+                      const row = rows[index]!;
+                      return (
                         <StackRow
                           key={row.kind === "thread" ? `t-${row.thread.id}` : `f-${row.thread.id}-${row.frame}`}
                           row={row}
@@ -333,8 +334,8 @@ export function StacksView() {
                           onToggle={() => toggle(row.thread.id)}
                           onSelect={() => select(row.thread)}
                         />
-                      ) : null,
-                    )}
+                      );
+                    })}
                   </div>
                   {rows.length === 0 && <p className="p-6 text-center text-body text-ink-3">No thread or frame matches this filter.</p>}
                 </div>
@@ -352,9 +353,9 @@ export function StacksView() {
             <StackDetails
               thread={selected}
               onSelectFrame={(index) => {
-                if (!selected) return;
-                setExpanded((prev) => new Set([...prev, selected.id]));
-                setFocusFrame({ threadId: selected.id, frame: index });
+                const threadId = selected!.id;
+                setExpanded((prev) => new Set([...prev, threadId]));
+                setFocusFrame({ threadId, frame: index });
               }}
             />
           </div>
@@ -458,8 +459,7 @@ function ThreadRowBody({ row, query, open, onToggle }: { row: Row; query: string
 }
 
 function FrameRowBody({ row, query }: { row: Row; query: string }) {
-  const frame = row.frame != null ? row.thread.frames[row.frame] : undefined;
-  if (!frame) return null;
+  const frame = row.thread.frames[row.frame!]!;
   return (
     <>
       <span className="w-4 shrink-0" />

@@ -56,6 +56,7 @@ describe("parseSparkTime", () => {
     expect(parseSparkTime(undefined)).toBeNull();
     expect(parseSparkTime("")).toBeNull();
     expect(parseSparkTime("not-a-date")).toBeNull();
+    expect(parseSparkTime("9".repeat(400))).toBeNull();
   });
 });
 
@@ -95,6 +96,7 @@ describe("durations", () => {
     expect(stageDurationMs(stage({ submissionTime: "1000", completionTime: "3000" }))).toBe(2000);
     expect(stageDurationMs(stage({ submissionTime: null, firstTaskLaunchedTime: "2000", completionTime: "5000" }))).toBe(3000);
     expect(stageDurationMs(stage({ submissionTime: null, completionTime: "5000" }))).toBeNull();
+    expect(stageDurationMs(stage({ submissionTime: "1000", completionTime: null }), 4000)).toBe(3000);
   });
 
   it("sqlDurationMs: the REST duration field wins when non-negative", () => {
@@ -105,6 +107,7 @@ describe("durations", () => {
     expect(sqlDurationMs(sql({ duration: null, submissionTime: "1000", completionTime: "4000" }))).toBe(3000);
     expect(sqlDurationMs(sql({ duration: -1, submissionTime: "1000", completionTime: "4000" }))).toBe(3000);
     expect(sqlDurationMs(sql({ duration: null, submissionTime: null, completionTime: "4000" }))).toBeNull();
+    expect(sqlDurationMs(sql({ duration: null, submissionTime: "1000", completionTime: null }), 5000)).toBe(4000);
   });
 
   it("batchDurationMs: returns processingTime, null without timing information", () => {
@@ -132,6 +135,7 @@ describe("stageTaskShares", () => {
 
   it("treats missing counters as zero", () => {
     expect(stageTaskShares({ numTasks: 8, numCompleteTasks: 2 }).pending).toBeCloseTo(75);
+    expect(stageTaskShares({})).toEqual({ complete: 0, active: 0, failed: 0, killed: 0, pending: 0 });
   });
 });
 
@@ -160,6 +164,7 @@ describe("stageProgress", () => {
 
   it("is 0 while the task total is unknown", () => {
     expect(stageProgress(stage({ status: "PENDING", numTasks: 0, numCompleteTasks: 3 }))).toBe(0);
+    expect(stageProgress(stage({ status: "PENDING" }))).toBe(0);
   });
 });
 
@@ -247,6 +252,10 @@ describe("task metric accessors", () => {
       bytes: 5,
       records: null,
     });
+    expect(taskShuffleRead(task({ taskMetrics: { shuffleReadMetrics: { localBytesRead: 5, remoteBytesRead: null } } }))).toEqual({
+      bytes: 5,
+      records: null,
+    });
     expect(taskShuffleRead(task({ taskMetrics: { shuffleReadMetrics: {} } }))).toEqual({ bytes: null, records: null });
   });
 
@@ -254,6 +263,9 @@ describe("task metric accessors", () => {
     const t = task({ taskMetrics: { shuffleReadMetrics: { localBytesRead: 10, remoteBytesRead: 20 } } });
     expect(totalShuffleReadBytes(t)).toBe(30);
     expect(totalShuffleReadBytes(task({ taskMetrics: null }))).toBeNull();
+    expect(totalShuffleReadBytes(task({ taskMetrics: { shuffleReadMetrics: {} } }))).toBeNull();
+    expect(totalShuffleReadBytes(task({ taskMetrics: { shuffleReadMetrics: { localBytesRead: 5 } } }))).toBe(5);
+    expect(totalShuffleReadBytes(task({ taskMetrics: { shuffleReadMetrics: { remoteBytesRead: 7 } } }))).toBe(7);
   });
 
   it("taskShuffleWrite and taskOutput read their metric blocks", () => {

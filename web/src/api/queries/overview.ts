@@ -72,7 +72,7 @@ export const ov = {
  * endpoint, a route the backend allowlist does not carry (404), or a degraded upstream (502/503). The Overview renders
  * an explicit unavailable state for these instead of an error, and keeps the rest of the page live.
  */
-export function isSourceUnavailable(err: unknown): boolean {
+export function isSourceUnavailable(err: unknown): err is ApiError {
   return err instanceof ApiError && (err.status === 404 || err.status === 501 || err.status === 502 || err.status === 503);
 }
 

@@ -62,7 +62,7 @@ export function parseSorting(raw: string | undefined): SortingState {
     .filter(Boolean)
     .map((part) => {
       const [id, dir] = part.split(":");
-      return { id: id ?? "", desc: dir === "desc" };
+      return { id: id!, desc: dir === "desc" };
     })
     .filter((s) => s.id.length > 0);
 }

@@ -44,12 +44,13 @@ export function squarify(items: TreemapItem[], x: number, y: number, w: number, 
   const sorted = [...items]
     .filter((i) => i.value > 0)
     .sort((a, b) => b.value - a.value)
-    .map((i) => ({ ...i, area: i.value * area }));
+    .map((i) => ({ ...i, area: i.value * area }))
+    // Extremely small positive values can underflow to zero after scaling; they cannot form a valid treemap tile.
+    .filter((i) => i.area > 0);
 
   const out: TreemapTile[] = [];
   const worst = (row: { area: number }[], side: number): number => {
     const s = row.reduce((a, b) => a + b.area, 0);
-    if (!(s > 0)) return Number.POSITIVE_INFINITY;
     let max = 0;
     let min = Number.POSITIVE_INFINITY;
     for (const r of row) {

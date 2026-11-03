@@ -75,6 +75,10 @@ describe("diffProgress", () => {
     expect(failureAppears.updates[0]!.flash).toBe("fail");
     const stageFails = diffProgress(["a"], new Map([["a", v(30, "ACTIVE")]]), new Map([["a", v(30, "FAILED", 1)]]));
     expect(stageFails.updates[0]!.flash).toBe("fail");
+    const statusFails = diffProgress(["a"], new Map([["a", v(30, "ACTIVE")]]), new Map([["a", v(30, "FAILED")]]));
+    expect(statusFails.updates[0]!.flash).toBe("fail");
+    const failurePersists = diffProgress(["a"], new Map([["a", v(30, "FAILED", 1)]]), new Map([["a", v(30, "FAILED", 1)]]));
+    expect(failurePersists.unchanged).toEqual(["a"]);
   });
 
   it("is deterministic in update order (graph order wins)", () => {

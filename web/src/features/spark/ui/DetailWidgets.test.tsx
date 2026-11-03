@@ -4,9 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { SparkTask, SparkTaskSummary } from "../data/schemas";
 import { Entity } from "~/ui/datum";
 
-const { cleanup, fireEvent, render, screen } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen } = await import("@testing-library/react");
 const { PlanTree } = await import("./PlanTree");
 const { DistributionTable, distributionsOf } = await import("./TaskDistributions");
+type DistMetric = import("./TaskDistributions").DistMetric;
 const { TaskTable, taskColumns } = await import("./TaskTable");
 const { parityStore } = await import("~/state/parity");
 const copyModule = await import("~/lib/copy");
@@ -18,6 +19,7 @@ const wrap = (children: React.ReactNode) => <Entity id="stage-0">{children}</Ent
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.restoreAllMocks();
   parityStore.setState(() => ({ enabled: false }));
 });
@@ -53,6 +55,9 @@ describe("Spark detail widgets", () => {
     vi.spyOn(copyModule, "copyText").mockRejectedValueOnce(new Error("copy failed"));
     fireEvent.click(screen.getByRole("button", { name: "Copied" }));
     expect(await screen.findByRole("button", { name: "Copy" })).toBeTruthy();
+    vi.spyOn(copyModule, "copyText").mockResolvedValueOnce(false);
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    expect(await screen.findByRole("button", { name: "Copy" })).toBeTruthy();
 
     view.rerender(wrap(<PlanTree plan={null} q="" onQ={onQ} />));
     expect(screen.getByText(/carries no/)).toBeTruthy();
@@ -60,11 +65,50 @@ describe("Spark detail widgets", () => {
     else Reflect.deleteProperty(navigator, "clipboard");
   });
 
+  it("covers empty searches, adjacent plan matches, and parity-visible children", () => {
+    const onQ = vi.fn();
+    const view = render(wrap(<PlanTree plan={"abc\nnothing\nabcabc"} q="" onQ={onQ} />));
+    expect(view.container.textContent).toContain("3 lines");
+
+    view.rerender(wrap(<PlanTree plan={"abc\nnothing\nabcabc"} q="abc" onQ={onQ} />));
+    expect(view.container.querySelectorAll("mark")).toHaveLength(3);
+
+    view.rerender(wrap(<PlanTree plan={"abc\n"} q="abc" onQ={onQ} />));
+    expect(view.container.querySelectorAll("mark")).toHaveLength(1);
+
+    view.rerender(wrap(<PlanTree plan={"Root\n+- Child"} q="absent" onQ={onQ} />));
+    fireEvent.click(screen.getByRole("switch", { name: "Show only matching lines and their parents" }));
+
+    view.rerender(wrap(<PlanTree plan={"Root\n+- Child"} q="" onQ={onQ} />));
+    parityStore.setState(() => ({ enabled: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Collapse all" }));
+    expect(view.container.textContent).toContain("Child");
+  });
+
+  it("clears the copied indicator after its timeout", async () => {
+    vi.useFakeTimers();
+    vi.spyOn(copyModule, "copyText").mockResolvedValue(true);
+    render(wrap(<PlanTree plan="Root" q="" onQ={vi.fn()} />));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+      await Promise.resolve();
+    });
+    expect(screen.getByRole("button", { name: "Copied" })).toBeTruthy();
+
+    await act(async () => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(screen.getByRole("button", { name: "Copy" })).toBeTruthy();
+  });
+
   it("renders quantile summaries and the task table's standard and additional metrics", () => {
     const createUrl = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:task-export");
     const clickAnchor = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
     const metrics = distributionsOf(summary);
     expect(metrics.length).toBeGreaterThan(10);
+    expect(distributionsOf(undefined)).toEqual([]);
+    expect(distributionsOf({ duration: [10] } as never)).toEqual([]);
     const sorting = [{ id: "duration", desc: true }];
     const onSortingChange = vi.fn();
     const onColumnVisibilityChange = vi.fn();
@@ -151,5 +195,119 @@ describe("Spark detail widgets", () => {
     const table = screen.getByRole("table", { name: "Sparse task metrics" });
     expect(table).toBeTruthy();
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+  });
+
+  it("renders task error summaries and sparse distribution-series states", () => {
+    parityStore.setState(() => ({ enabled: true }));
+    const failedTask = { ...tasks[0]!, errorMessage: "Executor failed\nCaused by: disk error" };
+    render(
+      wrap(
+        <TaskTable
+          tasks={[failedTask]}
+          label="Task error summary"
+          tz="utc"
+          showMore
+          sorting={[]}
+          onSortingChange={() => undefined}
+          columnVisibility={{ error: true }}
+          onColumnVisibilityChange={() => undefined}
+          defaultVisibility={{ error: true }}
+          exportName="task-errors"
+        />,
+      ),
+    );
+    expect(screen.getByText("Executor failed")).toBeTruthy();
+    expect(screen.queryByText("Caused by: disk error")).toBeNull();
+    cleanup();
+
+    const errorCell = taskColumns({ tz: "utc", showMore: false }).find((column) => column.id === "error") as unknown as {
+      cell: (context: { row: { original: SparkTask } }) => React.ReactNode;
+    };
+    render(wrap(errorCell.cell({ row: { original: failedTask } })));
+    expect(screen.getByText("Executor failed")).toBeTruthy();
+    cleanup();
+
+    const missingSeries: DistMetric = { key: "missing", label: "Missing series", unit: "ms", field: "missing", series: null };
+    const missingValue: DistMetric = {
+      key: "missing-value",
+      label: "Missing value",
+      unit: "bytes",
+      field: "missing-value",
+      series: { quantiles: [0.5], values: [] },
+    };
+    const zeroValue: DistMetric = {
+      key: "zero-value",
+      label: "Zero value",
+      unit: "count",
+      field: "zero-value",
+      series: { quantiles: [], values: [0] },
+    };
+    const empty = render(<DistributionTable metrics={[]} title="Empty distributions" />);
+    expect(empty.container.firstChild).toBeNull();
+    empty.unmount();
+
+    render(
+      wrap(
+        <>
+          <DistributionTable metrics={[missingSeries]} title="Missing series distributions" />
+          <DistributionTable metrics={[missingValue]} title="Missing value distributions" />
+          <DistributionTable metrics={[zeroValue]} />
+        </>,
+      ),
+    );
+    expect(screen.getByRole("region", { name: "Missing series distributions" })).toBeTruthy();
+    expect(screen.getAllByText("—")).toHaveLength(2);
+  });
+
+  it("formats numeric and string launch times and every speculative state", () => {
+    const columns = taskColumns({ tz: "utc", showMore: true });
+    const launch = columns.find((column) => column.id === "launchTime") as unknown as {
+      accessorFn: (task: SparkTask, index: number) => number;
+    };
+    expect(launch.accessorFn({ ...tasks[0]!, launchTime: 123 }, 0)).toBe(123);
+    expect(launch.accessorFn({ ...tasks[0]!, launchTime: "2026-11-03T00:00:00Z" }, 0)).toBe(Date.parse("2026-11-03T00:00:00Z"));
+
+    const speculative = columns.find((column) => column.id === "speculative") as unknown as {
+      cell: (context: { row: { original: SparkTask } }) => React.ReactNode;
+    };
+    const renderCell = (value: boolean | undefined) => speculative.cell({ row: { original: { ...tasks[0]!, speculative: value } } });
+    render(
+      wrap(
+        <>
+          {renderCell(true)}
+          {renderCell(false)}
+          {renderCell(undefined)}
+        </>,
+      ),
+    );
+    expect(screen.getByText("yes")).toBeTruthy();
+    expect(screen.getByText("no")).toBeTruthy();
+    expect(screen.getByText("—")).toBeTruthy();
+  });
+
+  it("forwards optional loading, error, empty, toolbar, and row-version settings", () => {
+    render(
+      wrap(
+        <TaskTable
+          tasks={[]}
+          label="Empty configurable tasks"
+          tz="utc"
+          showMore={false}
+          sorting={[]}
+          onSortingChange={() => undefined}
+          columnVisibility={{}}
+          onColumnVisibilityChange={() => undefined}
+          defaultVisibility={{}}
+          rowVersion={() => "v1"}
+          totalCount={0}
+          loading={false}
+          error={<span>Task query error</span>}
+          empty={<span>Empty task rows</span>}
+          toolbar={<span>Task controls</span>}
+          exportName="optional-task-settings"
+        />,
+      ),
+    );
+    expect(screen.getByRole("table", { name: "Empty configurable tasks" })).toBeTruthy();
   });
 });
