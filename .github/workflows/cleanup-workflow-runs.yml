@@ -1,0 +1,41 @@
+name: Clean old workflow runs
+
+on:
+  schedule:
+    - cron: "0 6 */3 * *"
+  workflow_dispatch:
+    inputs:
+      keep_runs:
+        description: Recent runs to keep for each workflow; active runs are always retained
+        required: true
+        type: number
+        default: 1
+      dry_run:
+        description: Preview deletions without removing workflow runs
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: clean-old-workflow-runs
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Clean old workflow runs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          KEEP_RUNS: ${{ inputs.keep_runs || 1 }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: python3 scripts/cleanup_workflow_runs.py
