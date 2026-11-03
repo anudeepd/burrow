@@ -160,9 +160,10 @@ The authoritative field set is finalised by the Spark-discovery slice in `docs/s
 ```
 GET /api/logs/containers/{containerId}?node=host:port&user=U&app=application_…
   → { "source": "nm|jhs|ats", "node": "host:port|null", "files": [ { "name": "stdout", "size": 123, "lastModified": 1767… } ] }
-GET /api/logs/containers/{containerId}/files/{name}?node&user&app&offset=&length=&tail=N
+GET /api/logs/containers/{containerId}/files/{name}?node&user&app&offset=&length=&tail=N&follow=1
   → text/plain; charset=utf-8   headers: x-burrow-log-size (total), x-burrow-log-start, x-burrow-log-end, x-burrow-log-source
      offset/length = byte range; tail=N = last N bytes; both absent = first 1 MiB; hard cap per request (default 8 MiB)
+     follow=1 additionally returns x-burrow-log-ended: true when the container is confirmed finished.
 GET /api/logs/containers/{containerId}/files/{name}/stream?node&user&app&offset=
   → text/event-stream:  event: chunk  {"start":N,"end":M,"text":"…"} · event: eof {} · event: error {…}
 ```

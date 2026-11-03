@@ -108,7 +108,7 @@ describe("container log wire helpers", () => {
       length: 10,
       hints: { node: "nm:8042", user: "alice" },
     });
-    expect(result).toMatchObject({ text: "hello", size: 90, start: 8, end: 13, source: "jhs" });
+    expect(result).toMatchObject({ text: "hello", size: 90, start: 8, end: 13, source: "jhs", ended: false });
     const url = String(fetchMock.mock.calls[0]?.[0]);
     expect(url).toContain("offset=4");
     expect(url).toContain("length=10");
@@ -116,7 +116,7 @@ describe("container log wire helpers", () => {
 
     fetchMock.mockImplementationOnce(async () => new Response("abc"));
     const fallback = await fetchLogWindow("container", "stderr", { offset: 7 });
-    expect(fallback).toMatchObject({ text: "abc", start: 7, end: 10, size: 10, source: null });
+    expect(fallback).toMatchObject({ text: "abc", start: 7, end: 10, size: 10, source: null, ended: false });
 
     fetchMock.mockImplementationOnce(async () => new Response("xy"));
     const defaultWindow = await fetchLogWindow("container", "stdout", {});
@@ -127,6 +127,11 @@ describe("container log wire helpers", () => {
     expect(String(fetchMock.mock.calls.at(-1)?.[0])).toContain("length=12");
     expect(String(fetchMock.mock.calls.at(-1)?.[0])).not.toContain("offset=");
     expect(lengthOnly.start).toBe(0);
+
+    fetchMock.mockImplementationOnce(async () => new Response("last bytes", { headers: { "x-burrow-log-ended": "true" } }));
+    const followed = await fetchLogWindow("container", "stdout", { offset: 10, follow: true });
+    expect(String(fetchMock.mock.calls.at(-1)?.[0])).toContain("follow=1");
+    expect(followed.ended).toBe(true);
   });
 
   it("gives tail reads priority over ranges and reports HTTP failures with the response body", async () => {

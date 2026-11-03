@@ -103,6 +103,8 @@ export interface LogWindowRequest {
   offset?: number;
   length?: number;
   tail?: number;
+  /** Ask whether the container has completed; used only by the live-poll fallback. */
+  follow?: boolean;
   hints?: LogHints;
 }
 
@@ -116,6 +118,8 @@ export interface LogWindowResult {
   end: number;
   /** which upstream answered (x-burrow-log-source) */
   source: string | null;
+  /** whether the backend confirmed that the container has finished */
+  ended: boolean;
   responseMeta: BurrowHeaders;
 }
 
@@ -136,6 +140,7 @@ export async function fetchLogWindow(
     if (req.offset != null) query.offset = req.offset;
     if (req.length != null) query.length = req.length;
   }
+  if (req.follow) query.follow = 1;
   const url = `${API_BASE}/${path}${canonicalQuery(query)}`;
   const signals = [AbortSignal.timeout(30_000)];
   if (signal) signals.push(signal);
@@ -195,6 +200,7 @@ export async function fetchLogWindow(
     start,
     end,
     source: res.headers.get("x-burrow-log-source"),
+    ended: res.headers.get("x-burrow-log-ended") === "true",
     responseMeta,
   };
 }

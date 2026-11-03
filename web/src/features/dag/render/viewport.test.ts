@@ -129,15 +129,19 @@ describe("fit and focus", () => {
     expect(initialViewport({ width: 0, height: 10 }, SIZE)).toBe(IDENTITY_VIEWPORT);
   });
 
-  it("opens a wide chain at a legible zoom on the focus node, not at fit", () => {
-    const content = { width: 6716, height: 178 };
+  it("opens a wide graph at a legible zoom centred on the focus node, not at fit", () => {
+    const content = { width: 6716, height: 1_178 };
     expect(isTooWideToFit(content, SIZE)).toBe(true);
-    const v = initialViewport(content, SIZE, { x: 0, y: 0, width: 208, height: 84 });
-    // height fit would be 3.1x; the policy caps the opening zoom at 1:1 so nodes are exactly as designed
-    expect(v.scale).toBe(INITIAL_MAX_SCALE);
+    const focus = { x: 0, y: 880, width: 208, height: 84 };
+    const v = initialViewport(content, SIZE, focus);
+    // Height fit is below the legible scale, so the policy keeps the focus visible while using its minimum zoom.
+    expect(v.scale).toBe(LEGIBLE_MIN_SCALE);
     const centre = screenToWorld(v, SIZE.width / 2, SIZE.height / 2);
     expect(centre.x).toBeCloseTo(104, 3); // centred on the focus node
-    expect(centre.y).toBeCloseTo(89, 3); // vertically centred on the graph
+    expect(centre.y).toBeCloseTo(922, 3); // centred on the focus node, not the whole tall graph
+    const visible = visibleWorldRect(v, SIZE);
+    expect(visible.y).toBeLessThanOrEqual(focus.y);
+    expect(visible.y + visible.height).toBeGreaterThanOrEqual(focus.y + focus.height);
   });
 
   it("floors the opening zoom at a legible scale when even height-fit is below it", () => {

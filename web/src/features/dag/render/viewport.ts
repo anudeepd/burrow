@@ -115,7 +115,7 @@ export const INITIAL_MAX_SCALE = 1;
  *     [LEGIBLE_MIN_SCALE, INITIAL_MAX_SCALE];
  *  3. on a phone, cap the initial zoom at 75% for wide graphs so more of the flow is visible without dropping below
  *     the legible node scale;
- *  4. horizontal position starts on `focus` — the running stage when there is one, else the first node — because the
+ *  4. position starts on `focus` — the running stage when there is one, else the first node — on both axes because the
  *     data flow starts there and "center on running stage" takes over from the first tick.
  * The minimap carries the overview, and the "wider than the pane" hint says so.
  */
@@ -128,10 +128,10 @@ export function initialViewport(content: Size, size: Size, focus?: WorldRect | n
   const scale = wholeGraphFitsUsefully
     ? Math.min(INITIAL_MAX_SCALE, fitted.scale)
     : clampScale(Math.min(openingMaxScale, Math.max(LEGIBLE_MIN_SCALE, heightFit)));
-  const centreY = content.height / 2;
   // When the whole graph fits, centring on the focus node defeats the fit: later stages can fall outside the pane even
   // though the selected scale was calculated from the graph bounds. Reserve focus framing for genuinely wide DAGs.
   const centreX = wholeGraphFitsUsefully ? content.width / 2 : focus ? focus.x + focus.width / 2 : content.width / 2;
+  const centreY = wholeGraphFitsUsefully ? content.height / 2 : focus ? focus.y + focus.height / 2 : content.height / 2;
   return { scale, x: centreX - size.width / 2 / scale, y: centreY - size.height / 2 / scale };
 }
 

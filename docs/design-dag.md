@@ -100,9 +100,10 @@ very wide graphs. `initialViewport(content, size, focus)` applies, in order:
    (<480 px), a wide graph caps that opening scale at 0.75 so more of the flow is visible while stage cards stay readable.
    A 6 716 × 178 px chain (69 nodes) opens at **1:1** on desktop and **0.75** on a phone, instead of 0.16. A
    tall-and-wide graph still floors at 0.55.
-3. **Start horizontally on `focus` for wide graphs** — the first node on open, then, as soon as the stream reports
+3. **Start centred on `focus` for wide graphs** — the first node on both axes, then, as soon as the stream reports
    something running, one automatic `centerOn` on the **running stage** (once per graph; the user's own pan/zoom wins
-   from then on). A graph that fits at the useful overview scale stays centred on the full graph.
+   from then on). Centering only the horizontal axis could leave the first stage off-screen in a tall DAG. A graph that
+   fits at the useful overview scale stays centred on the full graph.
 
 The minimap carries the overview, **center on running stage** keeps following the work, and the hint
 *"This graph is wider than the pane…"* (shown whenever `isTooWideToFit`) says both of those things. Job DAGs under

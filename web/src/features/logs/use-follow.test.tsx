@@ -160,6 +160,7 @@ describe("useFollow", () => {
         end: 15,
         size: 15,
         source: "node",
+        ended: false,
         responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
       });
       await Promise.resolve();
@@ -207,6 +208,7 @@ describe("useFollow", () => {
       end: 12,
       size: 12,
       source: "node",
+      ended: false,
       responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
     });
     const opts = options({ intervalMs: 30_000 });
@@ -229,6 +231,7 @@ describe("useFollow", () => {
     expect(fetchWindow).toHaveBeenCalledWith(opts.containerId, opts.name, {
       offset: 0,
       length: 128 * 1024,
+      follow: true,
       hints: opts.hints,
     });
     expect(opts.buffer.toLines()).toEqual(["INFO polled"]);
@@ -237,6 +240,49 @@ describe("useFollow", () => {
     expect(third?.closed).toBe(true);
     unmount();
     expect(FakeEventSource.instances[3]?.closed).toBe(true);
+  });
+
+  it("appends the final poll bytes and stops polling when the backend confirms completion", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    fetchWindow.mockResolvedValue({
+      text: "INFO final line\n",
+      start: 0,
+      end: 16,
+      size: 16,
+      source: "node",
+      ended: true,
+      responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+    });
+    const opts = options({ intervalMs: 100 });
+    const { result, unmount } = renderHook(() => useFollow(opts));
+
+    act(() => FakeEventSource.instances[0]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    act(() => FakeEventSource.instances[1]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    const third = FakeEventSource.instances[2];
+    act(() => third?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+
+    expect(fetchWindow).toHaveBeenCalledOnce();
+    expect(fetchWindow).toHaveBeenCalledWith(opts.containerId, opts.name, {
+      offset: 0,
+      length: 128 * 1024,
+      follow: true,
+      hints: opts.hints,
+    });
+    expect(opts.buffer.toLines()).toEqual(["INFO final line"]);
+    expect(opts.buffer.ended).toBe(true);
+    expect(result.current.status.mode).toBe("ended");
+    expect(opts.onEnded).toHaveBeenCalledOnce();
+
+    act(() => third?.emit("chunk", JSON.stringify({ start: 16, text: "late\n" })));
+    await act(async () => vi.advanceTimersByTimeAsync(60_000));
+    expect(fetchWindow).toHaveBeenCalledOnce();
+    expect(opts.buffer.toLines()).toEqual(["INFO final line"]);
+    expect(FakeEventSource.instances).toHaveLength(3);
+    unmount();
   });
 
   it("reports a failed poll and returns to the original polling reason after recovery", async () => {
@@ -248,6 +294,7 @@ describe("useFollow", () => {
       end: 16,
       size: 16,
       source: "node",
+      ended: false,
       responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
     });
     const opts = options();
@@ -276,6 +323,7 @@ describe("useFollow", () => {
       end: 0,
       size: 0,
       source: "node",
+      ended: false,
       responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
     });
     const opts = options({ intervalMs: 100 });

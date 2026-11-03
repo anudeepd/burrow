@@ -104,6 +104,8 @@ async fn read(core: &Core, req: &ApiRequest<'_>, cid: &str, name: &str) -> Resul
     let (start, end) = logs::window(entry.size, offset, length, tail)?;
 
     let window = logs::source::read_window(core, loc, name, start, end).await?;
+    let ended = query_param(req.query, "follow").as_deref() == Some("1")
+        && logs::source::container_running(core, loc).await == Some(false);
     let mut extra = HeaderMap::new();
     let mut put = |k: &'static str, v: String| {
         if let Ok(value) = HeaderValue::from_str(&v) {
@@ -114,6 +116,9 @@ async fn read(core: &Core, req: &ApiRequest<'_>, cid: &str, name: &str) -> Resul
     put("x-burrow-log-start", window.start.to_string());
     put("x-burrow-log-end", window.end.to_string());
     put("x-burrow-log-source", loc.source().to_string());
+    if ended {
+        put("x-burrow-log-ended", "true".to_string());
+    }
 
     Ok(Reply {
         status: StatusCode::OK,

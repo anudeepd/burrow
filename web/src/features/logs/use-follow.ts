@@ -73,6 +73,7 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
     let pollTimer: ReturnType<typeof setTimeout> | undefined;
     let streamRetryTimer: ReturnType<typeof setTimeout> | undefined;
+    let ended = false;
     let mode: FollowMode = "off";
     let failures = 0;
     let pollFailures = 0;
@@ -90,25 +91,42 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
       es = null;
     };
 
+    const finish = () => {
+      if (cancelled || ended) return;
+      ended = true;
+      buffer.markEnded();
+      closeStream();
+      clearTimeout(reconnectTimer);
+      clearTimeout(pollTimer);
+      clearTimeout(streamRetryTimer);
+      publish("ended");
+      onEndedRef.current();
+    };
+
     const startPolling = (detail: string) => {
       pollingReason = detail;
       publish("polling", detail);
       const tick = () => {
-        if (cancelled) return;
+        if (cancelled || ended) return;
         const delay = Math.min(POLL_BACKOFF_CAP_MS, Math.max(250, intervalMsRef.current) * 2 ** Math.min(pollFailures, 5));
         pollTimer = setTimeout(() => {
           void (async () => {
-            if (cancelled) return;
+            if (cancelled || ended) return;
             try {
               const w = await fetchLogWindow(containerId, name, {
                 offset: buffer.resumeOffset,
                 length: POLL_BYTES,
+                follow: true,
                 hints: hintsRef.current,
               });
-              if (cancelled) return;
+              if (cancelled || ended) return;
               if (w.text) {
                 buffer.append(w.text, w.start);
                 onAppendRef.current();
+              }
+              if (w.ended) {
+                finish();
+                return;
               }
               if (pollFailures > 0) publish("polling", pollingReason);
               pollFailures = 0;
@@ -125,6 +143,7 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
     };
 
     const handleStreamFailure = (detail: string) => {
+      if (cancelled || ended) return;
       closeStream();
       failures++;
       if (failures <= 2) {
@@ -133,7 +152,7 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
       } else {
         startPolling(detail);
         streamRetryTimer = setTimeout(() => {
-          if (cancelled) return;
+          if (cancelled || ended) return;
           clearTimeout(pollTimer);
           startStream();
         }, STREAM_RETRY_MS);
@@ -141,7 +160,7 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
     };
 
     const startStream = () => {
-      if (cancelled) return;
+      if (cancelled || ended) return;
       clearTimeout(reconnectTimer);
       clearTimeout(pollTimer);
       publish(failures === 0 ? "connecting" : "reconnecting");
@@ -149,12 +168,12 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
       const source = new EventSource(url);
       es = source;
       source.addEventListener("open", () => {
-        if (cancelled) return;
+        if (cancelled || ended) return;
         failures = 0;
         publish("streaming");
       });
       source.addEventListener("chunk", (ev) => {
-        if (cancelled) return;
+        if (cancelled || ended) return;
         try {
           const d = JSON.parse((ev as MessageEvent<string>).data) as { start: number; text: string };
           buffer.append(d.text, d.start);
@@ -164,14 +183,11 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
         }
       });
       source.addEventListener("eof", () => {
-        if (cancelled) return;
-        buffer.markEnded();
-        closeStream();
-        publish("ended");
-        onEndedRef.current();
+        if (cancelled || ended) return;
+        finish();
       });
       source.addEventListener("error", (ev) => {
-        if (cancelled) return;
+        if (cancelled || ended) return;
         // A server-sent `event: error` carries data; the browser's connection error does not.
         const data = (ev as MessageEvent<string>).data;
         let detail = "stream connection lost";

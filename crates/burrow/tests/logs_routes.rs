@@ -849,6 +849,37 @@ impl Sse {
 }
 
 #[tokio::test]
+async fn follow_window_reports_when_nm_container_is_finished() {
+    let mock = Mock::start().await;
+    mock.seed_rm().await;
+    seed_nodes(&mock).await;
+    seed_app(&mock, "RUNNING").await;
+    seed_nm(&mock, "COMPLETE").await;
+    mock.set(
+        &format!("{}stdout/?start=0&end=5", nm_base()),
+        Canned::new(200, "text/html;charset=utf-8", "<pre>hello</pre>"),
+    )
+    .await;
+    let h = Harness::start(logs_config(&mock)).await;
+    let base = format!(
+        "/api/logs/containers/{CID}/files/stdout?node={}&user={USER}&offset=0&length=5",
+        mock.authority()
+    );
+
+    let followed = h.get(&format!("{base}&follow=1")).await;
+    assert_eq!(followed.status, 200, "{}", followed.text());
+    assert_eq!(followed.text(), "hello");
+    assert_eq!(
+        followed.header("x-burrow-log-ended").as_deref(),
+        Some("true")
+    );
+
+    let ordinary = h.get(&base).await;
+    assert_eq!(ordinary.status, 200, "{}", ordinary.text());
+    assert_eq!(ordinary.header("x-burrow-log-ended"), None);
+}
+
+#[tokio::test]
 async fn follow_stream_reports_growth_then_eof() {
     let mock = Mock::start().await;
     mock.seed_rm().await;
