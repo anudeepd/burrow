@@ -196,6 +196,22 @@ describe("keyboard navigation", () => {
     await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(zoomed));
   });
 
+  it("preserves the user's zoom when refreshed input keeps the same graph shape", async () => {
+    const dag = wordcountStage();
+    const layout = vi.spyOn(layoutClient(), "layout");
+    const view = await mount(dag);
+    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe("100%"));
+    const zoomed = screen.getByTestId("dag-zoom").textContent;
+    const layoutCalls = layout.mock.calls.length;
+
+    // Live Spark queries return a new payload object even when only non-layout fields changed.
+    view.rerender(<DagView dag={JSON.parse(JSON.stringify(dag)) as Dag} height={400} />);
+
+    expect(layout).toHaveBeenCalledTimes(layoutCalls);
+    expect(screen.getByTestId("dag-zoom").textContent).toBe(zoomed);
+  });
+
   it("centres keyboard focus after zooming past the visible graph area", async () => {
     await mount(wordcountStage());
     const tree = screen.getByRole("tree");

@@ -205,6 +205,11 @@ export function DagView({
 }: DagViewProps) {
   const motion = useMotion();
   const graph = useMemo(() => toRenderGraph(dag, expandStages === undefined ? {} : { expandStages }), [dag, expandStages]);
+  // Live query refreshes can replace the input object while leaving its layout shape unchanged (for example, a SQL
+  // execution updates duration and operator metrics). Reuse the layout input by its structural hash so those refreshes
+  // don't relayout the graph or clear the user's viewport.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const layoutGraph = useMemo(() => graph, [graph.hash]);
   const { metricOrder, nodeIdsByRepresentative, representativeByStage } = useMemo(() => {
     const nodeIdsByStage = new Map<number, string[]>();
     for (const node of graph.nodes) {
@@ -269,7 +274,7 @@ export function DagView({
     let cancelled = false;
     setLayoutError(null);
     layoutClient()
-      .layout(graph)
+      .layout(layoutGraph)
       .then((result) => {
         if (cancelled) return;
         setLayout(result);
@@ -283,14 +288,14 @@ export function DagView({
     return () => {
       cancelled = true;
     };
-  }, [graph, layoutRetry]);
+  }, [layoutGraph, layoutRetry]);
 
   // Initial view whenever a *different* graph arrives: fit when legible, else fit the height at a legible scale and
   // start on the first node. The first running stage may take over once, but only before the user moves the viewport.
   const didAutoFocusRef = useRef(false);
   useEffect(() => {
     didAutoFocusRef.current = false;
-  }, [graph]);
+  }, [graph.hash]);
   useEffect(() => {
     if (!layout || size.width <= 0 || size.height <= 0) return;
     const focus = graph.nodes[0] ? layout.nodes.get(graph.nodes[0].id) : undefined;
