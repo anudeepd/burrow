@@ -505,14 +505,15 @@ test.describe("app shell", () => {
     expect(history["data-parity"]).toContain("1");
   });
 
-  test("page switches keep the title immediate and cascade cards before the table", async ({ page }) => {
+  test("page switches keep the title immediate and animate cards and the table shell", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/nodes");
     await expect(page.getByRole("heading", { name: "Nodes", exact: true })).toBeVisible();
     const timings = await page.evaluate(() => {
       const title = document.querySelector(".burrow-page-scroll h1");
       const cards = document.querySelector('[data-page-motion="cards"]');
-      const table = document.querySelector(".burrow-tab-content");
+      const tableRoot = document.querySelector('[data-burrow-table-root="burrow.nodes"]');
+      const table = tableRoot?.closest('[data-page-motion="content"]');
       return {
         titleAnimation: title ? getComputedStyle(title).animationName : null,
         cardDelays: Array.from(cards?.children ?? [])
@@ -520,16 +521,17 @@ test.describe("app shell", () => {
           .map((element) => getComputedStyle(element).animationDelay),
         tableAnimation: table ? getComputedStyle(table).animationName : null,
         tableDelay: table ? getComputedStyle(table).animationDelay : null,
+        tableDuration: table ? getComputedStyle(table).animationDuration : null,
       };
     });
     expect(timings).toEqual({
       titleAnimation: "none",
       cardDelays: ["0s", "0.024s", "0.048s", "0.072s"],
-      tableAnimation: "burrow-page-content-in",
-      tableDelay: "0.072s",
+      tableAnimation: "burrow-page-content-shift",
+      tableDelay: "0s",
+      tableDuration: "0.4s",
     });
   });
-
   test("overview keeps its heading immediate and cascades sections on page entry", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/");
@@ -538,20 +540,23 @@ test.describe("app shell", () => {
     const timing = await page.evaluate(() => {
       const title = document.querySelector(".burrow-page-scroll h1");
       const scroll = document.querySelector<HTMLElement>(".burrow-page-scroll");
-      const cards = document.querySelector('[data-page-motion="cards"]');
-      if (!scroll || !cards) throw new Error("Overview content groups are missing");
-      const sections = Array.from(scroll.querySelectorAll(":scope > div > section"));
+      if (!scroll) throw new Error("Overview scrollport is missing");
+      const groups = Array.from(scroll.querySelectorAll<HTMLElement>(".burrow-overview-group"));
+      const cards = Array.from(scroll.querySelectorAll<HTMLElement>(".burrow-overview-group-grid[data-page-motion='cards']"));
+      const sections = cards.flatMap((card) => Array.from(card.children));
       return {
         titleAnimation: title ? getComputedStyle(title).animationName : null,
+        groupAnimations: groups.map((group) => getComputedStyle(group).animationName),
         sectionAnimations: sections.map((section) => getComputedStyle(section).animationName),
         sectionDelays: sections.map((section) => getComputedStyle(section).animationDelay),
-        cardDelays: Array.from(cards.children).map((card) => getComputedStyle(card).animationDelay),
+        cardDelays: Array.from(cards[0]?.children ?? []).map((card) => getComputedStyle(card).animationDelay),
       };
     });
     expect(timing).toEqual({
       titleAnimation: "none",
-      sectionAnimations: ["burrow-page-content-in", "burrow-page-content-in", "burrow-page-content-in"],
-      sectionDelays: ["0s", "0.024s", "0.048s"],
+      groupAnimations: ["burrow-page-content-shift", "burrow-page-content-shift", "burrow-page-content-shift"],
+      sectionAnimations: Array(7).fill("burrow-page-content-in"),
+      sectionDelays: ["0s", "0.024s", "0s", "0.024s", "0s", "0.024s", "0.048s"],
       cardDelays: ["0s", "0.024s"],
     });
   });

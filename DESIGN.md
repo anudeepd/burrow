@@ -805,10 +805,7 @@ column sizing + resizing, row selection, and `ColMeta` (label, `defaultVisible`,
   enabled only when not in parity mode. Every row has a fixed height within that profile, so measured offsets remain
   stable; non-virtualized rows (parity) use the same height and are static. Expect 10k rows: fixed row height,
   `content-visibility: auto` (`.burrow-row`), memoized rows, no per-row layout effects.
-- **Height cap**: ready tables use natural chrome + header/row height when content is short, capped by the remaining page-scrollport
-  height; a table below the fold can use one full scrollport height so the page can scroll it into view. Tall results scroll inside
-  the table. `stableViewport` reserves a loading shell only; ready rows do not inherit fixed caller heights. `scrollbar-gutter: stable`
-  reserves the horizontal scrollbar lane so the final row remains visible when vertical overflow appears.
+- **Height cap**: ready tables use natural chrome + header/row height when content is short, capped by the remaining page-scrollport height; a table below the fold can use one full scrollport height so the page can scroll it into view. Tall results scroll inside the table. `stableViewport` reserves a loading shell only; ready rows do not inherit fixed caller heights. Embedded views can pass `maxHeight` to impose a stricter local ceiling without making short results fill it. `scrollbar-gutter: stable` reserves the horizontal scrollbar lane so the final row remains visible when vertical overflow appears.
 - **Parity mode**: every column visible (visibility ignored), no virtualization window, all rows rendered, no animations,
   layout otherwise identical.
 - **ARIA**: `role="grid"`, `tabIndex={0}`, `aria-label`, `aria-rowcount={rows+1}`, `aria-colcount`, `aria-busy`,

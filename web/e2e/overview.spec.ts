@@ -480,8 +480,8 @@ test.describe("overview", () => {
     const panels = page.getByTestId("overview").locator("[data-page-motion='cards'] > section");
     await expect(groups).toHaveCount(3);
     await expect(panels).toHaveCount(7);
-    await expect(groups.first()).toHaveCSS("animation-name", "burrow-page-content-in");
-    await expect(groups.first()).toHaveCSS("animation-duration", "0.24s");
+    await expect(groups.first()).toHaveCSS("animation-name", "burrow-page-content-shift");
+    await expect(groups.first()).toHaveCSS("animation-duration", "0.4s");
     await expect(panels.first()).toHaveCSS("animation-name", "burrow-page-content-in");
   });
 

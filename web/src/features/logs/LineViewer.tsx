@@ -78,7 +78,7 @@ export function LineViewer(props: LineViewerProps) {
   const virtualizer = useVirtualizer({
     count,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => (wrap ? 44 : LINE_HEIGHT),
+    estimateSize: () => LINE_HEIGHT,
     overscan: 14,
     // Fixed-height rows are never measured; wrapped rows are.
     measureElement: wrap ? (el) => el.getBoundingClientRect().height : undefined,

@@ -551,7 +551,7 @@ describe("DataTable", () => {
     expect(root.style.maxHeight).toBe("600px");
   });
 
-  it("sizes five rows to their content and caps long results to the remaining viewport", () => {
+  it("sizes short tables naturally while respecting a stricter local cap", () => {
     originalRect = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getBoundingClientRect") ?? null;
     const getRect = originalRect?.value as ((this: HTMLElement) => DOMRect) | undefined;
     const viewportHeight = window.visualViewport?.height || window.innerHeight;
@@ -589,7 +589,7 @@ describe("DataTable", () => {
     Object.defineProperty(root, "offsetHeight", { configurable: true, value: 500 });
     Object.defineProperty(scroller, "offsetHeight", { configurable: true, value: 400 });
     Object.defineProperty(content, "offsetHeight", { configurable: true, value: 202 });
-    const renderRows = (data: Row[]) => (
+    const renderRows = (data: Row[], maxHeight?: number) => (
       <DataTable<Row>
         data={[...data]}
         columns={columns}
@@ -606,9 +606,10 @@ describe("DataTable", () => {
         onRowActivate={view.onRowActivate}
         exportName="nodes"
         stableViewport
+        maxHeight={maxHeight}
       />
     );
-    view.rerender(renderRows(fiveRows));
+    view.rerender(renderRows(fiveRows, 360));
     expect(root.style.maxHeight).toBe("302px");
     expect(root.className).not.toContain("h-[min(34dvh,360px)]");
 
@@ -618,8 +619,8 @@ describe("DataTable", () => {
       count: index,
     }));
     Object.defineProperty(content, "offsetHeight", { configurable: true, value: 32 + manyRows.length * 34 });
-    view.rerender(renderRows(manyRows));
-    expect(root.style.maxHeight).toBe(`${availableHeight}px`);
+    view.rerender(renderRows(manyRows, 360));
+    expect(root.style.maxHeight).toBe(`${Math.min(availableHeight, 360)}px`);
   });
 
   it("updates horizontal overflow cues as the user scrolls across columns", () => {

@@ -81,13 +81,13 @@ test.describe("node labels", () => {
     await page.goto("/node-labels?open=gpu&parity=1");
     await expect(page.getByRole("heading", { name: /Nodes in/ })).toBeVisible();
     const gpuNodeId = "node-r1-01.mock.local:45454";
-    const gpuNode = page.locator(`[data-ye="${gpuNodeId}"]`);
+    const gpuNode = page.locator(`ul li [data-ye="${gpuNodeId}"]`);
     await expect(gpuNode.locator('[data-yf="node.id"]')).toBeVisible();
 
     // Membership rows identify nodes; the page's supported navigation is via its label-filter link and node table.
     await page.getByRole("link", { name: "Filter the node table by this label" }).click();
     await expect(page).toHaveURL(/\/nodes\?label=gpu/);
-    await page.locator(`[data-ye="${gpuNodeId}"] a[href*="/nodes/"]`).click();
+    await page.locator(`[data-burrow-table="burrow.nodes"] [data-ye="${gpuNodeId}"] a[href*="/nodes/"]`).click();
     await expect.poll(() => decodeURIComponent(new URL(page.url()).pathname)).toBe(`/nodes/${gpuNodeId}`);
     await expect(page.locator('[data-yf="node.id"]').first()).toHaveAttribute("data-yv", gpuNodeId);
   });

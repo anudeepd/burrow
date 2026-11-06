@@ -130,6 +130,8 @@ export interface DataTableProps<T extends RowData> {
   toolbarArrangement?: "stacked" | "inline";
   /** Reserve a loading viewport for refresh-fed tables; ready rows fit content up to the available page height. */
   stableViewport?: boolean;
+  /** Optional per-view ceiling; short results remain at their natural content height. */
+  maxHeight?: number;
   exportName: string;
   className?: string;
 }
@@ -205,6 +207,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     toolbar,
     toolbarArrangement = "stacked",
     stableViewport = false,
+    maxHeight,
     exportName,
     className,
   } = props;
@@ -587,7 +590,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const fixedViewport = stableViewport && loading === true && !showBody;
   const capH =
     showBody && tableLayout.chrome > 0 && tableLayout.content > 0 && tableLayout.available > 0
-      ? Math.min(tableLayout.chrome + tableLayout.content, tableLayout.available)
+      ? Math.min(tableLayout.chrome + tableLayout.content, tableLayout.available, maxHeight ?? Number.POSITIVE_INFINITY)
       : undefined;
   const vItems = parity ? null : virt.getVirtualItems();
 

@@ -570,10 +570,11 @@ export class LineBuffer {
       const partialPrefix = this.pendingPartial && from === 0 && cursorBase > 0;
       // A byte-tail window can start on the newline that ends a line whose content was outside the window.
       // That empty prefix is not a real log row. Keep empty lines after it; those are present in the captured bytes.
+      const lineBytes = utf8Len(raw);
       if (!(partialPrefix && line === "")) {
-        this.push(line, cursor, cursor + utf8Len(raw), partialPrefix);
+        this.push(line, cursor, cursor + lineBytes, partialPrefix);
       }
-      cursor += utf8Len(raw) + 1; // the `\n`
+      cursor += lineBytes + 1; // the `\n`
       from = nl + 1;
       searchFrom = nl + 1;
     }

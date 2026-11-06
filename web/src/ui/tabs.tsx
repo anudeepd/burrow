@@ -104,11 +104,13 @@ export function TabContent({
   children,
   className,
   initial = false,
+  motion = "content",
 }: {
   value: string;
   children: ReactNode;
   className?: string;
   initial?: boolean;
+  motion?: "content" | "cards";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const previousValue = useRef<string | null>(initial ? null : value);
@@ -126,7 +128,7 @@ export function TabContent({
   }, [value]);
 
   return (
-    <div ref={ref} data-page-motion="content" className={cn("burrow-tab-content", className)}>
+    <div ref={ref} data-page-motion={motion} className={cn("burrow-tab-content", className)}>
       {children}
     </div>
   );

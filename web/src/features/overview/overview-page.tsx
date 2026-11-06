@@ -50,7 +50,7 @@ function OverviewGroup({
       <h2 id={`${id}-title`} className="burrow-overview-group-title text-h2">
         {title}
       </h2>
-      <div className={`burrow-overview-group-grid burrow-overview-group-grid--${layout}`} data-page-motion="content">
+      <div className={`burrow-overview-group-grid burrow-overview-group-grid--${layout}`} data-page-motion="cards">
         {children}
       </div>
     </div>

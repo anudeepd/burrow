@@ -314,22 +314,22 @@ html[data-parity] .burrow-enter, html[data-parity] .burrow-enter-pop { transform
 }
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]):not([data-page-motion="content"] *),
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 2):not([data-page-motion="content"] *),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:not([data-page-motion="content"] *) {
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > * {
   animation: burrow-page-content-in var(--dur-base) var(--ease-out) both;
 }
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(2):not([data-page-motion]):not([data-page-motion="content"] *),
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(2):not([data-page-motion="content"] *),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(2):not([data-page-motion="content"] *) {
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(2) {
   animation-delay: var(--delay-cascade-1);
 }
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(3):not([data-page-motion]):not([data-page-motion="content"] *),
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(3):not([data-page-motion="content"] *),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(3):not([data-page-motion="content"] *) {
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(3) {
   animation-delay: var(--delay-cascade-2);
 }
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 4):not([data-page-motion]):not([data-page-motion="content"] *),
 html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 4):not([data-page-motion="content"] *),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(n + 4):not([data-page-motion="content"] *) {
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(n + 4) {
   animation-delay: var(--delay-cascade-3);
 }
 
@@ -376,14 +376,14 @@ html[data-parity] .burrow-app-scroll > .burrow-app-route-enter {
 }
 html[data-motion="reduced"]:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]):not([data-page-motion="content"] *),
 html[data-motion="reduced"]:not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 2):not([data-page-motion="content"] *),
-html[data-motion="reduced"]:not([data-parity]) [data-page-motion="cards"] > *:not([data-page-motion="content"] *) {
+html[data-motion="reduced"]:not([data-parity]) [data-page-motion="cards"] > * {
   animation: burrow-page-content-fade var(--dur-fade) var(--ease-out) both !important;
   animation-delay: 0ms !important;
 }
 @media (prefers-reduced-motion: reduce) {
   html:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]):not([data-page-motion="content"] *),
   html:not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 2):not([data-page-motion="content"] *),
-  html:not([data-parity]) [data-page-motion="cards"] > *:not([data-page-motion="content"] *) {
+  html:not([data-parity]) [data-page-motion="cards"] > * {
     animation: burrow-page-content-fade var(--dur-fade) var(--ease-out) both !important;
     animation-delay: 0ms !important;
   }

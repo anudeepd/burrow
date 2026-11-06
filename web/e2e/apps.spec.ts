@@ -300,19 +300,24 @@ test.describe("/apps", () => {
   test("category changes fade filtered data over the content transition duration", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/apps");
-    const content = page.locator(".burrow-tab-content");
-    // Vite can still be finishing the 180 ms page-entry cascade after navigation; isolate the 220 ms filter fade.
+    const content = page.locator('[data-burrow-table-root="apps"]');
+    // Let route-entry motion and the initial result fade finish before measuring the filter fade.
     await page.waitForFunction(() => {
-      const element = document.querySelector(".burrow-tab-content");
+      const table = document.querySelector('[data-burrow-table-root="apps"]');
+      const pageEntry = table?.closest('[data-page-motion="content"]');
       return (
-        element !== null &&
-        !element.getAnimations().some((animation) => {
-          return (animation as CSSAnimation).animationName === "burrow-page-content-in" && animation.playState === "running";
+        pageEntry != null &&
+        !pageEntry.getAnimations().some((animation) => {
+          return (animation as CSSAnimation).animationName === "burrow-page-content-shift" && animation.playState === "running";
         })
       );
     });
+    await page.waitForFunction(() => {
+      const element = document.querySelector('[data-burrow-table-root="apps"] [role="rowgroup"].relative');
+      return element !== null && !element.getAnimations().some((animation) => animation.playState === "running");
+    });
     const fade = page.waitForFunction(() => {
-      const element = document.querySelector(".burrow-tab-content");
+      const element = document.querySelector('[data-burrow-table-root="apps"] [role="rowgroup"].relative');
       const animation = element?.getAnimations().find((candidate) => {
         const frames = (candidate.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
         return candidate.playState === "running" && Number(frames[0]?.opacity) === 0 && Number(frames[frames.length - 1]?.opacity) === 1;
@@ -326,7 +331,6 @@ test.describe("/apps", () => {
     await expect(content.locator("[data-burrow-table='apps']")).toBeVisible();
     expect(new Set(await rowStates(page))).toEqual(new Set(["Running"]));
   });
-
   test("final-status facets filter to succeeded applications", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/apps");

@@ -243,6 +243,7 @@ export function NodeStatesSection({
         }
         exportName="overview-nodes"
         stableViewport
+        maxHeight={360}
         className="min-h-[13rem] w-full flex-none"
       />
     </div>
