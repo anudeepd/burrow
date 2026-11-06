@@ -7,11 +7,9 @@ import { resolve } from "node:path";
 import { vi } from "vitest";
 import { AppShell } from "../features/shell/app-shell";
 import { TooltipProvider } from "../ui/tooltip";
-import { CenteredPageState, ErrorState } from "../ui/feedback";
 import { routeTree } from "../routeTree.gen";
 import { queryClient } from "../routes/__root";
 export { queryClient };
-type TestRootErrorProps = { error: unknown; reset: () => void };
 
 function TestRoot() {
   return (
@@ -24,27 +22,6 @@ function TestRoot() {
     </TooltipProvider>
   );
 }
-
-function TestRootError({ error, reset }: TestRootErrorProps) {
-  return (
-    <TooltipProvider>
-      <QueryClientProvider client={queryClient}>
-        <AppShell>
-          <CenteredPageState>
-            <ErrorState
-              title="This view failed to render"
-              message="An unexpected problem stopped this page from loading."
-              detail={error instanceof Error ? error.message : String(error)}
-              hint="Retry the view. If it keeps failing, share the technical details with your administrator."
-              onRetry={reset}
-            />
-          </CenteredPageState>
-        </AppShell>
-      </QueryClientProvider>
-    </TooltipProvider>
-  );
-}
-
 const productionRootOptions = {
   component: routeTree.options.component,
   errorComponent: routeTree.options.errorComponent,
@@ -53,7 +30,7 @@ let testRootInstalled = false;
 
 function installTestRoot() {
   if (testRootInstalled) return;
-  routeTree.update({ component: TestRoot, errorComponent: TestRootError } as never);
+  routeTree.update({ component: TestRoot, errorComponent: productionRootOptions.errorComponent } as never);
   testRootInstalled = true;
 }
 
@@ -68,7 +45,7 @@ export function renderRootDocument(router: ComponentProps<typeof TanStackRouterP
   try {
     return renderToString(<TanStackRouterProvider router={router} />);
   } finally {
-    if (testRootInstalled) routeTree.update({ component: TestRoot, errorComponent: TestRootError } as never);
+    if (testRootInstalled) routeTree.update({ component: TestRoot, errorComponent: productionRootOptions.errorComponent } as never);
   }
 }
 

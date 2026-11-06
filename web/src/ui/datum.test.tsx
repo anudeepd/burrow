@@ -1,8 +1,11 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Datum, Entity, SINGLETON, datumAttrs } from "./datum";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("parity datum primitives", () => {
   it("stamps missing, raw, and formatted values", () => {
@@ -42,5 +45,11 @@ describe("parity datum primitives", () => {
     );
 
     expect(screen.getByText("Friendly id").getAttribute("data-yv")).toBe("application_1");
+  });
+
+  it("warns when a Datum is rendered outside an Entity in development", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    render(<Datum field="node.state" raw="RUNNING" />);
+    expect(warn).toHaveBeenCalledWith('[parity] <Datum field="node.state"> rendered outside <Entity>');
   });
 });

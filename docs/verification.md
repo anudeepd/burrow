@@ -18,7 +18,7 @@ Environment: Fedora 44 box (16 cores, ~15 GB RAM), single-host Hadoop 3.4.3 clus
 | Rust lint | `cargo clippy --workspace --all-targets -- -D warnings` | clean |
 | Rust format | `cargo fmt --all -- --check` | clean |
 | Burrow CLI smoke | `cargo run -p burrow -- --help` | **passed** — prints `Usage: burrow [OPTIONS] [COMMAND]` and the `BURROW_*` environment options |
-| Web tests + coverage | `cd web && bun run test:coverage` (Bun 1.4.4; Vitest 5.0.3, Happy DOM/thread workers) | **1,672 passed / 0 failed** (192 files); **100%** statements (12,353/12,353), branches (12,537/12,537), functions (3,684/3,684), lines (10,518/10,518); 269 production files fully covered. Scope: `src/**/*.{ts,tsx}` plus `public/theme-init.js`; 100% per-file thresholds; excludes test/spec files, `__tests__`, `.d.ts`, and `.gen.ts`. |
+| Web tests + coverage | `cd web && bun run test:coverage` (Bun 1.4.4; Vitest 5.0.3, Happy DOM/thread workers) | **1,673 passed / 0 failed** (192 files); **100%** statements (12,353/12,353), branches (12,537/12,537), functions (3,684/3,684), lines (10,518/10,518); 269 production files fully covered. Scope: `src/**/*.{ts,tsx}` plus `public/theme-init.js`; 100% per-file thresholds; excludes test/spec files, `__tests__`, `.d.ts`, and `.gen.ts`. |
 | Web typecheck | `cd web && bun run typecheck` | 0 errors |
 | Web lint | `cd web && bunx biome check .` | **clean** — 413 files checked; two standalone design exploration files were excluded at the time and have since been removed |
 | SPA build | `cd web && bun run build` | **passed** — Vite 8.3.2 transformed 3,181 client and 339 SSR modules; client/server outputs emitted; `/` prerendered. Vite warned about minified chunks larger than 500 kB (worker/ELK). |

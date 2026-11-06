@@ -24,11 +24,19 @@ function muteExpectedRouteBoundaryError() {
   const spy = vi.spyOn(console, "error").mockImplementation((...args) => {
     const message = args.map((arg) => (arg instanceof Error ? arg.message : String(arg))).join(" ");
     if (message.includes("broken route fixture")) return;
+    // The production document includes TanStack's server-only <Scripts>; this test intentionally mounts its root boundary client-side.
+    if (message.includes("Encountered a script tag while rendering React component.")) return;
     if (message.includes("The above error occurred in the <")) return;
     if (message.includes("React will try to recreate this component tree")) return;
     error(...args);
   });
   restoreRouteBoundaryError = () => spy.mockRestore();
+}
+
+function mockDocumentAnimationCleanup() {
+  vi.spyOn(Element.prototype, "animate").mockImplementation(
+    () => ({ playState: "finished", finished: Promise.resolve(), cancel: vi.fn() }) as unknown as Animation,
+  );
 }
 
 beforeEach(() => {
@@ -41,6 +49,7 @@ afterEach(() => {
   restoreRouteWarning = undefined;
   restoreRouteBoundaryError?.();
   restoreRouteBoundaryError = undefined;
+  vi.restoreAllMocks();
   parityStore.setState(() => ({ enabled: false }));
 });
 
@@ -95,6 +104,7 @@ describe("top-level route screens", () => {
   it("renders the root error boundary when a child route throws", async () => {
     muteExpectedRouteBoundaryError();
     muteExpectedRouteMatchWarning();
+    mockDocumentAnimationCleanup();
     const failingRoute = createRoute({
       getParentRoute: () => RootRoute,
       path: "/fails",
@@ -106,15 +116,17 @@ describe("top-level route screens", () => {
       routeTree: RootRoute.addChildren([failingRoute]),
       history: createMemoryHistory({ initialEntries: ["/fails"] }),
     });
-    render(<RouterProvider router={router} />);
+    render(<RouterProvider router={router} />, { container: document });
     expect(await screen.findByRole("heading", { name: "This view failed to render" })).toBeTruthy();
     expect(screen.getByText(/broken route fixture/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Retry now" })).toBeTruthy();
+    expect(document.documentElement.getAttribute("data-parity")).toBe("1");
   });
 
   it("stringifies a non-Error thrown from a child route", async () => {
     muteExpectedRouteBoundaryError();
     muteExpectedRouteMatchWarning();
+    mockDocumentAnimationCleanup();
     const failingRoute = createRoute({
       getParentRoute: () => RootRoute,
       path: "/fails-raw",
@@ -126,8 +138,11 @@ describe("top-level route screens", () => {
       routeTree: RootRoute.addChildren([failingRoute]),
       history: createMemoryHistory({ initialEntries: ["/fails-raw"] }),
     });
-    render(<RouterProvider router={router} />);
+    parityStore.setState(() => ({ enabled: false }));
+    document.documentElement.removeAttribute("data-parity");
+    render(<RouterProvider router={router} />, { container: document });
     expect(await screen.findByText(/broken route fixture/)).toBeTruthy();
+    expect(document.documentElement.hasAttribute("data-parity")).toBe(false);
   });
 
   it("renders the root document shell when no browser document exists", async () => {
