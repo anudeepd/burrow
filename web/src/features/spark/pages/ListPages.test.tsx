@@ -41,6 +41,7 @@ const { RddDetailPage } = await import("./RddDetailPage");
 const { SqlDetailPage } = await import("./SqlDetailPage");
 const { firstLine } = await import("../ui/StageTable");
 const { SparkProvider } = await import("../ui/context");
+const { Entity } = await import("~/ui/datum");
 const { nowStore } = await import("../ui/use-now");
 const initialNow = nowStore.get().now;
 const { sp } = await import("../data/queries");
@@ -161,9 +162,11 @@ function renderListPage(
   configure?.(client);
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkProvider value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt, source: null, application: null, resolving: false }}>
-        <RouterProvider router={router} />
-      </SparkProvider>
+      <Entity id={APP_ID}>
+        <SparkProvider value={{ appId: APP_ID, kind, sparkAppId: APP_ID, attempt, source: null, application: null, resolving: false }}>
+          <RouterProvider router={router} />
+        </SparkProvider>
+      </Entity>
     </QueryClientProvider>,
   );
   return { ...view, router, client };
@@ -1360,6 +1363,8 @@ describe("Spark list pages", () => {
         sparseStage,
       );
       client.setQueryData(sp.taskList(APP_ID, 0, 0, pageOptions).queryKey, [sparseTask]);
+      client.setQueryData(sp.taskList(APP_ID, 0, 0, { ...pageOptions, offset: 25 }).queryKey, [sparseTask]);
+      client.setQueryData(sp.taskList(APP_ID, 0, 0, { ...pageOptions, offset: 0, status: undefined }).queryKey, [sparseTask]);
     });
 
     expect(await screen.findByText("server sorts runtime only")).toBeTruthy();
@@ -1690,6 +1695,13 @@ describe("Spark list pages", () => {
         ],
         edges: [],
       } as never);
+      const failedTask: SparkTask = { ...stageTasks[0]!, status: "FAILED" };
+      for (const sortBy of [undefined, "runtime", "-runtime"] as const) {
+        client.setQueryData(
+          sp.taskList(APP_ID, 0, 0, { offset: 0, length: 25, status: "FAILED", sortBy, kind: "static", attempt: null }).queryKey,
+          [failedTask],
+        );
+      }
     });
     await screen.findByRole("region", { name: "Tasks of stage 0 attempt 0" });
 

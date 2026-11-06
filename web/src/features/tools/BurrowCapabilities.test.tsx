@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Meta } from "~/api/schemas";
 import { connectionStore } from "~/api/connection";
@@ -147,7 +147,9 @@ describe("BurrowCapabilities service status", () => {
       </QueryClientProvider>,
     );
 
-    await client.refetchQueries({ queryKey: ov.meta().queryKey });
+    await act(async () => {
+      await client.refetchQueries({ queryKey: ov.meta().queryKey });
+    });
     expect(await screen.findByText("Capability refresh failed; showing the last loaded data")).toBeTruthy();
     expect(screen.getByText("Read-only")).toBeTruthy();
     expect(screen.getByText("refresh failed")).toBeTruthy();

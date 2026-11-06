@@ -36,7 +36,6 @@ class FakeEventSource {
   }
 }
 
-const originalEventSource = globalThis.EventSource;
 const observers: (() => void)[] = [];
 
 function makeClient(topics: { topic: string; kind?: string }[]): QueryClient {
@@ -63,8 +62,11 @@ afterEach(() => {
   vi.restoreAllMocks();
   for (const unsubscribe of observers.splice(0)) unsubscribe();
   FakeEventSource.instances = [];
-  if (originalEventSource) globalThis.EventSource = originalEventSource;
-  else Reflect.deleteProperty(globalThis, "EventSource");
+  Object.defineProperty(globalThis, "EventSource", {
+    configurable: true,
+    value: undefined,
+    writable: true,
+  });
   resetStores();
 });
 

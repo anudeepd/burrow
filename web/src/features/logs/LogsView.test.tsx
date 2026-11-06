@@ -105,6 +105,11 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  Object.defineProperty(globalThis, "EventSource", {
+    configurable: true,
+    value: undefined,
+    writable: true,
+  });
   parityStore.setState(() => ({ enabled: true }));
   window.__BURROW_PARITY__ = true;
   if (originalCreateObjectURL) Object.defineProperty(URL, "createObjectURL", originalCreateObjectURL);

@@ -377,7 +377,11 @@ describe("QueuePage controls", () => {
   });
 
   it("selects a NodeManager filter from the activities tab", async () => {
-    renderQueue("tab=activities");
+    const { client } = renderQueue("tab=activities");
+    client.setQueryData(
+      schedulerActivitiesQuery({ nodeId: "127.0.0.3:8041", groupBy: undefined }).queryKey,
+      read("scheduler-activities.json"),
+    );
     fireEvent.click(await screen.findByRole("combobox", { name: "NodeManager" }));
     const node = await screen.findByRole("option", { name: "127.0.0.3:8041" });
     fireEvent.pointerDown(node, { button: 0, pointerType: "mouse" });

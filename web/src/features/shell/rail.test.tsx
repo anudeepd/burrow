@@ -10,7 +10,7 @@
  * This test pins the invariant: the rail's element structure is identical whatever the prefs say. The visual state is
  * allowed to differ (classes, `data-collapsed`, the rail's width) — React patches those silently.
  */
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -83,9 +83,10 @@ describe("rail hydration shape", () => {
     const expanded = render(<Rail />).container as HTMLElement;
     const expandedSignature = signature(expanded);
 
-    setPrefs({ railCollapsed: true });
+    act(() => {
+      setPrefs({ railCollapsed: true });
+    });
     const collapsed = render(<Rail />).container as HTMLElement;
-
     expect(signature(collapsed)).toBe(expandedSignature);
     // the labels keep existing (hidden by `[data-collapsed="true"] .burrow-rail-collapsible`, never unmounted)
     expect(text(collapsed)).toContain("Applications");

@@ -58,7 +58,7 @@ export function HelpTip({ label, children, className }: { label: string; childre
   const [open, setOpen] = useState(false);
   return (
     <BPopover.Root open={open} onOpenChange={setOpen}>
-      <Tooltip label={children} open={open ? false : undefined}>
+      <Tooltip label={children} disabled={open}>
         <BPopover.Trigger
           type="button"
           aria-label={`About ${label}`}

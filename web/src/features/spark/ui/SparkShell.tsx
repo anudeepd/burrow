@@ -159,7 +159,7 @@ function SparkHeader({
   };
 
   return (
-    <header className="flex flex-col gap-3 border-b border-seam pt-3 pb-4">
+    <Entity id={appId} as="header" className="flex flex-col gap-3 border-b border-seam pt-3 pb-4">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -182,7 +182,7 @@ function SparkHeader({
                 once: by the parity datum below when the application has loaded, alone while it has not */}
             {!application && <span className="font-mono text-micro">{appId}</span>}
             {application && (
-              <Entity id={appId} as="span" className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                 <span className="whitespace-nowrap">
                   <Datum field="spark.app.id" raw={application.id} className="font-mono text-micro" />
                 </span>
@@ -201,7 +201,7 @@ function SparkHeader({
                     {fmtEpoch(parseSparkTime(selected?.startTime), tz)}
                   </Datum>
                 </span>
-              </Entity>
+              </span>
             )}
           </p>
         </div>
@@ -234,7 +234,7 @@ function SparkHeader({
           onRetry={onRetryApplication}
         />
       )}
-    </header>
+    </Entity>
   );
 }
 

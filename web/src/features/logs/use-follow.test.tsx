@@ -37,7 +37,6 @@ class FakeEventSource {
   }
 }
 
-const originalEventSource = globalThis.EventSource;
 const fetchWindow = vi.mocked(fetchLogWindow);
 const streamUrl = vi.mocked(logStreamUrl);
 
@@ -63,8 +62,11 @@ afterEach(() => {
   fetchWindow.mockReset();
   streamUrl.mockClear();
   FakeEventSource.instances = [];
-  if (originalEventSource) globalThis.EventSource = originalEventSource;
-  else Reflect.deleteProperty(globalThis, "EventSource");
+  Object.defineProperty(globalThis, "EventSource", {
+    configurable: true,
+    value: undefined,
+    writable: true,
+  });
 });
 
 describe("useFollow", () => {

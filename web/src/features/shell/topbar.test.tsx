@@ -175,17 +175,19 @@ describe("Topbar", () => {
 
   it("formats missing upstream fields, unconfigured services and negative clock skew", async () => {
     const { client } = renderTopbar();
-    client.setQueryData(q.info().queryKey, { clusterInfo: null } as never);
-    client.setQueryData(q.meta().queryKey, {
-      ...meta,
-      rm: { ...meta.rm, active: null, reachable: null },
-      services: {
-        sparkHistory: { configured: true, urls: [], url: null, reachable: null },
-        jobHistory: { configured: true, urls: [], url: "http://jhs:19888", reachable: null },
-        timeline: { configured: false },
-      },
-    } as never);
-    connectionStore.setState((state) => ({ ...state, clockSkewMs: -2300 }));
+    act(() => {
+      client.setQueryData(q.info().queryKey, { clusterInfo: null } as never);
+      client.setQueryData(q.meta().queryKey, {
+        ...meta,
+        rm: { ...meta.rm, active: null, reachable: null },
+        services: {
+          sparkHistory: { configured: true, urls: [], url: null, reachable: null },
+          jobHistory: { configured: true, urls: [], url: "http://jhs:19888", reachable: null },
+          timeline: { configured: false },
+        },
+      } as never);
+      connectionStore.setState((state) => ({ ...state, clockSkewMs: -2300 }));
+    });
     fireEvent.click(screen.getByRole("button", { name: "Connection: healthy" }));
     expect(await screen.findByText("-2s")).toBeTruthy();
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);

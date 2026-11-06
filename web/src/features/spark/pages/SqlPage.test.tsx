@@ -13,7 +13,7 @@ window.__BURROW_PARITY__ = true;
 
 const { act, render, cleanup, fireEvent, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
-const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
+const { Outlet, createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { SqlPage } = await import("./SqlPage");
 const { SqlDetailPage } = await import("./SqlDetailPage");
 const { SparkProvider } = await import("../ui/context");
@@ -59,15 +59,18 @@ function renderSqlTab(
   const rootRoute = createRootRoute();
   const appRoute = createRoute({ getParentRoute: () => rootRoute, path: "/apps/$appId" });
   const sparkRoute = createRoute({ getParentRoute: () => appRoute, path: "spark" });
-  const sqlRoute = createRoute({ getParentRoute: () => sparkRoute, path: "sql/", component: () => <SqlPage /> });
+  const sqlRoute = createRoute({ getParentRoute: () => sparkRoute, path: "sql", component: () => <Outlet /> });
+  const sqlIndexRoute = createRoute({ getParentRoute: () => sqlRoute, path: "/", component: () => <SqlPage /> });
   const executionRoute = createRoute({
-    getParentRoute: () => sparkRoute,
-    path: "sql/$executionId",
+    getParentRoute: () => sqlRoute,
+    path: "$executionId",
     component: () => null,
   });
   const jobRoute = createRoute({ getParentRoute: () => sparkRoute, path: "jobs/$jobId", component: () => null });
   const router = createRouter({
-    routeTree: rootRoute.addChildren([appRoute.addChildren([sparkRoute.addChildren([sqlRoute, executionRoute, jobRoute])])]),
+    routeTree: rootRoute.addChildren([
+      appRoute.addChildren([sparkRoute.addChildren([sqlRoute.addChildren([sqlIndexRoute, executionRoute]), jobRoute])]),
+    ]),
     history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/sql${initialSearch}`] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -87,16 +90,19 @@ function renderSqlDetail(
   const root = createRootRoute();
   const appRoute = createRoute({ getParentRoute: () => root, path: "/apps/$appId" });
   const sparkRoute = createRoute({ getParentRoute: () => appRoute, path: "spark" });
-  const sqlRoute = createRoute({ getParentRoute: () => sparkRoute, path: "sql/", component: () => null });
+  const sqlRoute = createRoute({ getParentRoute: () => sparkRoute, path: "sql", component: () => <Outlet /> });
+  const sqlIndexRoute = createRoute({ getParentRoute: () => sqlRoute, path: "/", component: () => null });
   const detailRoute = createRoute({
-    getParentRoute: () => sparkRoute,
-    path: "sql/$executionId",
+    getParentRoute: () => sqlRoute,
+    path: "$executionId",
     validateSearch: sparkSearch,
     component: () => <SqlDetailPage />,
   });
   const jobRoute = createRoute({ getParentRoute: () => sparkRoute, path: "jobs/$jobId", component: () => null });
   const router = createRouter({
-    routeTree: root.addChildren([appRoute.addChildren([sparkRoute.addChildren([sqlRoute, detailRoute, jobRoute])])]),
+    routeTree: root.addChildren([
+      appRoute.addChildren([sparkRoute.addChildren([sqlRoute.addChildren([sqlIndexRoute, detailRoute]), jobRoute])]),
+    ]),
     history: createMemoryHistory({ initialEntries: [`/apps/${APP_ID}/spark/sql/1`] }),
   });
   const client = new QueryClient({

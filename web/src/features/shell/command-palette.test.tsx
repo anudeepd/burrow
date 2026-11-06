@@ -22,7 +22,7 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
   };
 });
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
@@ -139,8 +139,10 @@ describe("command palette", () => {
     await waitFor(() => expect(prefsStore.get().theme).toBe("system"));
     fireEvent.click(await screen.findByRole("option", { name: "Pause live updates" }));
     await waitFor(() => expect(prefsStore.get().livePaused).toBe(true));
-    setPrefs({ livePaused: false, theme: "dark" });
-    client.clear();
+    act(() => {
+      setPrefs({ livePaused: false, theme: "dark" });
+      client.clear();
+    });
   });
 
   it("runs a built-in navigation result", async () => {

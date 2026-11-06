@@ -11,6 +11,7 @@ const { PartitionsTable } = await import("./PartitionsTable");
 const { FifoQueueStatus } = await import("./FifoQueueStatus");
 const { ConfTable } = await import("./ConfTable");
 const { KV, StateNote, Unavailable } = await import("./Chrome");
+const { Entity } = await import("~/ui/datum");
 
 afterEach(cleanup);
 
@@ -18,13 +19,13 @@ describe("scheduler display primitives", () => {
   it("renders empty and populated readouts and both resource bars", () => {
     const datum = { "data-yf": "queue.usedCapacity", "data-yv": "50" } as never;
     render(
-      <>
+      <Entity id="root.default">
         <FreeReadout freePct={null} freeMb={null} field="queue.derived.free" />
         <FreeReadout freePct={null} freeMb={512} field="queue.derived.freeMb" />
         <UsedReadout usedPct={50} field="queue.derived.used" raw={50} />
         <CapacityBar usedPct={55} capPct={40} maxPct={80} tone="live" label="capacity" datum={datum} />
         <FairBar usedMb={1024} minMb={512} fairMb={2048} maxMb={3072} tone="wait" label="fair" datum={datum} />
-      </>,
+      </Entity>,
     );
 
     expect(screen.getByText("—")).toBeTruthy();
@@ -37,7 +38,7 @@ describe("scheduler display primitives", () => {
   it("renders boundary values and coincident markers on the freeness bars", () => {
     const datum = { "data-yf": "queue.used", "data-yv": "" } as never;
     render(
-      <>
+      <Entity id="root.default">
         <FreeReadout freePct={50} freeMb={null} field="queue.derived.freePct" />
         <CapacityBar usedPct={null} capPct={null} maxPct={null} tone="idle" label="unknown capacity" datum={datum} />
         <CapacityBar usedPct={Number.NaN} capPct={100} maxPct={80} tone="wait" label="unbounded cap marker" datum={datum} />
@@ -46,7 +47,7 @@ describe("scheduler display primitives", () => {
         <CapacityBar usedPct={120} capPct={100} maxPct={80} tone="live" label="track end" datum={datum} />
         <FairBar usedMb={null} minMb={512} fairMb={512} maxMb={512} tone="idle" label="shared limits" datum={datum} />
         <FairBar usedMb={null} minMb={null} fairMb={null} maxMb={null} tone="idle" label="unknown fair share" datum={datum} scale={2048} />
-      </>,
+      </Entity>,
     );
 
     expect(screen.getByText("50.0%")).toBeTruthy();

@@ -80,7 +80,9 @@ describe("Spark detail widgets", () => {
     fireEvent.click(screen.getByRole("switch", { name: "Show only matching lines and their parents" }));
 
     view.rerender(wrap(<PlanTree plan={"Root\n+- Child"} q="" onQ={onQ} />));
-    parityStore.setState(() => ({ enabled: true }));
+    act(() => {
+      parityStore.setState(() => ({ enabled: true }));
+    });
     fireEvent.click(screen.getByRole("button", { name: "Collapse all" }));
     expect(view.container.textContent).toContain("Child");
   });

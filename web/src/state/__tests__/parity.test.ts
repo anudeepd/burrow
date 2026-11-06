@@ -1,11 +1,14 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { isParity, parityStore, prefsMotionProbe, useAnimationsEnabled, useParity } from "~/state/parity";
 import { LIVE_INTERVALS, prefsStore, resolvedTheme, setPrefs } from "~/state/prefs";
 
 afterEach(() => {
-  parityStore.setState(() => ({ enabled: false }));
-  prefsMotionProbe.setState(() => ({ reduced: false }));
+  cleanup();
+  act(() => {
+    parityStore.setState(() => ({ enabled: false }));
+    prefsMotionProbe.setState(() => ({ reduced: false }));
+  });
 });
 
 describe("parity mode", () => {
@@ -92,10 +95,10 @@ describe("preferences", () => {
     setPrefs({ theme: "system", tz: "local" });
   });
 
-  it("marks reduced motion on <html> when the user asks for it", () => {
-    setPrefs({ motion: "reduced" });
+  it("marks reduced motion on <html> when the user asks for it", async () => {
+    await act(async () => setPrefs({ motion: "reduced" }));
     expect(document.documentElement.getAttribute("data-motion")).toBe("reduced");
-    setPrefs({ motion: "system" });
+    await act(async () => setPrefs({ motion: "system" }));
     expect(document.documentElement.getAttribute("data-motion")).toBeNull();
   });
 

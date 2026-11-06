@@ -25,7 +25,12 @@ export default defineConfig(({ mode }) => {
     resolve: { tsconfigPaths: true },
     plugins: [
       tailwindcss(),
-      tanstackStart({ spa: { enabled: true } }),
+      tanstackStart({
+        spa: { enabled: true },
+        router: {
+          routeFileIgnorePattern: "(?:^|/)(?:[^/]*\\.(?:test|spec|setup)|setup)\\.[^/]+$",
+        },
+      }),
       // react's vite plugin must come after start's vite plugin
       viteReact(),
     ],

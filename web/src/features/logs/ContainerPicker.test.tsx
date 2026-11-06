@@ -206,8 +206,8 @@ describe("ContainerPicker", () => {
       data: {
         appAttempts: {
           appAttempt: [
-            { ...baseAttempt, appAttemptId: "attempt-1", containerId: "" },
-            { ...baseAttempt, appAttemptId: "attempt-2", containerId: "" },
+            { ...baseAttempt, appAttemptId: "attempt-1", containerId: "", logsLink: "" },
+            { ...baseAttempt, appAttemptId: "attempt-2", containerId: "", logsLink: "" },
           ],
         },
       },

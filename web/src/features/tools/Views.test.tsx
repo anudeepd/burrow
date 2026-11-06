@@ -425,8 +425,10 @@ describe("StacksView", () => {
     expect(tree.getAttribute("data-burrow-stacks-rows")).not.toBe("0");
     expect(screen.getByText(/230 threads/)).toBeTruthy();
 
-    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, thread: "3" })) as never, replace: true });
-    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, thread: "2" })) as never, replace: true });
+    await act(async () => {
+      await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, thread: "3" })) as never, replace: true });
+      await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, thread: "2" })) as never, replace: true });
+    });
 
     const stateFilters = within(screen.getByRole("group", { name: "Thread state filter" }));
     fireEvent.click(stateFilters.getAllByRole("button").find((button) => button.textContent?.trim().startsWith("WAITING"))!);

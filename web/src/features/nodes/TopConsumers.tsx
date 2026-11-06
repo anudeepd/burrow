@@ -9,7 +9,7 @@ import { useMemo } from "react";
 import type { Node } from "~/api/schemas";
 import { cn } from "~/lib/cn";
 import { fmtInt, fmtMB, fmtPct } from "~/lib/format";
-import { Datum } from "~/ui/datum";
+import { Entity, Datum } from "~/ui/datum";
 import { Skeleton } from "~/ui/feedback";
 import { TabContent } from "~/ui/tabs";
 import { Tooltip } from "~/ui/tooltip";
@@ -73,44 +73,45 @@ export function TopConsumers({
             const util = utilOf(node);
             const share = busiest > 0 ? (node.numContainers / busiest) * 100 : 0;
             return (
-              <Tooltip
-                key={node.id}
-                label={`${node.nodeHostName} · ${fmtInt(node.numContainers)} running containers (${fmtInt(node.numContainers)} of ${fmtInt(busiest)}; bar is relative to the busiest node). ${fmtMB(node.usedMemoryMB)} physical memory used; ${fmtPct(util.mem)} memory and ${fmtPct(util.cpu)} vCore utilization. Click to open node details.`}
-              >
-                <button
-                  data-testid="top-consumer-row"
-                  type="button"
-                  onClick={() => onOpen(node)}
-                  className="group flex flex-col gap-1 rounded-md px-1.5 py-1 text-start hover:bg-fabric-3"
+              <Entity key={node.id} id={node.id} as="div" className="contents">
+                <Tooltip
+                  label={`${node.nodeHostName} · ${fmtInt(node.numContainers)} running containers (${fmtInt(node.numContainers)} of ${fmtInt(busiest)}; bar is relative to the busiest node). ${fmtMB(node.usedMemoryMB)} physical memory used; ${fmtPct(util.mem)} memory and ${fmtPct(util.cpu)} vCore utilization. Click to open node details.`}
                 >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span className="w-4 shrink-0 text-micro tnum text-ink-4">{i + 1}</span>
-                    <span className="truncate font-mono text-small text-ink-2 group-hover:text-ink">{node.nodeHostName}</span>
-                    <span className="ml-auto flex shrink-0 items-baseline gap-1">
-                      <Datum
-                        field="node.numContainers"
-                        raw={node.numContainers}
-                        fmt="int"
-                        className="text-small font-medium text-ink tnum"
-                      />
-                      <span className="text-micro text-ink-4">containers</span>
+                  <button
+                    data-testid="top-consumer-row"
+                    type="button"
+                    onClick={() => onOpen(node)}
+                    className="group flex flex-col gap-1 rounded-md px-1.5 py-1 text-start hover:bg-fabric-3"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="w-4 shrink-0 text-micro tnum text-ink-4">{i + 1}</span>
+                      <span className="truncate font-mono text-small text-ink-2 group-hover:text-ink">{node.nodeHostName}</span>
+                      <span className="ml-auto flex shrink-0 items-baseline gap-1">
+                        <Datum
+                          field="node.numContainers"
+                          raw={node.numContainers}
+                          fmt="int"
+                          className="text-small font-medium text-ink tnum"
+                        />
+                        <span className="text-micro text-ink-4">containers</span>
+                      </span>
                     </span>
-                  </span>
-                  <span className="ms-6 flex items-center gap-2">
-                    <span aria-hidden="true" className={cn("h-1 flex-1 overflow-hidden rounded-full bg-seam")}>
-                      <span
-                        className="burrow-bar block h-full w-full rounded-full bg-live"
-                        // the 2% floor survives as a scale floor, so a tiny share is still visible
-                        style={{ "--fill": Math.max(0.02, share / 100) } as React.CSSProperties}
-                      />
+                    <span className="ms-6 flex items-center gap-2">
+                      <span aria-hidden="true" className={cn("h-1 flex-1 overflow-hidden rounded-full bg-seam")}>
+                        <span
+                          className="burrow-bar block h-full w-full rounded-full bg-live"
+                          // the 2% floor survives as a scale floor, so a tiny share is still visible
+                          style={{ "--fill": Math.max(0.02, share / 100) } as React.CSSProperties}
+                        />
+                      </span>
+                      <span className="shrink-0 text-micro text-ink-4 tnum">
+                        <Datum field="node.usedMemoryMB" raw={node.usedMemoryMB} fmt="mb" />
+                        {` · ${fmtInt(Math.trunc(util.max))}%`}
+                      </span>
                     </span>
-                    <span className="shrink-0 text-micro text-ink-4 tnum">
-                      <Datum field="node.usedMemoryMB" raw={node.usedMemoryMB} fmt="mb" />
-                      {` · ${fmtInt(Math.trunc(util.max))}%`}
-                    </span>
-                  </span>
-                </button>
-              </Tooltip>
+                  </button>
+                </Tooltip>
+              </Entity>
             );
           })
         )}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render } from "@testing-library/react";
 import type { NodeVisual } from "../render/scene";
@@ -44,6 +45,13 @@ function props(visual = makeVisual(), overrides: Partial<NodeProps> = {}): NodeP
     onFocus: vi.fn(),
     ...overrides,
   };
+}
+function renderDagNode(node: ReactNode) {
+  return render(
+    <svg role="group" aria-label="DAG node test host">
+      {node}
+    </svg>,
+  );
 }
 
 describe("DAG node memo comparison", () => {
@@ -168,7 +176,7 @@ describe("DAG node rendering", () => {
         ],
       }),
     );
-    const view = render(<DagNode {...p} />);
+    const view = renderDagNode(<DagNode {...p} />);
     const item = view.getByRole("treeitem");
     expect(item.getAttribute("data-roomy")).toBe("true");
     expect(view.container.querySelector("[data-flash='true']")).not.toBeNull();
@@ -191,7 +199,7 @@ describe("DAG node rendering", () => {
   });
 
   it("renders compact, medium, hidden, ghost, and progress-only variants", () => {
-    const compact = render(
+    const compact = renderDagNode(
       <DagNode
         {...props(
           makeVisual({
@@ -218,12 +226,12 @@ describe("DAG node rendering", () => {
       }),
     );
     mediumProps.labels[1] = { ...mediumProps.labels[1]!, width: 20 };
-    const medium = render(<DagNode {...mediumProps} />);
+    const medium = renderDagNode(<DagNode {...mediumProps} />);
     expect(medium.container.querySelector("[data-roomy='false']")).not.toBeNull();
-    expect(medium.container.querySelector("[data-label='sub']")?.textContent).toBe("A…");
+    expect(medium.container.querySelector("[data-label='sub']")?.lastChild?.textContent).toBe("A…");
     medium.unmount();
 
-    const hidden = render(
+    const hidden = renderDagNode(
       <DagNode
         {...props(makeVisual({ percent: 60, taskSummary: "6 tasks", segments: [{ percent: 0, tone: "idle", label: "idle" }] }))}
         visible={false}
@@ -233,13 +241,13 @@ describe("DAG node rendering", () => {
     expect(hidden.container.querySelector(".burrow-dag-progress-track")).toBeNull();
     hidden.unmount();
 
-    const ghost = render(
+    const ghost = renderDagNode(
       <DagNode {...props(makeVisual({ node: { id: "g", label: "External", kind: "ghost" }, percent: 20, taskSummary: null }))} />,
     );
     expect(ghost.container.querySelector(".burrow-dag-progress")).toBeNull();
     ghost.unmount();
 
-    const noText = render(
+    const noText = renderDagNode(
       <DagNode
         {...props(
           makeVisual({
@@ -255,7 +263,7 @@ describe("DAG node rendering", () => {
     expect(noText.container.querySelector(".burrow-dag-progress-track")).toBeNull();
     noText.unmount();
 
-    const wideMeta = render(
+    const wideMeta = renderDagNode(
       <DagNode
         {...props(
           makeVisual({
@@ -270,15 +278,17 @@ describe("DAG node rendering", () => {
     expect(wideMeta.container.querySelector("[data-row='metadata-secondary'] title")).toBeNull();
     wideMeta.unmount();
 
-    const truncatedMeta = render(
+    const truncatedMeta = renderDagNode(
       <DagNode
         {...props(makeVisual({ rect: { x: 0, y: 0, width: 100, height: 158 }, subText: "Custom detail", taskSummary: "Many, many tasks" }))}
       />,
     );
-    expect(truncatedMeta.container.querySelector("[data-row='metadata-secondary']")?.textContent).toBe("Many,…");
+    expect(truncatedMeta.container.querySelector("[data-row='metadata-secondary']")?.lastChild?.textContent).toBe("Many,…");
     truncatedMeta.unmount();
 
-    const sameSubSummary = render(<DagNode {...props(makeVisual({ subText: "3 tasks", taskSummary: "3 tasks" }))} tabbable={false} />);
+    const sameSubSummary = renderDagNode(
+      <DagNode {...props(makeVisual({ subText: "3 tasks", taskSummary: "3 tasks" }))} tabbable={false} />,
+    );
     expect(sameSubSummary.container.querySelector(".burrow-dag-node")?.getAttribute("tabindex")).toBe("-1");
     expect(sameSubSummary.container.querySelector("[data-row='metadata-secondary']")).toBeNull();
   });

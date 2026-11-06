@@ -1,12 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { renderToString } from "react-dom/server";
 import { createMemoryHistory, createRoute, createRouter } from "@tanstack/react-router";
-import { routerAt, RouterProvider, serveFixtures } from "~/__tests__/route-test-utils";
+import { renderRootDocument, routerAt, RouterProvider, serveFixtures } from "~/__tests__/route-test-utils";
 import { parityStore } from "~/state/parity";
 import { Route as RootRoute } from "./__root";
 
 window.__BURROW_PARITY__ = true;
+let restoreRouteWarning: (() => void) | undefined;
+let restoreRouteBoundaryError: (() => void) | undefined;
+
+function muteExpectedRouteMatchWarning() {
+  const warn = console.warn;
+  const spy = vi.spyOn(console, "warn").mockImplementation((...args) => {
+    // TanStack Router warns when its error boundary catches these deliberately thrown route fixtures.
+    // Keep all unrelated warnings visible; only the known expected route-match warning is omitted.
+    if (args[0] === "Warning: Error in route match: __root__/") return;
+    warn(...args);
+  });
+  restoreRouteWarning = () => spy.mockRestore();
+}
+function muteExpectedRouteBoundaryError() {
+  const error = console.error;
+  const spy = vi.spyOn(console, "error").mockImplementation((...args) => {
+    const message = args.map((arg) => (arg instanceof Error ? arg.message : String(arg))).join(" ");
+    if (message.includes("broken route fixture")) return;
+    if (message.includes("The above error occurred in the <")) return;
+    if (message.includes("React will try to recreate this component tree")) return;
+    error(...args);
+  });
+  restoreRouteBoundaryError = () => spy.mockRestore();
+}
 
 beforeEach(() => {
   parityStore.setState(() => ({ enabled: true }));
@@ -14,7 +37,10 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
-  vi.unstubAllGlobals();
+  restoreRouteWarning?.();
+  restoreRouteWarning = undefined;
+  restoreRouteBoundaryError?.();
+  restoreRouteBoundaryError = undefined;
   parityStore.setState(() => ({ enabled: false }));
 });
 
@@ -67,6 +93,8 @@ describe("top-level route screens", () => {
   });
 
   it("renders the root error boundary when a child route throws", async () => {
+    muteExpectedRouteBoundaryError();
+    muteExpectedRouteMatchWarning();
     const failingRoute = createRoute({
       getParentRoute: () => RootRoute,
       path: "/fails",
@@ -85,6 +113,8 @@ describe("top-level route screens", () => {
   });
 
   it("stringifies a non-Error thrown from a child route", async () => {
+    muteExpectedRouteBoundaryError();
+    muteExpectedRouteMatchWarning();
     const failingRoute = createRoute({
       getParentRoute: () => RootRoute,
       path: "/fails-raw",
@@ -105,7 +135,7 @@ describe("top-level route screens", () => {
     try {
       const router = routerAt("/");
       await router.load();
-      const html = renderToString(<RouterProvider router={router} />);
+      const html = renderRootDocument(router);
       expect(html).toContain("<html");
     } finally {
       vi.unstubAllGlobals();

@@ -1,9 +1,76 @@
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createMemoryHistory, createRouter, Outlet, RouterProvider as TanStackRouterProvider } from "@tanstack/react-router";
+import type { ComponentProps } from "react";
+import { renderToString } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { vi } from "vitest";
+import { AppShell } from "../features/shell/app-shell";
+import { TooltipProvider } from "../ui/tooltip";
+import { CenteredPageState, ErrorState } from "../ui/feedback";
 import { routeTree } from "../routeTree.gen";
-export { queryClient } from "../routes/__root";
+import { queryClient } from "../routes/__root";
+export { queryClient };
+type TestRootErrorProps = { error: unknown; reset: () => void };
+
+function TestRoot() {
+  return (
+    <TooltipProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppShell>
+          <Outlet />
+        </AppShell>
+      </QueryClientProvider>
+    </TooltipProvider>
+  );
+}
+
+function TestRootError({ error, reset }: TestRootErrorProps) {
+  return (
+    <TooltipProvider>
+      <QueryClientProvider client={queryClient}>
+        <AppShell>
+          <CenteredPageState>
+            <ErrorState
+              title="This view failed to render"
+              message="An unexpected problem stopped this page from loading."
+              detail={error instanceof Error ? error.message : String(error)}
+              hint="Retry the view. If it keeps failing, share the technical details with your administrator."
+              onRetry={reset}
+            />
+          </CenteredPageState>
+        </AppShell>
+      </QueryClientProvider>
+    </TooltipProvider>
+  );
+}
+
+const productionRootOptions = {
+  component: routeTree.options.component,
+  errorComponent: routeTree.options.errorComponent,
+};
+let testRootInstalled = false;
+
+function installTestRoot() {
+  if (testRootInstalled) return;
+  routeTree.update({ component: TestRoot, errorComponent: TestRootError } as never);
+  testRootInstalled = true;
+}
+
+export function RouterProvider({ router }: ComponentProps<typeof TanStackRouterProvider>) {
+  installTestRoot();
+  return <TanStackRouterProvider router={router} />;
+}
+
+/** Server-render the real root route, including its document shell, for the SSR assertion. */
+export function renderRootDocument(router: ComponentProps<typeof TanStackRouterProvider>["router"]) {
+  routeTree.update(productionRootOptions as never);
+  try {
+    return renderToString(<TanStackRouterProvider router={router} />);
+  } finally {
+    if (testRootInstalled) routeTree.update({ component: TestRoot, errorComponent: TestRootError } as never);
+  }
+}
 
 export const APP_ID = "application_1791010984040_0001";
 export const ATTEMPT_ID = "appattempt_1791010984040_0001_000001";
@@ -165,5 +232,3 @@ export function serveFixtures(overrides: Record<string, unknown> = {}) {
 export function routerAt(path: string) {
   return createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) });
 }
-
-export { RouterProvider };

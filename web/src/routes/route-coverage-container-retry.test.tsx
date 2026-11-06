@@ -24,12 +24,14 @@ it("retries a missing container and a stale container refresh", async () => {
   });
   render(<RouterProvider router={routerAt(`/apps/${appId}/containers/${CONTAINER_ID}`)} />);
   expect(await screen.findByRole("heading", { name: `Container ${CONTAINER_ID}` })).toBeTruthy();
-  act(() => failQuery(q.appContainer(appId, ATTEMPT_ID, CONTAINER_ID).queryKey, "container detail missing", true));
+  await act(async () => failQuery(q.appContainer(appId, ATTEMPT_ID, CONTAINER_ID).queryKey, "container detail missing", true));
   expect(await screen.findByText("Could not load the container")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   await waitFor(() => expect(queryClient.getQueryData(q.appContainer(appId, ATTEMPT_ID, CONTAINER_ID).queryKey)).toBeDefined());
+  await waitFor(() => expect(screen.queryByText("Could not load the container")).toBeNull());
 
-  act(() => failQuery(q.appContainer(appId, ATTEMPT_ID, CONTAINER_ID).queryKey, "container detail refresh failed"));
+  await act(async () => failQuery(q.appContainer(appId, ATTEMPT_ID, CONTAINER_ID).queryKey, "container detail refresh failed"));
   expect(await screen.findByText("Container refresh failed; showing the last loaded details")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  await waitFor(() => expect(screen.queryByText("Container refresh failed; showing the last loaded details")).toBeNull());
 });

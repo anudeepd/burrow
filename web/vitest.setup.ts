@@ -1,3 +1,5 @@
+import { afterEach, beforeEach, vi } from "vitest";
+
 /**
  * Global test setup (vitest).
  *
@@ -5,6 +7,7 @@
  * schema does not list throws instead of being silently preserved.
  */
 globalThis.__BURROW_STRICT_SCHEMAS__ = true;
+Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", { configurable: true, value: true, writable: true });
 
 // DOM gaps that app code touches. Kept minimal: only APIs a component actually calls during a unit test.
 if (typeof globalThis.IntersectionObserver === "undefined") {
@@ -48,3 +51,31 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
 if (typeof window !== "undefined") {
   window.scrollTo = () => {};
 }
+function disableNativeEventSource() {
+  Object.defineProperty(globalThis, "EventSource", {
+    configurable: true,
+    value: undefined,
+    writable: true,
+  });
+  if (typeof window !== "undefined") {
+    Object.defineProperty(window, "EventSource", {
+      configurable: true,
+      value: undefined,
+      writable: true,
+    });
+  }
+}
+
+function isolateNetwork() {
+  disableNativeEventSource();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: RequestInfo | URL) => {
+      throw new Error(`Unexpected fetch in test: ${String(input)}`);
+    }),
+  );
+}
+
+disableNativeEventSource();
+beforeEach(isolateNetwork);
+afterEach(isolateNetwork);

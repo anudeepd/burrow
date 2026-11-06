@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { Metric } from "./metric";
+import { Entity } from "./datum";
 
 const { cleanup, render, screen } = await import("@testing-library/react");
 
@@ -29,32 +30,38 @@ describe("Metric", () => {
   it("covers linked cards, composite values, and row trends with optional notes", () => {
     const { container } = render(
       <>
-        <Metric label="Queue" field="queue.state" raw="RUNNING" href="/queues/root" tone="ok" footnote="Live queue">
-          <span>Root queue</span>
-        </Metric>
-        <Metric
-          label="Capacity"
-          field="cluster.capacity"
-          raw="custom text"
-          layout="row"
-          href="/nodes"
-          spark={[
-            { t: 1, v: 12 },
-            { t: 2, v: 15 },
-          ]}
-          footnote="Across partitions"
-          footnoteClassName="test-footnote"
-        />
-        <Metric
-          label="Trend card"
-          field="metric.trend"
-          raw="unknown"
-          spark={[
-            { t: 1, v: 1 },
-            { t: 2, v: 3 },
-          ]}
-          size="sm"
-        />
+        <Entity id="root">
+          <Metric label="Queue" field="queue.state" raw="RUNNING" href="/queues/root" tone="ok" footnote="Live queue">
+            <span>Root queue</span>
+          </Metric>
+        </Entity>
+        <Entity id="_">
+          <Metric
+            label="Capacity"
+            field="cluster.capacity"
+            raw="custom text"
+            layout="row"
+            href="/nodes"
+            spark={[
+              { t: 1, v: 12 },
+              { t: 2, v: 15 },
+            ]}
+            footnote="Across partitions"
+            footnoteClassName="test-footnote"
+          />
+        </Entity>
+        <Entity id="trend-test">
+          <Metric
+            label="Trend card"
+            field="metric.trend"
+            raw="unknown"
+            spark={[
+              { t: 1, v: 1 },
+              { t: 2, v: 3 },
+            ]}
+            size="sm"
+          />
+        </Entity>
       </>,
     );
 

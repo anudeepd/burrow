@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
-import { cleanup, render } from "@testing-library/react";
+import { act, cleanup, render } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { NodeResponseSchema, NodesResponseSchema, type Node } from "~/api/schemas";
@@ -9,7 +9,7 @@ let setPrefs: typeof import("~/state/prefs").setPrefs;
 
 afterEach(() => {
   cleanup();
-  setPrefs({ tz: "local" });
+  act(() => setPrefs({ tz: "local" }));
 });
 
 /**
@@ -74,20 +74,12 @@ async function renderTable(data: Node[], customTypes: string[] = []) {
     routeTree: rootRoute.addChildren([indexRoute, nodeRoute]),
     history: createMemoryHistory({ initialEntries: ["/"] }),
   });
-  const result = render(
+  await router.load();
+  return render(
     <QueryClientProvider client={client}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
-  await flushRouter();
-  return result;
-}
-
-/** The router resolves its first match on a microtask, so the table is not in the DOM until we let it flush. */
-function flushRouter(): Promise<void> {
-  const { promise, resolve } = Promise.withResolvers<void>();
-  setTimeout(resolve, 0);
-  return promise;
 }
 
 /** field id -> the element (first row of the given entity). */
@@ -236,7 +228,7 @@ describe("nodes table column contract", () => {
       healthReport: undefined,
     } as unknown as Node;
     const reported = { ...gpuNode, id: "127.0.0.12:8041", healthReport: "disk check warning" };
-    setPrefs({ tz: "utc" });
+    act(() => setPrefs({ tz: "utc" }));
     const view = await renderTable([partial, reported]);
 
     expect(view.container.textContent).toContain("disk check warning");

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { FairQueueInfo } from "~/api/schemas";
 import type { CapacityRaw } from "./model";
 import { CapacityQueueStatus, FairQueueStatus } from "./QueueStatusBlock";
+import { Entity } from "~/ui/datum";
 
 afterEach(cleanup);
 
@@ -48,7 +49,11 @@ describe("CapacityQueueStatus", () => {
         resourceUsagesByPartition: [{ used: resource, amLimit: resource, amUsed: resource, userAmLimit: resource }],
       },
     } as unknown as CapacityRaw;
-    render(<CapacityQueueStatus raw={raw} leaf />);
+    render(
+      <Entity id="root.default">
+        <CapacityQueueStatus raw={raw} leaf />
+      </Entity>,
+    );
 
     for (const label of [
       "Queue State",
@@ -85,14 +90,22 @@ describe("CapacityQueueStatus", () => {
       },
       resources: { resourceUsagesByPartition: [{}] },
     } as unknown as CapacityRaw;
-    const view = render(<CapacityQueueStatus raw={raw} leaf />);
+    const view = render(
+      <Entity id="root.default">
+        <CapacityQueueStatus raw={raw} leaf />
+      </Entity>,
+    );
     expect(screen.getByText("Configured Capacity")).toBeTruthy();
     expect(screen.getByText("(unlimited)")).toBeTruthy();
     expect(screen.queryByText("Configured Weight")).toBeNull();
     expect(screen.queryByText("Ordering Policy")).toBeTruthy();
     view.unmount();
 
-    render(<CapacityQueueStatus raw={raw} leaf={false} />);
+    render(
+      <Entity id="root.default">
+        <CapacityQueueStatus raw={raw} leaf={false} />
+      </Entity>,
+    );
     expect(screen.queryByText("Queue State")).toBeNull();
     expect(screen.queryByText("Num Schedulable Applications")).toBeNull();
   });
@@ -103,7 +116,11 @@ describe("CapacityQueueStatus", () => {
       intraQueuePreemptionDisabled: false,
       maxApplicationLifetime: 0,
     } as unknown as CapacityRaw;
-    render(<CapacityQueueStatus raw={raw} leaf />);
+    render(
+      <Entity id="root.default">
+        <CapacityQueueStatus raw={raw} leaf />
+      </Entity>,
+    );
 
     expect(screen.getByText("enabled")).toBeTruthy();
     expect(screen.getByText("0")).toBeTruthy();
@@ -133,7 +150,11 @@ describe("FairQueueStatus", () => {
       numActiveApps: 4,
       numPendingApps: 5,
     } as unknown as FairQueueInfo;
-    render(<FairQueueStatus raw={raw} leaf />);
+    render(
+      <Entity id="root.default">
+        <FairQueueStatus raw={raw} leaf />
+      </Entity>,
+    );
     for (const label of [
       "Used Resources",
       "Demand Resources",
@@ -170,12 +191,20 @@ describe("FairQueueStatus", () => {
       reservedResources: undefined,
       preemptable: null,
     } as unknown as FairQueueInfo;
-    const view = render(<FairQueueStatus raw={raw} leaf />);
+    const view = render(
+      <Entity id="root.default">
+        <FairQueueStatus raw={raw} leaf />
+      </Entity>,
+    );
     expect(screen.getByText(/2,147,483,647 \(unlimited\)/)).toBeTruthy();
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
     view.unmount();
 
-    render(<FairQueueStatus raw={{ ...raw, maxApps: null } as unknown as FairQueueInfo} leaf={false} />);
+    render(
+      <Entity id="root.default">
+        <FairQueueStatus raw={{ ...raw, maxApps: null } as unknown as FairQueueInfo} leaf={false} />
+      </Entity>,
+    );
     expect(screen.getByText("parent queues have no preemptable field")).toBeTruthy();
     expect(screen.queryByText("Demand Resources")).toBeNull();
   });

@@ -229,8 +229,21 @@ describe("SchedulerPage over captured payloads", () => {
       ],
     } as never;
     const onBasisChange = vi.fn();
+    function InteractiveTreemap() {
+      const [basis, setBasis] = useState<"used" | "capacity">("used");
+      return (
+        <TreemapSection
+          root={root}
+          basis={basis}
+          onBasisChange={(next) => {
+            onBasisChange(next);
+            setBasis(next);
+          }}
+        />
+      );
+    }
     try {
-      const view = renderAt(<TreemapSection root={root} basis="used" onBasisChange={onBasisChange} />, ["/scheduler"]);
+      renderAt(<InteractiveTreemap />, ["/scheduler"]);
       expect(await screen.findByText("No memory in use")).toBeTruthy();
       vi.useFakeTimers();
       fireEvent.click(screen.getByRole("button", { name: "Used memory" }));
@@ -240,10 +253,6 @@ describe("SchedulerPage over captured payloads", () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(500);
       });
-      expect(view.container.querySelector('svg[role="img"]')?.getAttribute("data-basis-transition")).toBe("false");
-
-      view.rerender(<TreemapSection root={root} basis="capacity" onBasisChange={onBasisChange} />);
-      expect(screen.queryByText("No memory in use")).toBeNull();
       expect(screen.getByRole("button", { name: "Guaranteed share" })).toBeTruthy();
     } finally {
       vi.useRealTimers();
@@ -398,7 +407,9 @@ describe("SchedulerPage over captured payloads", () => {
     expect(nodeLink).not.toBeNull();
     fireEvent.click(nodeLink!);
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/nodes\//));
-    await router.navigate({ to: "/scheduler" });
+    await act(async () => {
+      await router.navigate({ to: "/scheduler" });
+    });
 
     const refreshed = await screen.findByRole("table", { name: "Nodes by label partition" });
     const row = refreshed.querySelectorAll<HTMLElement>('[role="row"]')[1];

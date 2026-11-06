@@ -447,7 +447,7 @@ describe("DAG minimap and accessible edge list", () => {
 
   it("labels SQL references, live shuffle metrics, missing endpoints, and activates edge menu items", () => {
     const sql = edge("sql");
-    const shuffle = edge("cross-stage", { toStage: 2 });
+    const shuffle = edge("cross-stage", { id: "shuffle", toStage: 2 });
     const fallback = edge("rdd", { id: "missing", from: "absent", to: "elsewhere" });
     const nodes = new Map([
       ["a", node({ node: { id: "a", label: "Scan", kind: "sql", ref: 10 } as never })],

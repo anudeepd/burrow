@@ -1,3 +1,4 @@
+import { Entity } from "~/ui/datum";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const copyTextMock = vi.hoisted(() => vi.fn<(text: string) => Promise<boolean>>());
@@ -20,23 +21,31 @@ afterEach(() => {
 describe("app detail primitives", () => {
   it("renders fields, hints, missing values, and split resources", () => {
     const { container } = render(
-      <dl>
-        <Field label="User:" field="app.user" raw="alice" hint="Submitted by the app owner" />
-        <FieldShell label={<span>custom label</span>} hint="Custom detail">
-          custom value
-        </FieldShell>
-        <FieldShell label="No hint:">plain value</FieldShell>
-        <UnavailableField label="Unavailable:" field="app.missing" reason="This endpoint omits it." />
-        <ResourcePair label="Preempted:" memoryMB={512} vcores={2} memoryField="app.preempted.memory" vcoresField="app.preempted.vcores" />
-        <ResourcePair
-          label={<span>Unavailable resources</span>}
-          hint="The RM omitted both components."
-          memoryMB={undefined}
-          vcores={null}
-          memoryField="app.missing.memory"
-          vcoresField="app.missing.vcores"
-        />
-      </dl>,
+      <Entity id="application_1_2">
+        <dl>
+          <Field label="User:" field="app.user" raw="alice" hint="Submitted by the app owner" />
+          <FieldShell label={<span>custom label</span>} hint="Custom detail">
+            custom value
+          </FieldShell>
+          <FieldShell label="No hint:">plain value</FieldShell>
+          <UnavailableField label="Unavailable:" field="app.missing" reason="This endpoint omits it." />
+          <ResourcePair
+            label="Preempted:"
+            memoryMB={512}
+            vcores={2}
+            memoryField="app.preempted.memory"
+            vcoresField="app.preempted.vcores"
+          />
+          <ResourcePair
+            label={<span>Unavailable resources</span>}
+            hint="The RM omitted both components."
+            memoryMB={undefined}
+            vcores={null}
+            memoryField="app.missing.memory"
+            vcoresField="app.missing.vcores"
+          />
+        </dl>
+      </Entity>,
     );
     expect(container.querySelector('[data-yf="app.user"][data-yv="alice"]')).toBeTruthy();
     expect(screen.getByText("custom value")).toBeTruthy();

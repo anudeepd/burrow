@@ -6,6 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { App, AppAttempt } from "~/api/schemas";
 import type { Meta } from "~/api/schemas/meta";
 import { parityStore } from "~/state/parity";
+import { Entity } from "~/ui/datum";
 
 // vitest does not expose globals, so Testing Library's automatic cleanup is not registered — do it explicitly.
 afterEach(() => {
@@ -311,7 +312,9 @@ describe("apps table column contract", () => {
     client.setQueryData(q.appAttempts(appId).queryKey, { appAttempts: { appAttempt: [attempt] } });
     render(
       <QueryClientProvider client={client}>
-        <BlacklistedCell appId={appId} />
+        <Entity id={appId}>
+          <BlacklistedCell appId={appId} />
+        </Entity>
       </QueryClientProvider>,
     );
     expect((await screen.findByText("1")).getAttribute("data-yf")).toBe("app.derived.blacklistedNodesCount");
@@ -323,7 +326,9 @@ describe("apps table column contract", () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network unavailable"));
     render(
       <QueryClientProvider client={client}>
-        <BlacklistedCell appId={appId} />
+        <Entity id={appId}>
+          <BlacklistedCell appId={appId} />
+        </Entity>
       </QueryClientProvider>,
     );
 

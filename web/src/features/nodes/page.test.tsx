@@ -4,6 +4,7 @@ import type { Node } from "~/api/schemas";
 import { copyText } from "~/lib/copy";
 import { Field, FieldLabel, KvGrid, PageHead, SearchField, Section, Stat, Unavailable, CopyButton } from "./page";
 import { TopConsumers } from "./TopConsumers";
+import { Entity } from "~/ui/datum";
 
 vi.mock("~/lib/copy", () => ({ copyText: vi.fn() }));
 
@@ -44,14 +45,16 @@ describe("shared node page components", () => {
 
   it("renders fields with and without parity data, hints, and mono styling", () => {
     const { container } = render(
-      <dl>
-        <Field label={<b>Custom label</b>} hint="Details" mono>
-          raw child
-        </Field>
-        <Field label="Node state" field="node.state" raw="RUNNING" hint="From the ResourceManager">
-          Running
-        </Field>
-      </dl>,
+      <Entity id="node-test">
+        <dl>
+          <Field label={<b>Custom label</b>} hint="Details" mono>
+            raw child
+          </Field>
+          <Field label="Node state" field="node.state" raw="RUNNING" hint="From the ResourceManager">
+            Running
+          </Field>
+        </dl>
+      </Entity>,
     );
     expect(screen.getByRole("button", { name: "About Field details" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "About Node state" })).toBeTruthy();
@@ -155,7 +158,11 @@ describe("TopConsumers", () => {
     const onOpen = vi.fn();
     const running = makeNode("running", "RUNNING", 4);
     const decommissioning = makeNode("draining", "DECOMMISSIONING", 2);
-    render(<TopConsumers nodes={[running, decommissioning, makeNode("lost", "LOST", 20)]} onOpen={onOpen} />);
+    render(
+      <Entity id="running">
+        <TopConsumers nodes={[running, decommissioning, makeNode("lost", "LOST", 20)]} onOpen={onOpen} />
+      </Entity>,
+    );
     const rows = screen.getAllByTestId("top-consumer-row");
     expect(rows).toHaveLength(2);
     expect(rows[1]?.textContent).toContain("draining");

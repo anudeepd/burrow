@@ -151,15 +151,15 @@ describe("node pages", () => {
     expect(cell).toBeTruthy();
     fireEvent.click(cell!);
     await waitFor(() => expect(router.state.location.search.sel).toBeTruthy());
-    const unhealthy = screen.getByRole("tab", { name: /Unhealthy/ });
-    fireEvent.click(unhealthy);
+    fireEvent.click(screen.getByRole("tab", { name: /Unhealthy/ }));
     await waitFor(() => expect(router.state.location.search.state).toBe("UNHEALTHY"));
     fireEvent.click(screen.getByRole("tab", { name: /All/ }));
     await waitFor(() => expect(router.state.location.search.state).toBe("ALL"));
 
     fireEvent.click(screen.getByRole("button", { name: "Table view" }));
-    await screen.findByRole("table", { name: "Cluster nodes" });
+    await waitFor(() => expect(router.state.location.search.view).not.toBe("heatmap"));
     fireEvent.click(screen.getByRole("button", { name: /Choose columns/ }));
+    await screen.findByRole("menuitem", { name: "Show all columns" });
     fireEvent.click(screen.getByRole("menuitem", { name: "Show all columns" }));
     const table = screen.getByRole("table", { name: "Cluster nodes" });
     fireEvent.click(table.querySelector('[data-col="id"] button')!);
@@ -169,13 +169,17 @@ describe("node pages", () => {
     const nmUiLink = firstNode!.querySelector<HTMLAnchorElement>('a[aria-label^="Open the NodeManager UI"]');
     expect(nmUiLink).not.toBeNull();
     nmUiLink!.addEventListener("click", (event) => event.preventDefault(), { once: true });
-    nmUiLink!.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    await act(async () => {
+      nmUiLink!.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    });
     expect(router.state.location.pathname).toBe("/nodes");
     const nodeLink = firstNode!.querySelector<HTMLAnchorElement>('a[href^="/nodes/"]');
     expect(nodeLink).not.toBeNull();
     fireEvent.click(nodeLink!);
     await waitFor(() => expect(router.state.location.pathname).not.toBe("/nodes/"));
-    await router.navigate({ to: "/nodes" });
+    await act(async () => {
+      await router.navigate({ to: "/nodes" });
+    });
     await screen.findByRole("table", { name: "Cluster nodes" });
     const reopenedNodeTable = screen.getByRole("table", { name: "Cluster nodes" });
     const reopenedFirstNode = reopenedNodeTable.querySelector<HTMLElement>('[role="row"][aria-rowindex="2"]');
@@ -237,7 +241,9 @@ describe("node pages", () => {
   it("shows paused and stale status for unhealthy clusters and discovers custom resources", async () => {
     const { client, router } = renderNodeRoute("nodes", "?cols=");
     expect(await screen.findByRole("table", { name: "Cluster nodes" })).toBeTruthy();
-    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, cols: undefined })) as never });
+    await act(async () => {
+      await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, cols: undefined })) as never });
+    });
 
     const query = client.getQueryCache().find({ queryKey: nq.nodes().queryKey })!;
     const response = client.getQueryData(nq.nodes().queryKey) as NodesResponse;
@@ -343,7 +349,9 @@ describe("node pages", () => {
       "label=empty-partition",
     );
 
-    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, open: "" })) as never });
+    await act(async () => {
+      await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, open: "" })) as never });
+    });
     expect(await screen.findByRole("heading", { name: "Nodes in DEFAULT" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Filter the node table by this label" }).getAttribute("href")).toContain("label=(none)");
   });

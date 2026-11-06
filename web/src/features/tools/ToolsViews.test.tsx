@@ -170,7 +170,9 @@ describe("tools pages", () => {
       });
     });
     expect(await screen.findByText("capability refresh failed")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    });
   });
 
   it("renders configuration summaries, detail, filtering and clear controls", async () => {
@@ -300,8 +302,12 @@ describe("tools pages", () => {
   it("closes a property when its selected row is activated again", async () => {
     const { router } = renderToolsPage("conf", "?open=yarn.admin.acl", { confKeys: ["yarn.admin.acl"] });
     await screen.findByRole("table", { name: "Configuration properties" });
-    await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, open: "yarn.admin.acl" })) as never, replace: true });
-    fireEvent.click(screen.getByRole("row", { name: /yarn.admin.acl/ }));
+    await act(async () => {
+      await router.navigate({ search: ((prev: Record<string, unknown>) => ({ ...prev, open: "yarn.admin.acl" })) as never, replace: true });
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("row", { name: /yarn.admin.acl/ }));
+    });
     await waitFor(() => expect((router.state.location.search as { open?: string }).open).toBeUndefined());
   });
 

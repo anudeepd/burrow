@@ -44,7 +44,7 @@ export function Modal({
   instant?: boolean;
 }) {
   return (
-    <BDialog.Root open={open} onOpenChange={onOpenChange} defaultOpen={defaultOpen}>
+    <BDialog.Root {...(open === undefined ? { defaultOpen } : { open })} onOpenChange={onOpenChange}>
       <BDialog.Portal>
         <BDialog.Backdrop className={cn("burrow-scrim fixed inset-0 z-overlay min-h-dvh", instant && "burrow-instant")} />
         <BDialog.Popup

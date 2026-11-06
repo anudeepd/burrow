@@ -414,7 +414,7 @@ export function StageDetailPage() {
         />
       </section>
 
-      <div className="flex flex-col gap-2">
+      <Entity id={entityKey} as="div" className="flex flex-col gap-2">
         {summaryQ.error && summaryQ.data !== undefined && (
           <SparkStaleErrorBanner error={summaryQ.error} subject="the task summary metrics" onRetry={() => void summaryQ.refetch()} />
         )}
@@ -436,7 +436,7 @@ export function StageDetailPage() {
             contentIdentity={`${appId}:${attempt ?? ""}:stage:${entityKey}:peak-memory`}
           />
         )}
-      </div>
+      </Entity>
 
       <section aria-label={`Tasks of stage ${stageId} attempt ${attemptId}`} className="flex min-h-0 flex-col gap-2">
         {taskQ.error && taskQ.data !== undefined && (

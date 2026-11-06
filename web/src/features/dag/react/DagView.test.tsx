@@ -291,7 +291,9 @@ describe("keyboard navigation", () => {
     expect(screen.getByTestId("dag-zoom").textContent).toBe(zoom);
     const shiftWheel = new WheelEvent("wheel", { deltaY: 20, bubbles: true, cancelable: true });
     Object.defineProperty(shiftWheel, "shiftKey", { value: true });
-    stage.dispatchEvent(shiftWheel);
+    act(() => {
+      stage.dispatchEvent(shiftWheel);
+    });
     expect(scroller.scrollTop).toBe(120);
   });
 
@@ -302,7 +304,9 @@ describe("keyboard navigation", () => {
     vi.spyOn(window, "getComputedStyle").mockReturnValue({ overflowY: "visible" } as CSSStyleDeclaration);
     const shiftWheel = new WheelEvent("wheel", { deltaY: 20, shiftKey: true, bubbles: true, cancelable: true });
     Object.defineProperty(shiftWheel, "shiftKey", { value: true });
-    stage.dispatchEvent(shiftWheel);
+    act(() => {
+      stage.dispatchEvent(shiftWheel);
+    });
     expect(shiftWheel.defaultPrevented).toBe(false);
     expect(screen.getByTestId("dag-zoom").textContent).toBe(zoom);
   });
@@ -323,26 +327,50 @@ describe("keyboard navigation", () => {
     const stage = screen.getByTestId("dag-stage");
     const up = new WheelEvent("wheel", { deltaY: -20, bubbles: true, cancelable: true });
     Object.defineProperty(up, "shiftKey", { value: true });
-    stage.dispatchEvent(up);
+    act(() => {
+      stage.dispatchEvent(up);
+    });
     expect(scroller.scrollTop).toBe(80);
     expect(up.defaultPrevented).toBe(true);
 
     Object.defineProperty(scroller, "scrollTop", { configurable: true, writable: true, value: 0 });
     const atTop = new WheelEvent("wheel", { deltaY: -20, bubbles: true, cancelable: true });
     Object.defineProperty(atTop, "shiftKey", { value: true });
-    stage.dispatchEvent(atTop);
+    act(() => {
+      stage.dispatchEvent(atTop);
+    });
     expect(atTop.defaultPrevented).toBe(false);
 
     const horizontal = new WheelEvent("wheel", { deltaY: 0, deltaX: 12, bubbles: true, cancelable: true });
     Object.defineProperty(horizontal, "shiftKey", { value: true });
-    stage.dispatchEvent(horizontal);
+    act(() => {
+      stage.dispatchEvent(horizontal);
+    });
     expect(scroller.scrollTop).toBe(12);
 
+    const minimapView = screen.getByTestId("dag-minimap").querySelector(".burrow-dag-minimap-view");
+    expect(["x", "y", "width", "height"].map((attribute) => minimapView?.getAttribute(attribute))).not.toContain("NaN");
     const before = screen.getByTestId("dag-zoom").textContent;
-    const modified = new WheelEvent("wheel", { deltaY: -3, deltaMode: 1, bubbles: true, cancelable: true });
-    Object.defineProperties(modified, { shiftKey: { value: true }, ctrlKey: { value: true } });
-    stage.dispatchEvent(modified);
+    const modified = new WheelEvent("wheel", { deltaY: -3, deltaMode: 1, clientX: 320, clientY: 180, bubbles: true, cancelable: true });
+    Object.defineProperties(modified, {
+      shiftKey: { value: true },
+      ctrlKey: { value: true },
+      clientX: { value: 320 },
+      clientY: { value: 180 },
+    });
+    expect([modified.deltaY, modified.deltaMode, modified.clientX, modified.clientY]).toEqual([-3, 1, 320, 180]);
+    expect([stage.getBoundingClientRect().left, stage.getBoundingClientRect().top]).toEqual([0, 0]);
+    act(() => {
+      stage.dispatchEvent(modified);
+    });
     await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(before));
+    const invalidGeometry = [...view.container.querySelectorAll<SVGElement>("svg *")].filter((element) =>
+      ["x", "y", "width", "height"].some((attribute) => {
+        const value = element.getAttribute(attribute);
+        return value !== null && !Number.isFinite(Number(value));
+      }),
+    );
+    expect(invalidGeometry.map((element) => element.outerHTML)).toEqual([]);
   });
 
   it("ignores secondary and chrome pointer presses and releases lazy pointer capture", async () => {
@@ -496,7 +524,9 @@ describe("interaction", () => {
     });
     Object.defineProperty(wheel, "clientX", { value: 320 });
     Object.defineProperty(wheel, "clientY", { value: 180 });
-    stage.dispatchEvent(wheel);
+    act(() => {
+      stage.dispatchEvent(wheel);
+    });
     expect(wheel.defaultPrevented).toBe(true);
     await waitFor(() => expect(screen.getByTestId("dag-zoom").textContent).not.toBe(beforeWheel));
 
@@ -575,7 +605,9 @@ describe("interaction", () => {
     Object.defineProperty(minimap, "releasePointerCapture", { configurable: true, value: () => {} });
     const zoom = screen.getByTestId("dag-zoom").textContent;
     const wheel = new WheelEvent("wheel", { deltaY: -120, bubbles: true, cancelable: true });
-    minimap.dispatchEvent(wheel);
+    act(() => {
+      minimap.dispatchEvent(wheel);
+    });
     expect(screen.getByTestId("dag-zoom").textContent).toBe(zoom);
 
     fireEvent.pointerDown(minimap, { pointerId: 12, clientX: 30, clientY: 20 });
@@ -1028,7 +1060,7 @@ describe("layout lifecycle, exports, and progress announcements", () => {
 
     view = pendingView();
     const wheel = new WheelEvent("wheel", { deltaY: -20, bubbles: true, cancelable: true });
-    await act(() => {
+    act(() => {
       screen.getByTestId("dag-stage").dispatchEvent(wheel);
     });
     expect(wheel.defaultPrevented).toBe(true);
