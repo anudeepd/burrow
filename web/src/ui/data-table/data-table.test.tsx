@@ -5,7 +5,13 @@ import type { ColDef } from "./features";
 const motionMocks = vi.hoisted(() => ({
   allowed: false,
   duration: null as number | null,
-  flash: vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation),
+  flash: vi.fn(
+    () =>
+      ({
+        cancel: vi.fn(),
+        finished: Promise.resolve(null as unknown as Animation),
+      }) as unknown as Animation,
+  ),
 }));
 const scrollBottomMocks = vi.hoisted(() => ({ skipObserver: false }));
 const widthMocks = vi.hoisted(() => ({ width: 0 }));
@@ -59,6 +65,8 @@ const { DataTable, defaultVisibilityOf } = await import("./data-table");
 const { Datum } = await import("../datum");
 const { EmptyState, ErrorState } = await import("../feedback");
 const { parityStore } = await import("~/state/parity");
+// WAAPI animations always expose a completion promise, including mocked animations.
+const animationFinished = Promise.resolve(null as unknown as Animation);
 let originalClientHeight: PropertyDescriptor | null | undefined;
 let originalAnimate: PropertyDescriptor | null | undefined;
 let originalClientWidth: PropertyDescriptor | null | undefined;
@@ -197,7 +205,7 @@ describe("DataTable", () => {
   it("does not add a table-entry animation while its page content is moving", () => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     originalGetAnimations = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getAnimations") ?? null;
-    const animate = vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation);
+    const animate = vi.fn(() => ({ cancel: vi.fn(), finished: animationFinished }) as unknown as Animation);
     const animation = (name: string, playState: AnimationPlayState) =>
       ({ animationName: name, playState } as unknown as Animation);
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
@@ -234,7 +242,7 @@ describe("DataTable", () => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     const animations: Array<{ cancel: ReturnType<typeof vi.fn>; playState: AnimationPlayState }> = [];
     const animate = vi.fn(function (this: HTMLElement) {
-      const animation = { cancel: vi.fn(), playState: "running" as AnimationPlayState };
+      const animation = { cancel: vi.fn(), finished: animationFinished, playState: "running" as AnimationPlayState };
       animations.push(animation);
       return animation as unknown as Animation;
     });
@@ -280,7 +288,7 @@ describe("DataTable", () => {
       this: HTMLElement,
       keyframes?: Keyframe[] | PropertyIndexedKeyframes | null,
     ) {
-      const animation = { cancel: vi.fn(), playState: "running" as AnimationPlayState };
+      const animation = { cancel: vi.fn(), finished: animationFinished, playState: "running" as AnimationPlayState };
       animations.push({ keyframes, animation });
       return animation as unknown as Animation;
     });
@@ -332,7 +340,7 @@ describe("DataTable", () => {
   it.each(["finished", "idle"] as const)("does not mistake a %s page animation for active motion", (playState) => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     originalGetAnimations = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getAnimations") ?? null;
-    const animate = vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation);
+    const animate = vi.fn(() => ({ cancel: vi.fn(), finished: animationFinished }) as unknown as Animation);
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
     Object.defineProperty(HTMLElement.prototype, "getAnimations", {
       configurable: true,
@@ -824,7 +832,7 @@ describe("DataTable", () => {
         options?: number | KeyframeAnimationOptions,
       ) {
         if (this.hasAttribute("data-burrow-table-root")) tableAnimations.push({ keyframes, options });
-        return { cancel: vi.fn(), oncancel: null, onfinish: null } as unknown as Animation;
+        return { cancel: vi.fn(), finished: animationFinished, oncancel: null, onfinish: null } as unknown as Animation;
       },
     });
     parityStore.setState(() => ({ enabled: false }));
@@ -866,7 +874,7 @@ describe("DataTable", () => {
     let reordered = false;
     let computedTransform = "none";
     const animate = vi.fn((_keyframes?: Keyframe[] | PropertyIndexedKeyframes | null, _options?: number | KeyframeAnimationOptions) => {
-      const animation = { cancel: vi.fn(), oncancel: null, onfinish: null };
+      const animation = { cancel: vi.fn(), finished: animationFinished, oncancel: null, onfinish: null };
       animations.push(animation);
       return animation as unknown as Animation;
     });
@@ -961,7 +969,7 @@ describe("DataTable", () => {
 
   it("skips row animations when the motion token duration is zero", async () => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
-    const animate = vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation);
+    const animate = vi.fn(() => ({ cancel: vi.fn(), finished: animationFinished }) as unknown as Animation);
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
     parityStore.setState(() => ({ enabled: false }));
     window.__BURROW_PARITY__ = false;
@@ -991,7 +999,7 @@ describe("DataTable", () => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     Object.defineProperty(HTMLElement.prototype, "animate", {
       configurable: true,
-      value: vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation),
+      value: vi.fn(() => ({ cancel: vi.fn(), finished: animationFinished }) as unknown as Animation),
     });
     parityStore.setState(() => ({ enabled: false }));
     window.__BURROW_PARITY__ = false;
@@ -1050,7 +1058,7 @@ describe("DataTable", () => {
     const animate = vi.fn(function (this: HTMLElement) {
       const isExit = this.getAttribute("role") === "presentation";
       if (isExit) exitNodes.push(this);
-      const animation = { cancel: vi.fn(), oncancel: null, onfinish: null };
+      const animation = { cancel: vi.fn(), finished: animationFinished, oncancel: null, onfinish: null };
       animations.push(animation);
       if (isExit) exitAnimations.push(animation);
       return animation as unknown as Animation;

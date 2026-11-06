@@ -42,12 +42,9 @@ export function tokenMs(el: Element | null, token: string, fallback: number): nu
 /** Cancel a WAAPI animation while handling only the expected rejection of its finished promise. */
 export function cancelAnimation(animation: Animation | undefined): void {
   if (!animation || animation.playState === "idle") return;
-  const finished = animation.finished;
-  if (finished) {
-    void finished.catch((error: unknown) => {
-      if (!(error instanceof DOMException && error.name === "AbortError")) throw error;
-    });
-  }
+  void animation.finished.catch((error: unknown) => {
+    if (!(error instanceof DOMException && error.name === "AbortError")) throw error;
+  });
   animation.cancel();
 }
 /** Fade changed tab content in place; `from` preserves opacity when a switch retargets in flight. */
