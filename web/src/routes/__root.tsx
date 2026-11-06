@@ -78,8 +78,24 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     >
       <head>
         {/* Theme-specific versioned URLs avoid stale favicon caches. */}
-        <link rel="icon" data-theme-favicon="" data-dark-href="/favicon.svg?v=3" data-light-href="/favicon-light.svg?v=1" href={faviconSvg} type="image/svg+xml" sizes="any" />
-        <link rel="icon" data-theme-favicon="" data-dark-href="/favicon.ico?v=2" data-light-href="/favicon-light.ico?v=1" href={faviconIco} type="image/x-icon" sizes="32x32" />
+        <link
+          rel="icon"
+          data-theme-favicon=""
+          data-dark-href="/favicon.svg?v=3"
+          data-light-href="/favicon-light.svg?v=1"
+          href={faviconSvg}
+          type="image/svg+xml"
+          sizes="any"
+        />
+        <link
+          rel="icon"
+          data-theme-favicon=""
+          data-dark-href="/favicon.ico?v=2"
+          data-light-href="/favicon-light.ico?v=1"
+          href={faviconIco}
+          type="image/x-icon"
+          sizes="32x32"
+        />
         {/* pre-paint theme/motion/parity bootstrap — external file so the strict CSP (script-src 'self') holds */}
         <script src="/theme-init.js" />
         <HeadContent />

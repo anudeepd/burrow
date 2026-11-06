@@ -117,7 +117,10 @@ describe("node pages", () => {
   });
 
   it("shows pending badges and heatmap skeletons until the node list loads", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => {})),
+    );
     const { client } = renderNodeRoute("nodes", "?view=heatmap", false);
     await screen.findByRole("heading", { name: "Nodes" });
 
@@ -137,7 +140,6 @@ describe("node pages", () => {
     expect(runningTab.querySelector(".burrow-skeleton")).toBeNull();
     expect(runningTab.textContent).toMatch(/Running\s*\d+/);
   });
-
 
   it("switches node views, filters state, selects a rack cell, and opens a node row", async () => {
     const { router } = renderNodeRoute("nodes");
@@ -733,7 +735,10 @@ describe("node pages", () => {
   });
 
   it("marks container summaries as loading while the NodeManager list is pending", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => {})),
+    );
     renderNodeDetail(true, { omitContainers: true });
     expect(await screen.findByLabelText("Node details")).toBeTruthy();
     const containerMemory = screen.getByText("Listed container memory");

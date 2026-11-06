@@ -641,10 +641,7 @@ describe("overview sections", () => {
     expect(await screen.findByRole("status", { name: "Loading cluster attention summary" })).toBeTruthy();
   });
   it("shows an incomplete summary when metrics and metadata are unavailable", async () => {
-    const { client } = renderOverview(
-      <OverviewAttentionSummary metrics={undefined} metricsPending={false} metricsError />,
-      false,
-    );
+    const { client } = renderOverview(<OverviewAttentionSummary metrics={undefined} metricsPending={false} metricsError />, false);
     await waitFor(() => expect(client.getQueryCache().find({ queryKey: ov.meta().queryKey })).toBeDefined());
     const metaQuery = client.getQueryCache().find({ queryKey: ov.meta().queryKey })!;
     metaQuery.setState({
@@ -660,7 +657,6 @@ describe("overview sections", () => {
     expect(screen.queryByRole("list", { name: "Reported conditions" })).toBeNull();
     expect(screen.queryByRole("heading", { name: "Needs attention" })).toBeNull();
   });
-
 
   it("summarizes a healthy cluster and flags unprobed configured services as incomplete", async () => {
     const { client } = renderOverview(

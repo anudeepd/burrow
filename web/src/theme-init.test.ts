@@ -11,7 +11,10 @@ const instrumentedBootstrap = createInstrumenter({
   coverageGlobalScopeFunc: false,
 }).instrumentSync(bootstrapSource, filename);
 
-function runBootstrap(prefs: Record<string, unknown> | undefined, options: { query?: string; parity?: boolean; lightPreference?: boolean } = {}) {
+function runBootstrap(
+  prefs: Record<string, unknown> | undefined,
+  options: { query?: string; parity?: boolean; lightPreference?: boolean } = {},
+) {
   const root = document.documentElement;
   root.removeAttribute("data-theme");
   root.removeAttribute("data-motion");

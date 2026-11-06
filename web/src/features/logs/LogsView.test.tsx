@@ -485,8 +485,6 @@ describe("LogsView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
-
-
   it("starts live search follow and tears down its refresh timer on unmount", async () => {
     class TestEventSource {
       static instances: TestEventSource[] = [];

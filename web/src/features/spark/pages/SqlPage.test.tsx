@@ -73,9 +73,7 @@ function renderSqlTab(
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkProvider
-        value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt, source: null, application, resolving: false }}
-      >
+      <SparkProvider value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt, source: null, application, resolving: false }}>
         <RouterProvider router={router} />
       </SparkProvider>
     </QueryClientProvider>,

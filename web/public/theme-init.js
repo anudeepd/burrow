@@ -5,7 +5,7 @@ globalThis.__zod_globalConfig = { ...globalThis.__zod_globalConfig, jitless: tru
 (() => {
   const el = document.documentElement;
   const updateFavicons = (theme) => {
-    for (const icon of document.querySelectorAll('link[data-dark-href][data-light-href]')) {
+    for (const icon of document.querySelectorAll("link[data-dark-href][data-light-href]")) {
       const href = theme === "light" ? icon.getAttribute("data-light-href") : icon.getAttribute("data-dark-href");
       if (href && icon.getAttribute("href") !== href) icon.setAttribute("href", href);
     }

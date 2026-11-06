@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createRef } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { RouteTabIndicator, TabContent, TabsList, TabsRoot, Tab } from "./tabs";
 
 afterEach(cleanup);

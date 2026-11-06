@@ -53,8 +53,11 @@ vi.mock("../scroll-bottom-fade", async (importOriginal) => {
   const original = await importOriginal<typeof import("../scroll-bottom-fade")>();
   return {
     ...original,
-    useHasMoreBelow: (...args: Parameters<typeof original.useHasMoreBelow>) =>
-      scrollBottomMocks.skipObserver ? { visible: false, sync: () => undefined } : original.useHasMoreBelow(...args),
+    useHasMoreBelow: (...args: Parameters<typeof original.useHasMoreBelow>) => {
+      const [ref, enabled, contentRef] = args;
+      const shouldObserve = !scrollBottomMocks.skipObserver && enabled;
+      return original.useHasMoreBelow(ref, shouldObserve, contentRef);
+    },
   };
 });
 
@@ -206,8 +209,7 @@ describe("DataTable", () => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     originalGetAnimations = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getAnimations") ?? null;
     const animate = vi.fn(() => ({ cancel: vi.fn(), finished: animationFinished }) as unknown as Animation);
-    const animation = (name: string, playState: AnimationPlayState) =>
-      ({ animationName: name, playState } as unknown as Animation);
+    const animation = (name: string, playState: AnimationPlayState) => ({ animationName: name, playState }) as unknown as Animation;
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
     Object.defineProperty(HTMLElement.prototype, "getAnimations", {
       configurable: true,
@@ -284,10 +286,7 @@ describe("DataTable", () => {
       keyframes: Keyframe[] | PropertyIndexedKeyframes | null | undefined;
       animation: { cancel: ReturnType<typeof vi.fn>; playState: AnimationPlayState };
     }> = [];
-    const animate = vi.fn(function (
-      this: HTMLElement,
-      keyframes?: Keyframe[] | PropertyIndexedKeyframes | null,
-    ) {
+    const animate = vi.fn(function (this: HTMLElement, keyframes?: Keyframe[] | PropertyIndexedKeyframes | null) {
       const animation = { cancel: vi.fn(), finished: animationFinished, playState: "running" as AnimationPlayState };
       animations.push({ keyframes, animation });
       return animation as unknown as Animation;
@@ -336,7 +335,6 @@ describe("DataTable", () => {
     expect(animate).toHaveBeenCalledTimes(3);
   });
 
-
   it.each(["finished", "idle"] as const)("does not mistake a %s page animation for active motion", (playState) => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     originalGetAnimations = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getAnimations") ?? null;
@@ -371,7 +369,6 @@ describe("DataTable", () => {
     expect(container.querySelector("[data-burrow-table-root]")).not.toBeNull();
     expect(animate).toHaveBeenCalledTimes(1);
   });
-
 
   it("renders wrapped headers that cannot be sorted", () => {
     const fixedColumns: ColDef<Row>[] = [

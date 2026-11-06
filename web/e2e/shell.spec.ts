@@ -361,7 +361,6 @@ test.describe("app shell", () => {
 
     const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "{}"), PREFS_KEY);
     expect(stored).toMatchObject({ theme: "light", tz: "utc" });
-
   });
 
   test("pre-paint light theme selects the light browser-tab favicon", async ({ page }) => {
@@ -371,14 +370,8 @@ test.describe("app shell", () => {
     }, PREFS_KEY);
     await gotoReady(page, "/apps");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    await expect(page.locator('link[data-theme-favicon][type="image/svg+xml"]')).toHaveAttribute(
-      "href",
-      "/favicon-light.svg?v=1",
-    );
-    await expect(page.locator('link[data-theme-favicon][type="image/x-icon"]')).toHaveAttribute(
-      "href",
-      "/favicon-light.ico?v=1",
-    );
+    await expect(page.locator('link[data-theme-favicon][type="image/svg+xml"]')).toHaveAttribute("href", "/favicon-light.svg?v=1");
+    await expect(page.locator('link[data-theme-favicon][type="image/x-icon"]')).toHaveAttribute("href", "/favicon-light.ico?v=1");
   });
 
   test("mobile connection settings explain theme and timestamp conversion without hover", async ({ page }) => {
