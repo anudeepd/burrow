@@ -207,6 +207,7 @@ export function AttemptsTab({
   columnVisibility,
   onColumnVisibilityChange,
   loading,
+  contentIdentity,
   error,
   toolbar,
 }: {
@@ -218,6 +219,7 @@ export function AttemptsTab({
   columnVisibility: ColumnVisibilityState;
   onColumnVisibilityChange: (v: ColumnVisibilityState) => void;
   loading?: boolean;
+  contentIdentity?: string;
   error?: DataTableProps<AppAttempt>["error"];
   toolbar?: React.ReactNode;
 }) {
@@ -234,6 +236,7 @@ export function AttemptsTab({
       onColumnVisibilityChange={onColumnVisibilityChange}
       defaultVisibility={ATTEMPT_DEFAULT_VISIBILITY}
       loading={loading}
+      contentIdentity={contentIdentity}
       error={error}
       empty={<p className="p-6 text-center text-small text-ink-3">The RM reports no attempts for this application.</p>}
       totalCount={attempts.length}

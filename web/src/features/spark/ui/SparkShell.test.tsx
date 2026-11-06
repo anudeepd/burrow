@@ -278,6 +278,9 @@ describe("SparkShell", () => {
 
     fireEvent.click(screen.getByRole("link", { name: "Stages" }));
     await waitFor(() => expect(completions).toHaveLength(1));
+    await waitFor(() =>
+      expect(screen.getByRole("link", { name: "Stages" }).querySelector('[aria-hidden="true"]')).toBeTruthy(),
+    );
     fireEvent.click(screen.getByRole("link", { name: "Executors" }));
     await waitFor(() => expect(completions).toHaveLength(2));
 

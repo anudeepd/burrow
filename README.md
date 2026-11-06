@@ -68,7 +68,7 @@ The [feature guide](https://github.com/anudeepd/burrow/blob/master/docs/features
 [![TanStack Virtual](https://img.shields.io/badge/TanStack-Virtual-FF4154)](https://tanstack.com/)
 [![TanStack Pacer](https://img.shields.io/badge/TanStack-Pacer-FF4154)](https://tanstack.com/)
 [![TanStack Hotkeys](https://img.shields.io/badge/TanStack-Hotkeys-FF4154)](https://tanstack.com/)
-[![Bun 1.4.3](https://img.shields.io/badge/Bun-1.4.3-fbf0df?logo=bun&logoColor=000000)](https://bun.sh/)
+[![Bun 1.4.4](https://img.shields.io/badge/Bun-1.4.4-fbf0df?logo=bun&logoColor=000000)](https://bun.sh/)
 [![Vite 8.3](https://img.shields.io/badge/Vite-8.3-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS 4.3](https://img.shields.io/badge/Tailwind_CSS-4.3-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Vitest 5](https://img.shields.io/badge/Vitest-5-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
@@ -81,7 +81,8 @@ The [feature guide](https://github.com/anudeepd/burrow/blob/master/docs/features
 | Development and verification | Bun, Vitest, Testing Library, Playwright, Biome, Cargo tests, Clippy and rustfmt |
 | Packaging | Maturin-built `yarn-burrow` platform wheel containing one Rust binary with the web UI embedded |
 
-The versions shown in badges are checked against the project manifests and lockfiles; Bun 1.4.3 is the version recorded in the verification environment. See the [architecture overview](https://github.com/anudeepd/burrow/blob/master/docs/architecture.md) for implementation details.
+The version badges match the project manifests and lockfiles. Bun 1.4.4 is pinned in `web/package.json` and CI for its Brotli
+decoder fix ([CVE-2026-111497](https://github.com/oven-sh/bun/security/advisories/GHSA-663w-cv8g-jj2p)). See the [architecture overview](https://github.com/anudeepd/burrow/blob/master/docs/architecture.md) for implementation details.
 
 ## Limitations
 

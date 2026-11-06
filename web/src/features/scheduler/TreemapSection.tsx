@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { CircleHelp } from "lucide-react";
 import { Button } from "~/ui/button";
 import { fmtMB } from "~/lib/format";
-import { TabContent } from "~/ui/tabs";
 import { Tooltip } from "~/ui/tooltip";
 import { QueueTreemap, TreemapList, type TreemapItem } from "./Treemap";
 import { leafNodes, metricsOf, partitionOf, pressurePctOf, type QueueNode } from "./model";
@@ -134,13 +133,17 @@ export function TreemapSection({
       }
       className={className}
     >
-      {/* The figure renders in both states so the pane keeps its height (and its legend, which belongs to it): the
-          empty case overlays the message inside the same frame instead of swapping a shorter box in. */}
-      <TabContent value={basis} className="relative">
-        <QueueTreemap items={items} basis={basis} label="Queue resource map" animateGeometry={animateGeometry} />
+      {/* Only the map/result changes mode; its legend and the section controls stay immediate. */}
+      <QueueTreemap
+        items={items}
+        basis={basis}
+        label="Queue resource map"
+        animateGeometry={animateGeometry}
+        contentIdentity={`${basis}\0${partition}`}
+      >
         {basis === "used" && totalUsed === 0 && (
           <div className="absolute inset-0 grid place-items-center px-4 text-center">
-            <div className="burrow-enter-pop max-w-sm">
+            <div className="max-w-sm">
               <p className="text-body font-medium text-ink">No memory in use</p>
               <p className="mt-1 text-small text-ink-3">View guaranteed shares to see how capacity is divided.</p>
               <Button size="sm" variant="quiet" className="mt-3" onClick={() => changeBasis("capacity")}>
@@ -149,7 +152,7 @@ export function TreemapSection({
             </div>
           </div>
         )}
-      </TabContent>
+      </QueueTreemap>
       <TreemapList items={items} />
     </Section>
   );

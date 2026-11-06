@@ -9,6 +9,7 @@
 import { cn } from "~/lib/cn";
 import { Datum } from "~/ui/datum";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
+import { TabContent } from "~/ui/tabs";
 import { fmtBytes, fmtDuration, fmtInt } from "~/lib/format";
 import { type MetricUnit, type QuantileSeries, seriesOf } from "../data/format";
 import type { SparkStage, SparkTaskSummary } from "../data/schemas";
@@ -229,57 +230,61 @@ export function DistributionTable({
   metrics,
   title = "Summary Metrics",
   fieldPrefix = "spark.stage.",
+  contentIdentity,
 }: {
   metrics: DistMetric[];
   title?: string;
   fieldPrefix?: string;
+  contentIdentity?: string;
 }) {
   if (metrics.length === 0) return null;
   const quantiles = metrics[0]?.series?.quantiles ?? [];
   return (
     <section aria-label={title} className="flex flex-col gap-2">
       <h3 className="text-body font-semibold text-ink">{title}</h3>
-      <DetailTableScroller ariaLabel={`${title} quantiles`} className="rounded-lg border border-seam bg-fabric">
-        <table className="w-full min-w-[560px] text-small">
-          <thead>
-            <tr className="border-b border-seam text-ink-3">
-              <th scope="col" className="px-2.5 py-1.5 text-left font-medium">
-                Metric
-              </th>
-              {quantiles.map((q) => (
-                <th key={q} scope="col" className="px-2.5 py-1.5 text-right font-medium tnum">
-                  {`${+(q * 100).toFixed(1)}%`}
+      <TabContent initial={contentIdentity != null} value={contentIdentity ?? ""}>
+        <DetailTableScroller ariaLabel={`${title} quantiles`} className="rounded-lg border border-seam bg-fabric">
+          <table className="w-full min-w-[560px] text-small">
+            <thead>
+              <tr className="border-b border-seam text-ink-3">
+                <th scope="col" className="px-2.5 py-1.5 text-left font-medium">
+                  Metric
                 </th>
-              ))}
-              <th scope="col" className="px-2.5 py-1.5 text-left font-medium">
-                Distribution
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {metrics.map((m) => (
-              <OptionalTooltip key={m.key} label={m.hint}>
-                <tr key={m.key} className="border-b border-seam-soft last:border-0">
-                  <th scope="row" className="px-2.5 py-1.5 text-left font-normal text-ink-2">
-                    {m.label}
+                {quantiles.map((q) => (
+                  <th key={q} scope="col" className="px-2.5 py-1.5 text-right font-medium tnum">
+                    {`${+(q * 100).toFixed(1)}%`}
                   </th>
-                  {quantiles.map((q, i) => (
-                    <td key={q} className={cn("px-2.5 py-1.5 text-right tnum", i === quantiles.length - 1 && "font-medium text-ink")}>
-                      {fmt(m.series?.values[i], m.unit)}
+                ))}
+                <th scope="col" className="px-2.5 py-1.5 text-left font-medium">
+                  Distribution
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.map((m) => (
+                <OptionalTooltip key={m.key} label={m.hint}>
+                  <tr key={m.key} className="border-b border-seam-soft last:border-0">
+                    <th scope="row" className="px-2.5 py-1.5 text-left font-normal text-ink-2">
+                      {m.label}
+                    </th>
+                    {quantiles.map((q, i) => (
+                      <td key={q} className={cn("px-2.5 py-1.5 text-right tnum", i === quantiles.length - 1 && "font-medium text-ink")}>
+                        {fmt(m.series?.values[i], m.unit)}
+                      </td>
+                    ))}
+                    {/* Rule 2: the bar chart *is* the value, so it carries the field id and the raw quantile array. */}
+                    <td className="px-2.5 py-1.5">
+                      <Datum field={`${fieldPrefix}${m.field}`} raw={m.series?.values} fmt="text" as="div" className="inline-block">
+                        {m.series && <QuantileBars series={m.series} unit={m.unit} label={m.label} />}
+                      </Datum>
                     </td>
-                  ))}
-                  {/* Rule 2: the bar chart *is* the value, so it carries the field id and the raw quantile array. */}
-                  <td className="px-2.5 py-1.5">
-                    <Datum field={`${fieldPrefix}${m.field}`} raw={m.series?.values} fmt="text" as="div" className="inline-block">
-                      {m.series && <QuantileBars series={m.series} unit={m.unit} label={m.label} />}
-                    </Datum>
-                  </td>
-                </tr>
-              </OptionalTooltip>
-            ))}
-          </tbody>
-        </table>
-      </DetailTableScroller>
+                  </tr>
+                </OptionalTooltip>
+              ))}
+            </tbody>
+          </table>
+        </DetailTableScroller>
+      </TabContent>
     </section>
   );
 }

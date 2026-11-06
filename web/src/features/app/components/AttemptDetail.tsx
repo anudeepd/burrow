@@ -16,6 +16,8 @@ import { DetailTableScroller } from "~/ui/detail-table-scroller";
 import { DataTable } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
+import { Skeleton } from "~/ui/feedback";
 import { LogLink } from "./LogLink";
 import { rewriteUpstreamUrl, useUpstreamBases } from "~/lib/upstream-url";
 import { CopyButton, Section } from "./Field";
@@ -204,20 +206,24 @@ export function AttemptDetail({
   app,
   attempt,
   containers,
+  containersLoading = false,
   containersUnavailable,
   containersError = false,
   detail,
+  detailLoading = false,
   now,
 }: {
   app: App;
   attempt: AppAttempt;
   containers: readonly Container[];
+  containersLoading?: boolean;
   /** true when the RM answered `{}`: it no longer holds containers for this attempt (finished apps) */
   containersUnavailable: boolean;
   /** true when the current container request failed and returned no usable rows */
   containersError?: boolean;
   /** the single-attempt resource; undefined while loading or when the RM does not serve it */
   detail?: AppAttemptDetail;
+  detailLoading?: boolean;
   now: number;
 }) {
   const bases = useUpstreamBases();
@@ -236,7 +242,7 @@ export function AttemptDetail({
   const requestTable = useLocalTableState(REQUEST_VISIBILITY);
 
   return (
-    <Entity id={attempt.appAttemptId} className="flex min-w-0 flex-col gap-4">
+    <Entity id={attempt.appAttemptId} data-page-motion="content" className="flex min-w-0 flex-col gap-4">
       <Section
         variant="plain"
         title={
@@ -247,150 +253,164 @@ export function AttemptDetail({
         }
         actions={<CopyButton text={attempt.appAttemptId} label="Copy attempt ID" />}
       >
-        <Datum field="attempt.appAttemptId" raw={attempt.appAttemptId} className="break-all font-mono text-small text-ink-3" />
-        <DetailTableScroller ariaLabel="Attempt summary" className="rounded-lg border border-seam bg-fabric">
-          <table className="w-full text-body sm:min-w-[40rem]">
-            <thead>
-              <tr className="border-b border-seam bg-fabric-2 text-small text-ink-3">
-                {["Started", "Finished", "Duration", "Retained containers"].map((label) => (
-                  <th key={label} scope="col" className="px-3 py-1.5 text-left font-medium">
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="px-3 py-1.5 tnum">
-                  <Datum field="attempt.startTime" raw={attempt.startTime} fmt="epoch" />
-                </td>
-                <td className="px-3 py-1.5 tnum">
-                  <Datum field="attempt.finishedTime" raw={attempt.finishedTime} fmt="epoch">
-                    {attempt.finishedTime === 0 ? "In progress" : undefined}
-                  </Datum>
-                </td>
-                <td className="px-3 py-1.5 tnum">
-                  <Datum field="attempt.derived.elapsedText" raw={elapsed} fmt="ms">
-                    {fmtDuration(elapsed)}
-                  </Datum>
-                </td>
-                <td className="px-3 py-1.5 tnum" data-burrow="retained-container-count">
-                  {containersUnavailable ? <span className="text-ink-3">Unavailable</span> : containers.length}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </DetailTableScroller>
+        <TabContent initial value={attempt.appAttemptId} className="flex flex-col gap-3">
+          <Datum field="attempt.appAttemptId" raw={attempt.appAttemptId} className="break-all font-mono text-small text-ink-3" />
+          <DetailTableScroller ariaLabel="Attempt summary" className="rounded-lg border border-seam bg-fabric">
+            <table className="w-full text-body sm:min-w-[40rem]">
+              <thead>
+                <tr className="border-b border-seam bg-fabric-2 text-small text-ink-3">
+                  {["Started", "Finished", "Duration", "Retained containers"].map((label) => (
+                    <th key={label} scope="col" className="px-3 py-1.5 text-left font-medium">
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="px-3 py-1.5 tnum">
+                    <Datum field="attempt.startTime" raw={attempt.startTime} fmt="epoch" />
+                  </td>
+                  <td className="px-3 py-1.5 tnum">
+                    <Datum field="attempt.finishedTime" raw={attempt.finishedTime} fmt="epoch">
+                      {attempt.finishedTime === 0 ? "In progress" : undefined}
+                    </Datum>
+                  </td>
+                  <td className="px-3 py-1.5 tnum">
+                    <Datum field="attempt.derived.elapsedText" raw={elapsed} fmt="ms">
+                      {fmtDuration(elapsed)}
+                    </Datum>
+                  </td>
+                  <td className="px-3 py-1.5 tnum" data-burrow="retained-container-count">
+                    {containersLoading ? (
+                      <span className="text-ink-3">Loading…</span>
+                    ) : containersUnavailable ? (
+                      <span className="text-ink-3">Unavailable</span>
+                    ) : (
+                      containers.length
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </DetailTableScroller>
+        </TabContent>
       </Section>
 
-      <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
-        <DetailsTable title="Application master">
-          <DetailRow label="Container" field="attempt.containerId" raw={attempt.containerId}>
-            {attempt.containerId ? (
-              <Link
-                to="/apps/$appId/containers/$containerId"
-                params={{ appId: app.id, containerId: attempt.containerId }}
-                className="break-all font-mono text-caption text-live underline-offset-2 hover:underline"
-              >
-                {attempt.containerId}
-              </Link>
-            ) : (
-              "Unassigned"
-            )}
-          </DetailRow>
-          <DetailRow label="Host / RPC port" field="attempt.derived.hostPortText" raw={hostPortText} mono>
-            {detail ? hostPortText : "Not available"}
-            <Datum field="attempt.host" raw={detail?.host} as="span" className="sr-only" bare />
-            <Datum field="attempt.rpcPort" raw={detail?.rpcPort} fmt="int" as="span" className="sr-only" bare />
-          </DetailRow>
-          <DetailRow label="Node ID" field="attempt.nodeId" raw={attempt.nodeId} mono>
-            {attempt.nodeId || "Unassigned"}
-          </DetailRow>
-          <DetailRow label="Node HTTP address" field="attempt.nodeHttpAddress" raw={attempt.nodeHttpAddress} mono />
-          <DetailRow label="Exposed ports" field="attempt.exportPorts" raw={attempt.exportPorts} mono>
-            {attempt.exportPorts && attempt.exportPorts !== "null" ? attempt.exportPorts : "None"}
-          </DetailRow>
-          <DetailRow label="Allocated resources">
-            {amContainer ? (
-              <Entity id={amContainer.containerId} as="span" className="tnum">
-                <Datum field="container.assignedNodeId" raw={amContainer.assignedNodeId} as="span" className="sr-only" />
-                <Datum field="container.allocatedMB" raw={amContainer.allocatedMB} fmt="mb" /> ·{" "}
-                <Datum field="container.allocatedVCores" raw={amContainer.allocatedVCores} fmt="int" /> vCores
-              </Entity>
-            ) : (
-              <span className="text-small text-ink-3">Not retained by the ResourceManager</span>
-            )}
-          </DetailRow>
-        </DetailsTable>
-        <DetailsTable title="Tracking and diagnostics">
-          <DetailRow label="Attempt tracking" field="attempt.derived.trackingUiText" raw={trackingText}>
-            <Datum field="attempt.trackingUrl" raw={detail?.trackingUrl}>
-              {!detail ? (
-                "Not available"
-              ) : trackingText === "Unassigned" || !detail.trackingUrl ? (
-                "Unassigned"
-              ) : (
-                <a
-                  href={rewriteUpstreamUrl(detail.trackingUrl, bases).href}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="text-live underline-offset-2 hover:underline"
+      <TabContent initial={!detailLoading} value={`${attempt.appAttemptId}:${detailLoading ? "pending" : "ready"}`}>
+        {detailLoading ? (
+          <Skeleton className="h-64 w-full" />
+        ) : (
+          <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">
+            <DetailsTable title="Application master">
+              <DetailRow label="Container" field="attempt.containerId" raw={attempt.containerId}>
+                {attempt.containerId ? (
+                  <Link
+                    to="/apps/$appId/containers/$containerId"
+                    params={{ appId: app.id, containerId: attempt.containerId }}
+                    className="break-all font-mono text-caption text-live underline-offset-2 hover:underline"
+                  >
+                    {attempt.containerId}
+                  </Link>
+                ) : (
+                  "Unassigned"
+                )}
+              </DetailRow>
+              <DetailRow label="Host / RPC port" field="attempt.derived.hostPortText" raw={hostPortText} mono>
+                {detail ? hostPortText : "Not available"}
+                <Datum field="attempt.host" raw={detail?.host} as="span" className="sr-only" bare />
+                <Datum field="attempt.rpcPort" raw={detail?.rpcPort} fmt="int" as="span" className="sr-only" bare />
+              </DetailRow>
+              <DetailRow label="Node ID" field="attempt.nodeId" raw={attempt.nodeId} mono>
+                {attempt.nodeId || "Unassigned"}
+              </DetailRow>
+              <DetailRow label="Node HTTP address" field="attempt.nodeHttpAddress" raw={attempt.nodeHttpAddress} mono />
+              <DetailRow label="Exposed ports" field="attempt.exportPorts" raw={attempt.exportPorts} mono>
+                {attempt.exportPorts && attempt.exportPorts !== "null" ? attempt.exportPorts : "None"}
+              </DetailRow>
+              <DetailRow label="Allocated resources">
+                {amContainer ? (
+                  <Entity id={amContainer.containerId} as="span" className="tnum">
+                    <Datum field="container.assignedNodeId" raw={amContainer.assignedNodeId} as="span" className="sr-only" />
+                    <Datum field="container.allocatedMB" raw={amContainer.allocatedMB} fmt="mb" /> ·{" "}
+                    <Datum field="container.allocatedVCores" raw={amContainer.allocatedVCores} fmt="int" /> vCores
+                  </Entity>
+                ) : (
+                  <span className="text-small text-ink-3">Not retained by the ResourceManager</span>
+                )}
+              </DetailRow>
+            </DetailsTable>
+            <DetailsTable title="Tracking and diagnostics">
+              <DetailRow label="Attempt tracking" field="attempt.derived.trackingUiText" raw={trackingText}>
+                <Datum field="attempt.trackingUrl" raw={detail?.trackingUrl}>
+                  {!detail ? (
+                    "Not available"
+                  ) : trackingText === "Unassigned" || !detail.trackingUrl ? (
+                    "Unassigned"
+                  ) : (
+                    <a
+                      href={rewriteUpstreamUrl(detail.trackingUrl, bases).href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-live underline-offset-2 hover:underline"
+                    >
+                      {trackingText}
+                    </a>
+                  )}
+                </Datum>
+              </DetailRow>
+              <DetailRow label="Application tracking">
+                {trackingKind(app) === "unassigned" || !app.trackingUrl ? (
+                  "Unassigned"
+                ) : (
+                  <a
+                    href={rewriteUpstreamUrl(app.trackingUrl, bases).href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-live underline-offset-2 hover:underline"
+                  >
+                    {trackingKind(app) === "history" ? "History" : "Application UI"}
+                  </a>
+                )}
+              </DetailRow>
+              <DetailRow label="Aggregated logs" field="attempt.logsLink" raw={attempt.logsLink || null}>
+                {attempt.logsLink ? (
+                  <a
+                    href={rewriteUpstreamUrl(attempt.logsLink, bases).href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-live underline-offset-2 hover:underline"
+                  >
+                    Open aggregated logs
+                  </a>
+                ) : (
+                  <span className="text-small text-ink-3">Not available</span>
+                )}
+              </DetailRow>
+              <DetailRow label="Diagnostics">
+                <Datum
+                  field="attempt.diagnosticsInfo"
+                  raw={diagnostics}
+                  as={diagnostics ? "pre" : "span"}
+                  data-burrow="attempt-diagnostics"
+                  className={
+                    diagnostics
+                      ? "burrow-scroll max-h-48 overflow-auto font-mono text-caption leading-relaxed whitespace-pre-wrap text-ink-2"
+                      : "text-ink-3"
+                  }
                 >
-                  {trackingText}
-                </a>
-              )}
-            </Datum>
-          </DetailRow>
-          <DetailRow label="Application tracking">
-            {trackingKind(app) === "unassigned" || !app.trackingUrl ? (
-              "Unassigned"
-            ) : (
-              <a
-                href={rewriteUpstreamUrl(app.trackingUrl, bases).href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-live underline-offset-2 hover:underline"
-              >
-                {trackingKind(app) === "history" ? "History" : "Application UI"}
-              </a>
-            )}
-          </DetailRow>
-          <DetailRow label="Aggregated logs" field="attempt.logsLink" raw={attempt.logsLink || null}>
-            {attempt.logsLink ? (
-              <a
-                href={rewriteUpstreamUrl(attempt.logsLink, bases).href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-live underline-offset-2 hover:underline"
-              >
-                Open aggregated logs
-              </a>
-            ) : (
-              <span className="text-small text-ink-3">Not available</span>
-            )}
-          </DetailRow>
-          <DetailRow label="Diagnostics">
-            <Datum
-              field="attempt.diagnosticsInfo"
-              raw={diagnostics}
-              as={diagnostics ? "pre" : "span"}
-              data-burrow="attempt-diagnostics"
-              className={
-                diagnostics
-                  ? "burrow-scroll max-h-48 overflow-auto font-mono text-caption leading-relaxed whitespace-pre-wrap text-ink-2"
-                  : "text-ink-3"
-              }
-            >
-              {!detail ? "Not available" : diagnostics || "None reported"}
-            </Datum>
-          </DetailRow>
-          <DetailRow label="Application diagnostics">
-            <Link to="/apps/$appId" params={{ appId: app.id }} className="text-live underline-offset-2 hover:underline">
-              View application details
-            </Link>
-          </DetailRow>
-        </DetailsTable>
-      </div>
+                  {!detail ? "Not available" : diagnostics || "None reported"}
+                </Datum>
+              </DetailRow>
+              <DetailRow label="Application diagnostics">
+                <Link to="/apps/$appId" params={{ appId: app.id }} className="text-live underline-offset-2 hover:underline">
+                  View application details
+                </Link>
+              </DetailRow>
+            </DetailsTable>
+          </div>
+        )}
+      </TabContent>
 
       <Section
         variant="plain"
@@ -400,45 +420,46 @@ export function AttemptDetail({
           !containersUnavailable && <span className="text-small text-ink-3 tnum">{containers.length} retained</span>
         }
       >
-        {containers.length === 0 ? (
-          <div
-            className="rounded-lg border border-seam bg-fabric px-3 py-2.5"
-            data-burrow={containersError ? "containers-error" : "containers-unavailable"}
-          >
-            <p className="text-body text-ink-2">
-              {containersError
-                ? "Container records could not be loaded."
-                : containersUnavailable
-                  ? "Container records are no longer retained for this finished attempt."
-                  : "No container records are currently available."}
-            </p>
-            <p className="mt-0.5 text-small text-ink-3">
-              {containersError
-                ? "The ResourceManager did not return a usable container list; see the error above and retry."
-                : containersUnavailable
-                  ? "The original allocation count is unavailable."
-                  : "The ResourceManager has not returned any containers for this attempt."}
-              {containersUnavailable && attempt.logsLink && " Aggregated logs are available above."}
-            </p>
-          </div>
-        ) : (
-          <div className="flex min-h-0 flex-col" style={{ height: Math.min(420, 100 + containers.length * 34) }}>
-            <DataTable<Container>
-              data={containers}
-              columns={containerColumns(app.id)}
-              getRowId={(c) => c.containerId}
-              label="Attempt containers"
-              storageKey="attempt-containers"
-              sorting={containerTable.sorting}
-              onSortingChange={containerTable.setSorting}
-              columnVisibility={containerTable.visibility}
-              onColumnVisibilityChange={containerTable.setVisibility}
-              defaultVisibility={CONTAINER_VISIBILITY}
-              exportName={`${attempt.appAttemptId}-containers`}
-              rowVersion={(c) => `${c.containerState}:${c.containerExitStatus}`}
-            />
-          </div>
-        )}
+        <div className="flex min-h-0 flex-col" style={{ height: containersLoading ? 300 : Math.min(420, 140 + containers.length * 34) }}>
+          <DataTable<Container>
+            data={containers}
+            loading={containersLoading}
+            contentIdentity={attempt.appAttemptId}
+            empty={
+              <div
+                className="rounded-lg border border-seam bg-fabric px-3 py-2.5"
+                data-burrow={containersError ? "containers-error" : "containers-unavailable"}
+              >
+                <p className="text-body text-ink-2">
+                  {containersError
+                    ? "Container records could not be loaded."
+                    : containersUnavailable
+                      ? "Container records are no longer retained for this finished attempt."
+                      : "No container records are currently available."}
+                </p>
+                <p className="mt-0.5 text-small text-ink-3">
+                  {containersError
+                    ? "The ResourceManager did not return a usable container list; see the error above and retry."
+                    : containersUnavailable
+                      ? "The original allocation count is unavailable."
+                      : "The ResourceManager has not returned any containers for this attempt."}
+                  {containersUnavailable && attempt.logsLink && " Aggregated logs are available above."}
+                </p>
+              </div>
+            }
+            columns={containerColumns(app.id)}
+            getRowId={(c) => c.containerId}
+            label="Attempt containers"
+            storageKey="attempt-containers"
+            sorting={containerTable.sorting}
+            onSortingChange={containerTable.setSorting}
+            columnVisibility={containerTable.visibility}
+            onColumnVisibilityChange={containerTable.setVisibility}
+            defaultVisibility={CONTAINER_VISIBILITY}
+            exportName={`${attempt.appAttemptId}-containers`}
+            rowVersion={(c) => `${c.containerState}:${c.containerExitStatus}`}
+          />
+        </div>
       </Section>
 
       <Section
@@ -465,6 +486,7 @@ export function AttemptDetail({
           <div className="flex min-h-0 flex-col" style={{ height: Math.min(352, 100 + requests.length * 34) }}>
             <DataTable<ResourceRequestInfo>
               data={requests}
+              contentIdentity={attempt.appAttemptId}
               columns={requestColumns()}
               getRowId={(r) =>
                 `${r.allocationRequestId}-${r.priority}-${r.resourceName ?? "*"}-${r.executionTypeRequest?.executionType ?? ""}`
@@ -483,62 +505,64 @@ export function AttemptDetail({
       </Section>
 
       <Section variant="plain" title="Scheduling details">
-        <DetailsTable title="Node exclusions">
-          <DetailRow label="Excluded by application" field="attempt.derived.appBlacklistedNodesText" raw={appBlacklistText}>
-            <Datum field="attempt.blacklistedNodes" raw={attempt.blacklistedNodes}>
-              {appBlacklistText}
-            </Datum>
-          </DetailRow>
-          <DetailRow label="Excluded by system" field="attempt.derived.rmBlacklistedNodesText" raw={systemBlacklistText}>
-            <Datum field="attempt.nodesBlacklistedBySystem" raw={attempt.nodesBlacklistedBySystem}>
-              {systemBlacklistText}
-            </Datum>
-          </DetailRow>
-        </DetailsTable>
-        <details open={parity || undefined} className="overflow-hidden rounded-lg border border-seam bg-fabric">
-          <summary className="cursor-pointer bg-fabric-2 px-3 py-1.5 text-small font-medium text-ink-2">
-            Container locality · unavailable
-          </summary>
-          <p className="px-3 py-2 text-small text-ink-3" data-burrow="locality-unavailable">
-            The ResourceManager does not report locality counts for this attempt. A dash means unavailable, not zero.
-          </p>
-          <DetailTableScroller ariaLabel="Container locality matrix">
-            <table className="w-full min-w-[38rem] text-body" data-burrow="locality-matrix">
-              <thead>
-                <tr className="border-y border-seam bg-fabric-2 text-small text-ink-3">
-                  <th scope="col" className="px-3 py-1.5 text-left font-medium">
-                    Containers / request locality
-                  </th>
-                  {LOCALITY_MATRIX.columns.map((label) => (
-                    <th key={label} scope="col" className="px-3 py-1.5 text-right font-medium">
-                      {label}
+        <TabContent initial value={attempt.appAttemptId} className="flex flex-col gap-3">
+          <DetailsTable title="Node exclusions">
+            <DetailRow label="Excluded by application" field="attempt.derived.appBlacklistedNodesText" raw={appBlacklistText}>
+              <Datum field="attempt.blacklistedNodes" raw={attempt.blacklistedNodes}>
+                {appBlacklistText}
+              </Datum>
+            </DetailRow>
+            <DetailRow label="Excluded by system" field="attempt.derived.rmBlacklistedNodesText" raw={systemBlacklistText}>
+              <Datum field="attempt.nodesBlacklistedBySystem" raw={attempt.nodesBlacklistedBySystem}>
+                {systemBlacklistText}
+              </Datum>
+            </DetailRow>
+          </DetailsTable>
+          <details open={parity || undefined} className="overflow-hidden rounded-lg border border-seam bg-fabric">
+            <summary className="cursor-pointer bg-fabric-2 px-3 py-1.5 text-small font-medium text-ink-2">
+              Container locality · unavailable
+            </summary>
+            <p className="px-3 py-2 text-small text-ink-3" data-burrow="locality-unavailable">
+              The ResourceManager does not report locality counts for this attempt. A dash means unavailable, not zero.
+            </p>
+            <DetailTableScroller ariaLabel="Container locality matrix">
+              <table className="w-full min-w-[38rem] text-body" data-burrow="locality-matrix">
+                <thead>
+                  <tr className="border-y border-seam bg-fabric-2 text-small text-ink-3">
+                    <th scope="col" className="px-3 py-1.5 text-left font-medium">
+                      Containers / request locality
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {LOCALITY_MATRIX.rows.map((label, r) => (
-                  <tr key={label} className="border-b border-seam-soft last:border-b-0">
-                    <th scope="row" className="px-3 py-1.5 text-left text-small font-medium text-ink-3">
-                      {label}
-                    </th>
-                    {LOCALITY_MATRIX.cells[r]!.map((cell, c) => (
-                      <td key={LOCALITY_MATRIX.columns[c]} className="px-3 py-1.5 text-right text-ink-3 tnum">
-                        <Datum
-                          field={`attempt.derived.localityStatistics.${LOCALITY_MATRIX.rowKeys[r]}.by.${LOCALITY_MATRIX.columnKeys[c]}`}
-                          raw={cell}
-                          fmt="int"
-                        >
-                          —
-                        </Datum>
-                      </td>
+                    {LOCALITY_MATRIX.columns.map((label) => (
+                      <th key={label} scope="col" className="px-3 py-1.5 text-right font-medium">
+                        {label}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </DetailTableScroller>
-        </details>
+                </thead>
+                <tbody>
+                  {LOCALITY_MATRIX.rows.map((label, r) => (
+                    <tr key={label} className="border-b border-seam-soft last:border-b-0">
+                      <th scope="row" className="px-3 py-1.5 text-left text-small font-medium text-ink-3">
+                        {label}
+                      </th>
+                      {LOCALITY_MATRIX.cells[r]!.map((cell, c) => (
+                        <td key={LOCALITY_MATRIX.columns[c]} className="px-3 py-1.5 text-right text-ink-3 tnum">
+                          <Datum
+                            field={`attempt.derived.localityStatistics.${LOCALITY_MATRIX.rowKeys[r]}.by.${LOCALITY_MATRIX.columnKeys[c]}`}
+                            raw={cell}
+                            fmt="int"
+                          >
+                            —
+                          </Datum>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </DetailTableScroller>
+          </details>
+        </TabContent>
       </Section>
     </Entity>
   );

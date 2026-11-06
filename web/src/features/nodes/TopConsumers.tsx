@@ -10,11 +10,23 @@ import type { Node } from "~/api/schemas";
 import { cn } from "~/lib/cn";
 import { fmtInt, fmtMB, fmtPct } from "~/lib/format";
 import { Datum } from "~/ui/datum";
+import { Skeleton } from "~/ui/feedback";
+import { TabContent } from "~/ui/tabs";
 import { Tooltip } from "~/ui/tooltip";
 import { utilOf } from "./domain";
 import { Section } from "./page";
 
-export function TopConsumers({ nodes, onOpen }: { nodes: readonly Node[]; onOpen: (n: Node) => void }) {
+export function TopConsumers({
+  nodes,
+  onOpen,
+  loading = false,
+  contentIdentity = "nodes",
+}: {
+  nodes: readonly Node[];
+  onOpen: (n: Node) => void;
+  loading?: boolean;
+  contentIdentity?: string;
+}) {
   const ranked = useMemo(
     () =>
       [...nodes]
@@ -43,8 +55,18 @@ export function TopConsumers({ nodes, onOpen }: { nodes: readonly Node[]; onOpen
       }
       className="min-h-0"
     >
-      <div className="flex min-h-0 flex-col gap-1 overflow-auto rounded-lg border border-seam bg-fabric p-2">
-        {ranked.length === 0 ? (
+      <TabContent
+        initial={!loading}
+        value={`${contentIdentity}:${loading ? "pending" : "ready"}`}
+        className="flex min-h-0 flex-col gap-1 overflow-auto rounded-lg border border-seam bg-fabric p-2"
+      >
+        {loading ? (
+          <div role="status" aria-label="Loading top consumers" aria-busy="true" className="flex flex-col gap-2">
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-8 w-full" />
+            ))}
+          </div>
+        ) : ranked.length === 0 ? (
           <p className="px-1 py-3 text-small text-ink-3">No schedulable node is carrying containers.</p>
         ) : (
           ranked.map((node, i) => {
@@ -92,7 +114,7 @@ export function TopConsumers({ nodes, onOpen }: { nodes: readonly Node[]; onOpen
             );
           })
         )}
-      </div>
+      </TabContent>
     </Section>
   );
 }

@@ -32,6 +32,7 @@ import { CenteredPageState, EmptyState, ErrorState, Skeleton, StaleErrorBanner, 
 import { ScrollBottomFade, useHasMoreBelow } from "~/ui/scroll-bottom-fade";
 import { ProgressBar } from "~/ui/progress-bar";
 import { Select } from "~/ui/select";
+import { TabContent } from "~/ui/tabs";
 import {
   allExpandableIds,
   ancestorIds,
@@ -151,7 +152,7 @@ export function JmxView() {
 
   const setSearch = useCallback(
     (patch: Record<string, string | undefined>) => {
-      void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+      void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
     },
     [navigate],
   );
@@ -257,6 +258,7 @@ export function JmxView() {
 
   return (
     <div
+      data-page-motion="content"
       ref={rootRef}
       className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6"
       data-burrow-jmx-root="1"
@@ -318,17 +320,19 @@ export function JmxView() {
         </EmptyState>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2 xl:grid-cols-4" data-testid="jmx-summary">
-            <Stat label="Beans" value={tree.beans} sub={`in ${tree.groups} groups`} />
-            <Stat label="Attributes" value={tree.attributes} sub="top-level per bean" />
-            <Stat label="Values" value={tree.values} sub="scalars, nested included" />
-            <Stat
-              label={match.active ? "Matches" : "Visible rows"}
-              value={match.active ? match.count : rows.length}
-              sub={match.active ? (valueRows > 0 ? `${valueRows} of them values` : `for “${search.q}”`) : `${valueRows} values on screen`}
-              tone={match.active ? "live" : undefined}
-            />
-          </div>
+          <TabContent initial value={`${host ?? "rm"}:${pattern}`}>
+            <div className="grid grid-cols-2 gap-2 xl:grid-cols-4" data-testid="jmx-summary">
+              <Stat label="Beans" value={tree.beans} sub={`in ${tree.groups} groups`} />
+              <Stat label="Attributes" value={tree.attributes} sub="top-level per bean" />
+              <Stat label="Values" value={tree.values} sub="scalars, nested included" />
+              <Stat
+                label={match.active ? "Matches" : "Visible rows"}
+                value={match.active ? match.count : rows.length}
+                sub={match.active ? (valueRows > 0 ? `${valueRows} of them values` : `for “${search.q}”`) : `${valueRows} values on screen`}
+                tone={match.active ? "live" : undefined}
+              />
+            </div>
+          </TabContent>
 
           <div className="grid shrink-0 grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
             <div className="flex shrink-0 flex-col gap-3">
@@ -354,7 +358,11 @@ export function JmxView() {
                 )}
               </div>
 
-              <div className="relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh_-_21rem),640px)]">
+              <TabContent
+                initial
+                value={`${host ?? "rm"}:${pattern}`}
+                className="burrow-page-result-enter relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh_-_21rem),640px)]"
+              >
                 <div
                   ref={scrollRef}
                   role="tree"
@@ -404,12 +412,13 @@ export function JmxView() {
                   </span>
                   <span className="hidden text-micro text-ink-4 md:inline">↑↓ move · →← expand/collapse · Enter select · Space toggle</span>
                 </div>
-              </div>
+              </TabContent>
             </div>
 
             <JmxDetails
               node={selected}
               tree={tree}
+              sourceIdentity={`${host ?? "rm"}:${pattern}`}
               tz={tz}
               onSelect={(node) => {
                 setExpanded((prev) => new Set([...prev, ...ancestorIds(node), node.id]));
@@ -615,7 +624,19 @@ function MemoryBar({ memory, field, raw }: { memory: JmxMemory; field: string; r
   );
 }
 
-function JmxDetails({ node, tree, tz, onSelect }: { node: JmxNode | null; tree: JmxTree; tz: TzMode; onSelect: (node: JmxNode) => void }) {
+function JmxDetails({
+  node,
+  tree,
+  tz,
+  onSelect,
+  sourceIdentity,
+}: {
+  node: JmxNode | null;
+  tree: JmxTree;
+  tz: TzMode;
+  onSelect: (node: JmxNode) => void;
+  sourceIdentity: string;
+}) {
   if (!node) {
     return (
       <aside className="flex flex-col gap-2 rounded-lg border border-dashed border-seam-strong bg-well p-3 text-body text-ink-3">
@@ -639,48 +660,50 @@ function JmxDetails({ node, tree, tz, onSelect }: { node: JmxNode | null; tree: 
           </div>
           <CopyButton value={node.label} label="Copy MBean name" />
         </header>
-        <Section title="Object name" className="gap-1.5">
-          <dl className="flex flex-col gap-1 text-small">
-            <div className="flex gap-2">
-              <dt className="w-20 shrink-0 text-micro uppercase tracking-wide text-ink-4">Domain</dt>
-              <dd className="min-w-0 break-all text-ink-2">{info.domain}</dd>
-            </div>
-            {info.properties.map((p) => (
-              <div key={p.key} className="flex gap-2">
-                <dt className="w-20 shrink-0 text-micro uppercase tracking-wide text-ink-4">{p.key}</dt>
-                <dd className="min-w-0 break-all text-ink-2">{p.value || "—"}</dd>
+        <TabContent initial value={`${sourceIdentity}:${node.id}`} className="flex min-h-0 flex-1 flex-col gap-3">
+          <Section title="Object name" className="gap-1.5">
+            <dl className="flex flex-col gap-1 text-small">
+              <div className="flex gap-2">
+                <dt className="w-20 shrink-0 text-micro uppercase tracking-wide text-ink-4">Domain</dt>
+                <dd className="min-w-0 break-all text-ink-2">{info.domain}</dd>
               </div>
-            ))}
-          </dl>
-        </Section>
-        <Section title={`Attributes (${node.children.length})`} className="min-h-0 flex-1">
-          <ul className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft">
-            {node.children.map((child) => (
-              <li key={child.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(child)}
-                  className="flex w-full items-center gap-2 border-b border-seam-soft px-2 py-1 text-left text-small hover:bg-fabric-3"
-                >
-                  <span className="min-w-0 flex-1 truncate font-mono text-ink-2">{child.label}</span>
-                  <span
-                    className={cn(
-                      "max-w-[9rem] shrink-0 truncate text-right",
-                      jmxValueKind(child.value) === "number" ? "tnum text-ink" : "text-ink-3",
-                    )}
+              {info.properties.map((p) => (
+                <div key={p.key} className="flex gap-2">
+                  <dt className="w-20 shrink-0 text-micro uppercase tracking-wide text-ink-4">{p.key}</dt>
+                  <dd className="min-w-0 break-all text-ink-2">{p.value || "—"}</dd>
+                </div>
+              ))}
+            </dl>
+          </Section>
+          <Section title={`Attributes (${node.children.length})`} className="min-h-0 flex-1">
+            <ul className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft">
+              {node.children.map((child) => (
+                <li key={child.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(child)}
+                    className="flex w-full items-center gap-2 border-b border-seam-soft px-2 py-1 text-left text-small hover:bg-fabric-3"
                   >
-                    {child.kind === "value"
-                      ? truncateMiddle(jmxScalarText(child.value), 40)
-                      : jmxBranchSummary(jmxValueKind(child.value), child.children.length)}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Section>
-        <p className="text-micro text-ink-4">
-          {node.leaves} values under this bean · {tree.groups} groups in total
-        </p>
+                    <span className="min-w-0 flex-1 truncate font-mono text-ink-2">{child.label}</span>
+                    <span
+                      className={cn(
+                        "max-w-[9rem] shrink-0 truncate text-right",
+                        jmxValueKind(child.value) === "number" ? "tnum text-ink" : "text-ink-3",
+                      )}
+                    >
+                      {child.kind === "value"
+                        ? truncateMiddle(jmxScalarText(child.value), 40)
+                        : jmxBranchSummary(jmxValueKind(child.value), child.children.length)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Section>
+          <p className="text-micro text-ink-4">
+            {node.leaves} values under this bean · {tree.groups} groups in total
+          </p>
+        </TabContent>
       </aside>
     );
   }
@@ -699,88 +722,89 @@ function JmxDetails({ node, tree, tz, onSelect }: { node: JmxNode | null; tree: 
         </div>
         <CopyButton value={rawJson} label="Copy value" />
       </header>
-
-      <Section title="Value" className="gap-1.5">
-        <Entity id={node.bean} className="rounded-md border border-seam-soft bg-well p-2">
-          <Datum
-            field={field}
-            raw={node.value}
-            fmt={kind === "number" ? "int" : "text"}
-            as="p"
-            className="break-all font-mono text-body whitespace-pre-wrap text-ink"
-          >
-            {kind === "object" || kind === "array" ? jmxBranchSummary(kind, node.children.length) : jmxScalarText(node.value)}
-          </Datum>
-        </Entity>
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-small">
-          <dt className="text-micro uppercase tracking-wide text-ink-4">Type</dt>
-          <dd className="text-ink-2">{kind}</dd>
-          <dt className="text-micro uppercase tracking-wide text-ink-4">Field</dt>
-          <dd className="break-all font-mono text-micro text-ink-3">{field}</dd>
-          {hint && (
-            <>
-              <dt className="text-micro uppercase tracking-wide text-ink-4">
-                {hint.kind === "bytes" ? "Human" : hint.kind === "epoch" ? "Time" : "Duration"}
-              </dt>
-              <dd className="text-ink-2 tnum">{hint.text}</dd>
-            </>
-          )}
-          {memory && (
-            <>
-              <dt className="text-micro uppercase tracking-wide text-ink-4">Used</dt>
-              <dd className="text-ink-2 tnum">
-                {fmtBytes(memory.used)} · {memoryPercent(memory).toFixed(1)}%
-              </dd>
-            </>
-          )}
-        </dl>
-      </Section>
-
-      {memory && (
-        <Section title="Memory" className="gap-1.5">
-          <ProgressBar
-            percent={memoryPercent(memory)}
-            tone={utilizationTone(memoryPercent(memory))}
-            valueText={`${memoryPercent(memory).toFixed(1)}% used`}
-            label={`${field} used`}
-            datum={{ "data-yf": field, "data-yv": JSON.stringify(node.value)!, "data-yfmt": "pct" }}
-          />
-          <p className="text-small text-ink-3 tnum">{memorySummary(memory)}</p>
+      <TabContent initial value={`${sourceIdentity}:${node.id}`} className="flex min-h-0 flex-1 flex-col gap-3">
+        <Section title="Value" className="gap-1.5">
+          <Entity id={node.bean} className="rounded-md border border-seam-soft bg-well p-2">
+            <Datum
+              field={field}
+              raw={node.value}
+              fmt={kind === "number" ? "int" : "text"}
+              as="p"
+              className="break-all font-mono text-body whitespace-pre-wrap text-ink"
+            >
+              {kind === "object" || kind === "array" ? jmxBranchSummary(kind, node.children.length) : jmxScalarText(node.value)}
+            </Datum>
+          </Entity>
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-small">
+            <dt className="text-micro uppercase tracking-wide text-ink-4">Type</dt>
+            <dd className="text-ink-2">{kind}</dd>
+            <dt className="text-micro uppercase tracking-wide text-ink-4">Field</dt>
+            <dd className="break-all font-mono text-micro text-ink-3">{field}</dd>
+            {hint && (
+              <>
+                <dt className="text-micro uppercase tracking-wide text-ink-4">
+                  {hint.kind === "bytes" ? "Human" : hint.kind === "epoch" ? "Time" : "Duration"}
+                </dt>
+                <dd className="text-ink-2 tnum">{hint.text}</dd>
+              </>
+            )}
+            {memory && (
+              <>
+                <dt className="text-micro uppercase tracking-wide text-ink-4">Used</dt>
+                <dd className="text-ink-2 tnum">
+                  {fmtBytes(memory.used)} · {memoryPercent(memory).toFixed(1)}%
+                </dd>
+              </>
+            )}
+          </dl>
         </Section>
-      )}
 
-      {node.children.length > 0 ? (
-        <Section title={`Children (${node.children.length})`} className="min-h-0 flex-1">
-          <ul className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft">
-            {node.children.map((child) => (
-              <li key={child.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(child)}
-                  className="flex w-full items-center gap-2 border-b border-seam-soft px-2 py-1 text-left text-small hover:bg-fabric-3"
-                >
-                  <span className="min-w-0 flex-1 truncate font-mono text-ink-2">{child.label}</span>
-                  <span className="shrink-0 text-right text-ink-3">
-                    {child.kind === "value"
-                      ? truncateMiddle(jmxScalarText(child.value), 40)
-                      : jmxBranchSummary(jmxValueKind(child.value), child.children.length)}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : (
-        <Section title="Raw JSON" className="min-h-0 flex-1">
-          <pre className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft bg-well p-2 font-mono text-micro break-all whitespace-pre-wrap text-ink-2">
-            {rawJson}
-          </pre>
-        </Section>
-      )}
+        {memory && (
+          <Section title="Memory" className="gap-1.5">
+            <ProgressBar
+              percent={memoryPercent(memory)}
+              tone={utilizationTone(memoryPercent(memory))}
+              valueText={`${memoryPercent(memory).toFixed(1)}% used`}
+              label={`${field} used`}
+              datum={{ "data-yf": field, "data-yv": JSON.stringify(node.value)!, "data-yfmt": "pct" }}
+            />
+            <p className="text-small text-ink-3 tnum">{memorySummary(memory)}</p>
+          </Section>
+        )}
 
-      <p className="text-micro text-ink-4">
-        {node.children.length > 0 ? `${node.leaves} values under this node · raw value in data-yv` : "leaf value of the bean"}
-      </p>
+        {node.children.length > 0 ? (
+          <Section title={`Children (${node.children.length})`} className="min-h-0 flex-1">
+            <ul className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft">
+              {node.children.map((child) => (
+                <li key={child.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(child)}
+                    className="flex w-full items-center gap-2 border-b border-seam-soft px-2 py-1 text-left text-small hover:bg-fabric-3"
+                  >
+                    <span className="min-w-0 flex-1 truncate font-mono text-ink-2">{child.label}</span>
+                    <span className="shrink-0 text-right text-ink-3">
+                      {child.kind === "value"
+                        ? truncateMiddle(jmxScalarText(child.value), 40)
+                        : jmxBranchSummary(jmxValueKind(child.value), child.children.length)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        ) : (
+          <Section title="Raw JSON" className="min-h-0 flex-1">
+            <pre className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft bg-well p-2 font-mono text-micro break-all whitespace-pre-wrap text-ink-2">
+              {rawJson}
+            </pre>
+          </Section>
+        )}
+
+        <p className="text-micro text-ink-4">
+          {node.children.length > 0 ? `${node.leaves} values under this node · raw value in data-yv` : "leaf value of the bean"}
+        </p>
+      </TabContent>
     </aside>
   );
 }

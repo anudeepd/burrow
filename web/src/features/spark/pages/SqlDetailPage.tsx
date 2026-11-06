@@ -8,7 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { ArrowLeft, ChevronDown } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "~/lib/cn";
 import { fmtEpoch, fmtInt } from "~/lib/format";
 import { usePref } from "~/state/prefs";
@@ -16,6 +16,7 @@ import { ACTION_LINK_CLASS } from "~/ui/button";
 import { Datum, Entity } from "~/ui/datum";
 import { ErrorState } from "~/ui/feedback";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { useParity } from "~/state/parity";
 import { planOperatorCount } from "~/features/dag/sql-plan";
 import { parseSparkTime, sqlDurationMs } from "../data/format";
@@ -89,12 +90,13 @@ export function SqlDetailPage() {
   const navigate = route.useNavigate();
   const { kind, attempt } = useSpark();
   const parity = useParity();
+  const [rawPlanOpen, setRawPlanOpen] = useState(parity);
   const now = useNow();
   const tz = usePref("tz");
 
   // sparkSearch validates q to string | undefined before this route exposes it.
   const q = search.q ?? "";
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   const execQ = useQuery(sp.sqlExecution(appId, executionId, { kind, attempt }));
   const exec: SparkSqlExecution | undefined = execQ.data;
@@ -153,38 +155,40 @@ export function SqlDetailPage() {
         </Link>
       </PageHeader>
 
-      <Entity id={String(exec.id)}>
-        <MetricStrip>
-          <Metric label="Id">
-            <Datum field="spark.sql.id" raw={exec.id} fmt="int" />
-          </Metric>
-          <Metric label="Status">
-            <SqlStatus status={exec.status} />
-          </Metric>
-          <Metric label="Submitted">
-            <Datum field="spark.sql.submissionTime" raw={exec.submissionTime} fmt="text">
-              {fmtEpoch(parseSparkTime(exec.submissionTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="Completed">
-            <Datum field="spark.sql.completionTime" raw={exec.completionTime} fmt="text">
-              {fmtEpoch(parseSparkTime(exec.completionTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="Duration">
-            <Datum field="spark.sql.derived.durationMs" raw={sqlDurationMs(exec, now)} fmt="dur" />
-          </Metric>
-          <Metric label="Query id">
-            <Datum field="spark.sql.queryId" raw={exec.queryId} className="font-mono text-micro" />
-          </Metric>
-          <Metric label="Root execution id" hint="Set when this execution was re-used by an adaptive re-plan.">
-            <Datum field="spark.sql.rootExecutionId" raw={exec.rootExecutionId} fmt="int" />
-          </Metric>
-          <Metric label="Plan graph">
-            {fmtInt(planOperatorCount(exec.nodes))} nodes · {fmtInt((exec.edges ?? []).length)} edges
-          </Metric>
-        </MetricStrip>
-      </Entity>
+      <TabContent initial value={`${appId}:${attempt ?? ""}:sql:${executionId}`}>
+        <Entity id={String(exec.id)}>
+          <MetricStrip>
+            <Metric label="Id">
+              <Datum field="spark.sql.id" raw={exec.id} fmt="int" />
+            </Metric>
+            <Metric label="Status">
+              <SqlStatus status={exec.status} />
+            </Metric>
+            <Metric label="Submitted">
+              <Datum field="spark.sql.submissionTime" raw={exec.submissionTime} fmt="text">
+                {fmtEpoch(parseSparkTime(exec.submissionTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="Completed">
+              <Datum field="spark.sql.completionTime" raw={exec.completionTime} fmt="text">
+                {fmtEpoch(parseSparkTime(exec.completionTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="Duration">
+              <Datum field="spark.sql.derived.durationMs" raw={sqlDurationMs(exec, now)} fmt="dur" />
+            </Metric>
+            <Metric label="Query id">
+              <Datum field="spark.sql.queryId" raw={exec.queryId} className="font-mono text-micro" />
+            </Metric>
+            <Metric label="Root execution id" hint="Set when this execution was re-used by an adaptive re-plan.">
+              <Datum field="spark.sql.rootExecutionId" raw={exec.rootExecutionId} fmt="int" />
+            </Metric>
+            <Metric label="Plan graph">
+              {fmtInt(planOperatorCount(exec.nodes))} nodes · {fmtInt((exec.edges ?? []).length)} edges
+            </Metric>
+          </MetricStrip>
+        </Entity>
+      </TabContent>
 
       {exec.errorMessage && (
         <section id="error" aria-label={`Error of SQL execution ${exec.id}`} className="flex flex-col gap-2">
@@ -206,7 +210,7 @@ export function SqlDetailPage() {
       </section>
 
       <section aria-label={`Raw plan of SQL execution ${exec.id}`}>
-        <details open={parity} className="group">
+        <details open={parity} onToggle={(event) => setRawPlanOpen(event.currentTarget.open)} className="group">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg border border-seam bg-fabric px-4 py-3 transition-colors duration-(--dur-fast) hover:bg-fabric-2 [&::-webkit-details-marker]:hidden">
             <span className="min-w-0">
               <span className="block text-lead font-medium text-ink">Raw plan tree</span>
@@ -219,7 +223,12 @@ export function SqlDetailPage() {
           </summary>
           <div className="mt-3">
             <Entity id={String(exec.id)}>
-              <PlanTree key={exec.id} plan={exec.planDescription} q={q} onQ={(v) => patch({ q: v || undefined })} />
+              <PlanTree
+                plan={exec.planDescription}
+                q={q}
+                onQ={(v) => patch({ q: v || undefined })}
+                contentIdentity={`${appId}:${attempt ?? ""}:sql:${executionId}:raw-plan:${rawPlanOpen ? "open" : "closed"}`}
+              />
             </Entity>
           </div>
         </details>
@@ -227,27 +236,36 @@ export function SqlDetailPage() {
 
       <section aria-label={`Jobs of SQL execution ${exec.id}`} className="flex flex-col gap-2 rounded-lg border border-seam bg-fabric p-3">
         <h3 className="text-body font-semibold text-ink">Jobs</h3>
-        <Entity id={String(exec.id)}>
-          <div className="flex flex-wrap gap-x-8 gap-y-2">
-            <JobGroup
-              appId={appId}
-              title="Running"
-              ids={running}
-              field="spark.sql.runningJobIds"
-              tone="burrow-tone-live"
-              attempt={attempt}
-            />
-            <JobGroup
-              appId={appId}
-              title="Succeeded"
-              ids={success}
-              field="spark.sql.successJobIds"
-              tone="burrow-tone-ok"
-              attempt={attempt}
-            />
-            <JobGroup appId={appId} title="Failed" ids={failed} field="spark.sql.failedJobIds" tone="burrow-tone-fail" attempt={attempt} />
-          </div>
-        </Entity>
+        <TabContent initial value={`${appId}:${attempt ?? ""}:sql:${executionId}:jobs`}>
+          <Entity id={String(exec.id)}>
+            <div className="flex flex-wrap gap-x-8 gap-y-2">
+              <JobGroup
+                appId={appId}
+                title="Running"
+                ids={running}
+                field="spark.sql.runningJobIds"
+                tone="burrow-tone-live"
+                attempt={attempt}
+              />
+              <JobGroup
+                appId={appId}
+                title="Succeeded"
+                ids={success}
+                field="spark.sql.successJobIds"
+                tone="burrow-tone-ok"
+                attempt={attempt}
+              />
+              <JobGroup
+                appId={appId}
+                title="Failed"
+                ids={failed}
+                field="spark.sql.failedJobIds"
+                tone="burrow-tone-fail"
+                attempt={attempt}
+              />
+            </div>
+          </Entity>
+        </TabContent>
         <div className="flex flex-wrap items-center gap-2 border-t border-seam-soft pt-2">
           <span className="text-micro uppercase tracking-wide text-ink-4">Stages</span>
           {jobsQ.error && jobsQ.data !== undefined && (
@@ -265,19 +283,23 @@ export function SqlDetailPage() {
               onRetry={() => void jobsQ.refetch()}
             />
           ) : stageIds.length === 0 ? (
-            <span className="text-small text-ink-4">No stage ids reported for these jobs.</span>
+            <TabContent initial value={`${appId}:${attempt ?? ""}:sql:${executionId}:stages`}>
+              <span className="text-small text-ink-4">No stage ids reported for these jobs.</span>
+            </TabContent>
           ) : (
-            <span className="flex flex-wrap gap-1.5">
-              {stageIds.map((sid) => (
-                <a
-                  key={sid}
-                  href={`/apps/${encodeURIComponent(appId)}/spark/stages?q=${sid}${attempt ? `&attempt=${encodeURIComponent(attempt)}` : ""}`}
-                  className="rounded-md border border-seam-strong bg-well px-1.5 py-0.5 font-mono text-micro text-live underline-offset-2 hover:underline"
-                >
-                  stage {sid}
-                </a>
-              ))}
-            </span>
+            <TabContent initial value={`${appId}:${attempt ?? ""}:sql:${executionId}:stages`}>
+              <span className="flex flex-wrap gap-1.5">
+                {stageIds.map((sid) => (
+                  <a
+                    key={sid}
+                    href={`/apps/${encodeURIComponent(appId)}/spark/stages?q=${sid}${attempt ? `&attempt=${encodeURIComponent(attempt)}` : ""}`}
+                    className="rounded-md border border-seam-strong bg-well px-1.5 py-0.5 font-mono text-micro text-live underline-offset-2 hover:underline"
+                  >
+                    stage {sid}
+                  </a>
+                ))}
+              </span>
+            </TabContent>
           )}
         </div>
       </section>

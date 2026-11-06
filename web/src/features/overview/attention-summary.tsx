@@ -5,6 +5,7 @@ import { ov } from "~/api/queries/overview";
 import { utilizationTone } from "~/lib/progress-tone";
 import { fmtInt, fmtMB, fmtPct } from "~/lib/format";
 import { Skeleton } from "~/ui/feedback";
+import { TabContent } from "~/ui/tabs";
 import { HelpTip } from "~/ui/tooltip";
 import { CrossLink } from "./ui";
 
@@ -174,16 +175,18 @@ export function OverviewAttentionSummary({
             higher. Capacity uses ResourceManager counters; scheduler partition totals are shown separately.
           </HelpTip>
         </h2>
-        {description && <p className="m-0 mt-0.5 text-caption text-ink-3">{description}</p>}
-        {findings.length > 0 && (
-          <ul className="m-0 mt-1 flex list-none flex-wrap gap-x-4 gap-y-1 p-0" aria-label="Reported conditions">
-            {findings.map((finding) => (
-              <li key={finding.key}>
-                <FindingLink finding={finding} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <TabContent value={metrics || meta.data ? "attention-ready" : "attention-unavailable"} initial={Boolean(metrics || meta.data)}>
+          {description && <p className="m-0 mt-0.5 text-caption text-ink-3">{description}</p>}
+          {findings.length > 0 && (
+            <ul className="m-0 mt-1 flex list-none flex-wrap gap-x-4 gap-y-1 p-0" aria-label="Reported conditions">
+              {findings.map((finding) => (
+                <li key={finding.key}>
+                  <FindingLink finding={finding} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabContent>
       </div>
     </aside>
   );

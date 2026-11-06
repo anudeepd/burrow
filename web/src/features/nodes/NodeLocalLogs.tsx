@@ -16,6 +16,7 @@ import { fmtEpoch, fmtInt } from "~/lib/format";
 import { Datum, Entity } from "~/ui/datum";
 import { usePref } from "~/state/prefs";
 import { EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { TabContent } from "~/ui/tabs";
 import { Section, Unavailable } from "./page";
 
 /** `GET /api/logs/containers/{id}` (api.md §5). */
@@ -89,47 +90,49 @@ export function NodeLocalLogs({ node }: { node: Node }) {
       ) : !probe.data ? (
         <Skeleton className="h-16 w-full" />
       ) : (
-        <Entity id={node.id} as="div" className="flex flex-col gap-2">
-          {containers.error && (
-            <StaleErrorBanner
-              title="Could not refresh this node's containers"
-              error={containers.error}
-              onRetry={() => void containers.refetch()}
-            />
-          )}
-          {probe.error && (
-            <ErrorState
-              compact
-              title="Could not refresh NodeManager logs"
-              message="The previously loaded log list is still shown."
-              onRetry={() => void probe.refetch()}
-            />
-          )}
-          <p className="text-small text-ink-3">
-            Source <span className="font-mono text-ink-2">{probe.data.source}</span> for container{" "}
-            <span className="font-mono text-ink-2">{first.id}</span> (proxy: {probe.data.node ?? address})
-          </p>
-          <ul className="divide-y divide-seam-soft rounded-lg border border-seam bg-fabric">
-            {probe.data.files.map((f) => (
-              <li key={f.name} className="flex items-center gap-3 px-3 py-1.5">
-                <Datum field="log.name" raw={f.name} fmt="text" className="min-w-0 flex-1 truncate font-mono text-small" />
-                <Datum field="log.size" raw={f.size} fmt="int" className="text-small text-ink-3 tnum" />
-                <Datum field="log.lastModified" raw={f.lastModified} fmt="epoch" className="text-small text-ink-3" />
-                <a
-                  href={`/api/logs/containers/${encodeURIComponent(first.id)}/files/${encodeURIComponent(f.name)}?node=${encodeURIComponent(address)}`}
-                  className="text-small text-live underline-offset-2 hover:underline"
-                >
-                  open
-                </a>
-              </li>
-            ))}
-            {probe.data.files.length === 0 && <li className="px-3 py-2 text-small text-ink-3">The source reported no files yet.</li>}
-          </ul>
-          <p className="text-micro text-ink-4">
-            Total {fmtInt(probe.data.files.length)} file(s) · newest{" "}
-            {fmtEpoch(Math.max(0, ...probe.data.files.map((f) => f.lastModified)), tz)}
-          </p>
-        </Entity>
+        <TabContent initial value={address}>
+          <Entity id={node.id} as="div" className="flex flex-col gap-2">
+            {containers.error && (
+              <StaleErrorBanner
+                title="Could not refresh this node's containers"
+                error={containers.error}
+                onRetry={() => void containers.refetch()}
+              />
+            )}
+            {probe.error && (
+              <ErrorState
+                compact
+                title="Could not refresh NodeManager logs"
+                message="The previously loaded log list is still shown."
+                onRetry={() => void probe.refetch()}
+              />
+            )}
+            <p className="text-small text-ink-3">
+              Source <span className="font-mono text-ink-2">{probe.data.source}</span> for container{" "}
+              <span className="font-mono text-ink-2">{first.id}</span> (proxy: {probe.data.node ?? address})
+            </p>
+            <ul className="divide-y divide-seam-soft rounded-lg border border-seam bg-fabric">
+              {probe.data.files.map((f) => (
+                <li key={f.name} className="flex items-center gap-3 px-3 py-1.5">
+                  <Datum field="log.name" raw={f.name} fmt="text" className="min-w-0 flex-1 truncate font-mono text-small" />
+                  <Datum field="log.size" raw={f.size} fmt="int" className="text-small text-ink-3 tnum" />
+                  <Datum field="log.lastModified" raw={f.lastModified} fmt="epoch" className="text-small text-ink-3" />
+                  <a
+                    href={`/api/logs/containers/${encodeURIComponent(first.id)}/files/${encodeURIComponent(f.name)}?node=${encodeURIComponent(address)}`}
+                    className="text-small text-live underline-offset-2 hover:underline"
+                  >
+                    open
+                  </a>
+                </li>
+              ))}
+              {probe.data.files.length === 0 && <li className="px-3 py-2 text-small text-ink-3">The source reported no files yet.</li>}
+            </ul>
+            <p className="text-micro text-ink-4">
+              Total {fmtInt(probe.data.files.length)} file(s) · newest{" "}
+              {fmtEpoch(Math.max(0, ...probe.data.files.map((f) => f.lastModified)), tz)}
+            </p>
+          </Entity>
+        </TabContent>
       )}
     </Section>
   );

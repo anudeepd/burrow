@@ -15,6 +15,7 @@ import { Datum, datumAttrs, Entity, SINGLETON } from "~/ui/datum";
 import { EmptyState, ErrorState, StaleErrorBanner } from "~/ui/feedback";
 import { ProgressBar } from "~/ui/progress-bar";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { healthOf } from "~/features/nodes/domain";
 import { MetricCard } from "./metric-card";
 import { NODE_STATE_METRICS } from "./derive";
@@ -250,28 +251,30 @@ export function NodeStatesSection({
   return (
     <div className="burrow-overview-metrics-container flex flex-col gap-[var(--gap-card)]" data-testid="node-states">
       {metrics ? (
-        <Entity
-          id={SINGLETON}
-          className={
-            collapseInventory
-              ? "burrow-overview-row-grid burrow-overview-row-grid--node-states rounded-lg border border-seam bg-fabric px-[var(--gap-card)]"
-              : "burrow-overview-row-grid burrow-overview-row-grid--node-states"
-          }
-        >
-          {NODE_STATE_METRICS.map(({ key, label, state }) => (
-            <MetricCard
-              key={key}
-              label={label}
-              field={`cluster.metrics.${key}`}
-              raw={metrics[key]}
-              fmt="int"
-              layout="row"
-              href={nodesHref(state)}
-              hrefHint={`Nodes in state ${state}`}
-              testId={`node-count-${state.toLowerCase()}`}
-            />
-          ))}
-        </Entity>
+        <TabContent value="node-counts" initial>
+          <Entity
+            id={SINGLETON}
+            className={
+              collapseInventory
+                ? "burrow-overview-row-grid burrow-overview-row-grid--node-states rounded-lg border border-seam bg-fabric px-[var(--gap-card)]"
+                : "burrow-overview-row-grid burrow-overview-row-grid--node-states"
+            }
+          >
+            {NODE_STATE_METRICS.map(({ key, label, state }) => (
+              <MetricCard
+                key={key}
+                label={label}
+                field={`cluster.metrics.${key}`}
+                raw={metrics[key]}
+                fmt="int"
+                layout="row"
+                href={nodesHref(state)}
+                hrefHint={`Nodes in state ${state}`}
+                testId={`node-count-${state.toLowerCase()}`}
+              />
+            ))}
+          </Entity>
+        </TabContent>
       ) : (
         <Unavailable reason="Node state counts are unavailable." />
       )}

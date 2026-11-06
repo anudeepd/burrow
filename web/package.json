@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.4",
   "type": "module",
+  "packageManager": "bun@1.4.4",
   "scripts": {
     "dev": "vite dev",
     "dev:mock": "bun run dev/mock-api.ts",
@@ -58,6 +59,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-istanbul": "5.0.3",
+    "@vitest/istanbul-lib-instrument": "^1.0.0",
     "happy-dom": "^21.0.3",
     "pngjs": "^7.0.0",
     "tailwindcss": "^4.3.3",

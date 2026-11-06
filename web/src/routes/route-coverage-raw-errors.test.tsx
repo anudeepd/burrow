@@ -5,7 +5,9 @@ import { APP_ID, ATTEMPT_ID, q, queryClient, readRm, RouterProvider, routerAt, s
 setupRouteCoverage();
 
 beforeEach(() => {
-  vi.spyOn(Element.prototype, "animate").mockImplementation(() => ({ cancel: vi.fn() }) as unknown as Animation);
+  vi.spyOn(Element.prototype, "animate").mockImplementation(
+    () => ({ playState: "finished", finished: Promise.resolve(), cancel: vi.fn() }) as unknown as Animation,
+  );
 });
 
 type RouteQueryOptions =

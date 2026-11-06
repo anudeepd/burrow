@@ -10,7 +10,7 @@ import { useParity } from "~/state/parity";
 import { Button } from "~/ui/button";
 import { DataTable } from "~/ui/data-table/data-table";
 import { EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
-import { Tab, TabContent, TabsList, TabsRoot } from "~/ui/tabs";
+import { Tab, TabsList, TabsRoot } from "~/ui/tabs";
 import { Toggle } from "~/ui/toggles";
 import { Select } from "~/ui/select";
 import { HelpTip, Tooltip } from "~/ui/tooltip";
@@ -249,7 +249,7 @@ export function AppsPage({
         </div>
       )}
 
-      <TabContent value={tab} className="flex min-h-0 flex-1 flex-col">
+      <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col">
         {appsQuery.error && hasData && !inReview && (
           <StaleErrorBanner
             title={
@@ -263,6 +263,7 @@ export function AppsPage({
         )}
         <DataTable
           data={rows}
+          contentIdentity={`applications:${tab}`}
           columns={APPS_COLUMNS}
           columnOrder={parity || search.cols === "all" ? LEGACY_COLUMN_ORDER : APPS_SCAN_ORDER}
           toolbar={
@@ -336,7 +337,7 @@ export function AppsPage({
           }
           exportName="Burrow-applications"
         />
-      </TabContent>
+      </div>
     </div>
   );
 }

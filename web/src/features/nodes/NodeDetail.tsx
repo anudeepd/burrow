@@ -18,6 +18,7 @@ import { CenteredPageState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/
 import { ResourceRing } from "~/ui/resource-ring";
 import { ACTION_LINK_CLASS } from "~/ui/button";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { HelpTip } from "~/ui/tooltip";
 import { NodeContainers } from "./NodeContainers";
 import { NodeLocalLogs } from "./NodeLocalLogs";
@@ -81,6 +82,7 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
       as="div"
       tabIndex={0}
       aria-label="Node details"
+      data-page-motion="content"
       className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-5 overflow-y-auto pb-6 [&>*]:shrink-0"
     >
       {refreshError != null && (
@@ -136,68 +138,73 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
         />
       )}
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="node-container-summary">
-        <Stat
-          label="Listed container memory"
-          value={
-            <span className="flex items-baseline gap-1">
-              <Datum field="node.derived.nmContainerMemoryMB" raw={containerMemoryMB} fmt="mb">
-                {containerMemoryMB == null ? "—" : fmtMB(containerMemoryMB)}
+      <TabContent initial value={`${node.id}:${address !== "" && containers.isPending ? "pending" : "ready"}`}>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" data-testid="node-container-summary">
+          <Stat
+            loading={address !== "" && containers.isPending}
+            label="Listed container memory"
+            value={
+              <span className="flex items-baseline gap-1">
+                <Datum field="node.derived.nmContainerMemoryMB" raw={containerMemoryMB} fmt="mb">
+                  {containerMemoryMB == null ? "—" : fmtMB(containerMemoryMB)}
+                </Datum>
+                <span className="text-small font-normal text-ink-3">of {fmtMB(total.mem)} capacity</span>
+              </span>
+            }
+            sub="sum of RUNNING containers reported by the NodeManager"
+          />
+          <Stat
+            loading={address !== "" && containers.isPending}
+            label="Listed container vCores"
+            value={
+              <span className="flex items-baseline gap-1">
+                <Datum field="node.derived.nmContainerVCores" raw={containerVCores} fmt="int">
+                  {containerVCores == null ? "—" : fmtInt(containerVCores)}
+                </Datum>
+                <span className="text-small font-normal text-ink-3">of {fmtInt(vcoresTotal)} capacity</span>
+              </span>
+            }
+            sub="sum of RUNNING containers reported by the NodeManager"
+          />
+          <Stat
+            loading={address !== "" && containers.isPending}
+            label="Running containers"
+            value={
+              <Datum field="node.derived.nmRunningContainers" raw={listedContainerCount} fmt="int">
+                {listedContainerCount == null ? "—" : fmtInt(listedContainerCount)}
               </Datum>
-              <span className="text-small font-normal text-ink-3">of {fmtMB(total.mem)} capacity</span>
-            </span>
-          }
-          sub="sum of RUNNING containers reported by the NodeManager"
-        />
-        <Stat
-          label="Listed container vCores"
-          value={
-            <span className="flex items-baseline gap-1">
-              <Datum field="node.derived.nmContainerVCores" raw={containerVCores} fmt="int">
-                {containerVCores == null ? "—" : fmtInt(containerVCores)}
-              </Datum>
-              <span className="text-small font-normal text-ink-3">of {fmtInt(vcoresTotal)} capacity</span>
-            </span>
-          }
-          sub="sum of RUNNING containers reported by the NodeManager"
-        />
-        <Stat
-          label="Running containers"
-          value={
-            <Datum field="node.derived.nmRunningContainers" raw={listedContainerCount} fmt="int">
-              {listedContainerCount == null ? "—" : fmtInt(listedContainerCount)}
-            </Datum>
-          }
-          sub="reported by the NodeManager"
-        />
-        <div className="grid min-w-0 content-center gap-2 rounded-lg border border-seam bg-fabric px-3 py-2">
-          <span className="text-caption uppercase tracking-wide text-ink-3">Physical utilisation · NodeManager</span>
-          <div className="flex items-center justify-around gap-2">
-            <div className="grid justify-items-center gap-1">
-              <ResourceRing
-                used={util.mem}
-                total={100}
-                size={48}
-                tone={utilizationTone(util.mem)}
-                label="NodeManager physical memory utilisation"
-                centre={<span {...datumAttrs("node.memUtilization", node.memUtilization, "pct")}>{fmtInt(Math.trunc(util.mem))}%</span>}
-              />
-              <span className="text-micro text-ink-3">Memory</span>
-            </div>
-            <div className="grid justify-items-center gap-1">
-              <ResourceRing
-                used={util.cpu}
-                total={100}
-                size={48}
-                tone={utilizationTone(util.cpu)}
-                label="NodeManager physical vCores utilisation"
-                centre={<span {...datumAttrs("node.cpuUtilization", node.cpuUtilization, "pct")}>{fmtInt(Math.trunc(util.cpu))}%</span>}
-              />
-              <span className="text-micro text-ink-3">vCores</span>
+            }
+            sub="reported by the NodeManager"
+          />
+          <div className="grid min-w-0 content-center gap-2 rounded-lg border border-seam bg-fabric px-3 py-2">
+            <span className="text-caption uppercase tracking-wide text-ink-3">Physical utilisation · NodeManager</span>
+            <div className="flex items-center justify-around gap-2">
+              <div className="grid justify-items-center gap-1">
+                <ResourceRing
+                  used={util.mem}
+                  total={100}
+                  size={48}
+                  tone={utilizationTone(util.mem)}
+                  label="NodeManager physical memory utilisation"
+                  centre={<span {...datumAttrs("node.memUtilization", node.memUtilization, "pct")}>{fmtInt(Math.trunc(util.mem))}%</span>}
+                />
+                <span className="text-micro text-ink-3">Memory</span>
+              </div>
+              <div className="grid justify-items-center gap-1">
+                <ResourceRing
+                  used={util.cpu}
+                  total={100}
+                  size={48}
+                  tone={utilizationTone(util.cpu)}
+                  label="NodeManager physical vCores utilisation"
+                  centre={<span {...datumAttrs("node.cpuUtilization", node.cpuUtilization, "pct")}>{fmtInt(Math.trunc(util.cpu))}%</span>}
+                />
+                <span className="text-micro text-ink-3">vCores</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </TabContent>
 
       {containerSnapshotDiffers && (
         <p role="status" className="m-0 rounded-md border border-warn/30 bg-warn/5 px-3 py-2 text-caption text-ink-2">
@@ -209,131 +216,135 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
       )}
 
       <Section title="Node (ResourceManager)">
-        <KvGrid columns={4}>
-          <Field label="Node id" field="node.id" raw={node.id} mono />
-          <Field label="Host name" field="node.nodeHostName" raw={node.nodeHostName} mono />
-          <Field label="Rack" field="node.rack" raw={node.rack} mono />
-          <Field label="State" field="node.state" raw={node.state} />
-          <Field label="NodeManager version" field="node.version" raw={node.version} hint="Hadoop version running on this NodeManager." />
-          <Field
-            label="Node HTTP address"
-            field="node.nodeHTTPAddress"
-            raw={node.nodeHTTPAddress}
-            mono
-            hint="Inactive nodes may have no web address."
-          />
-          <Field label="Last health-update" field="node.lastHealthUpdate" raw={node.lastHealthUpdate} fmt="epoch" />
-          <Field
-            label="Health-report"
-            field="node.healthReport"
-            raw={node.healthReport}
-            hint="Diagnostic text from NodeManager health checks. The node state determines whether the node is unhealthy."
-          />
-          <Field
-            label="Health"
-            field="node.state"
-            raw={node.state}
-            hint="Derived from the current node state. Health is unknown for inactive or transitioning nodes."
-          >
-            {healthOf(node)}
-          </Field>
-          <Field label="Containers" field="node.numContainers" raw={node.numContainers} fmt="int" />
-          <Field label="Memory used" field="node.usedMemoryMB" raw={node.usedMemoryMB} fmt="mb" />
-          <Field label="Memory available" field="node.availMemoryMB" raw={node.availMemoryMB} fmt="mb" />
-          <Field label="vCores used" field="node.usedVirtualCores" raw={node.usedVirtualCores} fmt="int" />
-          <Field label="vCores available" field="node.availableVirtualCores" raw={node.availableVirtualCores} fmt="int" />
-          <Field
-            label="Physical memory used"
-            field="node.memUtilization"
-            raw={node.memUtilization}
-            fmt="pct"
-            hint="Physical host memory usage, including processes outside YARN."
-          />
-          <Field
-            label="Physical vCores used"
-            field="node.cpuUtilization"
-            raw={node.cpuUtilization}
-            fmt="pct"
-            hint="Physical CPU usage reported by the NodeManager."
-          />
-          {node.subClusterId !== undefined && <Field label="Sub-cluster id" field="node.subClusterId" raw={node.subClusterId} />}
-          <Field label="Node labels" field="node.nodeLabels" raw={node.nodeLabels.length ? node.nodeLabels : undefined}>
-            {node.nodeLabels.length === 0 ? <span className="text-ink-4">—</span> : node.nodeLabels.join(", ")}
-          </Field>
-          <Field
-            label="Allocation tags"
-            field="node.allocationTags"
-            raw={tags.length ? tags : undefined}
-            hint="tags with their allocation counts"
-          >
-            {tags.length === 0 ? <span className="text-ink-4">—</span> : allocationTagSummary(node)}
-          </Field>
-          <Field
-            label="Running containers (opportunistic)"
-            field="node.numRunningOpportContainers"
-            raw={node.numRunningOpportContainers}
-            fmt="int"
-          />
-          <Field label="Queued containers" field="node.numQueuedContainers" raw={node.numQueuedContainers} fmt="int" />
-          <Field label="Opportunistic memory (GB)" field="node.usedMemoryOpportGB" raw={node.usedMemoryOpportGB} fmt="int" />
-          <Field label="Opportunistic vCores" field="node.usedVirtualCoresOpport" raw={node.usedVirtualCoresOpport} fmt="int" />
-        </KvGrid>
+        <TabContent initial value={node.id}>
+          <KvGrid columns={4}>
+            <Field label="Node id" field="node.id" raw={node.id} mono />
+            <Field label="Host name" field="node.nodeHostName" raw={node.nodeHostName} mono />
+            <Field label="Rack" field="node.rack" raw={node.rack} mono />
+            <Field label="State" field="node.state" raw={node.state} />
+            <Field label="NodeManager version" field="node.version" raw={node.version} hint="Hadoop version running on this NodeManager." />
+            <Field
+              label="Node HTTP address"
+              field="node.nodeHTTPAddress"
+              raw={node.nodeHTTPAddress}
+              mono
+              hint="Inactive nodes may have no web address."
+            />
+            <Field label="Last health-update" field="node.lastHealthUpdate" raw={node.lastHealthUpdate} fmt="epoch" />
+            <Field
+              label="Health-report"
+              field="node.healthReport"
+              raw={node.healthReport}
+              hint="Diagnostic text from NodeManager health checks. The node state determines whether the node is unhealthy."
+            />
+            <Field
+              label="Health"
+              field="node.state"
+              raw={node.state}
+              hint="Derived from the current node state. Health is unknown for inactive or transitioning nodes."
+            >
+              {healthOf(node)}
+            </Field>
+            <Field label="Containers" field="node.numContainers" raw={node.numContainers} fmt="int" />
+            <Field label="Memory used" field="node.usedMemoryMB" raw={node.usedMemoryMB} fmt="mb" />
+            <Field label="Memory available" field="node.availMemoryMB" raw={node.availMemoryMB} fmt="mb" />
+            <Field label="vCores used" field="node.usedVirtualCores" raw={node.usedVirtualCores} fmt="int" />
+            <Field label="vCores available" field="node.availableVirtualCores" raw={node.availableVirtualCores} fmt="int" />
+            <Field
+              label="Physical memory used"
+              field="node.memUtilization"
+              raw={node.memUtilization}
+              fmt="pct"
+              hint="Physical host memory usage, including processes outside YARN."
+            />
+            <Field
+              label="Physical vCores used"
+              field="node.cpuUtilization"
+              raw={node.cpuUtilization}
+              fmt="pct"
+              hint="Physical CPU usage reported by the NodeManager."
+            />
+            {node.subClusterId !== undefined && <Field label="Sub-cluster id" field="node.subClusterId" raw={node.subClusterId} />}
+            <Field label="Node labels" field="node.nodeLabels" raw={node.nodeLabels.length ? node.nodeLabels : undefined}>
+              {node.nodeLabels.length === 0 ? <span className="text-ink-4">—</span> : node.nodeLabels.join(", ")}
+            </Field>
+            <Field
+              label="Allocation tags"
+              field="node.allocationTags"
+              raw={tags.length ? tags : undefined}
+              hint="tags with their allocation counts"
+            >
+              {tags.length === 0 ? <span className="text-ink-4">—</span> : allocationTagSummary(node)}
+            </Field>
+            <Field
+              label="Running containers (opportunistic)"
+              field="node.numRunningOpportContainers"
+              raw={node.numRunningOpportContainers}
+              fmt="int"
+            />
+            <Field label="Queued containers" field="node.numQueuedContainers" raw={node.numQueuedContainers} fmt="int" />
+            <Field label="Opportunistic memory (GB)" field="node.usedMemoryOpportGB" raw={node.usedMemoryOpportGB} fmt="int" />
+            <Field label="Opportunistic vCores" field="node.usedVirtualCoresOpport" raw={node.usedVirtualCoresOpport} fmt="int" />
+          </KvGrid>
+        </TabContent>
       </Section>
 
       <Section title="Resources">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <KvGrid columns={2}>
-            <Field label="Total memory" field="node.totalResource.memory" raw={node.totalResource?.memory} fmt="mb" />
-            <Field label="Total vCores" field="node.totalResource.vCores" raw={node.totalResource?.vCores} fmt="int" />
-            <Field label="Used (resource)" field="node.usedResource.memory" raw={node.usedResource?.memory} fmt="mb" />
-            <Field label="Used vCores (resource)" field="node.usedResource.vCores" raw={node.usedResource?.vCores} fmt="int" />
-            <Field label="Available (resource)" field="node.availableResource.memory" raw={node.availableResource?.memory} fmt="mb" />
-            <Field
-              label="Available vCores (resource)"
-              field="node.availableResource.vCores"
-              raw={node.availableResource?.vCores}
-              fmt="int"
-            />
-          </KvGrid>
-          <KvGrid columns={2}>
-            <Field
-              label="Node physical memory"
-              field="node.resourceUtilization.nodePhysicalMemoryMB"
-              raw={node.resourceUtilization?.nodePhysicalMemoryMB}
-              fmt="mb"
-            />
-            <Field
-              label="Node virtual memory"
-              field="node.resourceUtilization.nodeVirtualMemoryMB"
-              raw={node.resourceUtilization?.nodeVirtualMemoryMB}
-              fmt="mb"
-            />
-            <Field
-              label="Node CPU usage"
-              field="node.resourceUtilization.nodeCPUUsage"
-              raw={node.resourceUtilization?.nodeCPUUsage}
-              hint="NM-reported physical CPU usage (a percentage)."
-            />
-            <Field
-              label="Containers physical memory"
-              field="node.resourceUtilization.aggregatedContainersPhysicalMemoryMB"
-              raw={node.resourceUtilization?.aggregatedContainersPhysicalMemoryMB}
-              fmt="mb"
-            />
-            <Field
-              label="Containers virtual memory"
-              field="node.resourceUtilization.aggregatedContainersVirtualMemoryMB"
-              raw={node.resourceUtilization?.aggregatedContainersVirtualMemoryMB}
-              fmt="mb"
-            />
-            <Field
-              label="Containers CPU usage"
-              field="node.resourceUtilization.containersCPUUsage"
-              raw={node.resourceUtilization?.containersCPUUsage}
-            />
-          </KvGrid>
-        </div>
-        <ResourceMatrix node={node} />
+        <TabContent initial value={node.id} className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+            <KvGrid columns={2}>
+              <Field label="Total memory" field="node.totalResource.memory" raw={node.totalResource?.memory} fmt="mb" />
+              <Field label="Total vCores" field="node.totalResource.vCores" raw={node.totalResource?.vCores} fmt="int" />
+              <Field label="Used (resource)" field="node.usedResource.memory" raw={node.usedResource?.memory} fmt="mb" />
+              <Field label="Used vCores (resource)" field="node.usedResource.vCores" raw={node.usedResource?.vCores} fmt="int" />
+              <Field label="Available (resource)" field="node.availableResource.memory" raw={node.availableResource?.memory} fmt="mb" />
+              <Field
+                label="Available vCores (resource)"
+                field="node.availableResource.vCores"
+                raw={node.availableResource?.vCores}
+                fmt="int"
+              />
+            </KvGrid>
+            <KvGrid columns={2}>
+              <Field
+                label="Node physical memory"
+                field="node.resourceUtilization.nodePhysicalMemoryMB"
+                raw={node.resourceUtilization?.nodePhysicalMemoryMB}
+                fmt="mb"
+              />
+              <Field
+                label="Node virtual memory"
+                field="node.resourceUtilization.nodeVirtualMemoryMB"
+                raw={node.resourceUtilization?.nodeVirtualMemoryMB}
+                fmt="mb"
+              />
+              <Field
+                label="Node CPU usage"
+                field="node.resourceUtilization.nodeCPUUsage"
+                raw={node.resourceUtilization?.nodeCPUUsage}
+                hint="NM-reported physical CPU usage (a percentage)."
+              />
+              <Field
+                label="Containers physical memory"
+                field="node.resourceUtilization.aggregatedContainersPhysicalMemoryMB"
+                raw={node.resourceUtilization?.aggregatedContainersPhysicalMemoryMB}
+                fmt="mb"
+              />
+              <Field
+                label="Containers virtual memory"
+                field="node.resourceUtilization.aggregatedContainersVirtualMemoryMB"
+                raw={node.resourceUtilization?.aggregatedContainersVirtualMemoryMB}
+                fmt="mb"
+              />
+              <Field
+                label="Containers CPU usage"
+                field="node.resourceUtilization.containersCPUUsage"
+                raw={node.resourceUtilization?.containersCPUUsage}
+              />
+            </KvGrid>
+          </div>
+          <ResourceMatrix node={node} />
+        </TabContent>
       </Section>
 
       <Section
@@ -356,7 +367,7 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
         ) : !nm.data ? (
           <Skeleton className="h-24 w-full" />
         ) : (
-          <>
+          <TabContent initial value={address}>
             {nm.error && (
               <StaleErrorBanner
                 title="NodeManager refresh failed; showing the last loaded details"
@@ -400,26 +411,28 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
               <Field label="pmem check enabled" field="nm.info.pmemCheckEnabled" raw={nm.data.pmemCheckEnabled} />
               <Field label="Resource types" field="nm.info.resourceTypes" raw={nm.data.resourceTypes} mono />
             </KvGrid>
-          </>
+          </TabContent>
         )}
       </Section>
 
       {attributes.length > 0 && (
         <Section title="Node attributes">
-          <KvGrid columns={3}>
-            {attributes.map((a) => (
-              <Field
-                key={`${a.prefix ?? ""}${a.name}`}
-                label={`${a.prefix ?? ""}${a.name}`}
-                field={`node.nodeAttributesInfo.${a.name}`}
-                raw={a.value}
-                mono
-                hint={a.type}
-              >
-                {a.value ?? "—"}
-              </Field>
-            ))}
-          </KvGrid>
+          <TabContent initial value={node.id}>
+            <KvGrid columns={3}>
+              {attributes.map((a) => (
+                <Field
+                  key={`${a.prefix ?? ""}${a.name}`}
+                  label={`${a.prefix ?? ""}${a.name}`}
+                  field={`node.nodeAttributesInfo.${a.name}`}
+                  raw={a.value}
+                  mono
+                  hint={a.type}
+                >
+                  {a.value ?? "—"}
+                </Field>
+              ))}
+            </KvGrid>
+          </TabContent>
         </Section>
       )}
 

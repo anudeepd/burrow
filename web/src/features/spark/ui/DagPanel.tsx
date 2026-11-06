@@ -16,6 +16,7 @@ import { fmtInt } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Datum, Entity } from "~/ui/datum";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { sp } from "../data/queries";
 import type { SparkSqlExecution, SparkStage } from "../data/schemas";
 import { SparkFailureState, SparkLoading, SparkStaleErrorBanner } from "./StateViews";
@@ -199,13 +200,18 @@ export function JobDagPanel({
         </p>
       )}
       {showStageList ? (
-        <MobileStageSummary
-          jobId={jobId}
-          stages={stages ?? []}
-          loading={stagesLoading}
-          selectedStageId={selectedStageId}
-          onSelectStage={onSelectStage}
-        />
+        <TabContent
+          initial={!stagesLoading}
+          value={`${appId}:${attempt ?? ""}:job:${jobId}:stage-list:${stagesLoading ? "pending" : "ready"}`}
+        >
+          <MobileStageSummary
+            jobId={jobId}
+            stages={stages ?? []}
+            loading={stagesLoading}
+            selectedStageId={selectedStageId}
+            onSelectStage={onSelectStage}
+          />
+        </TabContent>
       ) : (
         <DagViewLazy
           dag={q.data as unknown as Dag}

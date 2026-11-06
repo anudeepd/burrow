@@ -1,3 +1,4 @@
+import { flushSync } from "react-dom";
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchLogWindow, logStreamUrl } from "~/api/queries/logs";
@@ -195,7 +196,12 @@ describe("useFollow", () => {
     expect(opts.buffer.ended).toBe(true);
     expect(opts.onEnded).toHaveBeenCalledOnce();
     expect(source?.closed).toBe(true);
-
+    act(() => {
+      source?.emit("eof");
+      source?.emit("error");
+    });
+    expect(result.current.status.mode).toBe("ended");
+    expect(opts.onEnded).toHaveBeenCalledOnce();
     unmount();
   });
 
@@ -283,6 +289,36 @@ describe("useFollow", () => {
     expect(opts.buffer.toLines()).toEqual(["INFO final line"]);
     expect(FakeEventSource.instances).toHaveLength(3);
     unmount();
+  });
+
+  it("does not finish when the final poll synchronously unmounts from onAppend", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    fetchWindow.mockResolvedValue({
+      text: "INFO final line\n",
+      start: 0,
+      end: 16,
+      size: 16,
+      source: "node",
+      ended: true,
+      responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+    });
+    let unmount = () => {};
+    const opts = options({
+      onAppend: () => flushSync(() => unmount()),
+    });
+    ({ unmount } = renderHook(() => useFollow(opts)));
+
+    act(() => FakeEventSource.instances[0]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    act(() => FakeEventSource.instances[1]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    act(() => FakeEventSource.instances[2]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+
+    expect(opts.buffer.toLines()).toEqual(["INFO final line"]);
+    expect(opts.buffer.ended).toBe(false);
+    expect(opts.onEnded).not.toHaveBeenCalled();
   });
 
   it("reports a failed poll and returns to the original polling reason after recovery", async () => {

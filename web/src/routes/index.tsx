@@ -37,7 +37,7 @@ function OverviewRoute() {
       <OverviewPage
         window={historyWindow}
         onHistoryWindow={(next) => {
-          void navigate({ search: (prev) => ({ ...prev, window: next }), replace: true });
+          void navigate({ search: (prev) => ({ ...prev, window: next }), replace: true, resetScroll: false });
         }}
       />
     </Suspense>

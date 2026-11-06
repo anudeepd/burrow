@@ -178,6 +178,23 @@ describe("ContainerPicker", () => {
     expect(screen.getByText("No container named by this application")).toBeTruthy();
     expect(screen.getByRole("textbox", { name: "Container id" })).toBeTruthy();
   });
+  it("keeps manual entry usable and avoids a false empty state while live lookups are pending", () => {
+    setAttempts({
+      data: { appAttempts: { appAttempt: [{ ...baseAttempt, containerId: "", logsLink: "" }] } },
+    });
+    mockState.containers = [{ data: undefined, isPending: true, isError: false }];
+    const view = render(<ContainerPicker appId="application_1791010984040_0002" onPick={vi.fn()} />);
+    expect(screen.queryByText("No container named by this application")).toBeNull();
+    expect(view.container.querySelector('[aria-busy="true"]')).toBeTruthy();
+    const input = screen.getByRole("textbox", { name: "Container id" });
+    fireEvent.change(input, { target: { value: baseAttempt.containerId } });
+
+    mockState.containers = [{ data: {}, isPending: false, isError: false }];
+    view.rerender(<ContainerPicker appId="application_1791010984040_0002" onPick={vi.fn()} />);
+    expect(screen.getByText("No container named by this application")).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: "Container id" })).toBe(input);
+    expect((input as HTMLInputElement).value).toBe(baseAttempt.containerId);
+  });
 
   it("handles raw attempts errors and short partial-failure summaries", () => {
     setAttempts({ data: undefined, isError: true, error: "raw RM failure" });

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ConfProperty, ConfResponse } from "~/api/schemas";
+import type { LogChunk } from "./logs";
 
 window.__BURROW_PARITY__ = true;
 
@@ -519,6 +520,71 @@ describe("tools pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Jump to the end of the file" }));
     await waitFor(() => expect((router.state.location.search as { offset?: number }).offset).toBe(327_680));
     expect((router.state.location.search as { tail?: boolean }).tail).toBeUndefined();
+  });
+
+  it("fades only committed requested log windows while retaining the reader and previous text", async () => {
+    window.__BURROW_PARITY__ = false;
+    parityStore.setState(() => ({ enabled: false }));
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate");
+    const arrivals: Element[] = [];
+    Object.defineProperty(HTMLElement.prototype, "animate", {
+      configurable: true,
+      value(this: HTMLElement) {
+        if (this.closest("pre")) arrivals.push(this);
+        return { playState: "finished", finished: Promise.resolve(), cancel: vi.fn() } as unknown as Animation;
+      },
+    });
+    try {
+      const { client } = renderToolsPage("logs", "?file=resourcemanager.log&len=32768");
+      const reader = await screen.findByRole("log", { name: /resourcemanager.log/ });
+      await waitFor(() => expect(arrivals).toHaveLength(1));
+      reader.focus();
+      reader.scrollTop = 42;
+      const pendingWindow = Promise.withResolvers<LogChunk>();
+      vi.mocked(fetchLogChunk).mockReturnValueOnce(pendingWindow.promise);
+      fireEvent.click(screen.getByRole("button", { name: "Next page" }));
+      await waitFor(() => expect(reader.getAttribute("aria-busy")).toBe("true"));
+      expect(screen.getByRole("log")).toBe(reader);
+      expect(reader.textContent).toContain("INFO startup");
+      expect(arrivals).toHaveLength(1);
+      await act(async () =>
+        pendingWindow.resolve({
+          text: "INFO next window\n",
+          size: 360_448,
+          start: 32_768,
+          end: 65_536,
+          source: "rm",
+          derived: false,
+        }),
+      );
+      await waitFor(() => expect(reader.textContent).toContain("INFO next window"));
+      expect(arrivals).toHaveLength(2);
+      expect(screen.getByRole("log")).toBe(reader);
+      expect(document.activeElement).toBe(reader);
+      expect(reader.scrollTop).toBe(42);
+      act(() =>
+        client.setQueryData(["tools", "logs", "chunk", "resourcemanager.log", 32_768, 32_768], {
+          text: "INFO polled window\n",
+          size: 360_448,
+          start: 32_768,
+          end: 65_536,
+          source: "rm",
+          derived: false,
+        }),
+      );
+      await waitFor(() => expect(reader.textContent).toContain("INFO polled window"));
+      expect(arrivals).toHaveLength(2);
+      fireEvent.change(screen.getByRole("searchbox", { name: "Search inside this window" }), { target: { value: "INFO" } });
+      await screen.findByText("1 / 1");
+      expect(arrivals).toHaveLength(2);
+      fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
+      await waitFor(() => expect(arrivals).toHaveLength(3));
+      expect(screen.getByRole("log")).toBe(reader);
+    } finally {
+      cleanup();
+      if (descriptor) Object.defineProperty(HTMLElement.prototype, "animate", descriptor);
+      else delete (HTMLElement.prototype as Partial<HTMLElement>).animate;
+    }
   });
 
   it("shows the no-file prompt for a URL that names no listed file", async () => {

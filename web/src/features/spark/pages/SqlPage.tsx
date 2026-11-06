@@ -23,7 +23,7 @@ import { sp } from "../data/queries";
 import type { SparkSqlExecution } from "../data/schemas";
 import { compact, intParam, matchesQuery, parseColumns, parseSort, serializeColumns, serializeSort } from "../data/search";
 import { PageHeader } from "../ui/PageHeader";
-import { SparkEmpty, SparkFailureState, SparkLoading, SparkStaleErrorBanner } from "../ui/StateViews";
+import { SparkEmpty, SparkFailureState, SparkStaleErrorBanner } from "../ui/StateViews";
 import { useSpark } from "../ui/context";
 import { useNow } from "../ui/use-now";
 import { OptionalTooltip } from "~/ui/tooltip";
@@ -121,7 +121,7 @@ export function SqlPage() {
   const parsedSort = parseSort(search);
   const sorting = parsedSort.length ? parsedSort : SQL_DEFAULT_SORTING;
   const columnVisibility = parseColumns(search);
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
   const setSize = (v: string | null) => patch({ size: v || undefined, page: v ? "0" : undefined });
 
   const columns = useMemo<ColDef<SparkSqlExecution>[]>(
@@ -270,97 +270,97 @@ export function SqlPage() {
   const lastRow = limit != null ? page * limit + rows.length : rows.length;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-3">
       <PageHeader title="SQL" hideTitle />
       {sqlQ.error && sqlQ.data !== undefined && (
         <SparkStaleErrorBanner error={sqlQ.error} subject="the SQL execution list" onRetry={() => void sqlQ.refetch()} />
       )}
-      {sqlQ.isPending ? (
-        <SparkLoading rows={8} cols={8} />
-      ) : sqlQ.error && sqlQ.data === undefined ? (
-        <SparkFailureState error={sqlQ.error} subject="the SQL execution list" onRetry={() => void sqlQ.refetch()} />
-      ) : rows.length === 0 && limit == null ? (
-        <SparkEmpty title="No SQL executions" />
-      ) : (
-        <DataTable<SparkSqlExecution>
-          className="min-h-[24rem]"
-          data={filtering}
-          columns={columns}
-          getRowId={(e) => String(e.id)}
-          entityKey={(e) => String(e.id)}
-          label="Spark SQL executions"
-          storageKey="spark-sql"
-          sorting={sorting}
-          defaultSorting={SQL_DEFAULT_SORTING}
-          onSortingChange={(s: SortingState) => patch(serializeSort(s))}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
-          defaultVisibility={DEFAULT_VISIBILITY}
-          onRowActivate={(e) =>
-            void navigate({
-              to: "/apps/$appId/spark/sql/$executionId",
-              params: { appId, executionId: String(e.id) },
-              search: { attempt: attempt ?? undefined },
-            })
-          }
-          rowVersion={(e) => `${e.status}:${(e.runningJobIds ?? []).length}`}
-          totalCount={rows.length}
-          exportName={`spark-sql-${appId}`}
-          toolbar={
-            <>
-              <Select
-                label="SQL status filter"
-                value={status ?? ""}
-                onValueChange={(v) => patch({ status: v === "" ? undefined : v })}
-                options={[
-                  { value: "", label: "All statuses" },
-                  { value: "COMPLETED", label: "Completed" },
-                  { value: "RUNNING", label: "Running" },
-                  { value: "FAILED", label: "Failed" },
-                ]}
+      <DataTable<SparkSqlExecution>
+        loading={sqlQ.isPending}
+        contentIdentity={JSON.stringify([appId, attempt, limit, limit == null ? null : page, status])}
+        error={
+          sqlQ.error && sqlQ.data === undefined ? (
+            <SparkFailureState error={sqlQ.error} subject="the SQL execution list" onRetry={() => void sqlQ.refetch()} />
+          ) : undefined
+        }
+        empty={rows.length === 0 && limit == null ? <SparkEmpty title="No SQL executions" /> : undefined}
+        className="min-h-[24rem]"
+        data={filtering}
+        columns={columns}
+        getRowId={(e) => String(e.id)}
+        entityKey={(e) => String(e.id)}
+        label="Spark SQL executions"
+        storageKey="spark-sql"
+        sorting={sorting}
+        defaultSorting={SQL_DEFAULT_SORTING}
+        onSortingChange={(s: SortingState) => patch(serializeSort(s))}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
+        defaultVisibility={DEFAULT_VISIBILITY}
+        onRowActivate={(e) =>
+          void navigate({
+            to: "/apps/$appId/spark/sql/$executionId",
+            params: { appId, executionId: String(e.id) },
+            search: { attempt: attempt ?? undefined },
+          })
+        }
+        rowVersion={(e) => `${e.status}:${(e.runningJobIds ?? []).length}`}
+        totalCount={rows.length}
+        exportName={`spark-sql-${appId}`}
+        toolbar={
+          <>
+            <Select
+              label="SQL status filter"
+              value={status ?? ""}
+              onValueChange={(v) => patch({ status: v === "" ? undefined : v })}
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "COMPLETED", label: "Completed" },
+                { value: "RUNNING", label: "Running" },
+                { value: "FAILED", label: "Failed" },
+              ]}
+            />
+            <label className="flex items-center gap-1.5 text-small text-ink-3">
+              <span className="sr-only">Filter SQL executions</span>
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => patch({ q: e.target.value || undefined })}
+                placeholder="Filter description / id…"
+                className="h-(--ctl-h) w-52 rounded-md border border-seam-strong bg-well px-2 text-body text-ink placeholder:text-ink-4"
               />
-              <label className="flex items-center gap-1.5 text-small text-ink-3">
-                <span className="sr-only">Filter SQL executions</span>
-                <input
-                  type="search"
-                  value={q}
-                  onChange={(e) => patch({ q: e.target.value || undefined })}
-                  placeholder="Filter description / id…"
-                  className="h-(--ctl-h) w-52 rounded-md border border-seam-strong bg-well px-2 text-body text-ink placeholder:text-ink-4"
-                />
-              </label>
-              <Select
-                label="Rows per page"
-                value={limit != null ? String(limit) : ""}
-                onValueChange={setSize}
-                options={[{ value: "", label: "All rows" }, ...PAGE_SIZES.map((n) => ({ value: String(n), label: `${n} / page` }))]}
-              />
-              {limit != null && (
-                <span className="flex items-center gap-1.5">
-                  <Button variant="quiet" size="sm" disabled={page === 0} onClick={() => patch({ page: String(page - 1) })}>
-                    ← Prev
-                  </Button>
-                  <span className="text-small text-ink-4 tnum">
-                    {fmtInt(firstRow)}–{fmtInt(lastRow)}
-                  </span>
-                  <Button variant="quiet" size="sm" disabled={rows.length < limit} onClick={() => patch({ page: String(page + 1) })}>
-                    Next →
-                  </Button>
+            </label>
+            <Select
+              label="Rows per page"
+              value={limit != null ? String(limit) : ""}
+              onValueChange={setSize}
+              options={[{ value: "", label: "All rows" }, ...PAGE_SIZES.map((n) => ({ value: String(n), label: `${n} / page` }))]}
+            />
+            {limit != null && (
+              <span className="flex items-center gap-1.5">
+                <Button variant="quiet" size="sm" disabled={page === 0} onClick={() => patch({ page: String(page - 1) })}>
+                  ← Prev
+                </Button>
+                <span className="text-small text-ink-4 tnum">
+                  {fmtInt(firstRow)}–{fmtInt(lastRow)}
                 </span>
-              )}
-              <span className="text-small text-ink-4">
-                {filtering.length === rows.length ? (
-                  <>{fmtInt(rows.length)} shown</>
-                ) : (
-                  <>
-                    {fmtInt(filtering.length)} of {fmtInt(rows.length)}
-                  </>
-                )}
+                <Button variant="quiet" size="sm" disabled={rows.length < limit} onClick={() => patch({ page: String(page + 1) })}>
+                  Next →
+                </Button>
               </span>
-            </>
-          }
-        />
-      )}
+            )}
+            <span className="text-small text-ink-4">
+              {filtering.length === rows.length ? (
+                <>{fmtInt(rows.length)} shown</>
+              ) : (
+                <>
+                  {fmtInt(filtering.length)} of {fmtInt(rows.length)}
+                </>
+              )}
+            </span>
+          </>
+        }
+      />
     </div>
   );
 }

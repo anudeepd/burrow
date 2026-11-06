@@ -277,6 +277,8 @@ export function PartitionsTable({
     <div className={className}>
       <DataTable
         data={rows}
+        contentIdentity={queuePath}
+        initialContentFade={false}
         columns={COLS}
         getRowId={(r) => `${queuePath}#${r.cap.partitionName ?? ""}`}
         entityKey={() => queuePath}
@@ -290,7 +292,6 @@ export function PartitionsTable({
         empty={<div className="px-4 py-10 text-center text-body text-ink-3">This queue has no per-partition capacities.</div>}
         exportName="queue-partitions"
         totalCount={rows.length}
-        className="h-[min(34dvh,360px)]"
         stableViewport={stableViewport}
       />
     </div>

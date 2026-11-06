@@ -15,6 +15,7 @@ import { Datum, Entity, datumAttrs } from "~/ui/datum";
 import { EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { ProgressBar } from "~/ui/progress-bar";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { Tooltip } from "~/ui/tooltip";
 import { Ticker } from "~/ui/ticker";
 import type { App } from "~/api/schemas";
@@ -195,9 +196,11 @@ export function ActiveRail({ parity, bordered = false }: { parity: boolean; bord
             onRetry={() => void apps.refetch()}
           />
         )}
-        <EmptyState title="Nothing is running right now">
-          The ResourceManager reports no application in NEW, NEW_SAVING, SUBMITTED, ACCEPTED or RUNNING.
-        </EmptyState>
+        <TabContent value="active-applications">
+          <EmptyState title="Nothing is running right now">
+            The ResourceManager reports no application in NEW, NEW_SAVING, SUBMITTED, ACCEPTED or RUNNING.
+          </EmptyState>
+        </TabContent>
       </div>
     );
   }
@@ -211,31 +214,33 @@ export function ActiveRail({ parity, bordered = false }: { parity: boolean; bord
           onRetry={() => void apps.refetch()}
         />
       )}
-      <div
-        className={cn(
-          "relative min-w-0 overflow-hidden rounded-md",
-          bordered ? "border border-seam bg-fabric" : "border-y border-seam-soft",
-        )}
-      >
-        <ul className="m-0 divide-y divide-seam-soft p-0" data-testid="active-rail" aria-label="Active applications">
-          {shown.map((a) => (
-            <AppRow key={a.id} app={a} stale={stale} />
-          ))}
-        </ul>
-        <div className="flex h-7 shrink-0 items-center border-t border-seam-soft bg-fabric-2 px-3 text-small text-ink-3">
-          <span className="tnum">
-            {fmtInt(shown.length)} shown{shown.length !== list.length ? ` of ${fmtInt(list.length)}` : ""} active applications
-          </span>
-        </div>
-      </div>
-      {shown.length < list.length && (
-        <CrossLink
-          href="/apps?states=NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING"
-          className="self-start text-small text-live hover:underline"
+      <TabContent value="active-applications" initial className="flex flex-col gap-[var(--gap-card)]">
+        <div
+          className={cn(
+            "relative min-w-0 overflow-hidden rounded-md",
+            bordered ? "border border-seam bg-fabric" : "border-y border-seam-soft",
+          )}
         >
-          {`View all ${fmtInt(list.length)} active applications →`}
-        </CrossLink>
-      )}
+          <ul className="m-0 divide-y divide-seam-soft p-0" data-testid="active-rail" aria-label="Active applications">
+            {shown.map((a) => (
+              <AppRow key={a.id} app={a} stale={stale} />
+            ))}
+          </ul>
+          <div className="flex h-7 shrink-0 items-center border-t border-seam-soft bg-fabric-2 px-3 text-small text-ink-3">
+            <span className="tnum">
+              {fmtInt(shown.length)} shown{shown.length !== list.length ? ` of ${fmtInt(list.length)}` : ""} active applications
+            </span>
+          </div>
+        </div>
+        {shown.length < list.length && (
+          <CrossLink
+            href="/apps?states=NEW,NEW_SAVING,SUBMITTED,ACCEPTED,RUNNING"
+            className="self-start text-small text-live hover:underline"
+          >
+            {`View all ${fmtInt(list.length)} active applications →`}
+          </CrossLink>
+        )}
+      </TabContent>
     </div>
   );
 }

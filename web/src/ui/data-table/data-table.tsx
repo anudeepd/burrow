@@ -36,7 +36,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { cn } from "~/lib/cn";
-import { EASE_OUT, flash, motionAllowed, tokenMs } from "~/lib/motion";
+import { cancelAnimation, EASE_OUT, fadeIn, flash, motionAllowed, tokenMs } from "~/lib/motion";
 import { useParity } from "~/state/parity";
 import { Button } from "../button";
 import { Entity } from "../datum";
@@ -55,7 +55,6 @@ import type { Row } from "@tanstack/react-table";
 export const ROW_HEIGHT = 34;
 const TOUCH_ROW_HEIGHT = 44;
 const SELECT_W = 36;
-const STABLE_VIEWPORT_ROW_THRESHOLD = 4;
 type CompactStateProps = { compact?: boolean };
 
 const COARSE_POINTER_QUERY = "(pointer: coarse)";
@@ -118,6 +117,10 @@ export interface DataTableProps<T extends RowData> {
   rowVersion?: (row: T) => string | number;
   selectable?: boolean;
   loading?: boolean;
+  /** A deliberate view/source identity; enables cached rowgroup entry without fading controls or replaying polls. */
+  contentIdentity?: string;
+  /** Disable the initial row fade when an enclosing panel owns first-paint motion; delayed results still enter once. */
+  initialContentFade?: boolean;
   error?: ReactNode;
   empty?: ReactNode;
   /** rows before filtering, for the "n of m" readout */
@@ -125,7 +128,7 @@ export interface DataTableProps<T extends RowData> {
   toolbar?: ReactNode;
   /** inline toolbars share the action row whenever they fit, and wrap naturally on narrow tables */
   toolbarArrangement?: "stacked" | "inline";
-  /** On refresh-fed tables, lock the viewport after four rows; shorter result sets keep their compact content height. */
+  /** Reserve a loading viewport for refresh-fed tables; ready rows fit content up to the available page height. */
   stableViewport?: boolean;
   exportName: string;
   className?: string;
@@ -135,6 +138,34 @@ export interface DataTableProps<T extends RowData> {
 function columnId<T extends RowData>(column: ColDef<T>): string {
   if (column.id != null) return String(column.id);
   return "accessorKey" in column ? String(column.accessorKey) : "";
+}
+const TABLE_HEADER_HEIGHT = 32;
+
+function hasActivePageEntry(root: HTMLElement): boolean {
+  for (let owner = root.parentElement; owner; owner = owner.parentElement) {
+    if (!owner.matches('[data-page-motion="content"]')) continue;
+    const active = owner.getAnimations().some((animation) => {
+      const name = (animation as CSSAnimation).animationName;
+      return name === "burrow-page-content-shift" && animation.playState !== "finished" && animation.playState !== "idle";
+    });
+    if (active) return true;
+  }
+  return false;
+}
+
+function availableTableHeight(root: HTMLElement, minimumHeight: number): number {
+  const viewportHeight = window.visualViewport?.height || window.innerHeight;
+  const page = root.closest<HTMLElement>(".burrow-page-scroll");
+  const pageHeight = page?.clientHeight ?? 0;
+  const container = pageHeight > 0 ? page : null;
+  const height = container ? pageHeight : viewportHeight;
+  const rootRect = root.getBoundingClientRect();
+  const contentTop = container
+    ? rootRect.top - container.getBoundingClientRect().top - container.clientTop + container.scrollTop
+    : rootRect.top;
+  const bottomPadding = container ? Number.parseFloat(getComputedStyle(container).paddingBottom) || 0 : 0;
+  const remaining = Math.min(height, height - contentTop - bottomPadding);
+  return Math.max(0, Math.floor(remaining < minimumHeight ? height - bottomPadding : remaining));
 }
 
 /**
@@ -166,6 +197,8 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     rowVersion,
     selectable,
     loading,
+    contentIdentity,
+    initialContentFade = true,
     error,
     empty,
     totalCount,
@@ -318,17 +351,61 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   const showBody = !loading && !error && rows.length > 0;
   const unavailable = !!error && data.length === 0;
   const hideControls = unavailable;
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const bodyAnimation = useRef<Animation | undefined>(undefined);
+  const previousContent = useRef<{ identity: string | undefined; visible: boolean } | null>(null);
+  const tableEntryAnimation = useRef<Animation | undefined>(undefined);
+  useLayoutEffect(() => {
+    const previous = previousContent.current;
+    previousContent.current = { identity: contentIdentity, visible: showBody };
+    // Loading and empty -> rows already have a persistent CSS opacity transition.
+    if (contentIdentity === undefined || !showBody || previous?.visible === false) {
+      if (bodyAnimation.current) cancelAnimation(bodyAnimation.current);
+      bodyAnimation.current = undefined;
+      return;
+    }
+    if (previous === null && !initialContentFade) return;
+    if (previous?.identity === contentIdentity) return;
+    const element = bodyRef.current!;
+    const from = bodyAnimation.current?.playState === "running" ? Number.parseFloat(getComputedStyle(element).opacity) : 0;
+    if (bodyAnimation.current) cancelAnimation(bodyAnimation.current);
+    bodyAnimation.current = fadeIn(element, Number.isFinite(from) ? from : 0);
+  }, [contentIdentity, showBody, initialContentFade]);
+  useEffect(
+    () => () => {
+      if (bodyAnimation.current) cancelAnimation(bodyAnimation.current);
+      cancelAnimation(tableEntryAnimation.current);
+    },
+    [],
+  );
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const tableEntryStarted = useRef(false);
+  const hasCommitted = useRef(false);
   const { visible: moreBelow, sync: syncVerticalOverflowCue } = useHasMoreBelow(scrollRef, showBody, contentRef);
   const syncScrollCues = useCallback(() => {
     syncOverflowCue();
     syncVerticalOverflowCue();
   }, [syncOverflowCue, syncVerticalOverflowCue]);
+  useLayoutEffect(() => {
+    const firstCommit = !hasCommitted.current;
+    hasCommitted.current = true;
+    if (!showBody || tableEntryStarted.current) return;
+    tableEntryStarted.current = true;
+    if ((firstCommit && !initialContentFade) || !rootRef.current || hasActivePageEntry(rootRef.current) || !motionAllowed()) return;
+    const root = rootRef.current;
+    const duration = tokenMs(root, "--dur-page", 400);
+    if (duration <= 0 || typeof root.animate !== "function") return;
+    tableEntryAnimation.current = root.animate([{ transform: "translateY(10px)" }, { transform: "translateY(0px)" }], {
+      duration,
+      easing: "ease-in-out",
+    });
+  }, [showBody, initialContentFade]);
   const priorRows = useRef<{
     data: readonly T[];
     ids: Set<string>;
     ready: boolean;
+    identity: string | undefined;
     rows: Map<string, VisibleRowSnapshot>;
   } | null>(null);
   const reflowAnimations = useRef<Animation[]>([]);
@@ -359,11 +436,18 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     }
 
     const previous = priorRows.current;
+    if (previous && previous.identity !== contentIdentity) {
+      for (const [animation, element] of exitAnimations.current) {
+        animation.cancel();
+        element.remove();
+      }
+      exitAnimations.current.clear();
+    }
     const dataChanged = !previous || previous.data !== data;
     const currentIds = dataChanged ? new Set(data.map((item) => (entityKey ? entityKey(item) : getRowId(item)))) : previous!.ids;
     // DataTable owns this behavior for every table. Compare row identities on data changes, but
     // refresh the visible-row snapshot on every commit so virtual scrolling cannot look like removal.
-    if (previous && previous.data !== data && previous.ready && motionAllowed()) {
+    if (previous && previous.data !== data && previous.ready && previous.identity === contentIdentity && motionAllowed()) {
       const duration = tokenMs(scroller, "--dur-content", 220);
       if (duration > 0) {
         const exitLayer = exitLayerRef.current!;
@@ -444,7 +528,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
         }
       }
     }
-    priorRows.current = { data, ids: currentIds, ready: !loading && !error, rows: currentRows };
+    priorRows.current = { data, ids: currentIds, ready: !loading && !error, identity: contentIdentity, rows: currentRows };
     // A filter can shrink the table without changing its scrollport dimensions. Recheck against
     // the committed content height so exit-animation overlays do not count as scrollable rows.
     syncVerticalOverflowCue();
@@ -463,21 +547,48 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     },
     [],
   );
-  const [chromeH, setChromeH] = useState(0);
-  const [fitH, setFitH] = useState(0);
-  /* Short results should not occupy an empty pane. In the default mode, remember the chrome around the scroller
-     (toolbar, footer, borders) and the rendered content (header block + rows). Refresh-fed tables can opt into a
-     stable viewport once they exceed a few rows, so later polls cannot keep growing or shrinking the page. */
-  useEffect(() => {
+  const [tableLayout, setTableLayout] = useState({ chrome: 0, content: 0, available: 0 });
+  const measureTable = useCallback(() => {
+    const root = rootRef.current;
+    const scroller = scrollRef.current;
+    const content = contentRef.current;
+    if (!root || !scroller || !content) return;
+    const chrome = Math.max(0, root.offsetHeight - scroller.offsetHeight);
+    const contentHeight = content.offsetHeight;
+    const available = availableTableHeight(root, chrome + TABLE_HEADER_HEIGHT + rowH);
+    setTableLayout((previous) =>
+      previous.chrome === chrome && previous.content === contentHeight && previous.available === available
+        ? previous
+        : { chrome, content: contentHeight, available },
+    );
+    syncScrollCues();
+  }, [rowH, syncScrollCues]);
+  useLayoutEffect(() => {
+    measureTable();
+  }, [measureTable, data, rows.length, loading, error, contentIdentity, toolbar, toolbarArrangement, className, stableViewport, rowH]);
+  useLayoutEffect(() => {
     const root = rootRef.current!;
-    const scroller = scrollRef.current!;
-    const content = contentRef.current!;
-    setChromeH(Math.max(0, root.offsetHeight - scroller.offsetHeight));
-    setFitH(content.offsetHeight);
-    syncOverflowCue();
-  });
-  const fixedViewport = stableViewport && (!showBody || rows.length > STABLE_VIEWPORT_ROW_THRESHOLD);
-  const capH = !fixedViewport && showBody && chromeH > 0 && fitH > 0 ? chromeH + fitH : undefined;
+    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measureTable);
+    const observed = new Set<Element>([root]);
+    observed.add(scrollRef.current!);
+    observed.add(contentRef.current!);
+    const page = root.closest<HTMLElement>(".burrow-page-scroll");
+    if (page) observed.add(page);
+    for (let element: HTMLElement | null = root; element && element !== page; element = element.parentElement) {
+      for (let sibling = element.previousElementSibling; sibling; sibling = sibling.previousElementSibling) observed.add(sibling);
+    }
+    for (const element of observed) observer?.observe(element);
+    window.addEventListener("resize", measureTable);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", measureTable);
+    };
+  }, [measureTable]);
+  const fixedViewport = stableViewport && loading === true && !showBody;
+  const capH =
+    showBody && tableLayout.chrome > 0 && tableLayout.content > 0 && tableLayout.available > 0
+      ? Math.min(tableLayout.chrome + tableLayout.content, tableLayout.available)
+      : undefined;
   const vItems = parity ? null : virt.getVirtualItems();
 
   const renderRow = (index: number, offset: number | null) => {
@@ -781,6 +892,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
 
             {/* body */}
             <div
+              ref={bodyRef}
               role="rowgroup"
               className={cn(
                 "relative transition-opacity duration-(--dur-content) ease-(--ease-out)",

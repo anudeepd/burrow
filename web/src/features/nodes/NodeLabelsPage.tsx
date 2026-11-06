@@ -15,13 +15,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { Network, Table2 } from "lucide-react";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { nq } from "~/api/queries/nodes";
 import type { Node } from "~/api/schemas";
 import { DataTable } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
 import { Datum, Entity } from "~/ui/datum";
-import { CenteredPageState, EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { EmptyState, ErrorState, StaleErrorBanner } from "~/ui/feedback";
 import { StatusPill } from "~/ui/status";
 import { TabContent } from "~/ui/tabs";
 import { Segmented } from "~/ui/toggles";
@@ -53,38 +53,29 @@ export function NodeLabelsPage() {
   const open = search.open;
   const openRow = rows.find((r) => r.label.name === open);
 
-  if (labelsQ.error && !labelsQ.data) {
-    return (
-      <CenteredPageState>
-        <ErrorState
-          title="Cannot read the node labels"
-          message={labelsQ.error instanceof Error ? labelsQ.error.message : String(labelsQ.error)}
-          hint="Burrow proxies /ws/v1/cluster/get-node-labels; label support requires yarn.node-labels.enabled on the ResourceManager."
-          onRetry={() => void labelsQ.refetch()}
-        />
-      </CenteredPageState>
-    );
-  }
-
-  if (nodesQ.error && !nodesQ.data) {
-    return (
-      <CenteredPageState>
-        <ErrorState
-          title="Cannot read nodes for label membership"
-          message={nodesQ.error instanceof Error ? nodesQ.error.message : String(nodesQ.error)}
-          hint="Active-node counts, the DEFAULT partition, and node-to-label mappings come from the ResourceManager node list."
-          onRetry={() => void nodesQ.refetch()}
-        />
-      </CenteredPageState>
-    );
-  }
-
-  if (labelsQ.isPending || nodesQ.isPending) {
-    return <Skeleton className="h-64 w-full" />;
-  }
+  const loading = labelsQ.isPending || nodesQ.isPending;
+  const fatalError =
+    labelsQ.error && !labelsQ.data ? (
+      <ErrorState
+        title="Cannot read the node labels"
+        message={labelsQ.error instanceof Error ? labelsQ.error.message : String(labelsQ.error)}
+        hint="Burrow proxies /ws/v1/cluster/get-node-labels; label support requires yarn.node-labels.enabled on the ResourceManager."
+        onRetry={() => void labelsQ.refetch()}
+      />
+    ) : nodesQ.error && !nodesQ.data ? (
+      <ErrorState
+        title="Cannot read nodes for label membership"
+        message={nodesQ.error instanceof Error ? nodesQ.error.message : String(nodesQ.error)}
+        hint="Active-node counts, the DEFAULT partition, and node-to-label mappings come from the ResourceManager node list."
+        onRetry={() => void nodesQ.refetch()}
+      />
+    ) : undefined;
 
   return (
-    <div className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto pb-6 [&>*]:shrink-0">
+    <div
+      data-page-motion="content"
+      className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto pb-6 [&>*]:shrink-0"
+    >
       <PageHead
         title="Node labels"
         description="Browse YARN partitions and see which nodes belong to each label."
@@ -92,7 +83,7 @@ export function NodeLabelsPage() {
           <Segmented
             label="View"
             value={view}
-            onValueChange={(v) => navigate({ search: (prev) => ({ ...prev, view: v }), replace: true })}
+            onValueChange={(v) => navigate({ search: (prev) => ({ ...prev, view: v }), replace: true, resetScroll: false })}
             options={[
               {
                 value: "labels",
@@ -111,14 +102,14 @@ export function NodeLabelsPage() {
         }
       />
 
-      {labelsQ.error && (
+      {labelsQ.error && labelsQ.data && (
         <StaleErrorBanner
           title="Node labels refresh failed; showing the last loaded labels"
           error={labelsQ.error}
           onRetry={() => void labelsQ.refetch()}
         />
       )}
-      {nodesQ.error && (
+      {nodesQ.error && nodesQ.data && (
         <ErrorState
           compact
           title="Node list refresh failed; showing the last loaded membership data"
@@ -128,31 +119,40 @@ export function NodeLabelsPage() {
       )}
 
       <TabContent value={view}>
-        {view === "labels" ? (
+        <div hidden={view !== "labels"}>
           <Section>
             <DataTable
               data={filtered}
+              contentIdentity="node-labels"
+              loading={!fatalError && loading}
+              error={view === "labels" ? fatalError : undefined}
               columns={labelColumns(search.open)}
               getRowId={(r) => r.label.name || "__default__"}
               entityKey={(r) => r.label.name}
               label="Node labels"
               storageKey="burrow.node-labels"
               sorting={parseSorting(search.sort)}
-              onSortingChange={(sort) => navigate({ search: (prev) => ({ ...prev, sort: serializeSorting(sort) }), replace: true })}
+              onSortingChange={(sort) =>
+                navigate({ search: (prev) => ({ ...prev, sort: serializeSorting(sort) }), replace: true, resetScroll: false })
+              }
               columnVisibility={visibilityFromHide(search.hide, {})}
               onColumnVisibilityChange={(visibility) =>
-                navigate({ search: (prev) => ({ ...prev, hide: hideFromVisibility(visibility) }), replace: true })
+                navigate({ search: (prev) => ({ ...prev, hide: hideFromVisibility(visibility) }), replace: true, resetScroll: false })
               }
               defaultVisibility={{ name: true, type: true, activeNMs: true, resource: true, nodes: true }}
               onRowActivate={(r) =>
-                navigate({ search: (prev) => ({ ...prev, open: prev.open === r.label.name ? undefined : r.label.name }), replace: true })
+                navigate({
+                  search: (prev) => ({ ...prev, open: prev.open === r.label.name ? undefined : r.label.name }),
+                  replace: true,
+                  resetScroll: false,
+                })
               }
               exportName="node-labels"
               totalCount={rows.length}
               toolbar={
                 <SearchField
                   value={search.q ?? ""}
-                  onChange={(q) => navigate({ search: (prev) => ({ ...prev, q: q || undefined }), replace: true })}
+                  onChange={(q) => navigate({ search: (prev) => ({ ...prev, q: q || undefined }), replace: true, resetScroll: false })}
                   label="Search labels"
                   placeholder="label name…"
                   className="w-56"
@@ -161,7 +161,7 @@ export function NodeLabelsPage() {
               empty={<EmptyState title="No node label matches">Clear the search box.</EmptyState>}
             />
 
-            {openRow && (
+            {openRow && !loading && !fatalError && (
               <div className="mt-3 rounded-lg border border-seam bg-fabric p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-lead font-medium text-ink-2">
@@ -174,36 +174,41 @@ export function NodeLabelsPage() {
                     Filter the node table by this label
                   </a>
                 </div>
-                {openRow.nodes.length === 0 ? (
-                  <p className="mt-2 text-small text-ink-3">No live node is in this partition right now.</p>
-                ) : (
-                  <ul className="mt-2 divide-y divide-seam-soft">
-                    {openRow.nodes.map((n) => (
-                      <li key={n.id} className="flex flex-wrap items-center gap-3 py-1.5">
-                        <Entity id={n.id} as="span" className="flex flex-wrap items-center gap-3">
-                          <Datum field="node.id" raw={n.id} fmt="text" className="font-mono text-small text-ink" />
-                          <Datum field="node.rack" raw={n.rack} fmt="text" className="font-mono text-small text-ink-3" />
-                          <StatusPill domain="node.state" state={n.state} field="node.state" size="sm" />
-                          <span className="text-small text-ink-3 tnum">
-                            <Datum field="node.numContainers" raw={n.numContainers} fmt="int" /> containers ·{" "}
-                            <Datum field="node.usedMemoryMB" raw={n.usedMemoryMB} fmt="mb" />
-                          </span>
-                        </Entity>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <TabContent initial value={openRow.label.name}>
+                  {openRow.nodes.length === 0 ? (
+                    <p className="mt-2 text-small text-ink-3">No live node is in this partition right now.</p>
+                  ) : (
+                    <ul className="mt-2 divide-y divide-seam-soft">
+                      {openRow.nodes.map((n) => (
+                        <li key={n.id} className="flex flex-wrap items-center gap-3 py-1.5">
+                          <Entity id={n.id} as="span" className="flex flex-wrap items-center gap-3">
+                            <Datum field="node.id" raw={n.id} fmt="text" className="font-mono text-small text-ink" />
+                            <Datum field="node.rack" raw={n.rack} fmt="text" className="font-mono text-small text-ink-3" />
+                            <StatusPill domain="node.state" state={n.state} field="node.state" size="sm" />
+                            <span className="text-small text-ink-3 tnum">
+                              <Datum field="node.numContainers" raw={n.numContainers} fmt="int" /> containers ·{" "}
+                              <Datum field="node.usedMemoryMB" raw={n.usedMemoryMB} fmt="mb" />
+                            </span>
+                          </Entity>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </TabContent>
               </div>
             )}
           </Section>
-        ) : (
+        </div>
+        <div hidden={view !== "mapping"}>
           <MappingView
             nodes={nodes}
             labelNames={labelNames}
+            loading={!fatalError && loading}
+            error={view === "mapping" ? fatalError : undefined}
             search={search.q ?? ""}
-            onSearch={(q) => navigate({ search: (prev) => ({ ...prev, q: q || undefined }), replace: true })}
+            onSearch={(q) => navigate({ search: (prev) => ({ ...prev, q: q || undefined }), replace: true, resetScroll: false })}
           />
-        )}
+        </div>
       </TabContent>
     </div>
   );
@@ -326,11 +331,15 @@ function MappingView({
   labelNames,
   search,
   onSearch,
+  loading,
+  error,
 }: {
   nodes: Node[];
   labelNames: string[];
   search: string;
   onSearch: (q: string) => void;
+  loading: boolean;
+  error?: ReactNode;
 }) {
   const q = search.trim().toLowerCase();
   const searchState = route.useSearch();
@@ -401,16 +410,21 @@ function MappingView({
     >
       <DataTable
         data={rows}
+        contentIdentity="node-label-mapping"
+        loading={loading}
+        error={error}
         columns={columns}
         getRowId={(n) => n.id}
         entityKey={(n) => n.id}
         label="Node to label mapping"
         storageKey="burrow.node-labels.mapping"
         sorting={parseSorting(searchState.mappingSort)}
-        onSortingChange={(sort) => navigate({ search: (prev) => ({ ...prev, mappingSort: serializeSorting(sort) }), replace: true })}
+        onSortingChange={(sort) =>
+          navigate({ search: (prev) => ({ ...prev, mappingSort: serializeSorting(sort) }), replace: true, resetScroll: false })
+        }
         columnVisibility={visibilityFromHide(searchState.mappingHide, {})}
         onColumnVisibilityChange={(visibility) =>
-          navigate({ search: (prev) => ({ ...prev, mappingHide: hideFromVisibility(visibility) }), replace: true })
+          navigate({ search: (prev) => ({ ...prev, mappingHide: hideFromVisibility(visibility) }), replace: true, resetScroll: false })
         }
         defaultVisibility={{}}
         exportName="node-label-mapping"

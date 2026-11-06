@@ -20,6 +20,7 @@ import { DataTable } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
 import { Datum, Entity } from "~/ui/datum";
 import { Select } from "~/ui/select";
+import { TabContent } from "~/ui/tabs";
 import { cn } from "~/lib/cn";
 import { compact, intParam, parseColumns, parseSort, serializeColumns, serializeSort, strParam } from "../data/search";
 import { parseSparkTime } from "../data/format";
@@ -135,7 +136,7 @@ export function StreamingPage() {
 
   const sorting = parseSort(search);
   const columnVisibility = parseColumns(search);
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   const batchColumns = useMemo<ColDef<SparkStreamingBatch>[]>(
     () => [
@@ -450,72 +451,79 @@ export function StreamingPage() {
         )}
       </PageHeader>
 
-      <Entity id="_">
-        <MetricStrip>
-          <Metric label="Start time">
-            <Datum field="spark.streaming.startTime" raw={stats.startTime} fmt="text">
-              {fmtEpoch(parseSparkTime(stats.startTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="Batch interval" hint="Spark's batchDuration">
-            <Datum field="spark.streaming.batchDuration" raw={stats.batchDuration} fmt="ms">
-              {fmtDuration(stats.batchDuration)}
-            </Datum>
-          </Metric>
-          <Metric label="Receivers (total / active / inactive)" hint="numReceivers / numActiveReceivers / numInactiveReceivers">
-            <CountsCell
-              counts={[
-                { field: "spark.streaming.numReceivers", raw: stats.numReceivers, tone: "idle", label: "total" },
-                { field: "spark.streaming.numActiveReceivers", raw: stats.numActiveReceivers, tone: "live", label: "active" },
-                { field: "spark.streaming.numInactiveReceivers", raw: stats.numInactiveReceivers, tone: "wait", label: "inactive" },
-              ]}
-            />
-          </Metric>
-          <Metric
-            label="Batches (completed / retained / active)"
-            hint="numTotalCompletedBatches / numRetainedCompletedBatches / numActiveBatches"
-          >
-            <CountsCell
-              counts={[
-                { field: "spark.streaming.numTotalCompletedBatches", raw: stats.numTotalCompletedBatches, tone: "ok", label: "completed" },
-                {
-                  field: "spark.streaming.numRetainedCompletedBatches",
-                  raw: stats.numRetainedCompletedBatches,
-                  tone: "idle",
-                  label: "retained",
-                },
-                { field: "spark.streaming.numActiveBatches", raw: stats.numActiveBatches, tone: "live", label: "active" },
-              ]}
-            />
-          </Metric>
-          <Metric label="Records (processed / received)" hint="numProcessedRecords / numReceivedRecords">
-            <CountsCell
-              counts={[
-                { field: "spark.streaming.numProcessedRecords", raw: stats.numProcessedRecords, tone: "ok", label: "processed" },
-                { field: "spark.streaming.numReceivedRecords", raw: stats.numReceivedRecords, tone: "idle", label: "received" },
-              ]}
-            />
-          </Metric>
-          <Metric label="Avg input rate" hint="avgInputRate — records received per second, as Spark reports it">
-            <Datum field="spark.streaming.avgInputRate" raw={stats.avgInputRate} fmt="int" />
-          </Metric>
-          <Metric label="Avg scheduling delay">
-            <Datum field="spark.streaming.avgSchedulingDelay" raw={stats.avgSchedulingDelay} fmt="ms">
-              {fmtDuration(stats.avgSchedulingDelay)}
-            </Datum>
-          </Metric>
-          <Metric label="Avg processing time">
-            <Datum field="spark.streaming.avgProcessingTime" raw={stats.avgProcessingTime} fmt="ms">
-              {fmtDuration(stats.avgProcessingTime)}
-            </Datum>
-          </Metric>
-          <Metric label="Avg total delay">
-            <Datum field="spark.streaming.avgTotalDelay" raw={stats.avgTotalDelay} fmt="ms">
-              {fmtDuration(stats.avgTotalDelay)}
-            </Datum>
-          </Metric>
-        </MetricStrip>
-      </Entity>
+      <TabContent initial value={`${appId}:${attempt ?? ""}:streaming:statistics`}>
+        <Entity id="_">
+          <MetricStrip>
+            <Metric label="Start time">
+              <Datum field="spark.streaming.startTime" raw={stats.startTime} fmt="text">
+                {fmtEpoch(parseSparkTime(stats.startTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="Batch interval" hint="Spark's batchDuration">
+              <Datum field="spark.streaming.batchDuration" raw={stats.batchDuration} fmt="ms">
+                {fmtDuration(stats.batchDuration)}
+              </Datum>
+            </Metric>
+            <Metric label="Receivers (total / active / inactive)" hint="numReceivers / numActiveReceivers / numInactiveReceivers">
+              <CountsCell
+                counts={[
+                  { field: "spark.streaming.numReceivers", raw: stats.numReceivers, tone: "idle", label: "total" },
+                  { field: "spark.streaming.numActiveReceivers", raw: stats.numActiveReceivers, tone: "live", label: "active" },
+                  { field: "spark.streaming.numInactiveReceivers", raw: stats.numInactiveReceivers, tone: "wait", label: "inactive" },
+                ]}
+              />
+            </Metric>
+            <Metric
+              label="Batches (completed / retained / active)"
+              hint="numTotalCompletedBatches / numRetainedCompletedBatches / numActiveBatches"
+            >
+              <CountsCell
+                counts={[
+                  {
+                    field: "spark.streaming.numTotalCompletedBatches",
+                    raw: stats.numTotalCompletedBatches,
+                    tone: "ok",
+                    label: "completed",
+                  },
+                  {
+                    field: "spark.streaming.numRetainedCompletedBatches",
+                    raw: stats.numRetainedCompletedBatches,
+                    tone: "idle",
+                    label: "retained",
+                  },
+                  { field: "spark.streaming.numActiveBatches", raw: stats.numActiveBatches, tone: "live", label: "active" },
+                ]}
+              />
+            </Metric>
+            <Metric label="Records (processed / received)" hint="numProcessedRecords / numReceivedRecords">
+              <CountsCell
+                counts={[
+                  { field: "spark.streaming.numProcessedRecords", raw: stats.numProcessedRecords, tone: "ok", label: "processed" },
+                  { field: "spark.streaming.numReceivedRecords", raw: stats.numReceivedRecords, tone: "idle", label: "received" },
+                ]}
+              />
+            </Metric>
+            <Metric label="Avg input rate" hint="avgInputRate — records received per second, as Spark reports it">
+              <Datum field="spark.streaming.avgInputRate" raw={stats.avgInputRate} fmt="int" />
+            </Metric>
+            <Metric label="Avg scheduling delay">
+              <Datum field="spark.streaming.avgSchedulingDelay" raw={stats.avgSchedulingDelay} fmt="ms">
+                {fmtDuration(stats.avgSchedulingDelay)}
+              </Datum>
+            </Metric>
+            <Metric label="Avg processing time">
+              <Datum field="spark.streaming.avgProcessingTime" raw={stats.avgProcessingTime} fmt="ms">
+                {fmtDuration(stats.avgProcessingTime)}
+              </Datum>
+            </Metric>
+            <Metric label="Avg total delay">
+              <Datum field="spark.streaming.avgTotalDelay" raw={stats.avgTotalDelay} fmt="ms">
+                {fmtDuration(stats.avgTotalDelay)}
+              </Datum>
+            </Metric>
+          </MetricStrip>
+        </Entity>
+      </TabContent>
 
       <section aria-label="Batch metrics over time" className="flex flex-col gap-2">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -530,7 +538,9 @@ export function StreamingPage() {
             {batchesError && (
               <SparkStaleErrorBanner error={batchesError} subject="the streaming batches" onRetry={() => void batchesQ.refetch()} />
             )}
-            <BatchMetricCharts batches={windowed} />
+            <TabContent initial value={`${appId}:${attempt ?? ""}:streaming:charts`}>
+              <BatchMetricCharts batches={windowed} />
+            </TabContent>
           </>
         )}
       </section>
@@ -547,6 +557,7 @@ export function StreamingPage() {
           entityKey={(b) => String(b.batchId)}
           label="Streaming batches"
           storageKey="spark-streaming-batches"
+          contentIdentity={`${appId}:${attempt ?? ""}:streaming:batches`}
           sorting={sorting}
           onSortingChange={(s: SortingState) => patch(serializeSort(s))}
           columnVisibility={columnVisibility}
@@ -620,6 +631,7 @@ export function StreamingPage() {
           entityKey={(r) => String(r.streamId ?? r.streamName ?? "receiver")}
           label="Streaming receivers"
           storageKey="spark-streaming-receivers"
+          contentIdentity={`${appId}:${attempt ?? ""}:streaming:receivers`}
           sorting={receiverSorting}
           onSortingChange={setReceiverSorting}
           columnVisibility={columnVisibility}

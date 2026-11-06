@@ -52,7 +52,8 @@
   --ring-overlay: 0 0 0 1px var(--seam-strong);
   --shadow-overlay: 0 0 0 1px var(--seam-strong), 0 18px 48px rgb(0 0 0 / 32%);
 
-  /* motion — see DESIGN.md §5. Entrances `--ease-out`, on-screen movement `--ease-in-out`, constant motion linear. */
+  /* motion — see DESIGN.md §5. Page entrances use CSS `ease-in-out`; other entrances use `--ease-out`, on-screen movement
+     uses `--ease-in-out`, and loops use `linear`. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -68,6 +69,7 @@
   --dur-fast: 160ms;
   --dur-base: 240ms;
   --dur-slow: 320ms;
+  --dur-page: 400ms;
   --dur-sheet: 360ms;
   --dur-tween: 480ms;
   --dur-flash: 900ms;

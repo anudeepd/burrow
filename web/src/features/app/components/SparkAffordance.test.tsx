@@ -9,13 +9,11 @@ const { SparkAffordance } = await import("./SparkAffordance");
 
 function renderAffordance({
   appId = "application_1",
-  insideSpark,
   source,
   error,
   rawError = false,
 }: {
   appId?: string;
-  insideSpark?: boolean;
   source?: unknown;
   error?: unknown;
   rawError?: boolean;
@@ -35,7 +33,7 @@ function renderAffordance({
   }
   const view = render(
     <QueryClientProvider client={client}>
-      <SparkAffordance appId={appId} {...(insideSpark === undefined ? {} : { insideSpark })} />
+      <SparkAffordance appId={appId} />
     </QueryClientProvider>,
   );
   return { ...view, client, appId };
@@ -97,8 +95,8 @@ describe("SparkAffordance", () => {
     expect(screen.getByRole("link", { name: "Spark UI" }).getAttribute("href")).toBe("http://rm:8088/proxy/app");
   });
 
-  it("shows an available encoded history link and keeps it in the Spark shell during a refresh error", () => {
-    const view = renderAffordance({
+  it("keeps the encoded history link and retry feedback when a source refresh fails", () => {
+    renderAffordance({
       appId: "application_1",
       source: {
         mode: "history",
@@ -113,21 +111,5 @@ describe("SparkAffordance", () => {
     expect(history.getAttribute("href")).toBe("http://history:18080/history/app%20id%2F1/attempt%202/jobs/");
     expect(screen.getByText("Spark source refresh failed; showing the last loaded link")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
-
-    view.rerender(
-      <QueryClientProvider client={view.client}>
-        <SparkAffordance appId={view.appId} insideSpark />
-      </QueryClientProvider>,
-    );
-    expect(screen.getByRole("link", { name: "Spark History" })).toBeTruthy();
-    expect(screen.queryByText("Spark source refresh failed; showing the last loaded link")).toBeNull();
-  });
-
-  it("hides unavailable-source messaging inside the Spark shell", () => {
-    renderAffordance({
-      insideSpark: true,
-      source: { mode: "none", available: false, reason: "no Spark proxy is available" },
-    });
-    expect(screen.queryByTestId("spark-affordance")).toBeNull();
   });
 });

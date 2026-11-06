@@ -99,9 +99,11 @@ function AttemptRoute() {
         app={app.data!}
         attempt={attempt}
         containers={containerRows}
+        containersLoading={containers.isPending}
         containersUnavailable={containersUnavailable}
         containersError={!!containers.error && !containersUnavailable && containerRows.length === 0}
         detail={detail.data}
+        detailLoading={detail.isPending}
         now={now}
       />
     </div>

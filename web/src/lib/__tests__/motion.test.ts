@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { EASE_OUT, fadeIn, flash, motionAllowed, prefersReducedMotion, tokenMs } from "~/lib/motion";
+import { cancelAnimation, EASE_OUT, fadeIn, flash, motionAllowed, prefersReducedMotion, tokenMs } from "~/lib/motion";
 import { parityStore } from "~/state/parity";
 
 /**
@@ -96,6 +96,55 @@ describe("flash()", () => {
     expect(fadeIn(el)).toBeUndefined();
     expect(flash(el)).toBeUndefined();
     expect(animate).not.toHaveBeenCalled();
+  });
+});
+describe("cancelAnimation()", () => {
+  const errorCases = [
+    {
+      name: "AbortError",
+      error: new DOMException("cancelled", "AbortError"),
+      expected: null,
+    },
+    {
+      name: "non-DOMException",
+      error: new Error("animation failure"),
+      expected: new Error("animation failure"),
+    },
+    {
+      name: "non-Abort DOMException",
+      error: new DOMException("timed out", "TimeoutError"),
+      expected: new DOMException("timed out", "TimeoutError"),
+    },
+  ];
+
+  it.each(errorCases)("handles a $name completion rejection", async ({ error, expected }) => {
+    const finished = Promise.reject(error);
+    let observed: unknown = Symbol("pending");
+    let settled: Promise<void> | undefined;
+    const catchSpy = vi.spyOn(finished, "catch").mockImplementation((onRejected) => {
+      const handled = Promise.prototype.catch.call(finished, onRejected);
+      settled = handled.then(
+        () => {
+          observed = null;
+        },
+        (reason: unknown) => {
+          observed = reason;
+        },
+      );
+      return handled;
+    });
+    const animation = {
+      playState: "running",
+      finished,
+      cancel: vi.fn(),
+    } as unknown as Animation;
+
+    cancelAnimation(animation);
+
+    expect(catchSpy).toHaveBeenCalledOnce();
+    expect(animation.cancel).toHaveBeenCalledOnce();
+    await settled;
+    expect(observed).toEqual(expected);
   });
 });
 

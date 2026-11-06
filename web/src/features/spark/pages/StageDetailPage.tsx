@@ -22,6 +22,7 @@ import { Datum, Entity } from "~/ui/datum";
 import { ErrorState } from "~/ui/feedback";
 import { Select } from "~/ui/select";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { Switch } from "~/ui/toggles";
 import { parseSparkTime, stageDurationMs } from "../data/format";
 import { sp } from "../data/queries";
@@ -109,7 +110,7 @@ export function StageDetailPage() {
   const sorting = parseSort(search);
   const columnVisibility = parseColumns(search);
   const showMore = search.level === "more";
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   // Spark's REST taskList sorts only by `runtime` / `-runtime` (its TaskSorting enum); every other column is client-side.
   const serverSortBy = paged && sortId === "duration" ? (sorting[0]?.desc ? "-runtime" : "runtime") : undefined;
@@ -278,121 +279,123 @@ export function StageDetailPage() {
         </Entity>
       )}
 
-      <Entity id={entityKey}>
-        <MetricStrip>
-          <Metric label="Stage Id">
-            <Datum field="spark.stage.stageId" raw={stage.stageId} fmt="id" />
-          </Metric>
-          <Metric label="Attempt">
-            <Datum field="spark.stage.attemptId" raw={stage.attemptId} fmt="id" />
-          </Metric>
-          <Metric label="Submitted">
-            <Datum field="spark.stage.submissionTime" raw={stage.submissionTime} fmt="text">
-              {fmtEpoch(parseSparkTime(stage.submissionTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="First task launched">
-            <Datum field="spark.stage.firstTaskLaunchedTime" raw={stage.firstTaskLaunchedTime} fmt="text">
-              {fmtEpoch(parseSparkTime(stage.firstTaskLaunchedTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="Completed">
-            <Datum field="spark.stage.completionTime" raw={stage.completionTime} fmt="text">
-              {fmtEpoch(parseSparkTime(stage.completionTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="Duration">
-            <Datum field="spark.stage.derived.durationMs" raw={stageDurationMs(stage, now)} fmt="dur" />
-          </Metric>
-          <Metric label="Tasks (done / active / failed / killed)">
-            <CountsCell
-              counts={[
-                { field: "spark.stage.numCompleteTasks", raw: stage.numCompleteTasks, tone: "ok", label: "complete" },
-                { field: "spark.stage.numActiveTasks", raw: stage.numActiveTasks, tone: "live", label: "active" },
-                { field: "spark.stage.numFailedTasks", raw: stage.numFailedTasks, tone: "fail", label: "failed" },
-                { field: "spark.stage.numKilledTasks", raw: stage.numKilledTasks, tone: "idle", label: "killed" },
-              ]}
-            />
-          </Metric>
-          <Metric label="Input (bytes / records)">
-            <ByteRecCell
-              bytes={stage.inputBytes}
-              records={stage.inputRecords}
-              bytesField="spark.stage.inputBytes"
-              recordsField="spark.stage.inputRecords"
-            />
-          </Metric>
-          <Metric label="Output (bytes / records)">
-            <ByteRecCell
-              bytes={stage.outputBytes}
-              records={stage.outputRecords}
-              bytesField="spark.stage.outputBytes"
-              recordsField="spark.stage.outputRecords"
-            />
-          </Metric>
-          <Metric label="Shuffle Read (bytes / records)">
-            <ByteRecCell
-              bytes={stage.shuffleReadBytes}
-              records={stage.shuffleReadRecords}
-              bytesField="spark.stage.shuffleReadBytes"
-              recordsField="spark.stage.shuffleReadRecords"
-            />
-          </Metric>
-          <Metric label="Shuffle Write (bytes / records)">
-            <ByteRecCell
-              bytes={stage.shuffleWriteBytes}
-              records={stage.shuffleWriteRecords}
-              bytesField="spark.stage.shuffleWriteBytes"
-              recordsField="spark.stage.shuffleWriteRecords"
-            />
-          </Metric>
-          <Metric label="Spill (memory / disk)">
-            <span className="flex items-center gap-1 tnum">
-              <Datum field="spark.stage.memoryBytesSpilled" raw={stage.memoryBytesSpilled} fmt="bytes" />
-              <span className="text-ink-4">/</span>
-              <Datum field="spark.stage.diskBytesSpilled" raw={stage.diskBytesSpilled} fmt="bytes" />
-            </span>
-          </Metric>
-          <Metric label="GC Time">
-            <Datum field="spark.stage.jvmGcTime" raw={stage.jvmGcTime} fmt="dur" />
-          </Metric>
-          <Metric label="Peak execution memory">
-            <Datum field="spark.stage.peakExecutionMemory" raw={stage.peakExecutionMemory} fmt="bytes" />
-          </Metric>
-          <Metric label="Scheduler pool">
-            <Datum field="spark.stage.schedulingPool" raw={stage.schedulingPool} />
-          </Metric>
-          <Metric label="RDDs">
-            {stage.rddIds.length === 0 ? (
-              <span className="text-ink-4">—</span>
-            ) : (
-              <span className="flex flex-wrap gap-1">
-                {stage.rddIds.map((id) => (
-                  <Link
-                    key={id}
-                    to="/apps/$appId/spark/storage/$rddId"
-                    params={{ appId, rddId: String(id) }}
-                    search={{ attempt: attempt ?? undefined }}
-                    className="text-live underline-offset-2 hover:underline"
-                  >
-                    <Datum field="spark.stage.rddIds" raw={id} fmt="id">
-                      {String(id)}
-                    </Datum>
-                  </Link>
-                ))}
+      <TabContent initial value={`${appId}:${attempt ?? ""}:stage:${entityKey}`}>
+        <Entity id={entityKey}>
+          <MetricStrip>
+            <Metric label="Stage Id">
+              <Datum field="spark.stage.stageId" raw={stage.stageId} fmt="id" />
+            </Metric>
+            <Metric label="Attempt">
+              <Datum field="spark.stage.attemptId" raw={stage.attemptId} fmt="id" />
+            </Metric>
+            <Metric label="Submitted">
+              <Datum field="spark.stage.submissionTime" raw={stage.submissionTime} fmt="text">
+                {fmtEpoch(parseSparkTime(stage.submissionTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="First task launched">
+              <Datum field="spark.stage.firstTaskLaunchedTime" raw={stage.firstTaskLaunchedTime} fmt="text">
+                {fmtEpoch(parseSparkTime(stage.firstTaskLaunchedTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="Completed">
+              <Datum field="spark.stage.completionTime" raw={stage.completionTime} fmt="text">
+                {fmtEpoch(parseSparkTime(stage.completionTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="Duration">
+              <Datum field="spark.stage.derived.durationMs" raw={stageDurationMs(stage, now)} fmt="dur" />
+            </Metric>
+            <Metric label="Tasks (done / active / failed / killed)">
+              <CountsCell
+                counts={[
+                  { field: "spark.stage.numCompleteTasks", raw: stage.numCompleteTasks, tone: "ok", label: "complete" },
+                  { field: "spark.stage.numActiveTasks", raw: stage.numActiveTasks, tone: "live", label: "active" },
+                  { field: "spark.stage.numFailedTasks", raw: stage.numFailedTasks, tone: "fail", label: "failed" },
+                  { field: "spark.stage.numKilledTasks", raw: stage.numKilledTasks, tone: "idle", label: "killed" },
+                ]}
+              />
+            </Metric>
+            <Metric label="Input (bytes / records)">
+              <ByteRecCell
+                bytes={stage.inputBytes}
+                records={stage.inputRecords}
+                bytesField="spark.stage.inputBytes"
+                recordsField="spark.stage.inputRecords"
+              />
+            </Metric>
+            <Metric label="Output (bytes / records)">
+              <ByteRecCell
+                bytes={stage.outputBytes}
+                records={stage.outputRecords}
+                bytesField="spark.stage.outputBytes"
+                recordsField="spark.stage.outputRecords"
+              />
+            </Metric>
+            <Metric label="Shuffle Read (bytes / records)">
+              <ByteRecCell
+                bytes={stage.shuffleReadBytes}
+                records={stage.shuffleReadRecords}
+                bytesField="spark.stage.shuffleReadBytes"
+                recordsField="spark.stage.shuffleReadRecords"
+              />
+            </Metric>
+            <Metric label="Shuffle Write (bytes / records)">
+              <ByteRecCell
+                bytes={stage.shuffleWriteBytes}
+                records={stage.shuffleWriteRecords}
+                bytesField="spark.stage.shuffleWriteBytes"
+                recordsField="spark.stage.shuffleWriteRecords"
+              />
+            </Metric>
+            <Metric label="Spill (memory / disk)">
+              <span className="flex items-center gap-1 tnum">
+                <Datum field="spark.stage.memoryBytesSpilled" raw={stage.memoryBytesSpilled} fmt="bytes" />
+                <span className="text-ink-4">/</span>
+                <Datum field="spark.stage.diskBytesSpilled" raw={stage.diskBytesSpilled} fmt="bytes" />
               </span>
-            )}
-          </Metric>
-          <Metric label="Resource profile">
-            <Datum field="spark.stage.resourceProfileId" raw={stage.resourceProfileId} fmt="id" />
-          </Metric>
-          <Metric label="Shuffle push enabled">
-            <Datum field="spark.stage.isShufflePushEnabled" raw={stage.isShufflePushEnabled} fmt="text">
-              {stage.isShufflePushEnabled == null ? "—" : stage.isShufflePushEnabled ? "Enabled" : "Disabled"}
-            </Datum>
-          </Metric>
-        </MetricStrip>
-      </Entity>
+            </Metric>
+            <Metric label="GC Time">
+              <Datum field="spark.stage.jvmGcTime" raw={stage.jvmGcTime} fmt="dur" />
+            </Metric>
+            <Metric label="Peak execution memory">
+              <Datum field="spark.stage.peakExecutionMemory" raw={stage.peakExecutionMemory} fmt="bytes" />
+            </Metric>
+            <Metric label="Scheduler pool">
+              <Datum field="spark.stage.schedulingPool" raw={stage.schedulingPool} />
+            </Metric>
+            <Metric label="RDDs">
+              {stage.rddIds.length === 0 ? (
+                <span className="text-ink-4">—</span>
+              ) : (
+                <span className="flex flex-wrap gap-1">
+                  {stage.rddIds.map((id) => (
+                    <Link
+                      key={id}
+                      to="/apps/$appId/spark/storage/$rddId"
+                      params={{ appId, rddId: String(id) }}
+                      search={{ attempt: attempt ?? undefined }}
+                      className="text-live underline-offset-2 hover:underline"
+                    >
+                      <Datum field="spark.stage.rddIds" raw={id} fmt="id">
+                        {String(id)}
+                      </Datum>
+                    </Link>
+                  ))}
+                </span>
+              )}
+            </Metric>
+            <Metric label="Resource profile">
+              <Datum field="spark.stage.resourceProfileId" raw={stage.resourceProfileId} fmt="id" />
+            </Metric>
+            <Metric label="Shuffle push enabled">
+              <Datum field="spark.stage.isShufflePushEnabled" raw={stage.isShufflePushEnabled} fmt="text">
+                {stage.isShufflePushEnabled == null ? "—" : stage.isShufflePushEnabled ? "Enabled" : "Disabled"}
+              </Datum>
+            </Metric>
+          </MetricStrip>
+        </Entity>
+      </TabContent>
 
       <section aria-label={`RDD graph of stage ${stageId} attempt ${attemptId}`} className="flex flex-col gap-2">
         <DagVizHeading title="Stage DAG" />
@@ -416,15 +419,23 @@ export function StageDetailPage() {
           <SparkStaleErrorBanner error={summaryQ.error} subject="the task summary metrics" onRetry={() => void summaryQ.refetch()} />
         )}
         {metrics.length > 0 ? (
-          <DistributionTable metrics={metrics} />
+          <DistributionTable metrics={metrics} contentIdentity={`${appId}:${attempt ?? ""}:stage:${entityKey}:summary`} />
         ) : !dist && summaryQ.isPending ? (
           <SparkLoading rows={4} cols={4} />
         ) : summaryQ.error && summaryQ.data === undefined && !(summaryQ.error instanceof ApiError && summaryQ.error.status === 404) ? (
           <SparkFailureState error={summaryQ.error} subject="the task summary metrics" onRetry={() => void summaryQ.refetch()} />
         ) : (
-          <InlineNote>No task summary metrics have been reported for this stage attempt.</InlineNote>
+          <TabContent initial value={`${appId}:${attempt ?? ""}:stage:${entityKey}:summary`}>
+            <InlineNote>No task summary metrics have been reported for this stage attempt.</InlineNote>
+          </TabContent>
         )}
-        {peakMetrics.length > 0 && <DistributionTable metrics={peakMetrics} title="Peak memory metrics" />}
+        {peakMetrics.length > 0 && (
+          <DistributionTable
+            metrics={peakMetrics}
+            title="Peak memory metrics"
+            contentIdentity={`${appId}:${attempt ?? ""}:stage:${entityKey}:peak-memory`}
+          />
+        )}
       </div>
 
       <section aria-label={`Tasks of stage ${stageId} attempt ${attemptId}`} className="flex min-h-0 flex-col gap-2">
@@ -453,6 +464,7 @@ export function StageDetailPage() {
         </div>
         <TaskTable
           tasks={visibleTasks}
+          contentIdentity={`${appId}:${attempt ?? ""}:stage:${entityKey}:tasks`}
           label={`Tasks of stage ${stageId} attempt ${attemptId}`}
           tz={tz}
           showMore={showMore}

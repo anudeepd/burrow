@@ -15,7 +15,7 @@ import { fmtEpoch } from "~/lib/format";
 import { useParity } from "~/state/parity";
 import { usePref } from "~/state/prefs";
 import { Button } from "~/ui/button";
-import { TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
+import { RouteTabIndicator, TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
 import { Datum, Entity } from "~/ui/datum";
 import { ErrorState, Skeleton } from "~/ui/feedback";
 import { HorizontalScrollCues, useHorizontalScrollCues } from "~/ui/horizontal-scroll-cues";
@@ -58,7 +58,6 @@ export function attemptValue(a: SparkAttempt, index: number): string {
 }
 
 export function SparkShell({ appId, children }: { appId: string; children: ReactNode }) {
-  const location = useLocation();
   const rawSearch = useSearch({ strict: false }) as Record<string, unknown>;
   const attempt = typeof rawSearch.attempt === "string" ? rawSearch.attempt : rawSearch.attempt != null ? String(rawSearch.attempt) : null;
   const sourceQ = useQuery(sp.source(appId, attempt));
@@ -110,7 +109,7 @@ export function SparkShell({ appId, children }: { appId: string; children: React
           loading={sourceQ.isPending && appQ.isPending}
         />
         <SparkNav appId={appId} attempt={attempt} kind={kind} />
-        <div key={location.pathname} className="burrow-enter flex flex-col gap-4 py-4">
+        <div data-page-motion="content" className="flex flex-col gap-4 py-4">
           {children}
         </div>
       </div>
@@ -334,12 +333,21 @@ function SparkNav({ appId, attempt, kind }: { appId: string; attempt: string | n
   const navRef = useRef<HTMLElement>(null);
   const cues = useHorizontalScrollCues(navRef, true, SPARK_PAGES);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [visiblePendingKey, setVisiblePendingKey] = useState<string | null>(null);
   const navigationToken = useRef(0);
 
   useEffect(() => {
     navigationToken.current += 1;
     setPendingKey(null);
   }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    setVisiblePendingKey(null);
+    if (!pendingKey) return;
+    // Fast prefetches need no visual interruption; slow ones keep feedback without changing tab geometry.
+    const timer = window.setTimeout(() => setVisiblePendingKey(pendingKey), 200);
+    return () => window.clearTimeout(timer);
+  }, [pendingKey]);
 
   useEffect(() => {
     // TanStack restores scroll positions after route commit. Reveal the active tab on the next frame so its restoration
@@ -398,27 +406,25 @@ function SparkNav({ appId, attempt, kind }: { appId: string; attempt: string | n
   return (
     <div className="relative min-w-0">
       <nav ref={navRef} aria-label="Spark pages" onScroll={cues.onScroll} className={TAB_STRIP_CLASS}>
-        {SPARK_PAGES.map((p) => {
-          const targetPath = p.to.replace("$appId", encodeURIComponent(appId));
-          const isCurrent = location.pathname === targetPath || location.pathname.startsWith(`${targetPath}/`);
-          return (
-            <Link
-              key={p.key}
-              to={p.to}
-              params={{ appId }}
-              search={{ attempt: attempt ?? undefined }}
-              activeOptions={{ exact: false }}
-              aria-busy={pendingKey === p.key || undefined}
-              onClick={(event) => handleClick(p, event)}
-              className={TAB_LINK_CLASS}
-              activeProps={{ "aria-current": "page" as const }}
-            >
-              {p.label}
-              {isCurrent && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-live" />}
-              {pendingKey === p.key && <span className="ml-1.5 size-1.5 shrink-0 rounded-full bg-live/70" aria-hidden="true" />}
-            </Link>
-          );
-        })}
+        {SPARK_PAGES.map((p) => (
+          <Link
+            key={p.key}
+            to={p.to}
+            params={{ appId }}
+            search={{ attempt: attempt ?? undefined }}
+            activeOptions={{ exact: false }}
+            aria-busy={pendingKey === p.key || undefined}
+            onClick={(event) => handleClick(p, event)}
+            className={TAB_LINK_CLASS}
+            activeProps={{ "aria-current": "page" as const }}
+          >
+            {p.label}
+            {pendingKey === p.key && visiblePendingKey === p.key && (
+              <span className="pointer-events-none absolute top-1.5 right-1 size-1.5 rounded-full bg-live/70" aria-hidden="true" />
+            )}
+          </Link>
+        ))}
+        <RouteTabIndicator listRef={navRef} value={location.pathname} />
       </nav>
       <HorizontalScrollCues left={cues.left} right={cues.right} />
     </div>

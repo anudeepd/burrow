@@ -35,6 +35,7 @@ import { useLogSearchHotkey } from "~/features/logs/use-log-search-hotkey";
 import { Select } from "~/ui/select";
 import { StatusDot } from "~/ui/status";
 import { Toggle } from "~/ui/toggles";
+import { TabContent } from "~/ui/tabs";
 import { Tooltip, OptionalTooltip } from "~/ui/tooltip";
 import { Ansi, segmentAnsi, parseAnsi } from "./Ansi";
 import {
@@ -118,9 +119,12 @@ export function LogsView() {
 
   const [sortKey, setSortKey] = useState<LogSortKey>("lastModified");
   const [sortDesc, setSortDesc] = useState(true);
+  // Following the end advances the actual byte offset, not the reader's requested window identity.
+  const manualOffset = useRef(search.offset ?? 0);
 
   const setSearch = (patch: Partial<typeof search>) => {
-    void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+    if (patch.tail === true) manualOffset.current = search.offset ?? 0;
+    void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
   };
 
   // The listing is the file table; in tail mode it must refresh at the live cadence too, because it is what makes the
@@ -138,7 +142,7 @@ export function LogsView() {
   useEffect(() => {
     if (search.file || files.length === 0) return;
     const first = files.find((f) => !f.isDir) ?? files[0]!;
-    void navigate({ search: (prev) => ({ ...prev, file: first.name, offset: undefined }), replace: true });
+    void navigate({ search: (prev) => ({ ...prev, file: first.name, offset: undefined }), replace: true, resetScroll: false });
   }, [search.file, files, navigate]);
 
   const size = selected?.size ?? 0;
@@ -155,6 +159,10 @@ export function LogsView() {
     // Keep the previous window while the next one loads, so paging does not flash an empty viewer.
     placeholderData: (prev) => prev,
   });
+  const requestedBodyIdentity = JSON.stringify([selected?.name, pageBytes, tail ? manualOffset.current : (search.offset ?? 0)]);
+  const [committedBodyIdentity, setCommittedBodyIdentity] = useState(requestedBodyIdentity);
+  const bodyIdentity = chunk.data && !chunk.isPlaceholderData ? requestedBodyIdentity : committedBodyIdentity;
+  useEffect(() => setCommittedBodyIdentity(bodyIdentity), [bodyIdentity]);
 
   const text = chunk.data?.text ?? "";
   const { segments, hits } = useMemo(() => segmentAnsi(parseAnsi(text), search.q ?? ""), [text, search.q]);
@@ -202,7 +210,10 @@ export function LogsView() {
   const missing = isEndpointMissing(error);
 
   return (
-    <div className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6 lg:overflow-hidden">
+    <div
+      data-page-motion="content"
+      className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6 lg:overflow-hidden"
+    >
       <PageHeadFor
         tail={tail}
         paused={paused}
@@ -256,98 +267,100 @@ export function LogsView() {
                   ) : files.length === 0 ? (
                     <EmptyState title="No log files">The daemon's log directory is empty.</EmptyState>
                   ) : (
-                    <table className="w-full table-fixed border-collapse text-body">
-                      <caption className="sr-only">Log files in the daemon's log directory</caption>
-                      <thead className="sticky top-0 z-sticky border-b border-seam text-micro text-ink-4">
-                        <tr>
-                          <SortHeader
-                            label="Name"
-                            k="name"
-                            sortKey={sortKey}
-                            sortDesc={sortDesc}
-                            onSort={toggleSort}
-                            className="w-[54%] text-left"
-                          />
-                          <SortHeader
-                            label="Size"
-                            k="size"
-                            sortKey={sortKey}
-                            sortDesc={sortDesc}
-                            onSort={toggleSort}
-                            className="w-[18%] text-right"
-                          />
-                          <SortHeader
-                            label="Modified"
-                            k="lastModified"
-                            sortKey={sortKey}
-                            sortDesc={sortDesc}
-                            onSort={toggleSort}
-                            className="w-[28%] text-left"
-                          />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {files.map((f) => (
-                          <Entity
-                            key={f.name}
-                            id={f.name}
-                            as="tr"
-                            data-selected={f.name === search.file || undefined}
-                            className="burrow-row cursor-pointer border-b border-seam-soft last:border-0"
-                            onClick={() => !f.isDir && setSearch({ file: f.name, offset: undefined })}
-                          >
-                            <td className="max-w-0 px-3 py-1.5">
-                              <span className="flex min-w-0 items-center gap-1.5">
-                                {f.isDir ? (
-                                  <Folder className="size-3.5 shrink-0 text-ink-4" aria-hidden="true" />
-                                ) : (
-                                  <FileText className="size-3.5 shrink-0 text-ink-4" aria-hidden="true" />
-                                )}
-                                <Tooltip label={f.name}>
-                                  <Datum
-                                    field="log.name"
-                                    raw={f.name}
-                                    fmt="text"
-                                    className="min-w-0 flex-1 truncate font-mono text-caption text-ink"
-                                  >
-                                    {f.isDir ? (
-                                      f.name
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        className="block w-full min-w-0 truncate text-left hover:text-live"
-                                        onClick={() => setSearch({ file: f.name, offset: undefined })}
-                                      >
-                                        {f.name}
-                                      </button>
-                                    )}
-                                  </Datum>
-                                </Tooltip>
-                                <Datum field="log.isDir" raw={f.isDir} fmt="text" className="sr-only" />
-                              </span>
-                            </td>
-                            <td className="w-[18%] whitespace-nowrap px-3 py-1.5 text-right">
-                              <Datum field="log.size" raw={f.size} fmt="bytes" className="tnum text-caption text-ink-2" />
-                            </td>
-                            <td className="w-[28%] px-3 py-1.5">
-                              {/* An epoch is preferred; when the listing only carries the daemon's own date string, that string is
+                    <TabContent initial value="directory" className="burrow-page-result-enter">
+                      <table className="w-full table-fixed border-collapse text-body">
+                        <caption className="sr-only">Log files in the daemon's log directory</caption>
+                        <thead className="sticky top-0 z-sticky border-b border-seam text-micro text-ink-4">
+                          <tr>
+                            <SortHeader
+                              label="Name"
+                              k="name"
+                              sortKey={sortKey}
+                              sortDesc={sortDesc}
+                              onSort={toggleSort}
+                              className="w-[54%] text-left"
+                            />
+                            <SortHeader
+                              label="Size"
+                              k="size"
+                              sortKey={sortKey}
+                              sortDesc={sortDesc}
+                              onSort={toggleSort}
+                              className="w-[18%] text-right"
+                            />
+                            <SortHeader
+                              label="Modified"
+                              k="lastModified"
+                              sortKey={sortKey}
+                              sortDesc={sortDesc}
+                              onSort={toggleSort}
+                              className="w-[28%] text-left"
+                            />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {files.map((f) => (
+                            <Entity
+                              key={f.name}
+                              id={f.name}
+                              as="tr"
+                              data-selected={f.name === search.file || undefined}
+                              className="burrow-row cursor-pointer border-b border-seam-soft last:border-0"
+                              onClick={() => !f.isDir && setSearch({ file: f.name, offset: undefined })}
+                            >
+                              <td className="max-w-0 px-3 py-1.5">
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                  {f.isDir ? (
+                                    <Folder className="size-3.5 shrink-0 text-ink-4" aria-hidden="true" />
+                                  ) : (
+                                    <FileText className="size-3.5 shrink-0 text-ink-4" aria-hidden="true" />
+                                  )}
+                                  <Tooltip label={f.name}>
+                                    <Datum
+                                      field="log.name"
+                                      raw={f.name}
+                                      fmt="text"
+                                      className="min-w-0 flex-1 truncate font-mono text-caption text-ink"
+                                    >
+                                      {f.isDir ? (
+                                        f.name
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          className="block w-full min-w-0 truncate text-left hover:text-live"
+                                          onClick={() => setSearch({ file: f.name, offset: undefined })}
+                                        >
+                                          {f.name}
+                                        </button>
+                                      )}
+                                    </Datum>
+                                  </Tooltip>
+                                  <Datum field="log.isDir" raw={f.isDir} fmt="text" className="sr-only" />
+                                </span>
+                              </td>
+                              <td className="w-[18%] whitespace-nowrap px-3 py-1.5 text-right">
+                                <Datum field="log.size" raw={f.size} fmt="bytes" className="tnum text-caption text-ink-2" />
+                              </td>
+                              <td className="w-[28%] px-3 py-1.5">
+                                {/* An epoch is preferred; when the listing only carries the daemon's own date string, that string is
                               shown verbatim (parsed epochs and printed dates are different kinds of fact). */}
-                              {f.lastModified !== null ? (
-                                <Datum field="log.lastModified" raw={f.lastModified} fmt="epoch" className="tnum text-caption text-ink-2">
-                                  <SplitDateTime value={fmtEpoch(f.lastModified, tz)} />
-                                </Datum>
-                              ) : f.modifiedText ? (
-                                <Datum field="log.modified" raw={f.modifiedText} fmt="text" className="text-caption text-ink-2">
-                                  <SplitDateTime value={f.modifiedText} />
-                                </Datum>
-                              ) : (
-                                <Datum field="log.lastModified" raw={null} fmt="epoch" className="text-caption text-ink-4" />
-                              )}
-                            </td>
-                          </Entity>
-                        ))}
-                      </tbody>
-                    </table>
+                                {f.lastModified !== null ? (
+                                  <Datum field="log.lastModified" raw={f.lastModified} fmt="epoch" className="tnum text-caption text-ink-2">
+                                    <SplitDateTime value={fmtEpoch(f.lastModified, tz)} />
+                                  </Datum>
+                                ) : f.modifiedText ? (
+                                  <Datum field="log.modified" raw={f.modifiedText} fmt="text" className="text-caption text-ink-2">
+                                    <SplitDateTime value={f.modifiedText} />
+                                  </Datum>
+                                ) : (
+                                  <Datum field="log.lastModified" raw={null} fmt="epoch" className="text-caption text-ink-4" />
+                                )}
+                              </td>
+                            </Entity>
+                          ))}
+                        </tbody>
+                      </table>
+                    </TabContent>
                   )}
                 </div>
               </div>
@@ -515,7 +528,9 @@ export function LogsView() {
                     className="burrow-scroll h-[min(34dvh,18rem)] min-h-56 shrink-0 overflow-auto rounded-lg border border-seam bg-well p-2 font-mono text-small break-words whitespace-pre-wrap text-ink lg:h-auto lg:min-h-[18rem] lg:flex-1 lg:shrink"
                   >
                     <div ref={bodyRef}>
-                      <Ansi segments={segments} activeHit={search.q ? hitIndex : undefined} />
+                      <TabContent initial value={bodyIdentity}>
+                        <Ansi segments={segments} activeHit={search.q ? hitIndex : undefined} />
+                      </TabContent>
                     </div>
                   </pre>
                 </>

@@ -23,7 +23,7 @@ import { sp } from "../data/queries";
 import type { SparkStage } from "../data/schemas";
 import { boolParam, compact, matchesQuery, parseColumns, parseSort, serializeColumns, serializeSort, strParam } from "../data/search";
 import { PageHeader } from "../ui/PageHeader";
-import { SparkEmpty, SparkFailureState, SparkLoading, SparkStaleErrorBanner } from "../ui/StateViews";
+import { SparkEmpty, SparkFailureState, SparkStaleErrorBanner } from "../ui/StateViews";
 import { stageColumns } from "../ui/StageTable";
 import { useSpark } from "../ui/context";
 import { useNow } from "../ui/use-now";
@@ -87,7 +87,7 @@ export function StagesPage() {
 
   const sorting = parseSort(search);
   const columnVisibility = parseColumns(search);
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   const columns = useMemo<ColDef<SparkStage>[]>(() => {
     const base = stageColumns({ appId, now, tz, attempt, showAttempt: true, showAdvanced: true, showFailureReason: true });
@@ -140,89 +140,93 @@ export function StagesPage() {
   }, [appId, now, tz, attempt, grouped, attemptsByStage, navigate]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-3">
       <PageHeader title="Stages" hideTitle />
 
       {qStages.error && qStages.data !== undefined && (
         <SparkStaleErrorBanner error={qStages.error} subject="the stage list" onRetry={() => void qStages.refetch()} />
       )}
-      {qStages.isPending ? (
-        <SparkLoading rows={12} cols={9} />
-      ) : qStages.error && qStages.data === undefined ? (
-        <SparkFailureState error={qStages.error} subject="the stage list" onRetry={() => void qStages.refetch()} />
-      ) : stages.length === 0 ? (
-        <SparkEmpty title={status ? `No ${status.toLowerCase()} stages` : "No stages yet"}>
-          {status ? "Clear the status filter to see every stage." : "Stages appear as soon as a job schedules them."}
-        </SparkEmpty>
-      ) : (
-        <DataTable<SparkStage>
-          className="min-h-[24rem]"
-          data={rows}
-          columns={columns}
-          getRowId={(s) => (grouped ? String(s.stageId) : `${s.stageId}/${s.attemptId ?? 0}`)}
-          entityKey={(s) => `${s.stageId}/${s.attemptId ?? 0}`}
-          label="Spark stages"
-          storageKey="spark-stages"
-          sorting={sorting}
-          onSortingChange={(s: SortingState) => patch(serializeSort(s))}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
-          defaultVisibility={DEFAULT_VISIBILITY}
-          onRowActivate={(s) =>
-            void navigate({
-              to: "/apps/$appId/spark/stages/$stageId/$attemptId",
-              params: { appId, stageId: String(s.stageId), attemptId: String(s.attemptId ?? 0) },
-              search: { attempt: attempt ?? undefined },
-            })
-          }
-          rowVersion={(s) => `${s.status}:${s.numActiveTasks ?? 0}:${s.numCompleteTasks ?? 0}`}
-          totalCount={stages.length}
-          exportName={`spark-stages-${appId}`}
-          toolbar={
-            <>
-              <Select
-                label="Stage status filter"
-                value={status ?? ""}
-                onValueChange={(v) => patch({ status: v === "" ? undefined : v })}
-                options={[
-                  { value: "", label: "All statuses" },
-                  ...STAGE_STATUSES.map((s): { value: string; label: string } => ({
-                    value: s,
-                    label: s.charAt(0) + s.slice(1).toLowerCase(),
-                  })),
-                ]}
+      <DataTable<SparkStage>
+        loading={qStages.isPending}
+        contentIdentity={JSON.stringify([appId, attempt, status, grouped])}
+        error={
+          qStages.error && qStages.data === undefined ? (
+            <SparkFailureState error={qStages.error} subject="the stage list" onRetry={() => void qStages.refetch()} />
+          ) : undefined
+        }
+        empty={
+          stages.length === 0 ? (
+            <SparkEmpty title={status ? `No ${status.toLowerCase()} stages` : "No stages yet"}>
+              {status ? "Clear the status filter to see every stage." : "Stages appear as soon as a job schedules them."}
+            </SparkEmpty>
+          ) : undefined
+        }
+        className="min-h-[24rem]"
+        data={rows}
+        columns={columns}
+        getRowId={(s) => (grouped ? String(s.stageId) : `${s.stageId}/${s.attemptId ?? 0}`)}
+        entityKey={(s) => `${s.stageId}/${s.attemptId ?? 0}`}
+        label="Spark stages"
+        storageKey="spark-stages"
+        sorting={sorting}
+        onSortingChange={(s: SortingState) => patch(serializeSort(s))}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
+        defaultVisibility={DEFAULT_VISIBILITY}
+        onRowActivate={(s) =>
+          void navigate({
+            to: "/apps/$appId/spark/stages/$stageId/$attemptId",
+            params: { appId, stageId: String(s.stageId), attemptId: String(s.attemptId ?? 0) },
+            search: { attempt: attempt ?? undefined },
+          })
+        }
+        rowVersion={(s) => `${s.status}:${s.numActiveTasks ?? 0}:${s.numCompleteTasks ?? 0}`}
+        totalCount={stages.length}
+        exportName={`spark-stages-${appId}`}
+        toolbar={
+          <>
+            <Select
+              label="Stage status filter"
+              value={status ?? ""}
+              onValueChange={(v) => patch({ status: v === "" ? undefined : v })}
+              options={[
+                { value: "", label: "All statuses" },
+                ...STAGE_STATUSES.map((s): { value: string; label: string } => ({
+                  value: s,
+                  label: s.charAt(0) + s.slice(1).toLowerCase(),
+                })),
+              ]}
+            />
+            <label className="flex items-center gap-1.5 text-small text-ink-3">
+              <span className="sr-only">Filter stages by id, name or description</span>
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => patch({ q: e.target.value || undefined })}
+                placeholder="Filter id / name…"
+                className="h-(--ctl-h) w-52 rounded-md border border-seam-strong bg-well px-2 text-body text-ink placeholder:text-ink-4"
               />
-              <label className="flex items-center gap-1.5 text-small text-ink-3">
-                <span className="sr-only">Filter stages by id, name or description</span>
-                <input
-                  type="search"
-                  value={q}
-                  onChange={(e) => patch({ q: e.target.value || undefined })}
-                  placeholder="Filter id / name…"
-                  className="h-(--ctl-h) w-52 rounded-md border border-seam-strong bg-well px-2 text-body text-ink placeholder:text-ink-4"
-                />
-              </label>
-              <span className="flex items-center gap-1.5 text-small text-ink-3">
-                <Switch
-                  checked={grouped}
-                  onCheckedChange={(v) => patch({ agg: v ? "1" : undefined })}
-                  label="Group attempts of the same stage"
-                />
-                <span>One row per stage</span>
-              </span>
-              <span className="text-small text-ink-4">
-                {rows.length === stages.length ? (
-                  <>{fmtInt(rows.length)} shown</>
-                ) : (
-                  <>
-                    {fmtInt(rows.length)} of {fmtInt(stages.length)}
-                  </>
-                )}
-              </span>
-            </>
-          }
-        />
-      )}
+            </label>
+            <span className="flex items-center gap-1.5 text-small text-ink-3">
+              <Switch
+                checked={grouped}
+                onCheckedChange={(v) => patch({ agg: v ? "1" : undefined })}
+                label="Group attempts of the same stage"
+              />
+              <span>One row per stage</span>
+            </span>
+            <span className="text-small text-ink-4">
+              {rows.length === stages.length ? (
+                <>{fmtInt(rows.length)} shown</>
+              ) : (
+                <>
+                  {fmtInt(rows.length)} of {fmtInt(stages.length)}
+                </>
+              )}
+            </span>
+          </>
+        }
+      />
     </div>
   );
 }

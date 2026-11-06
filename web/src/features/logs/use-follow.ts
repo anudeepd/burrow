@@ -143,7 +143,6 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
     };
 
     const handleStreamFailure = (detail: string) => {
-      if (cancelled || ended) return;
       closeStream();
       failures++;
       if (failures <= 2) {

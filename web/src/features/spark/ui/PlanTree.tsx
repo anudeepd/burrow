@@ -17,6 +17,7 @@ import { useParity } from "~/state/parity";
 import { Button } from "~/ui/button";
 import { Datum } from "~/ui/datum";
 import { Switch } from "~/ui/toggles";
+import { TabContent } from "~/ui/tabs";
 import { Tooltip } from "~/ui/tooltip";
 
 interface PlanLine {
@@ -79,11 +80,13 @@ export function PlanTree({
   q,
   onQ,
   className,
+  contentIdentity,
 }: {
   plan: string | null | undefined;
   q: string;
   onQ: (v: string) => void;
   className?: string;
+  contentIdentity?: string;
 }) {
   const parity = useParity();
   const [collapsed, setCollapsed] = useState<ReadonlySet<number>>(() => new Set<number>());
@@ -138,9 +141,11 @@ export function PlanTree({
 
   if (!plan) {
     return (
-      <p className={cn("rounded-md border border-dashed border-seam-strong bg-well px-2.5 py-2 text-small text-ink-3", className)}>
-        Spark's REST SQL payload carries no <code className="font-mono text-micro">planDescription</code> for this execution.
-      </p>
+      <TabContent initial={contentIdentity != null} value={contentIdentity ?? ""}>
+        <p className={cn("rounded-md border border-dashed border-seam-strong bg-well px-2.5 py-2 text-small text-ink-3", className)}>
+          Spark's REST SQL payload carries no <code className="font-mono text-micro">planDescription</code> for this execution.
+        </p>
+      </TabContent>
     );
   }
 
@@ -202,42 +207,44 @@ export function PlanTree({
           </Button>
         </span>
       </div>
-      <Datum
-        field="spark.sql.planDescription"
-        raw={plan}
-        as="pre"
-        className="max-h-[32rem] min-h-24 w-full overflow-auto bg-well p-3 font-mono text-micro leading-[1.55] text-ink-2"
-      >
-        {lines.map((l) => {
-          if (hidden.has(l.i)) return null;
-          if (keep && !keep[l.i]) return null;
-          const isCollapsed = collapsed.has(l.i);
-          return (
-            <span key={l.i} className="block min-h-11 whitespace-pre sm:min-h-0">
-              {l.children.length > 0 && !parity ? (
-                <Tooltip label={`${isCollapsed ? "Expand" : "Collapse"} plan lines under line ${l.i + 1}`}>
-                  <button
-                    type="button"
-                    onClick={() => toggle(l.i)}
-                    aria-expanded={!isCollapsed}
-                    aria-label={`${isCollapsed ? "Expand" : "Collapse"} plan lines under line ${l.i + 1}`}
-                    className="burrow-touch-target mr-1 inline-flex size-11 cursor-pointer items-center justify-center align-middle text-ink-4 hover:text-ink sm:size-3"
-                  >
-                    {/* one glyph that rotates rather than a swap between two mounts */}
-                    <ChevronDown
-                      className={cn("size-3 transition-transform duration-(--dur-fast) ease-(--ease-out)", isCollapsed && "-rotate-90")}
-                      aria-hidden="true"
-                    />
-                  </button>
-                </Tooltip>
-              ) : (
-                <span className="burrow-touch-target mr-1 inline-flex size-11 align-middle sm:size-3" aria-hidden="true" />
-              )}
-              {highlight(l.text, needle, l.i)}
-            </span>
-          );
-        })}
-      </Datum>
+      <TabContent initial={contentIdentity != null} value={contentIdentity ?? ""}>
+        <Datum
+          field="spark.sql.planDescription"
+          raw={plan}
+          as="pre"
+          className="max-h-[32rem] min-h-24 w-full overflow-auto bg-well p-3 font-mono text-micro leading-[1.55] text-ink-2"
+        >
+          {lines.map((l) => {
+            if (hidden.has(l.i)) return null;
+            if (keep && !keep[l.i]) return null;
+            const isCollapsed = collapsed.has(l.i);
+            return (
+              <span key={l.i} className="block min-h-11 whitespace-pre sm:min-h-0">
+                {l.children.length > 0 && !parity ? (
+                  <Tooltip label={`${isCollapsed ? "Expand" : "Collapse"} plan lines under line ${l.i + 1}`}>
+                    <button
+                      type="button"
+                      onClick={() => toggle(l.i)}
+                      aria-expanded={!isCollapsed}
+                      aria-label={`${isCollapsed ? "Expand" : "Collapse"} plan lines under line ${l.i + 1}`}
+                      className="burrow-touch-target mr-1 inline-flex size-11 cursor-pointer items-center justify-center align-middle text-ink-4 hover:text-ink sm:size-3"
+                    >
+                      {/* one glyph that rotates rather than a swap between two mounts */}
+                      <ChevronDown
+                        className={cn("size-3 transition-transform duration-(--dur-fast) ease-(--ease-out)", isCollapsed && "-rotate-90")}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </Tooltip>
+                ) : (
+                  <span className="burrow-touch-target mr-1 inline-flex size-11 align-middle sm:size-3" aria-hidden="true" />
+                )}
+                {highlight(l.text, needle, l.i)}
+              </span>
+            );
+          })}
+        </Datum>
+      </TabContent>
     </div>
   );
 }

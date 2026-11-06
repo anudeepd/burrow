@@ -354,6 +354,7 @@ export interface TaskTableProps {
   rowVersion?: (t: SparkTask) => string;
   totalCount?: number;
   loading?: boolean;
+  contentIdentity?: string;
   error?: ReactNode;
   empty?: ReactNode;
   toolbar?: ReactNode;
@@ -374,6 +375,7 @@ export function TaskTable({
   rowVersion,
   totalCount,
   loading,
+  contentIdentity,
   error,
   empty,
   toolbar,
@@ -397,6 +399,7 @@ export function TaskTable({
       {...(rowVersion ? { rowVersion } : {})}
       {...(totalCount != null ? { totalCount } : {})}
       {...(loading != null ? { loading } : {})}
+      {...(contentIdentity != null ? { contentIdentity } : {})}
       {...(error != null ? { error } : {})}
       {...(empty != null ? { empty } : {})}
       {...(toolbar != null ? { toolbar } : {})}

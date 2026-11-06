@@ -60,6 +60,13 @@ export function resolvedTheme(theme: Theme): "dark" | "light" {
   return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }
 
+function setFaviconTheme(theme: "dark" | "light"): void {
+  for (const icon of document.querySelectorAll<HTMLLinkElement>("link[data-dark-href][data-light-href]")) {
+    const href = theme === "light" ? icon.dataset.lightHref : icon.dataset.darkHref;
+    if (href && icon.getAttribute("href") !== href) icon.setAttribute("href", href);
+  }
+}
+
 /**
  * Theme flips every colour in one frame, so the transition lock prevents the palette from smearing while it changes.
  * Motion here is not an affordance, it is an artifact, so this is not the reduced-motion gate's business.
@@ -86,6 +93,7 @@ export function applyPrefsToDom(p: Prefs): void {
     if (p.railCollapsed) el.setAttribute("data-rail-collapsed", "true");
     else el.removeAttribute("data-rail-collapsed");
   });
+  setFaviconTheme(theme);
   const osReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const reduced = p.motion === "reduced" || osReduced;
   if (p.motion === "reduced") el.setAttribute("data-motion", "reduced");

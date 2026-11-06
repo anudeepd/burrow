@@ -12,47 +12,43 @@ import { ACTION_LINK_CLASS, Button } from "~/ui/button";
 import { Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { appSparkSource } from "../queries";
 
-export function SparkAffordance({ appId, className, insideSpark = false }: { appId: string; className?: string; insideSpark?: boolean }) {
+export function SparkAffordance({ appId, className }: { appId: string; className?: string }) {
   const source = useQuery(appSparkSource(appId));
 
   let external: React.ReactNode;
   if (source.isPending) {
     external = <Skeleton className="h-4 w-40" />;
   } else if (!source.data?.available || !source.data.baseUrl) {
-    if (insideSpark) {
-      external = null;
-    } else {
-      const reason = source.data?.reason ?? (source.error instanceof Error ? source.error.message : "no Spark source resolved");
-      const historyNotConfigured = reason.includes("no Spark History Server is configured");
-      const detail = historyNotConfigured ? "This application has finished, so its Spark driver UI is no longer available." : reason;
-      const hint = historyNotConfigured
-        ? "Configure Burrow with the Spark History Server URL to open the saved application history."
-        : source.data?.hint;
-      external = (
-        <div
-          role="status"
-          className="flex min-w-0 max-w-2xl items-start gap-2 rounded-md border border-seam-soft bg-fabric-2 px-2.5 py-2 text-small"
-          data-burrow="spark-source-unavailable"
-        >
-          <Sparkles className="mt-0.5 size-3.5 shrink-0 text-ink-4" aria-hidden="true" />
-          <div className="min-w-0">
-            <p className="font-medium text-ink-2">Spark UI unavailable</p>
-            <p className="mt-0.5 break-words text-caption text-ink-3">{detail}</p>
-            {hint && <p className="mt-1 break-words text-caption text-ink-4">Next: {hint}</p>}
-            {source.error && source.data && (
-              <p className="mt-1 break-words text-caption text-fail">
-                Refresh failed: {source.error instanceof Error ? source.error.message : String(source.error)}
-              </p>
-            )}
-          </div>
-          {source.isError && (
-            <Button variant="quiet" size="sm" className="shrink-0" onClick={() => void source.refetch()}>
-              Retry
-            </Button>
+    const reason = source.data?.reason ?? (source.error instanceof Error ? source.error.message : "no Spark source resolved");
+    const historyNotConfigured = reason.includes("no Spark History Server is configured");
+    const detail = historyNotConfigured ? "This application has finished, so its Spark driver UI is no longer available." : reason;
+    const hint = historyNotConfigured
+      ? "Configure Burrow with the Spark History Server URL to open the saved application history."
+      : source.data?.hint;
+    external = (
+      <div
+        role="status"
+        className="flex min-w-0 max-w-2xl items-start gap-2 rounded-md border border-seam-soft bg-fabric-2 px-2.5 py-2 text-small"
+        data-burrow="spark-source-unavailable"
+      >
+        <Sparkles className="mt-0.5 size-3.5 shrink-0 text-ink-4" aria-hidden="true" />
+        <div className="min-w-0">
+          <p className="font-medium text-ink-2">Spark UI unavailable</p>
+          <p className="mt-0.5 break-words text-caption text-ink-3">{detail}</p>
+          {hint && <p className="mt-1 break-words text-caption text-ink-4">Next: {hint}</p>}
+          {source.error && source.data && (
+            <p className="mt-1 break-words text-caption text-fail">
+              Refresh failed: {source.error instanceof Error ? source.error.message : String(source.error)}
+            </p>
           )}
         </div>
-      );
-    }
+        {source.isError && (
+          <Button variant="quiet" size="sm" className="shrink-0" onClick={() => void source.refetch()}>
+            Retry
+          </Button>
+        )}
+      </div>
+    );
   } else {
     const historyPath =
       source.data.mode === "history" && source.data.sparkAppId
@@ -72,7 +68,7 @@ export function SparkAffordance({ appId, className, insideSpark = false }: { app
           {/* the destination differs, so the name does too: the RM proxy while the app runs, the history server after */}
           {source.data.mode === "live-proxy" ? "Spark UI" : "Spark History"}
         </a>
-        {source.error && !insideSpark && (
+        {source.error && (
           <StaleErrorBanner
             title="Spark source refresh failed; showing the last loaded link"
             error={source.error}
@@ -82,8 +78,6 @@ export function SparkAffordance({ appId, className, insideSpark = false }: { app
       </div>
     );
   }
-
-  if (!external) return null;
 
   return (
     <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-1", className)} data-burrow="spark-affordance">

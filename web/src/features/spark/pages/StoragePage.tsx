@@ -17,12 +17,13 @@ import { Button } from "~/ui/button";
 import { DataTable } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
 import { Datum } from "~/ui/datum";
+import { TabContent } from "~/ui/tabs";
 import { fmtFraction, fraction } from "../data/format";
 import { sp } from "../data/queries";
 import type { SparkRdd } from "../data/schemas";
 import { compact, intParam, matchesQuery, parseColumns, parseSort, serializeColumns, serializeSort } from "../data/search";
 import { PageHeader } from "../ui/PageHeader";
-import { InlineNote, SparkEmpty, SparkFailureState, SparkLoading, SparkStaleErrorBanner } from "../ui/StateViews";
+import { InlineNote, SparkEmpty, SparkFailureState, SparkStaleErrorBanner } from "../ui/StateViews";
 import { useSpark } from "../ui/context";
 import { RddDetailBody } from "./RddDetailPage";
 
@@ -45,7 +46,7 @@ export function StoragePage() {
 
   const sorting = parseSort(search);
   const columnVisibility = parseColumns(search);
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   const columns = useMemo<ColDef<SparkRdd>[]>(
     () => [
@@ -162,7 +163,7 @@ export function StoragePage() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-3">
       <PageHeader title="Storage" hideTitle>
         <label className="flex items-center gap-1.5 text-small text-ink-3">
           <span className="sr-only">Filter RDDs by name, id or storage level</span>
@@ -179,51 +180,55 @@ export function StoragePage() {
       {qRdds.error && qRdds.data !== undefined && (
         <SparkStaleErrorBanner error={qRdds.error} subject="the cached RDD list" onRetry={() => void qRdds.refetch()} />
       )}
-      {qRdds.isPending ? (
-        <SparkLoading rows={8} cols={7} />
-      ) : qRdds.error && qRdds.data === undefined ? (
-        <SparkFailureState error={qRdds.error} subject="the cached-RDD list" onRetry={() => void qRdds.refetch()} />
-      ) : rdds.length === 0 ? (
-        <SparkEmpty title="No RDD is cached in this application">
-          Spark lists an RDD here only while a block is still held in memory or on disk; evicted RDDs disappear from this list.
-        </SparkEmpty>
-      ) : (
-        <DataTable<SparkRdd>
-          className="min-h-[24rem]"
-          data={filtering}
-          columns={columns}
-          getRowId={(r) => String(r.id)}
-          entityKey={(r) => String(r.id)}
-          label="Cached RDDs"
-          storageKey="spark-storage"
-          sorting={sorting}
-          onSortingChange={(s: SortingState) => patch(serializeSort(s))}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
-          defaultVisibility={DEFAULT_VISIBILITY}
-          onRowActivate={(r) =>
-            void navigate({
-              to: "/apps/$appId/spark/storage/$rddId",
-              params: { appId, rddId: String(r.id) },
-              search: { attempt: attempt ?? undefined },
-            })
-          }
-          rowVersion={(r) => `${r.memoryUsed ?? 0}:${r.diskUsed ?? 0}:${r.numCachedPartitions ?? 0}`}
-          totalCount={rdds.length}
-          exportName={`spark-storage-${appId}`}
-          toolbar={
-            <span className="text-small text-ink-4">
-              {filtering.length === rdds.length ? (
-                <>{fmtInt(rdds.length)} shown</>
-              ) : (
-                <>
-                  {fmtInt(filtering.length)} of {fmtInt(rdds.length)}
-                </>
-              )}
-            </span>
-          }
-        />
-      )}
+      <DataTable<SparkRdd>
+        loading={qRdds.isPending}
+        contentIdentity={JSON.stringify([appId, attempt])}
+        error={
+          qRdds.error && qRdds.data === undefined ? (
+            <SparkFailureState error={qRdds.error} subject="the cached-RDD list" onRetry={() => void qRdds.refetch()} />
+          ) : undefined
+        }
+        empty={
+          rdds.length === 0 ? (
+            <SparkEmpty title="No RDD is cached in this application">
+              Spark lists an RDD here only while a block is still held in memory or on disk; evicted RDDs disappear from this list.
+            </SparkEmpty>
+          ) : undefined
+        }
+        className="min-h-[24rem]"
+        data={filtering}
+        columns={columns}
+        getRowId={(r) => String(r.id)}
+        entityKey={(r) => String(r.id)}
+        label="Cached RDDs"
+        storageKey="spark-storage"
+        sorting={sorting}
+        onSortingChange={(s: SortingState) => patch(serializeSort(s))}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
+        defaultVisibility={DEFAULT_VISIBILITY}
+        onRowActivate={(r) =>
+          void navigate({
+            to: "/apps/$appId/spark/storage/$rddId",
+            params: { appId, rddId: String(r.id) },
+            search: { attempt: attempt ?? undefined },
+          })
+        }
+        rowVersion={(r) => `${r.memoryUsed ?? 0}:${r.diskUsed ?? 0}:${r.numCachedPartitions ?? 0}`}
+        totalCount={rdds.length}
+        exportName={`spark-storage-${appId}`}
+        toolbar={
+          <span className="text-small text-ink-4">
+            {filtering.length === rdds.length ? (
+              <>{fmtInt(rdds.length)} shown</>
+            ) : (
+              <>
+                {fmtInt(filtering.length)} of {fmtInt(rdds.length)}
+              </>
+            )}
+          </span>
+        }
+      />
 
       {expandedId != null && (
         <section aria-label={`RDD ${expandedId} detail`} className="flex flex-col gap-2 rounded-lg border border-seam bg-fabric-2 p-3">
@@ -234,7 +239,9 @@ export function StoragePage() {
             </Button>
           </div>
           {expandedRdd ? (
-            <RddDetailBody appId={appId} rdd={expandedRdd} />
+            <TabContent initial value={JSON.stringify([appId, attempt, expandedId])}>
+              <RddDetailBody appId={appId} rdd={expandedRdd} />
+            </TabContent>
           ) : (
             <InlineNote>RDD {expandedId} is not in this list — Spark reports blocks only while they are still held.</InlineNote>
           )}

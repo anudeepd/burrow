@@ -10,6 +10,7 @@ import { ApiError } from "~/api/client";
 import { q } from "~/api/queries";
 import { selectContainer } from "~/api/schemas";
 import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { TabContent } from "~/ui/tabs";
 import { ContainerDetail } from "~/features/app/components/ContainerDetail";
 import { attemptIdFromContainerId } from "~/features/app/model";
 import { containerSearchSchema, parseSearch } from "~/features/app/search";
@@ -106,7 +107,9 @@ function ContainerRoute() {
           {attemptId}
         </Link>
       </p>
-      <ContainerDetail appId={appId} container={selectContainer(container.data)} attemptId={attemptId} now={now} />
+      <TabContent initial value={`${appId}:${attemptId}:${containerId}`}>
+        <ContainerDetail appId={appId} container={selectContainer(container.data)} attemptId={attemptId} now={now} />
+      </TabContent>
     </div>
   );
 }

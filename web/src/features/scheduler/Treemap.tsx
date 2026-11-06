@@ -5,11 +5,12 @@
  * Parity: each tile is an `Entity` (the queue path) whose rect carries the datum of the value it encodes
  * (rule 2 of docs/contracts/parity-dom.md). Keyboard: tiles are focusable links; the legend is a real list.
  */
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Datum, Entity, datumAttrs } from "~/ui/datum";
 import { cn } from "~/lib/cn";
 import { useElementWidth } from "~/lib/size";
+import { TabContent } from "~/ui/tabs";
 import { pressureTone } from "./format";
 import { fmtInt, fmtMB } from "~/lib/format";
 
@@ -113,6 +114,8 @@ export function QueueTreemap({
   label,
   className,
   animateGeometry = false,
+  contentIdentity = basis,
+  children,
 }: {
   items: TreemapItem[];
   /** what the tile area means — shown in the legend so the picture is never ambiguous */
@@ -121,6 +124,8 @@ export function QueueTreemap({
   label: string;
   className?: string;
   animateGeometry?: boolean;
+  contentIdentity?: string;
+  children?: ReactNode;
 }) {
   const navigate = useNavigate();
   const [boxRef, width] = useElementWidth<HTMLDivElement>(VIEW_W);
@@ -131,115 +136,118 @@ export function QueueTreemap({
 
   return (
     <figure ref={boxRef} className={cn("m-0 flex flex-col gap-2", className)}>
-      <svg
-        role="img"
-        aria-label={`${label}. Tiles are sized by ${basis === "used" ? "used memory" : "guaranteed share"} and colored by usage versus share. ${shown} of ${items.length} leaf queues with a nonzero value shown.`}
-        viewBox={`0 0 ${width} ${mapHeight}`}
-        /* the pane's own height: the width follows the container, and the viewBox matches it so nothing scales */
-        style={{ height: mapHeight }}
-        className="burrow-treemap block w-full overflow-hidden rounded-lg border border-seam bg-well"
-        data-basis-transition={animateGeometry}
-        preserveAspectRatio="none"
-      >
-        {tiles.map((t) => {
-          const tone = pressureTone(t.usedPct);
-          const large = t.w >= 220 && t.h >= 128;
-          const medium = t.w >= 148 && t.h >= 82;
-          /* keep small slivers to one line; give larger tiles a name, value, and pressure cue */
-          const named = medium || (t.w > 100 && t.h > 15);
-          const compact = named && t.h < 54 && t.h >= 22 && t.w >= 160;
-          const amount = fmtMB(t.value);
-          const amountY = large ? t.y + t.h - 42 : medium ? t.y + 53 : t.y + 41;
-          const metaY = amountY + (large ? 17 : 15);
-          const compactLine = `${t.key} · ${amount}`;
-          const compactChars = Math.floor((t.w - 28) / 6.2);
-          const go = () => void navigate({ to: "/scheduler/$queue", params: { queue: t.key } });
-          return (
-            <Entity
-              key={t.key}
-              as="g"
-              id={t.key}
-              role="link"
-              tabIndex={0}
-              aria-label={`${t.key}: ${amount} ${basis === "used" ? "used" : "guaranteed"}; ${t.sub ?? ""}`}
-              className={cn(`burrow-tone-${tone}`, "group/tile cursor-pointer outline-offset-2")}
-              onClick={go}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  go();
-                }
-              }}
-            >
-              <title>
-                {t.key}
-                {"\n"}
-                {amount}
-                {"\n"}
-                {t.sub ?? ""}
-              </title>
-              <rect
-                x={t.x + 1}
-                y={t.y + 1}
-                width={Math.max(0, t.w - 2)}
-                height={Math.max(0, t.h - 2)}
-                rx={10}
-                ry={10}
-                fill="var(--tone)"
-                fillOpacity={0.14}
-                stroke="var(--tone)"
-                strokeOpacity={0.65}
-                // Live data updates stay immediate; animate geometry only when the user explicitly changes the area basis.
-                className={cn(
-                  animateGeometry
-                    ? "transition-[x,y,width,height,fill-opacity,stroke-opacity] duration-(--dur-tween)"
-                    : "transition-[fill-opacity,stroke-opacity] duration-(--dur-fast)",
-                  "ease-(--ease-out) group-hover/tile:fill-opacity-40",
-                )}
-                {...datumAttrs(t.field, t.raw, "mb")}
-              />
-              {named && !compact && (
-                <text
-                  x={t.x + 14}
-                  y={t.y + (large ? 28 : 22)}
-                  fontSize={large ? 13 : 11}
-                  className="pointer-events-none fill-ink-2 font-mono font-medium"
-                >
-                  {t.key.length > Math.floor((t.w - 28) / 7.2)
-                    ? `${t.key.slice(0, Math.max(3, Math.floor((t.w - 28) / 7.2) - 1))}…`
-                    : t.key}
-                </text>
-              )}
-              {compact && (
-                <text
-                  x={t.x + 14}
-                  y={t.y + Math.round(t.h / 2) + 4}
-                  fontSize={11}
-                  className="pointer-events-none fill-ink-2 font-mono font-medium"
-                >
-                  {compactLine.length > compactChars ? `${compactLine.slice(0, Math.max(3, compactChars - 1))}…` : compactLine}
-                </text>
-              )}
-              {named && t.h >= 54 && t.w >= 108 && (
-                <text
-                  x={t.x + 14}
-                  y={amountY}
-                  fontSize={large ? 27 : medium ? 18 : 15}
-                  className="pointer-events-none fill-ink font-medium tnum"
-                >
+      <TabContent value={contentIdentity} className="relative">
+        <svg
+          role="img"
+          aria-label={`${label}. Tiles are sized by ${basis === "used" ? "used memory" : "guaranteed share"} and colored by usage versus share. ${shown} of ${items.length} leaf queues with a nonzero value shown.`}
+          viewBox={`0 0 ${width} ${mapHeight}`}
+          /* the pane's own height: the width follows the container, and the viewBox matches it so nothing scales */
+          style={{ height: mapHeight }}
+          className="burrow-treemap block w-full overflow-hidden rounded-lg border border-seam bg-well"
+          data-basis-transition={animateGeometry}
+          preserveAspectRatio="none"
+        >
+          {tiles.map((t) => {
+            const tone = pressureTone(t.usedPct);
+            const large = t.w >= 220 && t.h >= 128;
+            const medium = t.w >= 148 && t.h >= 82;
+            /* keep small slivers to one line; give larger tiles a name, value, and pressure cue */
+            const named = medium || (t.w > 100 && t.h > 15);
+            const compact = named && t.h < 54 && t.h >= 22 && t.w >= 160;
+            const amount = fmtMB(t.value);
+            const amountY = large ? t.y + t.h - 42 : medium ? t.y + 53 : t.y + 41;
+            const metaY = amountY + (large ? 17 : 15);
+            const compactLine = `${t.key} · ${amount}`;
+            const compactChars = Math.floor((t.w - 28) / 6.2);
+            const go = () => void navigate({ to: "/scheduler/$queue", params: { queue: t.key } });
+            return (
+              <Entity
+                key={t.key}
+                as="g"
+                id={t.key}
+                role="link"
+                tabIndex={0}
+                aria-label={`${t.key}: ${amount} ${basis === "used" ? "used" : "guaranteed"}; ${t.sub ?? ""}`}
+                className={cn(`burrow-tone-${tone}`, "group/tile cursor-pointer outline-offset-2")}
+                onClick={go}
+                onKeyDown={(e: React.KeyboardEvent) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    go();
+                  }
+                }}
+              >
+                <title>
+                  {t.key}
+                  {"\n"}
                   {amount}
-                </text>
-              )}
-              {medium && (
-                <text x={t.x + 14} y={metaY} fontSize={11} className="pointer-events-none fill-ink-3 tnum">
-                  {basis === "used" ? "used memory" : "guaranteed share"}
-                  {t.usedPct == null ? "" : ` · ${t.usedPct.toFixed(0)}% of share`}
-                </text>
-              )}
-            </Entity>
-          );
-        })}
-      </svg>
+                  {"\n"}
+                  {t.sub ?? ""}
+                </title>
+                <rect
+                  x={t.x + 1}
+                  y={t.y + 1}
+                  width={Math.max(0, t.w - 2)}
+                  height={Math.max(0, t.h - 2)}
+                  rx={10}
+                  ry={10}
+                  fill="var(--tone)"
+                  fillOpacity={0.14}
+                  stroke="var(--tone)"
+                  strokeOpacity={0.65}
+                  // Live data updates stay immediate; animate geometry only when the user explicitly changes the area basis.
+                  className={cn(
+                    animateGeometry
+                      ? "transition-[x,y,width,height,fill-opacity,stroke-opacity] duration-(--dur-tween)"
+                      : "transition-[fill-opacity,stroke-opacity] duration-(--dur-fast)",
+                    "ease-(--ease-out) group-hover/tile:fill-opacity-40",
+                  )}
+                  {...datumAttrs(t.field, t.raw, "mb")}
+                />
+                {named && !compact && (
+                  <text
+                    x={t.x + 14}
+                    y={t.y + (large ? 28 : 22)}
+                    fontSize={large ? 13 : 11}
+                    className="pointer-events-none fill-ink-2 font-mono font-medium"
+                  >
+                    {t.key.length > Math.floor((t.w - 28) / 7.2)
+                      ? `${t.key.slice(0, Math.max(3, Math.floor((t.w - 28) / 7.2) - 1))}…`
+                      : t.key}
+                  </text>
+                )}
+                {compact && (
+                  <text
+                    x={t.x + 14}
+                    y={t.y + Math.round(t.h / 2) + 4}
+                    fontSize={11}
+                    className="pointer-events-none fill-ink-2 font-mono font-medium"
+                  >
+                    {compactLine.length > compactChars ? `${compactLine.slice(0, Math.max(3, compactChars - 1))}…` : compactLine}
+                  </text>
+                )}
+                {named && t.h >= 54 && t.w >= 108 && (
+                  <text
+                    x={t.x + 14}
+                    y={amountY}
+                    fontSize={large ? 27 : medium ? 18 : 15}
+                    className="pointer-events-none fill-ink font-medium tnum"
+                  >
+                    {amount}
+                  </text>
+                )}
+                {medium && (
+                  <text x={t.x + 14} y={metaY} fontSize={11} className="pointer-events-none fill-ink-3 tnum">
+                    {basis === "used" ? "used memory" : "guaranteed share"}
+                    {t.usedPct == null ? "" : ` · ${t.usedPct.toFixed(0)}% of share`}
+                  </text>
+                )}
+              </Entity>
+            );
+          })}
+        </svg>
+        {children}
+      </TabContent>
       <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-1 text-small text-ink-3">
         <span>
           <strong className="font-medium text-ink-2">{fmtMB(total)}</strong>

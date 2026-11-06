@@ -178,11 +178,62 @@ describe("LogsView", () => {
     await waitFor(() => expect(router.state.location.search.ts).toBe("relative"));
     expect(screen.getByRole("button", { name: "Show elapsed time since previous timestamp" }).getAttribute("aria-pressed")).toBe("true");
   });
+  it("commits an empty selected window without replacing the log viewport", async () => {
+    const pendingWindow = Promise.withResolvers<Response>();
+    const fetchWindow = vi.fn(() => pendingWindow.promise);
+    vi.stubGlobal("fetch", fetchWindow);
+    const { router, container } = renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(log.textContent).toContain("startup complete"));
+    const body = log.closest('[data-page-motion="content"]')!.parentElement!;
+    log.focus();
+
+    await act(async () => {
+      await router.navigate({ to: "/apps/$appId/logs", params: { appId: APP_ID }, search: { container: CONTAINER_ID, file: "stderr" } });
+    });
+    await waitFor(() => expect(fetchWindow).toHaveBeenCalled());
+    expect(container.querySelector('[role="log"]')).toBe(log);
+    expect(body.getAttribute("aria-busy")).toBe("true");
+    expect(document.activeElement).toBe(log);
+
+    await act(async () => {
+      pendingWindow.resolve(
+        new Response("", {
+          headers: {
+            "content-type": "text/plain",
+            "x-burrow-log-size": "0",
+            "x-burrow-log-start": "0",
+            "x-burrow-log-end": "0",
+            "x-burrow-log-source": "nm",
+          },
+        }),
+      );
+    });
+    await waitFor(() => expect(body.hasAttribute("aria-busy")).toBe(false));
+    expect(document.activeElement).toBe(log);
+    expect(screen.getByRole("log", { name: "Container log" })).toBe(log);
+    expect(log.textContent).not.toContain("startup complete");
+    expect(screen.getByText("0 lines", { selector: "[data-burrow-log-lines]" })).toBeTruthy();
+  });
 
   it("chooses stdout when the URL does not name a file", async () => {
     const { router } = renderLogs("", { omitFile: true });
     await screen.findByRole("log", { name: "Container log" });
     await waitFor(() => expect(router.state.location.search.file).toBe("stdout"));
+  });
+
+  it("wraps long lines by default", async () => {
+    renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+    expect(screen.getByRole("button", { name: "Wrap long lines" }).getAttribute("aria-pressed")).toBe("true");
+    expect(log.querySelector("[data-line]")?.classList.contains("whitespace-pre-wrap")).toBe(true);
+  });
+
+  it("honors an explicit no-wrap URL", async () => {
+    renderLogs("&wrap=0");
+    const log = await screen.findByRole("log", { name: "Container log" });
+    expect(screen.getByRole("button", { name: "Wrap long lines" }).getAttribute("aria-pressed")).toBe("false");
+    expect(log.querySelector("[data-line]")?.classList.contains("whitespace-pre")).toBe(true);
   });
 
   it("wires the log toolbar controls to URL state and the current file", async () => {
@@ -201,7 +252,11 @@ describe("LogsView", () => {
     await waitFor(() => expect(router.state.location.search.cs).toBe(true));
     fireEvent.click(screen.getByRole("button", { name: "Case-sensitive search" }));
     await waitFor(() => expect(router.state.location.search.cs).toBeUndefined());
-    fireEvent.click(screen.getByRole("button", { name: "Wrap long lines" }));
+    const wrap = screen.getByRole("button", { name: "Wrap long lines" });
+    expect(wrap.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(wrap);
+    await waitFor(() => expect(router.state.location.search.wrap).toBe(false));
+    fireEvent.click(wrap);
     await waitFor(() => expect(router.state.location.search.wrap).toBe(true));
     fireEvent.click(screen.getByRole("button", { name: "Show elapsed time since previous timestamp" }));
     await waitFor(() => expect(router.state.location.search.ts).toBe("relative"));
@@ -277,6 +332,20 @@ describe("LogsView", () => {
     renderLogs("", { windowError: new Error("window read failed") });
     expect(await screen.findByRole("heading", { name: "Cannot read this log file" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+  it("keeps the displayed window when a refresh fails", async () => {
+    const fetchMock = vi.fn(async () => new Response("read failed", { status: 500, headers: { "content-type": "text/plain" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    renderLogs();
+    const viewer = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(viewer.textContent).toContain("startup complete"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh window" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(viewer.textContent).toContain("startup complete");
+    expect(screen.queryByRole("heading", { name: "Cannot read this log file" })).toBeNull();
   });
 
   it("uses the timer fallback when animation frames are unavailable", async () => {
@@ -410,6 +479,13 @@ describe("LogsView", () => {
     expect(await screen.findByText(/latest log window could not be loaded.*raw window refresh failure/)).toBeTruthy();
     expect(screen.getByRole("log", { name: "Container log" })).toBeTruthy();
   });
+  it("shows a retryable error when the first byte-window read fails", async () => {
+    renderLogs("", { windowError: new Error("byte window unavailable") });
+    expect(await screen.findByRole("heading", { name: "Cannot read this log file" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+  });
+
+
 
   it("starts live search follow and tears down its refresh timer on unmount", async () => {
     class TestEventSource {

@@ -49,6 +49,7 @@ export function NodeContainers({
           {error && <StaleErrorBanner title="Container refresh failed; showing the last loaded rows" error={error} onRetry={onRetry} />}
           <DataTable
             data={containers ?? []}
+            contentIdentity={node.id}
             columns={columns}
             getRowId={(c) => c.id}
             entityKey={(c) => c.id}

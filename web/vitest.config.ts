@@ -27,8 +27,15 @@ export default defineConfig({
       provider: "istanbul",
       reporter: ["lcov", "text"],
       reportsDirectory: "coverage",
-      include: ["src/**/*.{ts,tsx}"],
+      include: ["src/**/*.{ts,tsx}", "public/theme-init.js"],
       exclude: ["src/**/*.{test,spec}.{ts,tsx}", "src/**/__tests__/**", "src/**/*.d.ts", "src/**/*.gen.ts"],
+      thresholds: {
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
+        perFile: true,
+      },
     },
   },
 });

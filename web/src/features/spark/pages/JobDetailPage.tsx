@@ -14,6 +14,7 @@ import { ACTION_LINK_CLASS } from "~/ui/button";
 import { DataTable } from "~/ui/data-table/data-table";
 import { Datum, Entity } from "~/ui/datum";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { Tooltip } from "~/ui/tooltip";
 import { jobDurationMs, parseSparkTime } from "../data/format";
 import { sp } from "../data/queries";
@@ -111,62 +112,64 @@ export function JobDetailPage() {
         </Link>
       </PageHeader>
 
-      <Entity id={String(job.jobId)}>
-        <MetricStrip>
-          <Metric label="Job Id">
-            <Datum field="spark.job.jobId" raw={job.jobId} fmt="int" />
-          </Metric>
-          <Metric label="Submitted">
-            <Datum field="spark.job.submissionTime" raw={job.submissionTime} fmt="text">
-              {fmtEpoch(parseSparkTime(job.submissionTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="Completed">
-            <Datum field="spark.job.completionTime" raw={job.completionTime} fmt="text">
-              {fmtEpoch(parseSparkTime(job.completionTime), tz)}
-            </Datum>
-          </Metric>
-          <Metric label="Duration">
-            <Datum field="spark.job.derived.durationMs" raw={jobDurationMs(job, now)} fmt="dur" />
-          </Metric>
-          <Metric label="Stages (done / active / failed / skipped)">
-            <CountsCell
-              counts={[
-                { field: "spark.job.numCompletedStages", raw: job.numCompletedStages, tone: "ok", label: "succeeded" },
-                { field: "spark.job.numActiveStages", raw: job.numActiveStages, tone: "live", label: "active" },
-                { field: "spark.job.numFailedStages", raw: job.numFailedStages, tone: "fail", label: "failed" },
-                { field: "spark.job.numSkippedStages", raw: job.numSkippedStages, tone: "idle", label: "skipped" },
-              ]}
-            />
-          </Metric>
-          <Metric label="Tasks (done / active / failed / killed)">
-            <CountsCell
-              counts={[
-                { field: "spark.job.numCompletedTasks", raw: job.numCompletedTasks, tone: "ok", label: "succeeded" },
-                { field: "spark.job.numActiveTasks", raw: job.numActiveTasks, tone: "live", label: "active" },
-                { field: "spark.job.numFailedTasks", raw: job.numFailedTasks, tone: "fail", label: "failed" },
-                { field: "spark.job.numKilledTasks", raw: job.numKilledTasks, tone: "idle", label: "killed" },
-              ]}
-            />
-          </Metric>
-          <Metric label="Indices complete">
-            <Datum field="spark.job.numCompletedIndices" raw={job.numCompletedIndices} fmt="int" />
-            {" / "}
-            <Datum field="spark.job.numTasks" raw={job.numTasks} fmt="int" />
-          </Metric>
-          {job.jobTags.length > 0 && (
-            <Metric label="Tags">
-              <span className="flex flex-wrap gap-1">
-                {job.jobTags.map((t) => (
-                  <Datum key={t} field="spark.job.jobTags" raw={t} className="rounded-full bg-fabric-3 px-1.5 text-micro text-ink-2">
-                    {t}
-                  </Datum>
-                ))}
-              </span>
+      <TabContent initial value={`${appId}:${attempt ?? ""}:job:${jobId}`}>
+        <Entity id={String(job.jobId)}>
+          <MetricStrip>
+            <Metric label="Job Id">
+              <Datum field="spark.job.jobId" raw={job.jobId} fmt="int" />
             </Metric>
-          )}
-        </MetricStrip>
-      </Entity>
+            <Metric label="Submitted">
+              <Datum field="spark.job.submissionTime" raw={job.submissionTime} fmt="text">
+                {fmtEpoch(parseSparkTime(job.submissionTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="Completed">
+              <Datum field="spark.job.completionTime" raw={job.completionTime} fmt="text">
+                {fmtEpoch(parseSparkTime(job.completionTime), tz)}
+              </Datum>
+            </Metric>
+            <Metric label="Duration">
+              <Datum field="spark.job.derived.durationMs" raw={jobDurationMs(job, now)} fmt="dur" />
+            </Metric>
+            <Metric label="Stages (done / active / failed / skipped)">
+              <CountsCell
+                counts={[
+                  { field: "spark.job.numCompletedStages", raw: job.numCompletedStages, tone: "ok", label: "succeeded" },
+                  { field: "spark.job.numActiveStages", raw: job.numActiveStages, tone: "live", label: "active" },
+                  { field: "spark.job.numFailedStages", raw: job.numFailedStages, tone: "fail", label: "failed" },
+                  { field: "spark.job.numSkippedStages", raw: job.numSkippedStages, tone: "idle", label: "skipped" },
+                ]}
+              />
+            </Metric>
+            <Metric label="Tasks (done / active / failed / killed)">
+              <CountsCell
+                counts={[
+                  { field: "spark.job.numCompletedTasks", raw: job.numCompletedTasks, tone: "ok", label: "succeeded" },
+                  { field: "spark.job.numActiveTasks", raw: job.numActiveTasks, tone: "live", label: "active" },
+                  { field: "spark.job.numFailedTasks", raw: job.numFailedTasks, tone: "fail", label: "failed" },
+                  { field: "spark.job.numKilledTasks", raw: job.numKilledTasks, tone: "idle", label: "killed" },
+                ]}
+              />
+            </Metric>
+            <Metric label="Indices complete">
+              <Datum field="spark.job.numCompletedIndices" raw={job.numCompletedIndices} fmt="int" />
+              {" / "}
+              <Datum field="spark.job.numTasks" raw={job.numTasks} fmt="int" />
+            </Metric>
+            {job.jobTags.length > 0 && (
+              <Metric label="Tags">
+                <span className="flex flex-wrap gap-1">
+                  {job.jobTags.map((t) => (
+                    <Datum key={t} field="spark.job.jobTags" raw={t} className="rounded-full bg-fabric-3 px-1.5 text-micro text-ink-2">
+                      {t}
+                    </Datum>
+                  ))}
+                </span>
+              </Metric>
+            )}
+          </MetricStrip>
+        </Entity>
+      </TabContent>
 
       <section aria-label={`RDD graph of job ${job.jobId}`} className="flex flex-col gap-2">
         <DagVizHeading title="Job DAG" />
@@ -199,72 +202,72 @@ export function JobDetailPage() {
         {stagesQ.error && stagesQ.data !== undefined && (
           <SparkStaleErrorBanner error={stagesQ.error} subject={`the stages of job ${job.jobId}`} onRetry={() => void stagesQ.refetch()} />
         )}
-        {stagesQ.isPending ? (
-          <SparkLoading rows={5} cols={6} />
-        ) : stagesQ.error && stagesQ.data === undefined ? (
-          <SparkFailureState error={stagesQ.error} subject={`the stages of job ${job.jobId}`} onRetry={() => void stagesQ.refetch()} />
-        ) : jobStages.length === 0 ? (
-          <SparkEmpty title="Spark reports no stages for this job">
-            A job with only reused (skipped) output times out or returns immediately; its stages list can be empty.
-          </SparkEmpty>
-        ) : (
-          <DataTable<SparkStage>
-            className="min-h-[24rem]"
-            data={jobStages}
-            columns={columns}
-            getRowId={(s) => `${s.stageId}/${s.attemptId ?? 0}`}
-            entityKey={(s) => `${s.stageId}/${s.attemptId ?? 0}`}
-            label={`Stages of job ${job.jobId}`}
-            storageKey="spark-job-stages"
-            sorting={sorting}
-            onSortingChange={(s) => patch(serializeSort(s))}
-            columnVisibility={columnVisibility}
-            onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
-            defaultVisibility={STAGE_DEFAULT_VISIBILITY}
-            onRowActivate={(s) =>
-              void navigate({
-                to: "/apps/$appId/spark/stages/$stageId/$attemptId",
-                params: { appId, stageId: String(s.stageId), attemptId: String(s.attemptId ?? 0) },
-                search: { attempt: attempt ?? undefined },
-              })
-            }
-            rowVersion={(s) => `${s.status}:${s.numActiveTasks ?? 0}:${s.numCompleteTasks ?? 0}`}
-            totalCount={jobStages.length}
-            exportName={`spark-job-${job.jobId}-stages`}
-            toolbar={
-              selectedStageId != null ? (
-                <span className="text-small text-ink-3">
-                  selected stage{" "}
-                  <Link
-                    to="/apps/$appId/spark/stages/$stageId/$attemptId"
-                    params={{
-                      appId,
-                      stageId: String(selectedStageId),
-                      attemptId: String(
-                        Math.max(0, ...jobStages.filter((s) => s.stageId === selectedStageId).map((s) => s.attemptId ?? 0)),
-                      ),
-                    }}
-                    search={{ attempt: attempt ?? undefined }}
-                    className="text-live underline-offset-2 hover:underline"
+        <DataTable<SparkStage>
+          className="min-h-[24rem]"
+          data={jobStages}
+          columns={columns}
+          getRowId={(s) => `${s.stageId}/${s.attemptId ?? 0}`}
+          entityKey={(s) => `${s.stageId}/${s.attemptId ?? 0}`}
+          label={`Stages of job ${job.jobId}`}
+          storageKey="spark-job-stages"
+          contentIdentity={`${appId}:${attempt ?? ""}:job:${jobId}:stages`}
+          loading={stagesQ.isPending}
+          error={
+            stagesQ.error && stagesQ.data === undefined ? (
+              <SparkFailureState error={stagesQ.error} subject={`the stages of job ${job.jobId}`} onRetry={() => void stagesQ.refetch()} />
+            ) : undefined
+          }
+          empty={
+            <SparkEmpty title="Spark reports no stages for this job">
+              A job with only reused (skipped) output times out or returns immediately; its stages list can be empty.
+            </SparkEmpty>
+          }
+          sorting={sorting}
+          onSortingChange={(s) => patch(serializeSort(s))}
+          columnVisibility={columnVisibility}
+          onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
+          defaultVisibility={STAGE_DEFAULT_VISIBILITY}
+          onRowActivate={(s) =>
+            void navigate({
+              to: "/apps/$appId/spark/stages/$stageId/$attemptId",
+              params: { appId, stageId: String(s.stageId), attemptId: String(s.attemptId ?? 0) },
+              search: { attempt: attempt ?? undefined },
+            })
+          }
+          rowVersion={(s) => `${s.status}:${s.numActiveTasks ?? 0}:${s.numCompleteTasks ?? 0}`}
+          totalCount={jobStages.length}
+          exportName={`spark-job-${job.jobId}-stages`}
+          toolbar={
+            selectedStageId != null ? (
+              <span className="text-small text-ink-3">
+                selected stage{" "}
+                <Link
+                  to="/apps/$appId/spark/stages/$stageId/$attemptId"
+                  params={{
+                    appId,
+                    stageId: String(selectedStageId),
+                    attemptId: String(Math.max(0, ...jobStages.filter((s) => s.stageId === selectedStageId).map((s) => s.attemptId ?? 0))),
+                  }}
+                  search={{ attempt: attempt ?? undefined }}
+                  className="text-live underline-offset-2 hover:underline"
+                >
+                  {selectedStageId}
+                </Link>{" "}
+                — clear
+                <Tooltip label="Clear selected stage filter">
+                  <button
+                    type="button"
+                    onClick={() => patch({ stage: undefined })}
+                    aria-label="Clear selected stage filter"
+                    className="ml-1 text-ink-4 underline"
                   >
-                    {selectedStageId}
-                  </Link>{" "}
-                  — clear
-                  <Tooltip label="Clear selected stage filter">
-                    <button
-                      type="button"
-                      onClick={() => patch({ stage: undefined })}
-                      aria-label="Clear selected stage filter"
-                      className="ml-1 text-ink-4 underline"
-                    >
-                      ×
-                    </button>
-                  </Tooltip>
-                </span>
-              ) : null
-            }
-          />
-        )}
+                    ×
+                  </button>
+                </Tooltip>
+              </span>
+            ) : null
+          }
+        />
       </section>
     </div>
   );

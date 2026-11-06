@@ -15,6 +15,7 @@ import { ACTION_LINK_CLASS } from "~/ui/button";
 import { Entity, Datum } from "~/ui/datum";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
 import { ProgressBar } from "~/ui/progress-bar";
+import { TabContent } from "~/ui/tabs";
 import { utilizationTone } from "~/lib/progress-tone";
 import { fmtFraction, fraction } from "../data/format";
 import { sp } from "../data/queries";
@@ -305,7 +306,9 @@ export function RddDetailPage() {
         </Link>
       </PageHeader>
 
-      <RddDetailBody appId={appId} rdd={rdd} />
+      <TabContent initial value={`${appId}:${attempt ?? ""}:rdd:${rddId}`}>
+        <RddDetailBody appId={appId} rdd={rdd} />
+      </TabContent>
     </div>
   );
 }

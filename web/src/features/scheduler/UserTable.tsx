@@ -265,6 +265,7 @@ const COLS_WITH_QUEUE: ColDef<UserRow>[] = [QUEUE_COL, ...BASE_COLS];
 
 export function UserTable({
   rows,
+  contentIdentity,
   loading,
   sorting,
   onSortingChange,
@@ -275,6 +276,7 @@ export function UserTable({
   stableViewport = false,
 }: {
   rows: UserRow[];
+  contentIdentity?: string;
   loading?: boolean;
   sorting: SortingState;
   onSortingChange: (s: SortingState) => void;
@@ -283,13 +285,15 @@ export function UserTable({
   className?: string;
   /** add a leading Queue column (rows from several queues) */
   showQueue?: boolean;
-  /** Keep live-refreshing user lists bounded once they exceed a few visible rows. */
+  /** Reserve the loading shell; ready rows size to content up to the remaining page height. */
   stableViewport?: boolean;
 }) {
   return (
     <div className={className}>
       <DataTable
         data={rows}
+        contentIdentity={contentIdentity}
+        initialContentFade={false}
         columns={showQueue ? COLS_WITH_QUEUE : BASE_COLS}
         getRowId={(r) => `${r.queuePath}#${r.user.username}`}
         entityKey={(r) => `${r.queuePath}#${r.user.username}`}
@@ -309,7 +313,6 @@ export function UserTable({
         }
         exportName="queue-users"
         totalCount={rows.length}
-        className="h-[min(40dvh,420px)]"
         stableViewport={stableViewport}
       />
     </div>

@@ -158,7 +158,7 @@ The Burrow lockup pairs the lowercase wordmark with an upright tunnel arch. Insi
 - `web/src/features/shell/BurrowBrand.tsx` renders the full lockup and compact mark inline, so the logo artwork has no standalone public image URL.
 - The dark nodes use `--live` `#4cd7d7`, `--fresh` `#82a7ff`, and `--wait` `#f4c95d`; light mode uses `#007d80`, `#365fb5`, and `#8a5b00`.
 - `web/src/features/shell/rail.tsx` selects the full lockup or compact mark; `web/src/styles/app.css` selects the theme variant.
-- `web/public/favicon.svg` is the Burrow tunnel mark; `favicon.ico` is its legacy-browser fallback.
+- `web/public/favicon.svg` and `favicon-light.svg` are the dark/light Burrow tunnel marks; `favicon.ico` and `favicon-light.ico` are their legacy-browser fallbacks. The pre-paint bootstrap and preference updates keep both browser-tab icons in sync with `html[data-theme]`.
 
 
 ---
@@ -225,6 +225,13 @@ Page gutters scale with the viewport, while fixed rhythm values line up across c
 
 Authors use the 4px scale where practical; nested panel padding is sized to the content, and page gutters use the responsive tokens.
 
+Whole-page scrollports extend through both shell gutters and any centered max-width slack, while matching inline padding keeps content aligned.
+Below 640px, the main frame uses a 12px horizontal gutter. Wheel and touch gestures beside either edge of the content remain native scrolling.
+
+Application headers keep the same description, metadata, and action structure across section changes, including Spark.
+Visible descriptions reserve at least two lines below 1024px and one line above it. Below 640px, every application section uses the
+same compact identity-and-ID header; descriptions and secondary details collapse consistently, so entering Spark cannot move its tabs.
+
 ### 4.2 Radius — concentric, inner = outer − padding
 
 | token | value |
@@ -290,7 +297,7 @@ adaptation, not a user-selectable density profile.
 | token | value | use |
 |---|---|---|
 | `--ease-out` | `cubic-bezier(0.22, 1, 0.36, 1)` | entrances, hovers, popovers |
-| `--ease-in-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | on-screen movement (progress fills, tab indicator, ring arcs) |
+| `--ease-in-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | on-screen movement (progress fills, tab indicator, ring arcs); route entrances use CSS `ease-in-out` |
 | `--ease-drawer` | `cubic-bezier(0.32, 0.72, 0, 1)` | long slides (left/bottom sheets, the mobile rail drawer) |
 | `--dur-instant` | `0ms` | immediate |
 | `--dur-fade` | `120ms` | opacity/colour state changes; the short fade that survives reduced motion |
@@ -298,6 +305,7 @@ adaptation, not a user-selectable density profile.
 | `--dur-fast` | `160ms` | hover, button press, chip entrance |
 | `--dur-base` | `240ms` | popover/scrim entrance, mount entrances, dim/brighten, single, segmented and share progress fills plus ring arcs |
 | `--dur-slow` | `320ms` | DAG fallback segment movement, long list moves |
+| `--dur-page` | `400ms` | page-entry movement; zeroes under reduced motion and parity |
 | `--dur-sheet` | `360ms` | sheet slide |
 | `--dur-tween` | `480ms` | number tween (`Ticker` default `durationMs = 480`) |
 | `--dur-flash` | `900ms` | row/line change flash (`flash()` in `lib/motion.ts`); `/apps` opts out of row flashes so polling stays quiet |
@@ -362,12 +370,19 @@ tween `stroke-dashoffset` inline). Entrance *primitives* are transitions, not ke
 
 - `.burrow-enter` — 4px rise + fade (panels, detail panes, empty/error states, rail labels on first paint).
 - `.burrow-enter-pop` — `scale(0.96)` + fade (chips, floating affordances, the Gantt tooltip).
-- `.burrow-page` — the shell keys the page by pathname; its heading swaps immediately, then coarse content groups cascade in with a
-  6px rise. Metric cards and Overview sections stagger by the bounded `--delay-cascade-*` cadence (capped at 72ms); rows and live
-  cells never move.
+- `.burrow-page` — the router preserves shared layouts across leaf-route changes; newly mounted content groups cascade in with a
+  6px rise. Metric cards and Overview sections stagger by the bounded `--delay-cascade-*` cadence (capped at 72ms); DataTable
+  shells enter once with a 10px slide after any active page entrance. Custom data panes use `.burrow-page-result-enter` for
+  the same first-result slide; rows never stagger.
 - `.burrow-page-scroll` section content — a CSS `view()` timeline reveals direct content blocks after each section heading with an
   8px rise as native scroll enters them. Unsupported browsers and reduced motion keep content static.
 - `[role=tabpanel]` fades incoming/outgoing panels with `--dur-content`; `.burrow-tab-content` fades filtered results and explicit visualization modes in place (node table/heatmap, label catalogue/mapping, Overview history ranges, Scheduler treemap basis). Poll-driven geometry and individual rows remain unanimated.
+- `.burrow-tab-indicator` — one persistent underline per strip slides with `--dur-base`/`--ease-in-out`. Application and Spark navigation
+  keep real router links; their shared frames stay mounted and only the outlet content fades. Indicator geometry follows tab and strip resizing.
+- Interrupted content fades preserve focus and in-progress inputs, cancel the previous animation before retargeting, and handle only
+  the expected `AbortError` from intentional cancellation.
+- Spark navigation marks uncached requests busy immediately, but shows its pending dot only after 200ms. The dot is absolutely positioned
+  inside the tab padding, so feedback never changes label widths or retargets the underline. Completion and cancellation remove it immediately.
 - `.burrow-instant` — zeroes the overlay durations for one subtree (the command palette: keyboard-first, ⌘K/`/`, so it opens
   and closes with no animation at all).
 - `.burrow-bar` — a share bar whose fill is `scaleX(var(--fill))`, so a poll re-lays nothing out.
@@ -376,12 +391,14 @@ tween `stroke-dashoffset` inline). Entrance *primitives* are transitions, not ke
 ### 5.5 Adding motion safely
 
 1. Decide *whether* it animates first: keyboard shortcuts and row-focus moves get **no** animation; content-changing tabs get
-   an opacity-only `--dur-content` bridge. Page switches keep the heading immediate and use the bounded B cascade only on coarse
-   groups/cards; scroll reveals only major sections. Never stagger rows or live cells.
-2. Choose a `--dur-*` token; use the named `--delay-cascade-*` offsets for the bounded page sequence. Entrances and exits use
-   `--ease-out`, on-screen movement `--ease-in-out`, constant motion `linear`.
+   an opacity-only `--dur-content` bridge. A route keeps its heading immediate and gives only its coarse content groups the
+   bounded 10px, 400ms upward entrance using `--dur-page` and CSS `ease-in-out`; async tables retain their independent row fade
+   and get one bounded shell slide on first readiness after the page entrance ends. Search/poll changes never replay either entrance.
+   Scroll reveals only major sections. Never stagger rows or live cells.
+2. Choose a `--dur-*` token; use the named `--delay-cascade-*` offsets for the bounded page sequence. Opacity entrances/exits use
+   `--ease-out`; most on-screen movement uses `--ease-in-out`; route entrances use CSS `ease-in-out`; constant motion uses `linear`.
 3. Animate only `transform`/`opacity` (or SVG dash offset on short paths). Never `scale(0)`; entrances start at
-   `scale(0.96)`/4px, or use the bounded 6px/8px page reveals above. Never `transition: all` — name the properties.
+   `scale(0.96)`/4px, or use the bounded 10px page entrances above. Never `transition: all` — name the properties.
 4. If it loops, gate it with the motion predicate **and** `useInView().visible`, and add a
    `prefers-reduced-motion` `animation: none` rule.
 5. If JS-driven movement/data tween, gate on `motionAllowed()`/`useAnimationsEnabled()` and clean up; the content-only
@@ -401,8 +418,7 @@ tween `stroke-dashoffset` inline). Entrance *primitives* are transitions, not ke
    reads the minimap right after a click), chart draw-ins (the line is data), KPI-strip number tweens beyond the
    overview/node-detail/app-detail metrics (`Ticker` already covers those; the scheduler strip is read as a column of
    digits, not as an animation), row reveals on expand in a virtualized tree (rows are positioned by `translateY`, so a
-   transform entrance would fight the virtualizer), and converting the app-detail tab strip to client-side navigation
-   (it is a *routing* decision — `routes/apps/$appId.tsx` documents the anchors as deliberate — not a motion one).
+   transform entrance would fight the virtualizer).
    The bounded route cascade and scroll-linked section reveal are approved exceptions; neither animates rows or intercepts native scrolling.
 
 10. **Prefs never change the server-rendered shell's *markup*.** A pref that adds, removes or retitles elements/text fails
@@ -780,8 +796,8 @@ column sizing + resizing, row selection, and `ColMeta` (label, `defaultVisible`,
   unchanged rows.
 - **States**: `loading` → `TableSkeleton rows={12}`; `error` → the passed node (use `ErrorState`); zero rows → `empty`
   (use `EmptyState`); the shell renders exactly one of skeleton/error/empty/rows. The body rowgroup uses a shared opacity
-  transition (`--dur-content`) as results appear or disappear; there is no per-row stagger. `totalCount` drives an "n of m"
-  readout.
+  transition (`--dur-content`) as results appear or disappear; the table shell may slide once on first data readiness, never per
+  row or poll. `totalCount` drives an "n of m" readout.
 - **Export**: Export menu offers CSV/JSON of the **current view** (leaf columns via `ColMeta.exportValue`, falling back to
   the accessor). When rows are selected, only the selection is exported and the item is labelled with the count. Download
   names use `exportName`.
@@ -789,13 +805,10 @@ column sizing + resizing, row selection, and `ColMeta` (label, `defaultVisible`,
   enabled only when not in parity mode. Every row has a fixed height within that profile, so measured offsets remain
   stable; non-virtualized rows (parity) use the same height and are static. Expect 10k rows: fixed row height,
   `content-visibility: auto` (`.burrow-row`), memoized rows, no per-row layout effects.
-- **Height cap**: when the rows fit the pane the card stops at `chrome + content + bar lane` instead of stretching to the
-  caller's height (chrome = toolbar/footer/borders; measured each render). The lane is the block-direction scrollbar's
-  `offsetHeight − clientHeight` — 0 where the platform overlays the bar; 8px for classic Blink/WebKit bars. Gecko's `thin`
-  scrollbar uses the native lane. The thumb color is `--seam-strong`; exact native geometry remains OS-controlled.
-  `scrollbar-gutter: stable` reserves the vertical bar's lane only, so a cap that ignores the horizontal lane clips the
-  last row under the bar (separator included) and summons a vertical scrollbar for the missing pixels. Tables taller than
-  the pane are unaffected: their content exceeds the cap.
+- **Height cap**: ready tables use natural chrome + header/row height when content is short, capped by the remaining page-scrollport
+  height; a table below the fold can use one full scrollport height so the page can scroll it into view. Tall results scroll inside
+  the table. `stableViewport` reserves a loading shell only; ready rows do not inherit fixed caller heights. `scrollbar-gutter: stable`
+  reserves the horizontal scrollbar lane so the final row remains visible when vertical overflow appears.
 - **Parity mode**: every column visible (visibility ignored), no virtualization window, all rows rendered, no animations,
   layout otherwise identical.
 - **ARIA**: `role="grid"`, `tabIndex={0}`, `aria-label`, `aria-rowcount={rows+1}`, `aria-colcount`, `aria-busy`,

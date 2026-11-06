@@ -245,7 +245,7 @@ html[data-motion="reduced"] .burrow-rail-active-selection { transition: none; }
 .burrow-topbar { background: var(--ground-raised); }
 
 @media (max-width: 639px) {
-  .burrow-main { padding-inline: 12px; }
+  .burrow-main { --page-gutter-x: 12px; }
 }
 
 /* ---------- motion gating ----------
@@ -254,14 +254,14 @@ html[data-motion="reduced"] .burrow-rail-active-selection { transition: none; }
    filter fades use `--dur-content` normally and fall back to the short fade under reduced motion. Parity zeroes everything so a
    screenshot cannot catch a half-run animation. */
 html[data-motion="reduced"] {
-  --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms;
+  --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-page: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms;
   --dur-content: var(--dur-fade);
 }
 html[data-parity] {
-  --dur-fade: 0ms; --dur-content: 0ms; --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms;
+  --dur-fade: 0ms; --dur-content: 0ms; --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-page: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms;
 }
 @media (prefers-reduced-motion: reduce) {
-  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms; --dur-content: var(--dur-fade); }
+  :root { --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-page: 0ms; --dur-sheet: 0ms; --dur-tween: 0ms; --dur-flash: 0ms; --dur-content: var(--dur-fade); }
 }
 html[data-parity] *, html[data-parity] *::before, html[data-parity] *::after {
   animation: none !important; transition: none !important; scroll-behavior: auto !important;
@@ -312,36 +312,53 @@ html[data-parity] .burrow-enter, html[data-parity] .burrow-enter-pop { transform
   from { opacity: 0; }
   to { opacity: 1; }
 }
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]),
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 2),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > * {
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 2):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:not([data-page-motion="content"] *) {
   animation: burrow-page-content-in var(--dur-base) var(--ease-out) both;
 }
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(2):not([data-page-motion]),
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(2),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(2) {
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(2):not([data-page-motion]):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(2):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(2):not([data-page-motion="content"] *) {
   animation-delay: var(--delay-cascade-1);
 }
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(3):not([data-page-motion]),
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(3),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(3) {
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(3):not([data-page-motion]):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(3):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(3):not([data-page-motion="content"] *) {
   animation-delay: var(--delay-cascade-2);
 }
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 4):not([data-page-motion]),
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 4),
-html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(n + 4) {
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 4):not([data-page-motion]):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 4):not([data-page-motion="content"] *),
+html:not([data-motion="reduced"]):not([data-parity]) [data-page-motion="cards"] > *:nth-child(n + 4):not([data-page-motion="content"] *) {
   animation-delay: var(--delay-cascade-3);
 }
-/* Overview inserts an optional attention banner before its three groups, so cascade those groups by type rather than
-   their position among the heading and banner siblings. */
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page .burrow-overview-content > .burrow-overview-group:nth-of-type(1) {
-  animation-delay: 0ms;
+
+/* Page shells keep their headings fixed; route content moves upward independently from its opacity/readiness owners. */
+@keyframes burrow-page-content-shift {
+  from { transform: translateY(10px); }
+  to { transform: translateY(0); }
 }
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page .burrow-overview-content > .burrow-overview-group:nth-of-type(2) {
-  animation-delay: var(--delay-cascade-1);
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-result-enter,
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll:not(.burrow-app-scroll) > :is(div, nav, section)[data-page-motion="content"]:nth-child(n + 2),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll > .burrow-overview-content > [data-page-motion="content"]:not(:first-child),
+html:not([data-motion="reduced"]):not([data-parity]) .burrow-app-scroll > .burrow-app-route-enter {
+  animation: burrow-page-content-shift var(--dur-page) ease-in-out both;
 }
-html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page .burrow-overview-content > .burrow-overview-group:nth-of-type(3) {
-  animation-delay: var(--delay-cascade-2);
+html[data-motion="reduced"] .burrow-page-scroll:not(.burrow-app-scroll) > :is(div, nav, section)[data-page-motion="content"]:nth-child(n + 2),
+html[data-motion="reduced"] .burrow-page-scroll > .burrow-overview-content > [data-page-motion="content"]:not(:first-child),
+html[data-motion="reduced"] .burrow-app-scroll > .burrow-app-route-enter,
+html[data-parity] .burrow-page-scroll:not(.burrow-app-scroll) > :is(div, nav, section)[data-page-motion="content"]:nth-child(n + 2),
+html[data-parity] .burrow-page-scroll > .burrow-overview-content > [data-page-motion="content"]:not(:first-child),
+html[data-parity] .burrow-app-scroll > .burrow-app-route-enter {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-parity]) .burrow-page-result-enter,
+  .burrow-page-scroll:not(.burrow-app-scroll) > :is(div, nav, section)[data-page-motion="content"]:nth-child(n + 2),
+  .burrow-page-scroll > .burrow-overview-content > [data-page-motion="content"]:not(:first-child),
+  .burrow-app-scroll > .burrow-app-route-enter {
+    animation: none !important;
+  }
 }
 
 /* Section reveals are tied to native scroll progress; no JS wheel interception or row-level motion. */
@@ -350,23 +367,23 @@ html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page .burr
   to { opacity: 1; transform: translateY(0); }
 }
 @supports (animation-timeline: view()) {
-  html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll > section > :not(:first-child),
-  html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll > div > section > :not(:first-child) {
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll > section > :not(:first-child):not([data-page-motion="content"] *),
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-page-scroll > div > section > :not(:first-child):not([data-page-motion="content"] *) {
     animation: burrow-scroll-reveal 1s linear both;
     animation-timeline: view();
     animation-range: entry 0% entry 30%;
   }
 }
-html[data-motion="reduced"]:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]),
-html[data-motion="reduced"]:not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 2),
-html[data-motion="reduced"]:not([data-parity]) [data-page-motion="cards"] > * {
+html[data-motion="reduced"]:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]):not([data-page-motion="content"] *),
+html[data-motion="reduced"]:not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 2):not([data-page-motion="content"] *),
+html[data-motion="reduced"]:not([data-parity]) [data-page-motion="cards"] > *:not([data-page-motion="content"] *) {
   animation: burrow-page-content-fade var(--dur-fade) var(--ease-out) both !important;
   animation-delay: 0ms !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  html:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]),
-  html:not([data-parity]) .burrow-page > .burrow-page-scroll > div > section:nth-child(n + 2),
-  html:not([data-parity]) [data-page-motion="cards"] > * {
+  html:not([data-parity]) .burrow-page > * > :is(div, nav):nth-child(n + 2):not([data-page-motion]):not([data-page-motion="content"] *),
+  html:not([data-parity]) .burrow-page > .burrow-page-scroll > div:not([data-page-motion="content"]) > section:nth-child(n + 2):not([data-page-motion="content"] *),
+  html:not([data-parity]) [data-page-motion="cards"] > *:not([data-page-motion="content"] *) {
     animation: burrow-page-content-fade var(--dur-fade) var(--ease-out) both !important;
     animation-delay: 0ms !important;
   }
@@ -376,15 +393,6 @@ html[data-motion="reduced"]:not([data-parity]) [data-page-motion="cards"] > * {
 html[data-motion="reduced"] .burrow-page-scroll > section > :not(:first-child),
 html[data-motion="reduced"] .burrow-page-scroll > div > section > :not(:first-child) { animation: none !important; }
 
-/* Dense node tables and filters should appear in one frame instead of flashing through the page entrance cascade. */
-html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) > * > :is(div, nav):nth-child(n + 2),
-html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) > .burrow-page-scroll > div > section:nth-child(n + 2),
-html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) [data-page-motion="cards"] > *,
-html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) .burrow-page-scroll > section > :not(:first-child),
-html:not([data-parity]) .burrow-page[data-page-transition="none"]:not([data-page-motion]) .burrow-page-scroll > div > section > :not(:first-child) {
-  animation: none !important;
-  animation-delay: 0ms !important;
-}
 
 /* Base UI keeps the outgoing panel mounted through `data-ending-style`, so both sides can fade without moving dense data. */
 [role="tabpanel"] { transition: opacity var(--dur-content) var(--ease-out); }
@@ -570,8 +578,8 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
   scrollbar-width: none;
   overscroll-behavior: contain;
   /* Extend the scroll hitbox through the main gutter and any space introduced by the centered max-width page. */
-  margin-right: min(calc(0px - var(--page-gutter-x)), calc(780px - 50cqi - var(--page-gutter-x)));
-  padding-right: max(var(--page-gutter-x), calc(50cqi - 780px + var(--page-gutter-x)));
+  margin-inline: min(calc(0px - var(--page-gutter-x)), calc(780px - 50cqi - var(--page-gutter-x)));
+  padding-inline: max(var(--page-gutter-x), calc(50cqi - 780px + var(--page-gutter-x)));
 }
 .burrow-page-scroll--stable { overflow-anchor: none; }
 .burrow-page-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
@@ -981,9 +989,8 @@ html:not([data-motion="reduced"]):not([data-parity]) .burrow-overview-page { scr
     min-width: 2.75rem;
     min-height: 2.75rem;
   }
-  /* SparkShell repeats the app ID, user, version, start time, and Spark history link on these routes. Keep the YARN
-     application name, state, and copyable app ID visible, while removing duplicate context from the first phone screen. */
-  main [data-burrow-app-header="spark"] [data-burrow-app-header-secondary] {
+  /* The shared application header stays compact on every tab; entering Spark must not collapse its height. */
+  main [data-burrow-app-header] [data-burrow-app-header-secondary] {
     display: none;
   }
   main .burrow-overview-row-grid .burrow-metric-row { min-height: 2.75rem; }

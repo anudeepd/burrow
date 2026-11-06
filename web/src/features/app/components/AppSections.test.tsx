@@ -317,15 +317,10 @@ describe("application sections", () => {
     expect(await screen.findByText("N/A → N/A")).toBeTruthy();
   });
 
-  it("keeps the header compact in the Spark route and renders trimmed tag chips", async () => {
+  it("renders trimmed application tag chips", async () => {
     const taggedApp = { ...app, applicationTags: " alpha, , beta " };
-    const view = renderSections(attempts, taggedApp, { path: `/apps/${app.id}/spark`, insideSpark: true });
-    expect(await screen.findByText("YARN application")).toBeTruthy();
-    const header = view.container.querySelector("header")!;
-    expect(header.getAttribute("data-burrow-app-header")).toBe("spark");
-    expect(screen.queryByText("Spark application activity, execution plans, and runtime details.")).toBeNull();
-    expect(within(header).getByText("alpha")).toBeTruthy();
+    renderSections(attempts, taggedApp, { path: `/apps/${app.id}/spark`, insideSpark: true });
+    const header = (await screen.findByText("alpha")).closest("header")!;
     expect(within(header).getByText("beta")).toBeTruthy();
-    expect(within(header).getByRole("link", { name: "History" })).toBeTruthy();
   });
 });

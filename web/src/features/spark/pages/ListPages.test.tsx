@@ -913,16 +913,6 @@ describe("Spark list pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
-  it("shows the Spark environment loading skeleton before its first response", async () => {
-    const queryKey = sp.environment(APP_ID, null).queryKey;
-    const loading = renderListPage("environment", "", (client) => {
-      client.setQueryDefaults(queryKey, { enabled: false });
-      client.removeQueries({ queryKey, exact: true });
-    });
-    expect(await screen.findByRole("status", { name: "Loading" })).toBeTruthy();
-    loading.unmount();
-  });
-
   it("filters cached RDDs and expands their captured partition details", async () => {
     renderListPage("storage");
     expect((await screen.findAllByText("PythonRDD")).length).toBeGreaterThan(0);

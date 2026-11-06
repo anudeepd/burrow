@@ -3,12 +3,19 @@
 globalThis.__zod_globalConfig = { ...globalThis.__zod_globalConfig, jitless: true };
 
 (() => {
+  const el = document.documentElement;
+  const updateFavicons = (theme) => {
+    for (const icon of document.querySelectorAll('link[data-dark-href][data-light-href]')) {
+      const href = theme === "light" ? icon.getAttribute("data-light-href") : icon.getAttribute("data-dark-href");
+      if (href && icon.getAttribute("href") !== href) icon.setAttribute("href", href);
+    }
+  };
   try {
     const p = JSON.parse(localStorage.getItem("burrow.prefs.v1") || "{}");
-    const el = document.documentElement;
     let theme = p.theme || "system";
     if (theme === "system") theme = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
     el.setAttribute("data-theme", theme);
+    updateFavicons(theme);
     if (p.motion === "reduced") el.setAttribute("data-motion", "reduced");
     // RootDocument mirrors pre-paint attributes during hydration; prefs.ts keeps them in sync with storage afterward.
     if (p.railCollapsed === true) el.setAttribute("data-rail-collapsed", "true");

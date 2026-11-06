@@ -103,6 +103,8 @@ export function QueueTree({
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
       <DataTable
         data={rows}
+        contentIdentity={partition}
+        initialContentFade={false}
         columns={columns}
         getRowId={(r) => r.node.id}
         entityKey={(r) => r.node.id}

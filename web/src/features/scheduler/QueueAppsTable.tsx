@@ -165,6 +165,7 @@ const COLS: ColDef<App>[] = [
 
 export function QueueAppsTable({
   apps,
+  contentIdentity,
   loading,
   error,
   sorting,
@@ -175,6 +176,7 @@ export function QueueAppsTable({
   stableViewport = false,
 }: {
   apps: App[];
+  contentIdentity?: string;
   loading?: boolean;
   error?: React.ReactNode;
   sorting: SortingState;
@@ -186,8 +188,10 @@ export function QueueAppsTable({
 }) {
   return (
     <DataTable
-      className={className ?? (stableViewport ? "h-[min(34dvh,360px)]" : undefined)}
+      className={className}
       data={apps}
+      contentIdentity={contentIdentity}
+      initialContentFade={false}
       columns={COLS}
       getRowId={(a) => a.id}
       entityKey={(a) => a.id}

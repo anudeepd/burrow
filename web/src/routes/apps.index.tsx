@@ -17,7 +17,7 @@ function AppsRoute() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const patch = (p: Partial<AppsSearch>) => {
-    void navigate({ to: "/apps", search: (prev: AppsSearch) => withPatch(prev, p), replace: true });
+    void navigate({ to: "/apps", search: (prev: AppsSearch) => withPatch(prev, p), replace: true, resetScroll: false });
   };
   return (
     <AppsPage

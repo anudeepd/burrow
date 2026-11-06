@@ -605,7 +605,7 @@ describe("overview sections", () => {
       />,
     );
     expect(await screen.findByRole("heading", { name: "Needs attention" })).toBeTruthy();
-    expect(screen.getByText("ResourceManager unreachable")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "ResourceManager unreachable" }).getAttribute("href")).toBe("#overview-cluster-identity");
     expect(screen.getByText("Spark History unreachable")).toBeTruthy();
     expect(screen.getByText("Timeline Service unreachable")).toBeTruthy();
     expect(screen.getByRole("link", { name: "1 unhealthy node" })).toBeTruthy();
@@ -640,6 +640,27 @@ describe("overview sections", () => {
     renderOverview(<OverviewAttentionSummary metrics={undefined} metricsPending metricsError={false} />, false);
     expect(await screen.findByRole("status", { name: "Loading cluster attention summary" })).toBeTruthy();
   });
+  it("shows an incomplete summary when metrics and metadata are unavailable", async () => {
+    const { client } = renderOverview(
+      <OverviewAttentionSummary metrics={undefined} metricsPending={false} metricsError />,
+      false,
+    );
+    await waitFor(() => expect(client.getQueryCache().find({ queryKey: ov.meta().queryKey })).toBeDefined());
+    const metaQuery = client.getQueryCache().find({ queryKey: ov.meta().queryKey })!;
+    metaQuery.setState({
+      ...metaQuery.state,
+      data: undefined,
+      status: "error",
+      error: new Error("cluster metadata unavailable"),
+      errorUpdatedAt: Date.now(),
+      errorUpdateCount: metaQuery.state.errorUpdateCount + 1,
+    });
+    expect(await screen.findByRole("heading", { name: "Status summary incomplete" })).toBeTruthy();
+    expect(screen.getByText(/could not be confirmed/)).toBeTruthy();
+    expect(screen.queryByRole("list", { name: "Reported conditions" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Needs attention" })).toBeNull();
+  });
+
 
   it("summarizes a healthy cluster and flags unprobed configured services as incomplete", async () => {
     const { client } = renderOverview(

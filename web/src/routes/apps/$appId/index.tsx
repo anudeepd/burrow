@@ -21,5 +21,12 @@ function AppOverview() {
   const currentAttempt = useQuery({ ...q.appAttemptDetail(appId, current?.appAttemptId ?? ""), enabled: needsAttemptTracking });
 
   // The /apps/$appId layout renders this route only after the same app query has a payload.
-  return <OverviewTab app={app.data!} attempts={attemptList} attemptTrackingUrl={currentAttempt.data?.trackingUrl} />;
+  return (
+    <OverviewTab
+      app={app.data!}
+      attempts={attemptList}
+      attemptsLoading={attempts.isPending}
+      attemptTrackingUrl={currentAttempt.data?.trackingUrl}
+    />
+  );
 }

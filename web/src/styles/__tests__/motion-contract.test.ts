@@ -108,11 +108,13 @@ describe("token contract", () => {
     expect(parity).toMatch(/--dur-fade:\s*0ms/);
     expect(parity).toMatch(/--dur-content:\s*0ms/);
     expect(reduced).toMatch(/--dur-base:\s*0ms/);
+    expect(reduced).toMatch(/--dur-page:\s*0ms/);
     expect(parity).toMatch(/--dur-base:\s*0ms/);
+    expect(parity).toMatch(/--dur-page:\s*0ms/);
   });
 
   it("defines every duration a component may name", () => {
-    for (const token of ["--dur-instant", "--dur-fade", "--dur-content", "--dur-fast", "--dur-base", "--dur-slow", "--dur-sheet", "--dur-tween", "--dur-flash"]) {
+    for (const token of ["--dur-instant", "--dur-fade", "--dur-content", "--dur-fast", "--dur-base", "--dur-slow", "--dur-page", "--dur-sheet", "--dur-tween", "--dur-flash"]) {
       expect(tokens, token).toContain(token);
     }
   });

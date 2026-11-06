@@ -13,7 +13,7 @@ import { fmtClock, fmtMB } from "~/lib/format";
 import { utilizationTone } from "~/lib/progress-tone";
 import { usePref } from "~/state/prefs";
 import { DataTable } from "~/ui/data-table/data-table";
-import { CenteredPageState, EmptyState, ErrorState, StaleErrorBanner } from "~/ui/feedback";
+import { CenteredPageState, EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { ProgressBar } from "~/ui/progress-bar";
 import { Select } from "~/ui/select";
 import { StatusDot } from "~/ui/status";
@@ -54,7 +54,7 @@ export function NodesPage() {
   const anyUnlabelled = useMemo(() => (nodes ?? []).some((n) => (n.nodeLabels ?? []).length === 0), [nodes]);
 
   const setSearch = (patch: Partial<typeof search>) => {
-    void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+    void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
   };
   const sorting = useMemo(() => parseSort(search.sort), [search.sort]);
   const visibility = useMemo(() => {
@@ -72,7 +72,7 @@ export function NodesPage() {
   const vcorePct = summary.vcoresTotal > 0 ? (summary.vcoresUsed / summary.vcoresTotal) * 100 : 0;
 
   return (
-    <div className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6">
+    <div data-page-motion="content" className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6">
       <PageHead
         title="Nodes"
         description="Review node health, resource capacity, and utilization across the cluster."
@@ -80,7 +80,7 @@ export function NodesPage() {
           <>
             <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-small leading-none text-ink-3">
               <StatusDot domain="service" state={paused ? "unconfigured" : "reachable"} label={false} />
-              {paused ? "live paused" : stale ? "stale" : `updated ${fmtClock(dataUpdatedAt)}`}
+              {paused ? "live paused" : isPending ? "reading…" : stale ? "stale" : `updated ${fmtClock(dataUpdatedAt)}`}
             </span>
             <Segmented
               label="View"
@@ -119,22 +119,29 @@ export function NodesPage() {
           {error && (
             <StaleErrorBanner title="Node list refresh failed; showing the last loaded rows" error={error} onRetry={() => void refetch()} />
           )}
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" data-page-motion="cards">
+          <TabContent
+            initial={!isPending}
+            value={isPending ? "pending" : "ready"}
+            className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5"
+          >
             <Stat
               label="Running"
+              loading={isPending}
               value={<Ticker value={summary.running} />}
               sub={`of ${summary.total} nodes`}
               tone={summary.running > 0 ? "ok" : "fail"}
             />
             <Stat
               label="Unhealthy"
+              loading={isPending}
               value={<Ticker value={summary.unhealthy} />}
               sub={summary.lost > 0 ? `${summary.lost} lost` : "health checks passing"}
               tone={summary.unhealthy > 0 ? "warn" : undefined}
             />
-            <Stat label="Containers" value={<Ticker value={summary.containers} />} sub="allocated on all nodes" />
+            <Stat label="Containers" loading={isPending} value={<Ticker value={summary.containers} />} sub="allocated on all nodes" />
             <Stat
               label="Memory"
+              loading={isPending}
               value={
                 <span className="flex items-baseline gap-1">
                   {fmtMB(summary.memUsedMB)}
@@ -145,6 +152,7 @@ export function NodesPage() {
             />
             <Stat
               label="vCores"
+              loading={isPending}
               value={
                 <span className="flex items-baseline gap-1">
                   <Ticker value={summary.vcoresUsed} />
@@ -153,21 +161,31 @@ export function NodesPage() {
               }
               sub={<ProgressBar percent={vcorePct} label="Cluster vCores used" tone={utilizationTone(vcorePct)} className="mt-1" />}
             />
-          </div>
+          </TabContent>
 
-          <TabsRoot value={tab} onValueChange={(v) => setSearch({ state: v as NodeStateTab })}>
+          <TabsRoot
+            data-page-motion="content"
+            aria-busy={isPending}
+            value={tab}
+            onValueChange={(v) => setSearch({ state: v as NodeStateTab })}
+          >
             <TabsList label="Node state filter" overflowFade>
               {NODE_STATE_TABS.map((t) => (
-                <Tab key={t.id} value={t.id} badge={countByTab(nodes ?? [], t.id)} field={`node.state.${t.id}`}>
+                <Tab
+                  key={t.id}
+                  value={t.id}
+                  badge={isPending ? <Skeleton className="h-[1em] w-3" /> : countByTab(nodes!, t.id)}
+                  field={`node.state.${t.id}`}
+                >
                   {t.label}
                 </Tab>
               ))}
             </TabsList>
           </TabsRoot>
 
-          <TabContent value={tab} className="flex shrink-0 flex-col gap-4">
+          <div data-page-motion="content" className="flex shrink-0 flex-col gap-4">
             <div className="grid shrink-0 grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-              <TabContent value={view} className="flex min-h-0 flex-col gap-3">
+              <div className="flex min-h-0 flex-col gap-3">
                 {view === "table" ? (
                   <DataTable
                     data={filtered}
@@ -184,6 +202,7 @@ export function NodesPage() {
                     rowVersion={nodeRowVersion}
                     onRowActivate={(n) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: n.id } })}
                     loading={isPending}
+                    contentIdentity={`nodes:${tab}:${search.label ?? ""}:${search.rack ?? ""}`}
                     totalCount={byTab.length}
                     exportName="nodes"
                     toolbar={
@@ -235,19 +254,33 @@ export function NodesPage() {
                         Widen the state tab, or clear the label, rack and text filters.
                       </EmptyState>
                     }
-                    className="min-h-[24rem] max-h-[min(52dvh,520px)]"
+                    className="min-h-[24rem]"
                   />
                 ) : (
-                  <RackHeatmap
-                    nodes={filtered}
-                    selected={search.sel}
-                    onSelect={(n) => setSearch({ sel: n.id })}
-                    onOpen={(n) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: n.id } })}
-                  />
+                  <TabContent
+                    initial={!isPending}
+                    value={`heatmap:${isPending ? "pending" : "ready"}:${tab}:${search.label ?? ""}:${search.rack ?? ""}`}
+                  >
+                    {isPending ? (
+                      <Skeleton className="h-72 w-full" />
+                    ) : (
+                      <RackHeatmap
+                        nodes={filtered}
+                        selected={search.sel}
+                        onSelect={(n) => setSearch({ sel: n.id })}
+                        onOpen={(n) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: n.id } })}
+                      />
+                    )}
+                  </TabContent>
                 )}
-              </TabContent>
+              </div>
 
-              <TopConsumers nodes={byTab} onOpen={(n) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: n.id } })} />
+              <TopConsumers
+                nodes={byTab}
+                loading={isPending}
+                contentIdentity={`nodes:${tab}`}
+                onOpen={(n) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: n.id } })}
+              />
             </div>
 
             {view === "heatmap" && (
@@ -257,7 +290,7 @@ export function NodesPage() {
                 hint="Click a cell to select it; press Enter to open the node."
               />
             )}
-          </TabContent>
+          </div>
         </>
       )}
     </div>

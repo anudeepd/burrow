@@ -149,6 +149,24 @@ for (const [name, path, marker] of routes) {
   });
 }
 
+test("application section navigation stays level as descriptions and content change", async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto(`/apps/${APP}/logs?container=${logContainer}&file=stderr`);
+    await expect(page.getByRole("log")).toBeVisible();
+    const navigation = page.getByRole("navigation", { name: "Application sections" });
+    const baseline = await navigation.evaluate((element) => element.getBoundingClientRect().y);
+
+    for (const section of ["Spark", "Attempts", "Overview", "Logs"]) {
+      const link = navigation.getByRole("link", { name: section, exact: true });
+      await link.click();
+      await expect(link).toHaveAttribute("aria-current", "page");
+      const position = await navigation.evaluate((element) => element.getBoundingClientRect().y);
+      expect(Math.abs(position - baseline), `${width}px ${section} navigation position`).toBeLessThan(1);
+    }
+  }
+});
+
 test("375px Timeline zoom controls meet the 44px hit-area minimum", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(`/apps/${SPARK}/spark/timeline`);
@@ -421,7 +439,6 @@ test("clearing Nodes filters cancels an uncommitted search draft", async ({ page
 test("phone Spark jobs show the first job row without scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(`/apps/${SPARK_DAG}/spark/jobs`);
-  await expect(page.locator('[data-burrow-app-header="spark"] [data-burrow-app-header-secondary]').first()).toBeHidden();
   await expect(page.locator("[data-burrow-app-header-id]")).toBeVisible();
   await expect(page.getByRole("button", { name: "Copy application ID to clipboard" })).toBeVisible();
 
@@ -449,7 +466,6 @@ test("phone scheduler, node, and Spark row controls expose touch-sized targets",
 test("phone Spark failures keep raw diagnostics wrapped and collapsed", async ({ page }) => {
   await page.goto("/apps/application_1791010000001_0099/spark/jobs");
   await expect(page.getByRole("heading", { name: "No Spark data source for this application" })).toBeVisible();
-  await expect(page.locator('[data-burrow="spark-affordance"]')).toHaveCount(0);
   const details = page.locator('[role="alert"] details');
   await expect(details.locator("summary")).toHaveText("Technical details");
   const messageWidths = await page

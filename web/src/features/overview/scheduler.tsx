@@ -16,6 +16,7 @@ import type { ColDef } from "~/ui/data-table/features";
 import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { ProgressBar } from "~/ui/progress-bar";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { HelpTip, Tooltip } from "~/ui/tooltip";
 import { useParity } from "~/state/parity";
 import { pressureTone } from "~/lib/progress-tone";
@@ -360,111 +361,113 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
             onRetry={() => void confQ.refetch()}
           />
         ))}
-      <Entity id={SINGLETON} className="burrow-overview-row-grid burrow-overview-row-grid--scheduler">
-        <Cell label="Scheduler Type">
-          {nameText ? (
-            <span className="flex min-w-0 items-center">
-              {info?.type && <Datum field="scheduler.type" raw={info.type} fmt="text" className="sr-only" aria-hidden="true" />}
-              <Datum field="scheduler.derived.schedulerName" raw={nameText} fmt="text" className="font-medium">
-                {nameText}
+      <TabContent value="scheduler-facts" initial>
+        <Entity id={SINGLETON} className="burrow-overview-row-grid burrow-overview-row-grid--scheduler">
+          <Cell label="Scheduler Type">
+            {nameText ? (
+              <span className="flex min-w-0 items-center">
+                {info?.type && <Datum field="scheduler.type" raw={info.type} fmt="text" className="sr-only" aria-hidden="true" />}
+                <Datum field="scheduler.derived.schedulerName" raw={nameText} fmt="text" className="font-medium">
+                  {nameText}
+                </Datum>
+                {info?.type && (
+                  <HelpTip label="YARN API type" className="ml-1 size-4">
+                    {info.type}
+                  </HelpTip>
+                )}
+              </span>
+            ) : (
+              <Unavailable variant="info" reason="scheduler type not reported" />
+            )}
+          </Cell>
+
+          <Cell label="Scheduling Resource Type">
+            {typesText ? (
+              <Datum field="scheduler.derived.schedulingResourceTypes" raw={typesText} fmt="text" className="mono text-body">
+                {typesText}
               </Datum>
-              {info?.type && (
-                <HelpTip label="YARN API type" className="ml-1 size-4">
-                  {info.type}
-                </HelpTip>
+            ) : (
+              <Tooltip label="Resource types were not reported.">
+                <Datum
+                  field="scheduler.derived.schedulingResourceTypes"
+                  raw={null}
+                  fmt="text"
+                  className="mono text-body text-ink-3"
+                  tabIndex={0}
+                >
+                  n/a
+                </Datum>
+              </Tooltip>
+            )}
+          </Cell>
+
+          <Cell label="Minimum Allocation">
+            <Datum field="scheduler.derived.minAllocationText" raw={minText} fmt="text" className={parity ? "mono" : "tnum"}>
+              {minText == null ? <Unavailable variant="info" reason="Minimum allocation was not reported." /> : minDisplayText}
+            </Datum>
+          </Cell>
+
+          <Cell label="Maximum Allocation">
+            <Datum field="scheduler.derived.maxAllocationText" raw={maxText} fmt="text" className={parity ? "mono" : "tnum"}>
+              {maxText == null ? <Unavailable variant="info" reason="Maximum allocation was not reported." /> : maxDisplayText}
+            </Datum>
+          </Cell>
+
+          <Cell label="Maximum Cluster Application Priority">
+            {priority != null ? (
+              <Datum field="scheduler.derived.maximumClusterPriority" raw={priority} fmt="int" className="mono" />
+            ) : (
+              <Datum field="scheduler.derived.maximumClusterPriority" raw={null} fmt="int" className="mono">
+                <Unavailable variant="info" reason="Application priority was not reported." />
+              </Datum>
+            )}
+          </Cell>
+
+          <Cell label="Scheduler Busy %">
+            <Datum field="cluster.metrics.rmSchedulerBusyPercent" raw={busy} fmt="pct" className="mono">
+              {busy == null ? (
+                <Unavailable variant="info" reason={metricsUnavailableReason ?? "Scheduler load was not reported."} />
+              ) : (
+                fmtPct(busy)
               )}
-            </span>
-          ) : (
-            <Unavailable variant="info" reason="scheduler type not reported" />
-          )}
-        </Cell>
-
-        <Cell label="Scheduling Resource Type">
-          {typesText ? (
-            <Datum field="scheduler.derived.schedulingResourceTypes" raw={typesText} fmt="text" className="mono text-body">
-              {typesText}
             </Datum>
-          ) : (
-            <Tooltip label="Resource types were not reported.">
-              <Datum
-                field="scheduler.derived.schedulingResourceTypes"
-                raw={null}
-                fmt="text"
-                className="mono text-body text-ink-3"
-                tabIndex={0}
-              >
-                n/a
-              </Datum>
-            </Tooltip>
-          )}
-        </Cell>
+          </Cell>
 
-        <Cell label="Minimum Allocation">
-          <Datum field="scheduler.derived.minAllocationText" raw={minText} fmt="text" className={parity ? "mono" : "tnum"}>
-            {minText == null ? <Unavailable variant="info" reason="Minimum allocation was not reported." /> : minDisplayText}
-          </Datum>
-        </Cell>
-
-        <Cell label="Maximum Allocation">
-          <Datum field="scheduler.derived.maxAllocationText" raw={maxText} fmt="text" className={parity ? "mono" : "tnum"}>
-            {maxText == null ? <Unavailable variant="info" reason="Maximum allocation was not reported." /> : maxDisplayText}
-          </Datum>
-        </Cell>
-
-        <Cell label="Maximum Cluster Application Priority">
-          {priority != null ? (
-            <Datum field="scheduler.derived.maximumClusterPriority" raw={priority} fmt="int" className="mono" />
-          ) : (
-            <Datum field="scheduler.derived.maximumClusterPriority" raw={null} fmt="int" className="mono">
-              <Unavailable variant="info" reason="Application priority was not reported." />
+          <Cell label="RM Dispatcher EventQueue Size">
+            <Datum field="cluster.metrics.rmEventQueueSize" raw={rmQueue} fmt="int" className="mono">
+              {rmQueue == null ? (
+                <Unavailable variant="info" reason={metricsUnavailableReason ?? "Queue activity was not reported."} />
+              ) : (
+                fmtInt(rmQueue)
+              )}
             </Datum>
+          </Cell>
+
+          <Cell label="Scheduler Dispatcher EventQueue Size">
+            <Datum field="cluster.metrics.schedulerEventQueueSize" raw={schedulerQueue} fmt="int" className="mono">
+              {schedulerQueue == null ? (
+                <Unavailable variant="info" reason={metricsUnavailableReason ?? "Queue activity was not reported."} />
+              ) : (
+                fmtInt(schedulerQueue)
+              )}
+            </Datum>
+          </Cell>
+
+          {missing && (
+            <div className="col-span-full flex flex-wrap items-center gap-2">
+              <Unavailable reason={why!} />
+              <CrossLink href="/scheduler" className="text-small text-live hover:underline">
+                Full scheduler view →
+              </CrossLink>
+            </div>
           )}
-        </Cell>
-
-        <Cell label="Scheduler Busy %">
-          <Datum field="cluster.metrics.rmSchedulerBusyPercent" raw={busy} fmt="pct" className="mono">
-            {busy == null ? (
-              <Unavailable variant="info" reason={metricsUnavailableReason ?? "Scheduler load was not reported."} />
-            ) : (
-              fmtPct(busy)
-            )}
-          </Datum>
-        </Cell>
-
-        <Cell label="RM Dispatcher EventQueue Size">
-          <Datum field="cluster.metrics.rmEventQueueSize" raw={rmQueue} fmt="int" className="mono">
-            {rmQueue == null ? (
-              <Unavailable variant="info" reason={metricsUnavailableReason ?? "Queue activity was not reported."} />
-            ) : (
-              fmtInt(rmQueue)
-            )}
-          </Datum>
-        </Cell>
-
-        <Cell label="Scheduler Dispatcher EventQueue Size">
-          <Datum field="cluster.metrics.schedulerEventQueueSize" raw={schedulerQueue} fmt="int" className="mono">
-            {schedulerQueue == null ? (
-              <Unavailable variant="info" reason={metricsUnavailableReason ?? "Queue activity was not reported."} />
-            ) : (
-              fmtInt(schedulerQueue)
-            )}
-          </Datum>
-        </Cell>
-
-        {missing && (
-          <div className="col-span-full flex flex-wrap items-center gap-2">
-            <Unavailable reason={why!} />
-            <CrossLink href="/scheduler" className="text-small text-live hover:underline">
-              Full scheduler view →
-            </CrossLink>
-          </div>
-        )}
-        {stale && (
-          <div className="col-span-full">
-            <Unavailable variant="info" reason="upstream served stale cache" />
-          </div>
-        )}
-      </Entity>
+          {stale && (
+            <div className="col-span-full">
+              <Unavailable variant="info" reason="upstream served stale cache" />
+            </div>
+          )}
+        </Entity>
+      </TabContent>
 
       {collapseQueueTable ? (
         <details className="burrow-overview-disclosure overflow-hidden rounded-md border border-seam-soft bg-well">

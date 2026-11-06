@@ -30,7 +30,7 @@ const nodeDetailResponse = readJson("node-127.0.0.2_8041.json") as { node: Node 
 const detailNode = nodeDetailResponse.node;
 const detailNodeAddress = detailNode.nodeHTTPAddress ?? "";
 
-function renderNodeRoute(page: "nodes" | "labels", search = "") {
+function renderNodeRoute(page: "nodes" | "labels", search = "", seedNodes = true) {
   const root = createRootRoute();
   const route =
     page === "nodes"
@@ -49,7 +49,7 @@ function renderNodeRoute(page: "nodes" | "labels", search = "") {
     history: createMemoryHistory({ initialEntries: [`${page === "nodes" ? "/nodes/" : "/node-labels"}${search}`] }),
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
-  client.setQueryData(nq.nodes().queryKey, nodesResponse);
+  if (seedNodes) client.setQueryData(nq.nodes().queryKey, nodesResponse);
   client.setQueryData(nq.nodeLabels().queryKey, nodeLabelsResponse);
   return {
     ...render(
@@ -115,6 +115,29 @@ describe("node pages", () => {
     expect(screen.getAllByText("Unhealthy").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/127\.0\.0\.2/).length).toBeGreaterThan(0);
   });
+
+  it("shows pending badges and heatmap skeletons until the node list loads", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
+    const { client } = renderNodeRoute("nodes", "?view=heatmap", false);
+    await screen.findByRole("heading", { name: "Nodes" });
+
+    expect(screen.getByRole("tab", { name: /Running/ }).querySelector(".burrow-skeleton")).toBeTruthy();
+    const tabList = screen.getByRole("tablist", { name: "Node state filter" });
+    expect(tabList.closest('[data-page-motion="content"]')?.getAttribute("aria-busy")).toBe("true");
+    expect(document.querySelector(".burrow-skeleton.h-72")).not.toBeNull();
+    expect(screen.queryByRole("heading", { name: "/default-rack" })).toBeNull();
+
+    act(() => client.setQueryData(nq.nodes().queryKey, nodesResponse));
+    expect(await screen.findByRole("heading", { name: "/rack1" })).toBeTruthy();
+  });
+  it("shows loaded node counts in state-tab badges", async () => {
+    renderNodeRoute("nodes");
+    await screen.findByRole("table", { name: "Cluster nodes" });
+    const runningTab = screen.getByRole("tab", { name: /Running/ });
+    expect(runningTab.querySelector(".burrow-skeleton")).toBeNull();
+    expect(runningTab.textContent).toMatch(/Running\s*\d+/);
+  });
+
 
   it("switches node views, filters state, selects a rack cell, and opens a node row", async () => {
     const { router } = renderNodeRoute("nodes");
@@ -281,7 +304,7 @@ describe("node pages", () => {
 
   it("derives the default label and renders its node mapping view", async () => {
     const { router } = renderNodeRoute("labels", "?open=gpu");
-    expect(await screen.findByRole("table", { name: "Node labels" })).toBeTruthy();
+    const catalogue = await screen.findByRole("table", { name: "Node labels" });
     expect(screen.getByText("<DEFAULT_PARTITION>")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Nodes in gpu" })).toBeTruthy();
     fireEvent.click(screen.getByRole("row", { name: /gpu/ }));
@@ -292,6 +315,10 @@ describe("node pages", () => {
       fireEvent.click(mapping.querySelector(`[data-col="${column}"] button`)!);
       await waitFor(() => expect(router.state.location.search.mappingSort).toContain(`${column}:`));
     }
+    fireEvent.click(screen.getByRole("button", { name: "Label catalogue" }));
+    expect(await screen.findByRole("table", { name: "Node labels" })).toBe(catalogue);
+    fireEvent.click(screen.getByRole("button", { name: "Node to label mapping" }));
+    expect(await screen.findByRole("table", { name: "Node to label mapping" })).toBe(mapping);
   });
 
   it("opens default and empty label partitions with their documented fallbacks", async () => {
@@ -384,6 +411,9 @@ describe("node pages", () => {
       errorUpdateCount: missingLabels.state.errorUpdateCount + 1,
     });
     expect(await screen.findByRole("heading", { name: "Cannot read the node labels" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Node labels" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Label catalogue" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Node to label mapping" })).toBeTruthy();
     act(() => {
       missingLabels.setState({
         ...missingLabels.state,
@@ -500,7 +530,7 @@ describe("node pages", () => {
 
     fireEvent.change(screen.getByPlaceholderText("host, rack, label…"), { target: { value: "no-such-node" } });
     await waitFor(() => expect(router.state.location.search.q).toBe("no-such-node"));
-    expect(await screen.findByText("Clear the search box.")).toBeTruthy();
+    await waitFor(() => expect(within(table).queryAllByRole("checkbox")).toEqual([]));
     fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
     await waitFor(() => expect(router.state.location.search.q).toBeUndefined());
   });
@@ -700,6 +730,14 @@ describe("node pages", () => {
       });
     });
     expect(await screen.findByText("node manager failed")).toBeTruthy();
+  });
+
+  it("marks container summaries as loading while the NodeManager list is pending", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
+    renderNodeDetail(true, { omitContainers: true });
+    expect(await screen.findByLabelText("Node details")).toBeTruthy();
+    const containerMemory = screen.getByText("Listed container memory");
+    expect(containerMemory.closest('[aria-busy="true"]')).toBeTruthy();
   });
 
   it("shows NodeManager loading while its metadata query is pending", async () => {

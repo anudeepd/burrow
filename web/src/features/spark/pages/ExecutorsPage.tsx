@@ -21,13 +21,14 @@ import { usePref } from "~/state/prefs";
 import { DataTable } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
 import { Datum, Entity } from "~/ui/datum";
+import { TabContent } from "~/ui/tabs";
 import { Switch } from "~/ui/toggles";
 import { parseSparkTime } from "../data/format";
 import { sp } from "../data/queries";
 import type { SparkExecutor } from "../data/schemas";
 import { boolParam, compact, matchesQuery, parseColumns, parseSort, serializeColumns, serializeSort } from "../data/search";
 import { Metric, MetricStrip, PageHeader } from "../ui/PageHeader";
-import { SparkEmpty, SparkFailureState, SparkLoading, SparkStaleErrorBanner } from "../ui/StateViews";
+import { SparkEmpty, SparkFailureState, SparkStaleErrorBanner } from "../ui/StateViews";
 import { useSpark } from "../ui/context";
 import { OptionalTooltip } from "~/ui/tooltip";
 
@@ -84,7 +85,7 @@ export function ExecutorsPage() {
 
   const sorting = parseSort(search);
   const columnVisibility = parseColumns(search);
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   const totalCores = sumOf(executors, (e) => e.totalCores);
   const activeCount = executors.filter((e) => e.isActive === true).length;
@@ -534,7 +535,7 @@ export function ExecutorsPage() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-3">
       <PageHeader title="Executors" hideTitle>
         <div className="flex items-center gap-2 text-small text-ink-3">
           <Switch checked={includeDead} onCheckedChange={(v) => patch({ all: v ? "1" : undefined })} label="Include dead executors" />
@@ -553,72 +554,78 @@ export function ExecutorsPage() {
       </PageHeader>
 
       {!qExecutors.isPending && !qExecutors.error && executors.length > 0 && (
-        <Entity id="_" className="shrink-0">
-          <MetricStrip>
-            <Metric label={includeDead ? "Executors (incl. dead)" : "Live executors"}>
-              <Datum field="spark.executor.derived.count" raw={executors.length} fmt="int" />
-            </Metric>
-            <Metric label="Active executors">
-              <Datum field="spark.executor.derived.activeCount" raw={activeCount} fmt="int" />
-            </Metric>
-            <Metric label="Total cores">
-              <Datum field="spark.executor.derived.totalCoresSum" raw={totalCores} fmt="int" />
-            </Metric>
-            <Metric label="Memory used">
-              <Datum field="spark.executor.derived.memoryUsedSum" raw={memoryUsed} fmt="bytes" />
-            </Metric>
-            <Metric label="Shuffle read / write">
-              <Datum field="spark.executor.derived.totalShuffleReadSum" raw={shuffleRead} fmt="bytes" />
-              {" / "}
-              <Datum field="spark.executor.derived.totalShuffleWriteSum" raw={shuffleWrite} fmt="bytes" />
-            </Metric>
-          </MetricStrip>
-        </Entity>
+        <TabContent initial value={JSON.stringify([appId, attempt, includeDead])} className="shrink-0">
+          <Entity id="_" className="shrink-0">
+            <MetricStrip>
+              <Metric label={includeDead ? "Executors (incl. dead)" : "Live executors"}>
+                <Datum field="spark.executor.derived.count" raw={executors.length} fmt="int" />
+              </Metric>
+              <Metric label="Active executors">
+                <Datum field="spark.executor.derived.activeCount" raw={activeCount} fmt="int" />
+              </Metric>
+              <Metric label="Total cores">
+                <Datum field="spark.executor.derived.totalCoresSum" raw={totalCores} fmt="int" />
+              </Metric>
+              <Metric label="Memory used">
+                <Datum field="spark.executor.derived.memoryUsedSum" raw={memoryUsed} fmt="bytes" />
+              </Metric>
+              <Metric label="Shuffle read / write">
+                <Datum field="spark.executor.derived.totalShuffleReadSum" raw={shuffleRead} fmt="bytes" />
+                {" / "}
+                <Datum field="spark.executor.derived.totalShuffleWriteSum" raw={shuffleWrite} fmt="bytes" />
+              </Metric>
+            </MetricStrip>
+          </Entity>
+        </TabContent>
       )}
 
       {qExecutors.error && qExecutors.data !== undefined && (
         <SparkStaleErrorBanner error={qExecutors.error} subject="the executor list" onRetry={() => void qExecutors.refetch()} />
       )}
-      {qExecutors.isPending ? (
-        <SparkLoading rows={6} cols={10} />
-      ) : qExecutors.error && qExecutors.data === undefined ? (
-        <SparkFailureState error={qExecutors.error} subject="the executor list" onRetry={() => void qExecutors.refetch()} />
-      ) : executors.length === 0 ? (
-        <SparkEmpty title="No executors reported">
-          {includeDead
-            ? "Spark knows no executor for this application yet."
-            : "Turn on “Include dead executors” to see executors Spark has already removed."}
-        </SparkEmpty>
-      ) : (
-        <DataTable<SparkExecutor>
-          className="min-h-[24rem]"
-          data={filtering}
-          columns={columns}
-          getRowId={(e) => e.id}
-          entityKey={(e) => e.id}
-          label="Spark executors"
-          storageKey="spark-executors"
-          sorting={sorting}
-          onSortingChange={(s: SortingState) => patch(serializeSort(s))}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
-          defaultVisibility={DEFAULT_VISIBILITY}
-          rowVersion={(e) => `${e.isActive}:${e.activeTasks ?? 0}:${e.memoryUsed ?? 0}`}
-          totalCount={executors.length}
-          exportName={`spark-executors-${appId}`}
-          toolbar={
-            <span className="text-small text-ink-4">
-              {filtering.length === executors.length ? (
-                <>{fmtInt(executors.length)} shown</>
-              ) : (
-                <>
-                  {fmtInt(filtering.length)} of {fmtInt(executors.length)}
-                </>
-              )}
-            </span>
-          }
-        />
-      )}
+      <DataTable<SparkExecutor>
+        loading={qExecutors.isPending}
+        contentIdentity={JSON.stringify([appId, attempt, includeDead])}
+        error={
+          qExecutors.error && qExecutors.data === undefined ? (
+            <SparkFailureState error={qExecutors.error} subject="the executor list" onRetry={() => void qExecutors.refetch()} />
+          ) : undefined
+        }
+        empty={
+          executors.length === 0 ? (
+            <SparkEmpty title="No executors reported">
+              {includeDead
+                ? "Spark knows no executor for this application yet."
+                : "Turn on “Include dead executors” to see executors Spark has already removed."}
+            </SparkEmpty>
+          ) : undefined
+        }
+        className="min-h-[24rem]"
+        data={filtering}
+        columns={columns}
+        getRowId={(e) => e.id}
+        entityKey={(e) => e.id}
+        label="Spark executors"
+        storageKey="spark-executors"
+        sorting={sorting}
+        onSortingChange={(s: SortingState) => patch(serializeSort(s))}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
+        defaultVisibility={DEFAULT_VISIBILITY}
+        rowVersion={(e) => `${e.isActive}:${e.activeTasks ?? 0}:${e.memoryUsed ?? 0}`}
+        totalCount={executors.length}
+        exportName={`spark-executors-${appId}`}
+        toolbar={
+          <span className="text-small text-ink-4">
+            {filtering.length === executors.length ? (
+              <>{fmtInt(executors.length)} shown</>
+            ) : (
+              <>
+                {fmtInt(filtering.length)} of {fmtInt(executors.length)}
+              </>
+            )}
+          </span>
+        }
+      />
     </div>
   );
 }

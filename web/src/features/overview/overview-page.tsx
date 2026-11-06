@@ -46,14 +46,14 @@ function OverviewGroup({
   children: ReactNode;
 }) {
   return (
-    <section aria-labelledby={`${id}-title`} className="burrow-overview-group">
+    <div aria-labelledby={`${id}-title`} className="burrow-overview-group" data-page-motion="content">
       <h2 id={`${id}-title`} className="burrow-overview-group-title text-h2">
         {title}
       </h2>
-      <div className={`burrow-overview-group-grid burrow-overview-group-grid--${layout}`} data-page-motion="cards">
+      <div className={`burrow-overview-group-grid burrow-overview-group-grid--${layout}`} data-page-motion="content">
         {children}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -99,7 +99,7 @@ export function OverviewPage({
     // Without this wrapper the overview — the tallest page in the product — was clipped at the viewport with no
     // scrollbar. The shell already renders the page's <main>, so this is a plain div, not a second one.
     <div className="burrow-scroll burrow-page-scroll burrow-overview-page min-h-0 flex-1 overflow-y-auto pb-6" data-testid="overview">
-      <div className="burrow-overview-content mx-auto flex w-full max-w-[1560px] flex-col gap-5">
+      <div className="burrow-overview-content mx-auto flex w-full max-w-[1560px] flex-col gap-5" data-page-motion="content">
         <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-seam pb-5">
           <div>
             <h1 className="text-h1 font-semibold text-ink">{isPre ? "Cluster overview" : "Overview"}</h1>

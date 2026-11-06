@@ -164,6 +164,7 @@ export function SchedulerPage({
 
   return (
     <div
+      data-page-motion="content"
       className={cn(
         "burrow-scroll burrow-page-scroll burrow-page-scroll--stable flex min-h-0 flex-1 flex-col overflow-y-auto",
         tab !== "conf" && "[&>*]:shrink-0",
@@ -197,6 +198,7 @@ export function SchedulerPage({
       />
 
       <TabsRoot
+        data-page-motion="content"
         value={tab}
         onValueChange={(v) => patch({ tab: v as SchedulerSearch["tab"] })}
         className={cn("mt-3 flex min-w-0 flex-col", tab === "conf" ? "min-h-0 flex-1" : "shrink-0")}
@@ -308,6 +310,7 @@ export function SchedulerPage({
                     actions={<span className="text-small text-ink-3 tnum">{users.filter((r) => r.user.isActive).length} active</span>}
                   >
                     <UserTable
+                      contentIdentity={partition}
                       rows={users}
                       showQueue
                       sorting={parseSorting(search.usersSort)}

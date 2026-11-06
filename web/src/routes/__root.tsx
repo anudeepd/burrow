@@ -56,6 +56,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   // The pre-paint bootstrap and preference-store initialization set these before hydration. Mirror every attribute so
   // React preserves the chosen values instead of removing them and reapplying them after mount.
   const rootEl = typeof document === "undefined" ? undefined : document.documentElement;
+  const isLightTheme = rootEl?.getAttribute("data-theme") === "light";
+  const faviconSvg = isLightTheme ? "/favicon-light.svg?v=1" : "/favicon.svg?v=3";
+  const faviconIco = isLightTheme ? "/favicon-light.ico?v=1" : "/favicon.ico?v=2";
   useEffect(() => {
     applyPrefsToDom(prefsStore.get());
     if (isParity()) document.documentElement.setAttribute("data-parity", "1");
@@ -74,9 +77,9 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       data-parity={rootEl?.getAttribute("data-parity") ?? undefined}
     >
       <head>
-        {/* Version these URLs when the icon changes; browsers cache favicons aggressively across app reloads. */}
-        <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" sizes="any" />
-        <link rel="icon" href="/favicon.ico?v=2" type="image/x-icon" sizes="32x32" />
+        {/* Theme-specific versioned URLs avoid stale favicon caches. */}
+        <link rel="icon" data-theme-favicon="" data-dark-href="/favicon.svg?v=3" data-light-href="/favicon-light.svg?v=1" href={faviconSvg} type="image/svg+xml" sizes="any" />
+        <link rel="icon" data-theme-favicon="" data-dark-href="/favicon.ico?v=2" data-light-href="/favicon-light.ico?v=1" href={faviconIco} type="image/x-icon" sizes="32x32" />
         {/* pre-paint theme/motion/parity bootstrap — external file so the strict CSP (script-src 'self') holds */}
         <script src="/theme-init.js" />
         <HeadContent />

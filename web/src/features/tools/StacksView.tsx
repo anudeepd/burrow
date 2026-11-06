@@ -22,6 +22,7 @@ import { Button } from "~/ui/button";
 import { ROW_HEIGHT } from "~/ui/data-table/data-table";
 import { CenteredPageState, EmptyState, ErrorState, StaleErrorBanner, TableSkeleton } from "~/ui/feedback";
 import { ScrollBottomFade, useHasMoreBelow } from "~/ui/scroll-bottom-fade";
+import { TabContent } from "~/ui/tabs";
 import { HighlightedText } from "./highlighted-text";
 import { handleTreeNavigationEvent } from "./tree-navigation";
 import { type DumpThread, frameText, parseThreadDump, searchThreads, stateHistogram, THREAD_STATE_TONE, threadToText } from "./stacks";
@@ -100,7 +101,7 @@ export function StacksView() {
 
   const setSearch = useCallback(
     (patch: Record<string, string | undefined>) => {
-      void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+      void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
     },
     [navigate],
   );
@@ -181,7 +182,11 @@ export function StacksView() {
   const activeThreads = dump.active ?? dump.threads.length;
 
   return (
-    <div className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6" data-burrow-stacks-root="1">
+    <div
+      data-page-motion="content"
+      className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6"
+      data-burrow-stacks-root="1"
+    >
       <PageHead
         title="Server stacks"
         description="Inspect the ResourceManager thread dump to diagnose blocked or busy server threads."
@@ -219,7 +224,7 @@ export function StacksView() {
         </EmptyState>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+          <TabContent initial value={stateFilter ?? "all"} className="grid grid-cols-2 gap-2 xl:grid-cols-4">
             <Stat label="Active threads" value={activeThreads} sub={`${dump.threads.length} parsed`} />
             <Stat
               label="Thread states"
@@ -233,7 +238,7 @@ export function StacksView() {
               tone={totals.blocked > 0 ? "warn" : undefined}
             />
             <Stat label="Waited total" value={totals.waited} sub={stateFilter ? `within ${stateFilter}` : "sum of Waited count"} />
-          </div>
+          </TabContent>
 
           <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Thread state filter">
             <button
@@ -299,7 +304,11 @@ export function StacksView() {
                 </Button>
               </div>
 
-              <div className="relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh_-_22rem),640px)]">
+              <TabContent
+                initial
+                value={stateFilter ?? "all"}
+                className="burrow-page-result-enter relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh_-_22rem),640px)]"
+              >
                 <div
                   ref={scrollRef}
                   role="tree"
@@ -347,7 +356,7 @@ export function StacksView() {
                   </span>
                   <span className="hidden text-micro text-ink-4 md:inline">↑↓ move · →← expand/collapse · Enter select · Space toggle</span>
                 </div>
-              </div>
+              </TabContent>
             </div>
 
             <StackDetails
@@ -503,53 +512,54 @@ function StackDetails({ thread, onSelectFrame }: { thread: DumpThread | null; on
         </div>
         <CopyButton value={threadToText(thread)} label="Copy this thread dump" />
       </header>
+      <TabContent initial value={String(thread.id)} className="flex min-h-0 flex-1 flex-col gap-3">
+        <Section title="Thread" className="gap-1.5">
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-small">
+            <dt className="text-micro uppercase tracking-wide text-ink-4">State</dt>
+            <dd>
+              <span className={cn("burrow-pill rounded-full px-1.5 text-micro", `burrow-tone-${tone}`)}>{thread.state || "UNKNOWN"}</span>
+            </dd>
+            <dt className="text-micro uppercase tracking-wide text-ink-4">Blocked</dt>
+            <dd className="text-ink-2 tnum">{thread.blocked}</dd>
+            <dt className="text-micro uppercase tracking-wide text-ink-4">Waited</dt>
+            <dd className="text-ink-2 tnum">{thread.waited}</dd>
+            <dt className="text-micro uppercase tracking-wide text-ink-4">Frames</dt>
+            <dd className="text-ink-2 tnum">{thread.frames.length}</dd>
+          </dl>
+          {thread.waitingOn && <p className="break-all font-mono text-micro text-ink-3">waiting on {thread.waitingOn}</p>}
+          {thread.locks.length > 0 && (
+            <ul className="flex flex-col gap-0.5 text-micro text-ink-3">
+              {thread.locks.map((lock) => (
+                <li key={lock} className="break-all font-mono">
+                  locked {lock}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
 
-      <Section title="Thread" className="gap-1.5">
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-small">
-          <dt className="text-micro uppercase tracking-wide text-ink-4">State</dt>
-          <dd>
-            <span className={cn("burrow-pill rounded-full px-1.5 text-micro", `burrow-tone-${tone}`)}>{thread.state || "UNKNOWN"}</span>
-          </dd>
-          <dt className="text-micro uppercase tracking-wide text-ink-4">Blocked</dt>
-          <dd className="text-ink-2 tnum">{thread.blocked}</dd>
-          <dt className="text-micro uppercase tracking-wide text-ink-4">Waited</dt>
-          <dd className="text-ink-2 tnum">{thread.waited}</dd>
-          <dt className="text-micro uppercase tracking-wide text-ink-4">Frames</dt>
-          <dd className="text-ink-2 tnum">{thread.frames.length}</dd>
-        </dl>
-        {thread.waitingOn && <p className="break-all font-mono text-micro text-ink-3">waiting on {thread.waitingOn}</p>}
-        {thread.locks.length > 0 && (
-          <ul className="flex flex-col gap-0.5 text-micro text-ink-3">
-            {thread.locks.map((lock) => (
-              <li key={lock} className="break-all font-mono">
-                locked {lock}
+        <Section
+          title={`Frames (${thread.frames.length})`}
+          className="min-h-0 flex-1"
+          actions={<CopyButton value={thread.frames.map(frameText).join("\n")} label="Copy frames" />}
+        >
+          <ol className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft">
+            {thread.frames.map((frame, i) => (
+              <li key={`${frame.raw}-${i}`}>
+                <button
+                  type="button"
+                  onClick={() => onSelectFrame(i)}
+                  className="flex w-full items-start gap-2 border-b border-seam-soft px-2 py-1 text-left hover:bg-fabric-3"
+                >
+                  <span className="shrink-0 text-micro text-ink-4 tnum">{i}</span>
+                  <span className="min-w-0 flex-1 break-all font-mono text-micro text-ink-2">{frameText(frame)}</span>
+                </button>
               </li>
             ))}
-          </ul>
-        )}
-      </Section>
-
-      <Section
-        title={`Frames (${thread.frames.length})`}
-        className="min-h-0 flex-1"
-        actions={<CopyButton value={thread.frames.map(frameText).join("\n")} label="Copy frames" />}
-      >
-        <ol className="burrow-scroll min-h-0 flex-1 overflow-auto rounded-md border border-seam-soft">
-          {thread.frames.map((frame, i) => (
-            <li key={`${frame.raw}-${i}`}>
-              <button
-                type="button"
-                onClick={() => onSelectFrame(i)}
-                className="flex w-full items-start gap-2 border-b border-seam-soft px-2 py-1 text-left hover:bg-fabric-3"
-              >
-                <span className="shrink-0 text-micro text-ink-4 tnum">{i}</span>
-                <span className="min-w-0 flex-1 break-all font-mono text-micro text-ink-2">{frameText(frame)}</span>
-              </button>
-            </li>
-          ))}
-          {thread.frames.length === 0 && <li className="px-2 py-2 text-small text-ink-3">This thread has no stack frames.</li>}
-        </ol>
-      </Section>
+            {thread.frames.length === 0 && <li className="px-2 py-2 text-small text-ink-3">This thread has no stack frames.</li>}
+          </ol>
+        </Section>
+      </TabContent>
     </aside>
   );
 }

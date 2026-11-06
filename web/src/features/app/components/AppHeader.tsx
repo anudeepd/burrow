@@ -72,8 +72,7 @@ export function AppHeader({
   const rmBase = meta.data?.rm.active ?? meta.data?.rm.urls?.[0];
   const rawYarnHref = rmBase ? `${rmBase.replace(/\/$/, "")}/cluster/app/${app.id}` : null;
   const appTags = tags(app);
-  const sparkHistoryTracking =
-    !insideSpark && app.applicationType?.toUpperCase() === "SPARK" && isAppFinal(app.state) && kind === "history";
+  const sparkHistoryTracking = app.applicationType?.toUpperCase() === "SPARK" && isAppFinal(app.state) && kind === "history";
   const useDirectSparkHistory =
     sparkHistoryTracking && sparkSource.data?.mode === "history" && sparkSource.data.available && !!sparkSource.data.baseUrl;
   // While the direct target is loading, let its skeleton stand in for the generic History link.
@@ -103,7 +102,9 @@ export function AppHeader({
               </>
             )}
           </div>
-          {!insideSpark && <p className="mt-1 max-w-3xl text-pretty text-body text-ink-3">{description}</p>}
+          <p className="mt-1 min-h-[2lh] max-w-3xl text-pretty text-body text-ink-3 lg:min-h-lh" data-burrow-app-header-secondary>
+            {description}
+          </p>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-small text-ink-3" data-burrow-app-header-meta>
             <span className="flex items-center gap-1 font-mono" data-burrow-app-header-id>
               <Datum field="app.id" raw={app.id} as="span" />
@@ -202,7 +203,7 @@ export function AppHeader({
               </a>
             )}
           </div>
-          <SparkAffordance appId={app.id} className="w-full xl:justify-end" insideSpark={insideSpark} />
+          <SparkAffordance appId={app.id} className="w-full xl:justify-end" />
         </div>
       </div>
       {attempts.length > 1 && (

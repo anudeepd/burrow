@@ -24,6 +24,7 @@ import {
 } from "~/api/queries/logs";
 import { Entity } from "~/ui/datum";
 import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { TabContent } from "~/ui/tabs";
 import { Unavailable } from "~/features/nodes/page";
 import { useParity } from "~/state/parity";
 import { usePref } from "~/state/prefs";
@@ -71,10 +72,12 @@ export function LogsView() {
     () => ({ node: search.node ?? null, user: search.user ?? null, app: search.app ?? appId }),
     [search.node, search.user, search.app, appId],
   );
+  const windowIdentity = JSON.stringify([appId, containerId, file, hints.node, hints.user, hints.app]);
+  const [committedWindow, setCommittedWindow] = useState<string | null>(null);
 
   const setSearch = useCallback(
     (patch: Record<string, unknown>) => {
-      void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+      void navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
     },
     [navigate],
   );
@@ -83,9 +86,8 @@ export function LogsView() {
   const bufferRef = useRef<LineBuffer | null>(null);
   if (bufferRef.current === null) bufferRef.current = new LineBuffer();
   const buffer = bufferRef.current;
-  const bufferTargetRef = useRef({ containerId, file });
-  const hasDisplayedWindow =
-    bufferTargetRef.current.containerId === containerId && bufferTargetRef.current.file === file && buffer.length > 0;
+  // A successful empty window is usable too; line count is not a readiness signal.
+  const hasDisplayedWindow = committedWindow === windowIdentity;
   const [version, setVersion] = useState(0);
   const rafPending = useRef(false);
   // Streaming can deliver many chunks per frame; coalesce them into one render.
@@ -138,17 +140,18 @@ export function LogsView() {
   // A new container/file starts a new buffer (the old file's bytes must never linger).
   useEffect(() => {
     buffer.reset();
-    bufferTargetRef.current = { containerId, file };
+    setCommittedWindow(null);
     setMeta(null);
     bump();
-  }, [containerId, file, buffer, bump]);
+  }, [windowIdentity, buffer, bump]);
 
   useEffect(() => {
     if (!initial.data) return;
     buffer.setWindow(initial.data.text, initial.data.start);
     setMeta({ size: initial.data.size, source: initial.data.source, start: initial.data.start, end: initial.data.end });
+    setCommittedWindow(windowIdentity);
     bump();
-  }, [initial.data, buffer, bump]);
+  }, [initial.data, windowIdentity, buffer, bump]);
 
   // ── follow ──────────────────────────────────────────────────────────────────────────────────────────────────────
   const follow = followEnabled(search) && !parity;
@@ -191,17 +194,8 @@ export function LogsView() {
 
   // ── display state ──────────────────────────────────────────────────────────────────────────────────────────────
   const filter = useMemo<LogLevel | null>(() => parseLevelFilter(search.filter), [search.filter]);
-  /* A phone screen shows a fraction of a long line, so wrapping starts on there and the toggle can still turn it off
-     (`?wrap=0`); on a wide screen the default stays off. */
-  const [narrow, setNarrow] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 639px)");
-    const apply = () => setNarrow(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-  const wrap = search.wrap ?? narrow;
+  // Long lines wrap by default; `?wrap=0` preserves an explicit no-wrap view.
+  const wrap = search.wrap ?? true;
   const tsMode = timestampMode(search);
   const visibleIdx = useFilteredIndex(buffer, filter);
   const shown = filter ? visibleIdx.length : buffer.length;
@@ -321,41 +315,55 @@ export function LogsView() {
         />
       )}
 
-      {filesQuery.isPending || (initial.isPending && !hasDisplayedWindow) ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-1 p-3" aria-busy="true">
-          {Array.from({ length: 12 }, (_, i) => (
-            <Skeleton key={i} className="h-4" style={{ width: `${40 + ((i * 17) % 50)}%` }} />
-          ))}
-        </div>
-      ) : windowMissing && !hasDisplayedWindow ? (
-        <Unavailable
-          title="The file bytes are not served by this backend"
-          reason={<>The read endpoint answered 404 for this file. It reads a byte range (or `tail`) from the container log source.</>}
-          hint="GET /api/logs/containers/{id}/files/{name}?offset=&length= | ?tail= — text/plain with x-burrow-log-* headers."
-        />
-      ) : windowError && !hasDisplayedWindow ? (
-        <ErrorState
-          title="Cannot read this log file"
-          message={logErrorMessage(windowError)}
-          hint="A running container's log comes from its NodeManager; a finished one from the aggregated JobHistory/ATS copy."
-          onRetry={() => void initial.refetch()}
-        />
-      ) : (
-        <LineViewer
-          buffer={buffer}
-          version={version}
-          matches={matches}
-          activeMatch={hitIndex}
-          visibleIdx={filter ? visibleIdx : null}
-          jumpLine={jumpLine}
-          search={searchSpec}
-          wrap={wrap}
-          timestamp={tsMode}
-          follow={follow}
-          paused={paused}
-          parity={parity}
-        />
-      )}
+      <div
+        data-page-motion="content"
+        aria-busy={(!hasDisplayedWindow && !windowError) || undefined}
+        className="relative flex min-h-0 flex-1 flex-col"
+      >
+        <TabContent
+          value={`${windowIdentity}:${hasDisplayedWindow ? "ready" : "pending"}`}
+          className={`flex min-h-0 flex-1 flex-col${hasDisplayedWindow ? "" : " pointer-events-none"}`}
+        >
+          <LineViewer
+            buffer={buffer}
+            version={version}
+            matches={matches}
+            activeMatch={hitIndex}
+            visibleIdx={filter ? visibleIdx : null}
+            jumpLine={jumpLine}
+            search={searchSpec}
+            wrap={wrap}
+            timestamp={tsMode}
+            follow={follow}
+            paused={paused}
+            parity={parity}
+          />
+        </TabContent>
+        {!hasDisplayedWindow && (
+          <div className="absolute inset-0 flex min-h-0 flex-col bg-fabric">
+            {filesQuery.isPending || (initial.isPending && !hasDisplayedWindow) || (!hasDisplayedWindow && !windowError) ? (
+              <div className="flex min-h-0 flex-1 flex-col gap-1 p-3" aria-busy="true">
+                {Array.from({ length: 12 }, (_, i) => (
+                  <Skeleton key={i} className="h-4" style={{ width: `${40 + ((i * 17) % 50)}%` }} />
+                ))}
+              </div>
+            ) : windowMissing && !hasDisplayedWindow ? (
+              <Unavailable
+                title="The file bytes are not served by this backend"
+                reason={<>The read endpoint answered 404 for this file. It reads a byte range (or `tail`) from the container log source.</>}
+                hint="GET /api/logs/containers/{id}/files/{name}?offset=&length= | ?tail= — text/plain with x-burrow-log-* headers."
+              />
+            ) : (
+              <ErrorState
+                title="Cannot read this log file"
+                message={logErrorMessage(windowError)}
+                hint="A running container's log comes from its NodeManager; a finished one from the aggregated JobHistory/ATS copy."
+                onRetry={() => void initial.refetch()}
+              />
+            )}
+          </div>
+        )}
+      </div>
 
       <LogStatusBar
         shown={shown}

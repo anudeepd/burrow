@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { q } from "~/api/queries";
 import { selectAppAttempts } from "~/api/schemas";
-import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { ErrorState, StaleErrorBanner } from "~/ui/feedback";
 import { ATTEMPT_DEFAULT_VISIBILITY, AttemptsTab } from "~/features/app/components/AttemptsTab";
 import { sortingFromParam, sortingToParam, visibilityFromParam, visibilityToParam } from "~/features/app/search";
 import { useNow } from "~/features/app/use-now";
@@ -28,26 +28,6 @@ function AttemptsRoute() {
   const live = rows.some((a) => a.finishedTime === 0);
   const now = useNow(live);
 
-  if (attempts.isPending) {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col gap-2" aria-busy="true">
-        <Skeleton className="h-9 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
-  if (attempts.isError && !attempts.data) {
-    return (
-      <ErrorState
-        title="Could not load the application attempts"
-        message={attempts.error instanceof Error ? attempts.error.message : "The RM did not return an attempts payload."}
-        hint="`GET /ws/v1/cluster/apps/{id}/appattempts` — the application may have expired from the RM."
-        onRetry={() => void attempts.refetch()}
-      />
-    );
-  }
-
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {app.error && (
@@ -57,7 +37,7 @@ function AttemptsRoute() {
           onRetry={() => void app.refetch()}
         />
       )}
-      {attempts.error && (
+      {attempts.error && attempts.data !== undefined && (
         <StaleErrorBanner
           title="Attempt refresh failed; showing the last loaded attempts"
           error={attempts.error}
@@ -67,6 +47,18 @@ function AttemptsRoute() {
       <AttemptsTab
         appId={appId}
         attempts={rows}
+        loading={attempts.isPending}
+        contentIdentity={appId}
+        error={
+          attempts.isError && !attempts.data ? (
+            <ErrorState
+              title="Could not load the application attempts"
+              message={attempts.error instanceof Error ? attempts.error.message : "The RM did not return an attempts payload."}
+              hint="`GET /ws/v1/cluster/apps/{id}/appattempts` — the application may have expired from the RM."
+              onRetry={() => void attempts.refetch()}
+            />
+          ) : undefined
+        }
         now={now}
         sorting={sortingFromParam(search.sort)}
         onSortingChange={(s) =>
@@ -75,6 +67,7 @@ function AttemptsRoute() {
             params: { appId },
             search: (prev) => ({ ...prev, sort: sortingToParam(s) }),
             replace: true,
+            resetScroll: false,
           })
         }
         columnVisibility={visibilityFromParam(search.cols, ATTEMPT_DEFAULT_VISIBILITY)}
@@ -84,6 +77,7 @@ function AttemptsRoute() {
             params: { appId },
             search: (prev) => ({ ...prev, cols: visibilityToParam(v, ATTEMPT_DEFAULT_VISIBILITY) }),
             replace: true,
+            resetScroll: false,
           })
         }
         toolbar={

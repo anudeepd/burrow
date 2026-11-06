@@ -1,4 +1,3 @@
-import { useLocation } from "@tanstack/react-router";
 import { lazy, Suspense, useRef, useState } from "react";
 import { cn } from "~/lib/cn";
 import { Rail } from "./rail";
@@ -25,23 +24,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setDrawerOpen(true);
   };
 
-  const { pathname } = useLocation();
-  const suppressPageEntrance = pathname === "/nodes" || pathname.startsWith("/nodes/");
-
   return (
     <div className={cn("flex h-dvh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>
       <Rail className="hidden md:flex" />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Topbar railTrigger={railTrigger} onOpenRail={openDrawer} onOpenPalette={() => setPaletteOpen(true)} />
         <main className="burrow-main relative flex min-h-0 flex-1 flex-col overflow-hidden">
-          {/* Keyed by pathname: the title swaps immediately, then coarse content groups cascade in; rows never move. */}
-          <div
-            key={pathname}
-            data-page-transition={suppressPageEntrance ? "none" : undefined}
-            className="burrow-page flex min-h-0 flex-1 flex-col"
-          >
-            {children}
-          </div>
+          {/* The router preserves shared layouts; changing a leaf route must not remount its navigation or scrollports. */}
+          <div className="burrow-page flex min-h-0 flex-1 flex-col">{children}</div>
         </main>
       </div>
       {drawerMounted && (

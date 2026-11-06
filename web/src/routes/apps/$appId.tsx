@@ -18,7 +18,7 @@ import { AppHeader } from "~/features/app/components/AppHeader";
 import { isAppFinal } from "~/features/app/model";
 import { activeTab, appTabs } from "~/features/app/tabs";
 import { useNow } from "~/features/app/use-now";
-import { TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
+import { RouteTabIndicator, TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
 import { HelpTip } from "~/ui/tooltip";
 
 export const Route = createFileRoute("/apps/$appId")({ component: AppLayout });
@@ -104,7 +104,11 @@ function AppLayout() {
 
       <ApplicationSectionNav tabs={tabs} current={current} />
 
-      <div className={cn("flex flex-col pt-3", logsViewerActive && "shrink-0 burrow-app-log-layout")}>
+      <div
+        key={pathname}
+        data-page-motion="content"
+        className={cn("burrow-app-route-enter flex flex-col pt-3", logsViewerActive && "shrink-0 burrow-app-log-layout")}
+      >
         <Outlet />
       </div>
     </Entity>
@@ -121,7 +125,6 @@ export function ApplicationSectionNav({ tabs, current }: { tabs: ReturnType<type
         {tabs.map((tab) => {
           const isCurrent = tab.value === current;
           const cls = cn(TAB_LINK_CLASS, !tab.available && "cursor-not-allowed opacity-55");
-          const indicator = isCurrent && <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-live" />;
           return (
             <li key={tab.value}>
               {tab.available ? (
@@ -133,19 +136,18 @@ export function ApplicationSectionNav({ tabs, current }: { tabs: ReturnType<type
                   data-yt={tab.value}
                 >
                   {tab.label}
-                  {indicator}
                 </Link>
               ) : (
                 <span className={cls} aria-disabled="true" aria-current={isCurrent ? "page" : undefined} data-yt={tab.value}>
                   {tab.label}
                   <span className="rounded-full border border-dashed border-seam-strong px-1 text-micro text-ink-4">not in build</span>
                   {tab.hint && <HelpTip label={`${tab.label} tab is unavailable`}>{tab.hint}</HelpTip>}
-                  {indicator}
                 </span>
               )}
             </li>
           );
         })}
+        <RouteTabIndicator listRef={listRef} value={current} as="li" />
       </ul>
       <HorizontalScrollCues left={cues.left} right={cues.right} />
     </nav>

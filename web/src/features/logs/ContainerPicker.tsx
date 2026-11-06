@@ -18,6 +18,7 @@ import { Datum, Entity } from "~/ui/datum";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
 import { EmptyState, ErrorState, Skeleton } from "~/ui/feedback";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { Tooltip } from "~/ui/tooltip";
 import { Section } from "~/features/nodes/page";
 
@@ -62,15 +63,6 @@ export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
     queries: list.map((a: AppAttempt) => ({ ...q.appContainers(appId, a.appAttemptId), enabled: !!a.appAttemptId })),
   });
 
-  if (attempts.isPending) {
-    return (
-      <div className="flex flex-col gap-2" aria-busy="true">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-    );
-  }
-
   if (attempts.isError && !attempts.data) {
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -105,7 +97,8 @@ export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
     return containers.filter((c) => !amRows.some((r) => r.containerId === c.containerId)).map((c) => ({ attempt, container: c }));
   });
 
-  const nothingKnown = amRows.length === 0 && liveRows.length === 0;
+  const containersPending = containerQueries.some((query) => query.isPending);
+  const nothingKnown = !attempts.isPending && !containersPending && amRows.length === 0 && liveRows.length === 0;
   const failedContainerQueries = list.flatMap((attempt, index) => {
     const query = containerQueries[index];
     if (!query?.isError) return [];
@@ -123,7 +116,13 @@ export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
     .join(" · ");
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-4">
+      {attempts.isPending && (
+        <div className="flex flex-col gap-2" aria-busy="true">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      )}
       {attempts.isError && (
         <ErrorState
           compact
@@ -145,192 +144,205 @@ export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
       )}
       {amRows.length > 0 && (
         <Section title="ApplicationMaster containers" actions={<span className="text-caption text-ink-4">from the attempt records</span>}>
-          <DetailTableScroller ariaLabel="ApplicationMaster containers" className="burrow-picker rounded-lg border border-seam bg-fabric">
-            <table className="w-full max-lg:table-fixed border-collapse text-small">
-              <caption className="sr-only">ApplicationMaster containers of {appId}</caption>
-              <thead className="sticky top-0 border-b border-seam bg-fabric-2 text-small">
-                <tr>
-                  <th scope="col" className="max-lg:w-[50%] px-3 py-1.5 text-left font-medium text-ink-3">
-                    Container
-                  </th>
-                  <th scope="col" className="max-lg:w-[20%] px-3 py-1.5 text-left font-medium text-ink-3">
-                    Attempt
-                  </th>
-                  <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
-                    Node
-                  </th>
-                  <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
-                    State
-                  </th>
-                  <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
-                    Started
-                  </th>
-                  <th scope="col" className="px-3 py-1.5 text-right font-medium text-ink-3">
-                    Log source
-                  </th>
-                  <th scope="col" className="max-lg:w-[20%] px-3 py-1.5">
-                    <span className="sr-only">Logs</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {amRows.map((row) => (
-                  <Entity
-                    key={`am-${row.containerId}`}
-                    id={row.containerId}
-                    as="tr"
-                    className="border-b border-seam-soft last:border-0 hover:bg-fabric-3"
-                  >
-                    <td className="px-3 py-1.5">
-                      <Tooltip label={row.containerId}>
-                        <Datum field="log.containerId" raw={row.containerId} fmt="text" className="block truncate font-mono text-ink" />
-                      </Tooltip>
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <Tooltip label={row.attempt.appAttemptId}>
-                        <Link
-                          to="/apps/$appId/attempts/$attemptId"
-                          params={{ appId, attemptId: row.attempt.appAttemptId }}
-                          className="block truncate font-mono text-live underline-offset-2 hover:underline"
+          <TabContent initial value={appId}>
+            <DetailTableScroller ariaLabel="ApplicationMaster containers" className="burrow-picker rounded-lg border border-seam bg-fabric">
+              <table className="w-full max-lg:table-fixed border-collapse text-small">
+                <caption className="sr-only">ApplicationMaster containers of {appId}</caption>
+                <thead className="sticky top-0 border-b border-seam bg-fabric-2 text-small">
+                  <tr>
+                    <th scope="col" className="max-lg:w-[50%] px-3 py-1.5 text-left font-medium text-ink-3">
+                      Container
+                    </th>
+                    <th scope="col" className="max-lg:w-[20%] px-3 py-1.5 text-left font-medium text-ink-3">
+                      Attempt
+                    </th>
+                    <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
+                      Node
+                    </th>
+                    <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
+                      State
+                    </th>
+                    <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
+                      Started
+                    </th>
+                    <th scope="col" className="px-3 py-1.5 text-right font-medium text-ink-3">
+                      Log source
+                    </th>
+                    <th scope="col" className="max-lg:w-[20%] px-3 py-1.5">
+                      <span className="sr-only">Logs</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {amRows.map((row) => (
+                    <Entity
+                      key={`am-${row.containerId}`}
+                      id={row.containerId}
+                      as="tr"
+                      className="border-b border-seam-soft last:border-0 hover:bg-fabric-3"
+                    >
+                      <td className="px-3 py-1.5">
+                        <Tooltip label={row.containerId}>
+                          <Datum field="log.containerId" raw={row.containerId} fmt="text" className="block truncate font-mono text-ink" />
+                        </Tooltip>
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <Tooltip label={row.attempt.appAttemptId}>
+                          <Link
+                            to="/apps/$appId/attempts/$attemptId"
+                            params={{ appId, attemptId: row.attempt.appAttemptId }}
+                            className="block truncate font-mono text-live underline-offset-2 hover:underline"
+                          >
+                            {row.attempt.appAttemptId}
+                          </Link>
+                        </Tooltip>
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <Datum field="log.nodeId" raw={row.node} fmt="text" className="font-mono text-ink-2" />
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <StatusPill domain="app.state" state={row.attempt.appAttemptState} field="attempt.appAttemptState" size="sm" />
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <Datum field="attempt.startTime" raw={row.attempt.startTime} fmt="epoch" className="tnum text-ink-2" />
+                      </td>
+                      <td className="px-3 py-1.5 text-right">
+                        <span className="text-caption text-ink-3" data-burrow-log-hint={row.aggregated ? "jhs" : "nm"}>
+                          {row.aggregated ? "Aggregated (JobHistory)" : "NodeManager"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-1.5 text-right">
+                        <Tooltip
+                          label={
+                            row.aggregated
+                              ? "Read the JobHistory aggregated copy of this container's logs"
+                              : "Read this container's logs from its NodeManager"
+                          }
                         >
-                          {row.attempt.appAttemptId}
-                        </Link>
-                      </Tooltip>
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <Datum field="log.nodeId" raw={row.node} fmt="text" className="font-mono text-ink-2" />
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <StatusPill domain="app.state" state={row.attempt.appAttemptState} field="attempt.appAttemptState" size="sm" />
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <Datum field="attempt.startTime" raw={row.attempt.startTime} fmt="epoch" className="tnum text-ink-2" />
-                    </td>
-                    <td className="px-3 py-1.5 text-right">
-                      <span className="text-caption text-ink-3" data-burrow-log-hint={row.aggregated ? "jhs" : "nm"}>
-                        {row.aggregated ? "Aggregated (JobHistory)" : "NodeManager"}
-                      </span>
-                    </td>
-                    <td className="px-3 py-1.5 text-right">
-                      <Tooltip
-                        label={
-                          row.aggregated
-                            ? "Read the JobHistory aggregated copy of this container's logs"
-                            : "Read this container's logs from its NodeManager"
-                        }
-                      >
-                        <Button variant="quiet" size="sm" onClick={() => onPick(row.containerId, row.node, row.user)}>
-                          <FileText className="size-3.5" aria-hidden="true" />
-                          <span className="burrow-picker-full-action">{row.aggregated ? "Aggregated log (JobHistory)" : "Open logs"}</span>
-                          <span className="burrow-picker-short-action">Logs</span>
-                        </Button>
-                      </Tooltip>
-                    </td>
-                  </Entity>
-                ))}
-              </tbody>
-            </table>
-          </DetailTableScroller>
+                          <Button variant="quiet" size="sm" onClick={() => onPick(row.containerId, row.node, row.user)}>
+                            <FileText className="size-3.5" aria-hidden="true" />
+                            <span className="burrow-picker-full-action">
+                              {row.aggregated ? "Aggregated log (JobHistory)" : "Open logs"}
+                            </span>
+                            <span className="burrow-picker-short-action">Logs</span>
+                          </Button>
+                        </Tooltip>
+                      </td>
+                    </Entity>
+                  ))}
+                </tbody>
+              </table>
+            </DetailTableScroller>
+          </TabContent>
         </Section>
       )}
 
       {liveRows.length > 0 && (
         <Section title="Live containers" actions={<span className="text-caption text-ink-4">held by the ResourceManager</span>}>
-          <DetailTableScroller ariaLabel="Live containers" className="burrow-picker rounded-lg border border-seam bg-fabric">
-            <table className="w-full max-lg:table-fixed border-collapse text-small">
-              <caption className="sr-only">Live containers of {appId}</caption>
-              <thead className="sticky top-0 border-b border-seam bg-fabric-2 text-small">
-                <tr>
-                  <th scope="col" className="max-lg:w-[50%] px-3 py-1.5 text-left font-medium text-ink-3">
-                    Container
-                  </th>
-                  <th scope="col" className="max-lg:w-[20%] px-3 py-1.5 text-left font-medium text-ink-3">
-                    Attempt
-                  </th>
-                  <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
-                    Node
-                  </th>
-                  <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
-                    State
-                  </th>
-                  <th scope="col" className="px-3 py-1.5 text-right font-medium text-ink-3">
-                    Exit
-                  </th>
-                  <th scope="col" className="max-lg:w-[20%] px-3 py-1.5">
-                    <span className="sr-only">Logs</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {liveRows.map(({ attempt, container }) => (
-                  <Entity
-                    key={container.containerId}
-                    id={container.containerId}
-                    as="tr"
-                    className="border-b border-seam-soft last:border-0 hover:bg-fabric-3"
-                  >
-                    <td className="px-3 py-1.5">
-                      <Tooltip label={container.containerId}>
+          <TabContent initial value={appId}>
+            <DetailTableScroller ariaLabel="Live containers" className="burrow-picker rounded-lg border border-seam bg-fabric">
+              <table className="w-full max-lg:table-fixed border-collapse text-small">
+                <caption className="sr-only">Live containers of {appId}</caption>
+                <thead className="sticky top-0 border-b border-seam bg-fabric-2 text-small">
+                  <tr>
+                    <th scope="col" className="max-lg:w-[50%] px-3 py-1.5 text-left font-medium text-ink-3">
+                      Container
+                    </th>
+                    <th scope="col" className="max-lg:w-[20%] px-3 py-1.5 text-left font-medium text-ink-3">
+                      Attempt
+                    </th>
+                    <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
+                      Node
+                    </th>
+                    <th scope="col" className="px-3 py-1.5 text-left font-medium text-ink-3">
+                      State
+                    </th>
+                    <th scope="col" className="px-3 py-1.5 text-right font-medium text-ink-3">
+                      Exit
+                    </th>
+                    <th scope="col" className="max-lg:w-[20%] px-3 py-1.5">
+                      <span className="sr-only">Logs</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {liveRows.map(({ attempt, container }) => (
+                    <Entity
+                      key={container.containerId}
+                      id={container.containerId}
+                      as="tr"
+                      className="border-b border-seam-soft last:border-0 hover:bg-fabric-3"
+                    >
+                      <td className="px-3 py-1.5">
+                        <Tooltip label={container.containerId}>
+                          <Datum
+                            field="log.containerId"
+                            raw={container.containerId}
+                            fmt="text"
+                            className="block truncate font-mono text-ink"
+                          />
+                        </Tooltip>
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <Tooltip label={attempt.appAttemptId}>
+                          <Link
+                            to="/apps/$appId/attempts/$attemptId"
+                            params={{ appId, attemptId: attempt.appAttemptId }}
+                            className="block truncate font-mono text-live underline-offset-2 hover:underline"
+                          >
+                            {attempt.appAttemptId}
+                          </Link>
+                        </Tooltip>
+                      </td>
+                      <td className="px-3 py-1.5">
                         <Datum
-                          field="log.containerId"
-                          raw={container.containerId}
+                          field="log.nodeId"
+                          raw={container.nodeHttpAddress ?? container.nodeId}
                           fmt="text"
-                          className="block truncate font-mono text-ink"
+                          className="font-mono text-ink-2"
                         />
-                      </Tooltip>
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <Tooltip label={attempt.appAttemptId}>
-                        <Link
-                          to="/apps/$appId/attempts/$attemptId"
-                          params={{ appId, attemptId: attempt.appAttemptId }}
-                          className="block truncate font-mono text-live underline-offset-2 hover:underline"
-                        >
-                          {attempt.appAttemptId}
-                        </Link>
-                      </Tooltip>
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <Datum
-                        field="log.nodeId"
-                        raw={container.nodeHttpAddress ?? container.nodeId}
-                        fmt="text"
-                        className="font-mono text-ink-2"
-                      />
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <StatusPill domain="container.state" state={container.containerState} field="container.containerState" size="sm" />
-                    </td>
-                    <td className="px-3 py-1.5 text-right">
-                      <Datum
-                        field="container.containerExitStatus"
-                        raw={container.containerExitStatus}
-                        fmt="int"
-                        className="tnum text-ink-2"
-                      />
-                    </td>
-                    <td className="px-3 py-1.5 text-right">
-                      <Tooltip label="Read this container's logs from its NodeManager">
-                        <Button
-                          variant="quiet"
-                          size="sm"
-                          onClick={() => onPick(container.containerId, container.nodeHttpAddress ?? container.nodeId, null)}
-                        >
-                          <FileText className="size-3.5" aria-hidden="true" />
-                          <span className="burrow-picker-full-action">Open logs</span>
-                          <span className="burrow-picker-short-action">Logs</span>
-                        </Button>
-                      </Tooltip>
-                    </td>
-                  </Entity>
-                ))}
-              </tbody>
-            </table>
-          </DetailTableScroller>
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <StatusPill domain="container.state" state={container.containerState} field="container.containerState" size="sm" />
+                      </td>
+                      <td className="px-3 py-1.5 text-right">
+                        <Datum
+                          field="container.containerExitStatus"
+                          raw={container.containerExitStatus}
+                          fmt="int"
+                          className="tnum text-ink-2"
+                        />
+                      </td>
+                      <td className="px-3 py-1.5 text-right">
+                        <Tooltip label="Read this container's logs from its NodeManager">
+                          <Button
+                            variant="quiet"
+                            size="sm"
+                            onClick={() => onPick(container.containerId, container.nodeHttpAddress ?? container.nodeId, null)}
+                          >
+                            <FileText className="size-3.5" aria-hidden="true" />
+                            <span className="burrow-picker-full-action">Open logs</span>
+                            <span className="burrow-picker-short-action">Logs</span>
+                          </Button>
+                        </Tooltip>
+                      </td>
+                    </Entity>
+                  ))}
+                </tbody>
+              </table>
+            </DetailTableScroller>
+          </TabContent>
+        </Section>
+      )}
+      {containersPending && liveRows.length === 0 && (
+        <Section title="Live containers">
+          <div aria-busy="true">
+            <Skeleton className="h-24 w-full" />
+          </div>
         </Section>
       )}
 
-      {nothingKnown && (
+      {nothingKnown && failedContainerQueries.length === 0 && (
         <EmptyState title="No container named by this application">
           The ResourceManager holds no container records and the attempts name no AM container — there is nothing to open. Paste a container
           id below to read a log directly.

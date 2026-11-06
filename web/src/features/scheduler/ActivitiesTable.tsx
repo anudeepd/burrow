@@ -279,6 +279,8 @@ export function ActivitiesTable({
     <div ref={tableRegionRef} className={className} data-burrow-activities-region="1">
       <DataTable
         data={rows}
+        contentIdentity={`${queueFilter ?? ""}\0${nodeId}\0${groupBy}`}
+        initialContentFade={false}
         columns={columns}
         getRowId={(r) => `${r.queue}|${r.depth}|${r.containerId ?? ""}|${r.nodeId ?? ""}`}
         entityKey={() => "_"}
@@ -292,7 +294,7 @@ export function ActivitiesTable({
         loading={loading}
         error={error}
         empty={
-          <div className="px-4 py-10 text-center text-body text-ink-3">
+          <div role="status" className="burrow-enter px-4 py-10 text-center text-body text-ink-3">
             {activities?.diagnostic ?? "No allocation activity for this node."}
             <p className="mt-1 text-small text-ink-4">
               The RM keeps the most recent allocation activity per NodeManager; pick a node or wait for the scheduler's next heartbeat.
@@ -301,7 +303,6 @@ export function ActivitiesTable({
         }
         exportName="scheduler-activities"
         totalCount={rows.length}
-        className="h-[min(52dvh,520px)]"
         stableViewport={stableViewport}
         toolbar={
           <>

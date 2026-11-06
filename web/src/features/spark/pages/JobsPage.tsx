@@ -22,7 +22,7 @@ import type { SparkJob } from "../data/schemas";
 import { compact, matchesQuery, parseColumns, parseSort, serializeColumns, serializeSort } from "../data/search";
 import { CountsCell, TaskProgress } from "../ui/Counts";
 import { PageHeader } from "../ui/PageHeader";
-import { SparkEmpty, SparkFailureState, SparkLoading, SparkStaleErrorBanner } from "../ui/StateViews";
+import { SparkEmpty, SparkFailureState, SparkStaleErrorBanner } from "../ui/StateViews";
 import { useSpark } from "../ui/context";
 import { useNow } from "../ui/use-now";
 
@@ -47,7 +47,7 @@ export function JobsPage() {
 
   const sorting = parseSort(search);
   const columnVisibility = parseColumns(search);
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   const columns = useMemo<ColDef<SparkJob>[]>(
     () => [
@@ -191,79 +191,83 @@ export function JobsPage() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-3">
       <PageHeader title="Jobs" hideTitle />
       {qJobs.error && qJobs.data !== undefined && (
         <SparkStaleErrorBanner error={qJobs.error} subject="the job list" onRetry={() => void qJobs.refetch()} />
       )}
-      {qJobs.isPending ? (
-        <SparkLoading rows={10} cols={7} />
-      ) : qJobs.error && qJobs.data === undefined ? (
-        <SparkFailureState error={qJobs.error} subject="the job list" onRetry={() => void qJobs.refetch()} />
-      ) : jobs.length === 0 ? (
-        <SparkEmpty title={status ? `No ${status.toLowerCase()} jobs` : "No jobs yet"}>
-          {status ? "Clear the status filter to see every job." : "Jobs appear as soon as the application submits one."}
-        </SparkEmpty>
-      ) : (
-        <DataTable<SparkJob>
-          className="min-h-[24rem]"
-          data={filtering}
-          columns={columns}
-          getRowId={(j) => String(j.jobId)}
-          entityKey={(j) => String(j.jobId)}
-          label="Spark jobs"
-          storageKey="spark-jobs"
-          sorting={sorting}
-          onSortingChange={(s: SortingState) => patch(serializeSort(s))}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
-          defaultVisibility={DEFAULT_VISIBILITY}
-          onRowActivate={(j) =>
-            void navigate({
-              to: "/apps/$appId/spark/jobs/$jobId",
-              params: { appId, jobId: String(j.jobId) },
-              search: { attempt: attempt ?? undefined },
-            })
-          }
-          rowVersion={(j) => `${j.status}:${j.numActiveTasks ?? 0}:${j.numCompletedTasks ?? 0}`}
-          totalCount={jobs.length}
-          exportName={`spark-jobs-${appId}`}
-          toolbar={
-            <>
-              <Select
-                label="Job status filter"
-                value={status ?? ""}
-                onValueChange={(v) => patch({ status: v === "" ? undefined : v })}
-                options={[
-                  { value: "", label: "All statuses" },
-                  { value: "RUNNING", label: "Running" },
-                  { value: "SUCCEEDED", label: "Succeeded" },
-                  { value: "FAILED", label: "Failed" },
-                ]}
+      <DataTable<SparkJob>
+        loading={qJobs.isPending}
+        contentIdentity={JSON.stringify([appId, attempt, status])}
+        error={
+          qJobs.error && qJobs.data === undefined ? (
+            <SparkFailureState error={qJobs.error} subject="the job list" onRetry={() => void qJobs.refetch()} />
+          ) : undefined
+        }
+        empty={
+          jobs.length === 0 ? (
+            <SparkEmpty title={status ? `No ${status.toLowerCase()} jobs` : "No jobs yet"}>
+              {status ? "Clear the status filter to see every job." : "Jobs appear as soon as the application submits one."}
+            </SparkEmpty>
+          ) : undefined
+        }
+        className="min-h-[24rem]"
+        data={filtering}
+        columns={columns}
+        getRowId={(j) => String(j.jobId)}
+        entityKey={(j) => String(j.jobId)}
+        label="Spark jobs"
+        storageKey="spark-jobs"
+        sorting={sorting}
+        onSortingChange={(s: SortingState) => patch(serializeSort(s))}
+        columnVisibility={columnVisibility}
+        onColumnVisibilityChange={(v) => patch(serializeColumns(v))}
+        defaultVisibility={DEFAULT_VISIBILITY}
+        onRowActivate={(j) =>
+          void navigate({
+            to: "/apps/$appId/spark/jobs/$jobId",
+            params: { appId, jobId: String(j.jobId) },
+            search: { attempt: attempt ?? undefined },
+          })
+        }
+        rowVersion={(j) => `${j.status}:${j.numActiveTasks ?? 0}:${j.numCompletedTasks ?? 0}`}
+        totalCount={jobs.length}
+        exportName={`spark-jobs-${appId}`}
+        toolbar={
+          <>
+            <Select
+              label="Job status filter"
+              value={status ?? ""}
+              onValueChange={(v) => patch({ status: v === "" ? undefined : v })}
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "RUNNING", label: "Running" },
+                { value: "SUCCEEDED", label: "Succeeded" },
+                { value: "FAILED", label: "Failed" },
+              ]}
+            />
+            <label className="flex items-center gap-1.5 text-small text-ink-3">
+              <span className="sr-only">Filter jobs by name or id</span>
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => patch({ q: e.target.value || undefined })}
+                placeholder="Filter name / id…"
+                className="h-(--ctl-h) w-52 rounded-md border border-seam-strong bg-well px-2 text-body text-ink placeholder:text-ink-4"
               />
-              <label className="flex items-center gap-1.5 text-small text-ink-3">
-                <span className="sr-only">Filter jobs by name or id</span>
-                <input
-                  type="search"
-                  value={q}
-                  onChange={(e) => patch({ q: e.target.value || undefined })}
-                  placeholder="Filter name / id…"
-                  className="h-(--ctl-h) w-52 rounded-md border border-seam-strong bg-well px-2 text-body text-ink placeholder:text-ink-4"
-                />
-              </label>
-              <span className="text-small text-ink-4">
-                {filtering.length === jobs.length ? (
-                  <>{fmtInt(jobs.length)} shown</>
-                ) : (
-                  <>
-                    {fmtInt(filtering.length)} of {fmtInt(jobs.length)}
-                  </>
-                )}
-              </span>
-            </>
-          }
-        />
-      )}
+            </label>
+            <span className="text-small text-ink-4">
+              {filtering.length === jobs.length ? (
+                <>{fmtInt(jobs.length)} shown</>
+              ) : (
+                <>
+                  {fmtInt(filtering.length)} of {fmtInt(jobs.length)}
+                </>
+              )}
+            </span>
+          </>
+        }
+      />
     </div>
   );
 }

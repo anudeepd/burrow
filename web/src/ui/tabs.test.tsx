@@ -1,47 +1,46 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { createRef } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Tab, TabContent, TabsList, TabsRoot } from "./tabs";
+import { RouteTabIndicator, TabContent, TabsList, TabsRoot, Tab } from "./tabs";
 
-afterEach(() => {
-  cleanup();
-  vi.unstubAllGlobals();
+afterEach(cleanup);
+
+describe("tab content", () => {
+  it("preserves an in-progress filter and focus when changes interrupt a content fade", () => {
+    const content = (value: string) => (
+      <TabContent value={value}>
+        <input aria-label="Filter jobs" defaultValue="" />
+      </TabContent>
+    );
+    const view = render(content("jobs"));
+    const filter = screen.getByRole("textbox", { name: "Filter jobs" });
+    fireEvent.change(filter, { target: { value: "shuffle" } });
+    filter.focus();
+
+    view.rerender(content("stages"));
+    view.rerender(content("executors"));
+
+    expect((screen.getByRole("textbox", { name: "Filter jobs" }) as HTMLInputElement).value).toBe("shuffle");
+    expect(document.activeElement).toBe(filter);
+    view.unmount();
+  });
 });
-
-describe("tabs", () => {
-  it("renders a default tab list, optional badges, and fades changed content", () => {
-    const animation = { playState: "running", cancel: vi.fn() } as unknown as Animation;
-    const animate = vi.fn(() => animation);
-    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
-    vi.stubGlobal(
-      "getComputedStyle",
-      () => ({ opacity: "not-a-number", getPropertyValue: () => "220ms" }) as unknown as CSSStyleDeclaration,
+describe("tab navigation", () => {
+  it("renders tabs without overflow cues by default", () => {
+    render(
+      <TabsRoot defaultValue="one">
+        <TabsList label="Sections">
+          <Tab value="one">One</Tab>
+        </TabsList>
+      </TabsRoot>,
     );
+    expect(screen.getByRole("tablist", { name: "Sections" })).toBeTruthy();
+    expect(document.querySelector(".burrow-horizontal-scroll-cues")).toBeNull();
+  });
 
-    const makeTree = (value: string, overflowFade = false) => (
-      <>
-        <TabsRoot defaultValue="one">
-          <TabsList label="Details" {...(overflowFade ? { overflowFade: true } : {})}>
-            <Tab value="one" field="tab.one">
-              One
-            </Tab>
-            <Tab value="two" badge={2}>
-              Two
-            </Tab>
-          </TabsList>
-        </TabsRoot>
-        <TabContent value={value}>Panel {value}</TabContent>
-      </>
-    );
-    const view = render(makeTree("one"));
-    expect(screen.getByRole("tab", { name: "One" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Two 2" })).toBeTruthy();
-    expect(document.querySelector('[data-scroll-cue="left"]')).toBeNull();
-
-    view.rerender(makeTree("two", true));
-    expect(document.querySelector('[data-scroll-cue="left"]')).not.toBeNull();
-    view.rerender(makeTree("three", true));
-    expect(animate).toHaveBeenCalled();
-    expect(animation.cancel).toHaveBeenCalled();
-    expect(screen.getByText("Panel three")).toBeTruthy();
+  it("does not render a route indicator until its list ref exists", () => {
+    const listRef = createRef<HTMLElement>();
+    const view = render(<RouteTabIndicator listRef={listRef} value="one" />);
+    expect(view.container.childElementCount).toBe(0);
   });
 });

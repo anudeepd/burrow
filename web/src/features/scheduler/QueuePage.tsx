@@ -13,7 +13,7 @@ import { StatusPill } from "~/ui/status";
 import { Button } from "~/ui/button";
 import { CenteredPageState, EmptyState, ErrorState } from "~/ui/feedback";
 import { ResourceRing } from "~/ui/resource-ring";
-import { Tab, TabsList, TabsPanel, TabsRoot } from "~/ui/tabs";
+import { Tab, TabContent, TabsList, TabsPanel, TabsRoot } from "~/ui/tabs";
 import { fmtMB } from "~/lib/format";
 import { nodesQuery, queueAppsQuery, schedulerActivitiesQuery, schedulerConfQuery, schedulerQuery } from "~/api/queries/scheduler";
 import { Card, KVRow, KVRowGroup, PageHeader, Section, StateNote } from "./Chrome";
@@ -96,7 +96,10 @@ export function QueuePage({ queue, search, patch }: { queue: string; search: Que
     // The scheduler layout is a bare `<Outlet/>` and `main` is `overflow-hidden`, so a page has to bring its own
     // scroller (the index page does, in its tabs panel). Without this the queue page's content was clipped at the
     // viewport edge on any screen shorter than the page — nothing scrolled at all.
-    <div className="burrow-scroll burrow-page-scroll burrow-page-scroll--stable flex min-h-0 flex-1 flex-col overflow-y-auto">
+    <div
+      data-page-motion="content"
+      className="burrow-scroll burrow-page-scroll burrow-page-scroll--stable flex min-h-0 flex-1 flex-col overflow-y-auto"
+    >
       <nav aria-label="Queue path" className="flex flex-wrap items-center gap-1 pb-1 text-small text-ink-3">
         <Link to="/scheduler" className="text-live hover:underline">
           Scheduler
@@ -127,56 +130,58 @@ export function QueuePage({ queue, search, patch }: { queue: string; search: Que
               : "Parent queue · child queue capacity and aggregate application activity."
         }
         meta={
-          <Entity as="span" id={node.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            {node.capacity && (
-              <>
-                <StatusPill domain="queue.state" state={node.capacity.state} field="queue.state" size="sm" />
-                <span className="flex items-center gap-1">
-                  <span className="text-ink-4">policy</span>
-                  <Datum field="queue.orderingPolicyInfo" raw={node.capacity.orderingPolicyInfo} className="text-ink-2">
-                    {node.capacity.orderingPolicyInfo ?? "—"}
-                  </Datum>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="text-ink-4">labels</span>
-                  <Datum
-                    field="queue.nodeLabels"
-                    raw={(node.capacity.nodeLabels ?? []).join(",")}
-                    className="font-mono text-small text-ink-2"
-                  >
-                    {node.capacity.nodeLabels?.length ? node.capacity.nodeLabels.join(",") : "—"}
-                  </Datum>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="text-ink-4">apps</span>
-                  <Datum field="queue.numActiveApplications" raw={node.capacity.numActiveApplications} fmt="int" className="text-ink-2">
-                    {countText(m.activeApps ?? m.apps)}
-                  </Datum>
-                  <span className="text-ink-4">active ·</span>
-                  <Datum field="queue.numPendingApplications" raw={node.capacity.numPendingApplications} fmt="int" className="text-ink-2">
-                    {countText(m.pendingApps)}
-                  </Datum>
-                  <span className="text-ink-4">pending</span>
-                </span>
-              </>
-            )}
-            {node.fair && (
-              <>
-                <span className="flex items-center gap-1">
-                  <span className="text-ink-4">policy</span>
-                  <Datum field="queue.schedulingPolicy" raw={node.fair.schedulingPolicy} className="text-ink-2">
-                    {node.fair.schedulingPolicy}
-                  </Datum>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="text-ink-4">preemptable</span>
-                  <Datum field="queue.preemptable" raw={node.fair.preemptable} className="text-ink-2">
-                    {String(node.fair.preemptable)}
-                  </Datum>
-                </span>
-              </>
-            )}
-          </Entity>
+          <TabContent initial value={queue}>
+            <Entity as="span" id={node.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              {node.capacity && (
+                <>
+                  <StatusPill domain="queue.state" state={node.capacity.state} field="queue.state" size="sm" />
+                  <span className="flex items-center gap-1">
+                    <span className="text-ink-4">policy</span>
+                    <Datum field="queue.orderingPolicyInfo" raw={node.capacity.orderingPolicyInfo} className="text-ink-2">
+                      {node.capacity.orderingPolicyInfo ?? "—"}
+                    </Datum>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-ink-4">labels</span>
+                    <Datum
+                      field="queue.nodeLabels"
+                      raw={(node.capacity.nodeLabels ?? []).join(",")}
+                      className="font-mono text-small text-ink-2"
+                    >
+                      {node.capacity.nodeLabels?.length ? node.capacity.nodeLabels.join(",") : "—"}
+                    </Datum>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-ink-4">apps</span>
+                    <Datum field="queue.numActiveApplications" raw={node.capacity.numActiveApplications} fmt="int" className="text-ink-2">
+                      {countText(m.activeApps ?? m.apps)}
+                    </Datum>
+                    <span className="text-ink-4">active ·</span>
+                    <Datum field="queue.numPendingApplications" raw={node.capacity.numPendingApplications} fmt="int" className="text-ink-2">
+                      {countText(m.pendingApps)}
+                    </Datum>
+                    <span className="text-ink-4">pending</span>
+                  </span>
+                </>
+              )}
+              {node.fair && (
+                <>
+                  <span className="flex items-center gap-1">
+                    <span className="text-ink-4">policy</span>
+                    <Datum field="queue.schedulingPolicy" raw={node.fair.schedulingPolicy} className="text-ink-2">
+                      {node.fair.schedulingPolicy}
+                    </Datum>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-ink-4">preemptable</span>
+                    <Datum field="queue.preemptable" raw={node.fair.preemptable} className="text-ink-2">
+                      {String(node.fair.preemptable)}
+                    </Datum>
+                  </span>
+                </>
+              )}
+            </Entity>
+          </TabContent>
         }
         actions={
           <Button size="sm" variant="quiet" onClick={infoQ.retry} aria-busy={infoQ.loading}>
@@ -186,26 +191,33 @@ export function QueuePage({ queue, search, patch }: { queue: string; search: Que
         }
       />
 
-      <Entity id={node.id} className="flex flex-col gap-3">
+      <Entity id={node.id} data-page-motion="content" className="flex flex-col gap-3">
         <FreenessHero node={node} />
         <Section title="Queue Status">
-          <Card>
-            {node.capacity ? (
-              <CapacityQueueStatus raw={node.capacity} leaf={node.role === "leaf"} />
-            ) : (
-              <FairQueueStatus raw={node.fair!} leaf={node.role === "leaf"} />
-            )}
-            {node.role !== "leaf" && (
-              <p className="mt-2 text-small text-ink-4">
-                Parent queue: the legacy page renders no status block for parents, so these rows are the queue's own REST fields shown for
-                completeness.
-              </p>
-            )}
-          </Card>
+          <TabContent initial value={queue}>
+            <Card>
+              {node.capacity ? (
+                <CapacityQueueStatus raw={node.capacity} leaf={node.role === "leaf"} />
+              ) : (
+                <FairQueueStatus raw={node.fair!} leaf={node.role === "leaf"} />
+              )}
+              {node.role !== "leaf" && (
+                <p className="mt-2 text-small text-ink-4">
+                  Parent queue: the legacy page renders no status block for parents, so these rows are the queue's own REST fields shown for
+                  completeness.
+                </p>
+              )}
+            </Card>
+          </TabContent>
         </Section>
       </Entity>
 
-      <TabsRoot value={tab} onValueChange={(v) => patch({ tab: v as QueueSearch["tab"] })} className="mt-3 flex min-h-0 flex-none flex-col">
+      <TabsRoot
+        data-page-motion="content"
+        value={tab}
+        onValueChange={(v) => patch({ tab: v as QueueSearch["tab"] })}
+        className="mt-3 flex min-h-0 flex-none flex-col"
+      >
         <TabsList label="Queue sections" overflowFade>
           <Tab value="users" field="queueuser.username">
             Users
@@ -224,10 +236,11 @@ export function QueuePage({ queue, search, patch }: { queue: string; search: Que
           </Tab>
         </TabsList>
 
-        <div className="mt-2 min-w-0">
+        <div data-page-motion="content" className="mt-2 min-w-0">
           <TabsPanel value="users" data-burrow-queue-tab-panel="users" className="pb-8">
             {node.capacity ? (
               <UserTable
+                contentIdentity={queue}
                 rows={userRows(node.id, node.capacity)}
                 sorting={parseSorting(search.usersSort)}
                 onSortingChange={(s) => patch({ usersSort: serializeSorting(s) })}
@@ -245,6 +258,7 @@ export function QueuePage({ queue, search, patch }: { queue: string; search: Que
           <TabsPanel value="apps" data-burrow-queue-tab-panel="apps" className="pb-8">
             {appsQ.stale && <ErrorState compact {...errorInfo(appsQ.error)} onRetry={appsQ.retry} />}
             <QueueAppsTable
+              contentIdentity={queue}
               apps={appsQ.data ?? []}
               loading={appsQ.loading}
               error={appsQ.error && !appsQ.data ? <ErrorState {...errorInfo(appsQ.error)} onRetry={appsQ.retry} /> : undefined}
@@ -352,183 +366,185 @@ function FreenessHero({ node }: { node: QueueNode }) {
   const freePct = node.capacity ? Math.max(0, (m.absCapPct ?? m.capPct ?? 0) - (usedPct ?? 0)) : null;
   return (
     <Section title="Freeness">
-      <Card className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <ResourceRing
-          used={m.usedMb ?? 0}
-          reserved={m.reservedMb ?? 0}
-          total={m.maxMb ?? 0}
-          tone={tone}
-          size={84}
-          label={`${node.id} memory used`}
-          centre={<span className="tnum">{m.maxMb ? `${(((m.usedMb ?? 0) / m.maxMb) * 100).toFixed(0)}%` : "—"}</span>}
-        />
-        <div className="flex min-w-64 flex-1 flex-col gap-2">
-          <div className="flex items-center gap-2">
-            {node.capacity ? (
-              <CapacityBar
-                usedPct={usedPct}
-                capPct={m.absCapPct ?? m.capPct}
-                maxPct={m.absMaxPct ?? m.maxPct}
-                tone={tone}
-                label={node.id}
-                datum={{
-                  "data-yf": "queue.absoluteUsedCapacity",
-                  "data-yv": cap?.absoluteUsedCapacity == null ? "" : String(cap.absoluteUsedCapacity),
-                  "data-yfmt": "pct",
-                }}
-              />
-            ) : (
-              <FairBar
-                usedMb={m.usedMb}
-                minMb={m.minMb}
-                fairMb={m.fairMb}
-                maxMb={m.maxMb}
-                tone={tone}
-                label={node.id}
-                datum={{
-                  "data-yf": "queue.usedResources.memory",
-                  "data-yv": node.fair?.usedResources?.memory == null ? "" : String(node.fair.usedResources.memory),
-                  "data-yfmt": "mb",
-                }}
-              />
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-micro text-ink-3" aria-label="Freeness bar legend">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                aria-hidden="true"
-                className="h-1 w-4 rounded-full"
-                style={{ background: "linear-gradient(90deg, var(--ok), var(--live), var(--wait), var(--warn), var(--fail))" }}
-              />
-              used · color shows pressure
-            </span>
-            {node.capacity ? (
-              <>
-                <span className="inline-flex items-center gap-1.5">
-                  <span aria-hidden="true" className="burrow-progress-legend-guarantee" />
-                  guaranteed share
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span aria-hidden="true" className="burrow-progress-legend-max" />
-                  max capacity
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="inline-flex items-center gap-1.5">
-                  <span aria-hidden="true" className="burrow-progress-legend-minimum" />
-                  minimum
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span aria-hidden="true" className="burrow-progress-legend-fair" />
-                  fair share
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span aria-hidden="true" className="burrow-progress-legend-max" />
-                  max
-                </span>
-              </>
-            )}
-          </div>
-          {/* one column until `xl`: `KVRow` keeps its label at `shrink-0` and truncates the value, and this grid sits
+      <TabContent initial value={node.id}>
+        <Card className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <ResourceRing
+            used={m.usedMb ?? 0}
+            reserved={m.reservedMb ?? 0}
+            total={m.maxMb ?? 0}
+            tone={tone}
+            size={84}
+            label={`${node.id} memory used`}
+            centre={<span className="tnum">{m.maxMb ? `${(((m.usedMb ?? 0) / m.maxMb) * 100).toFixed(0)}%` : "—"}</span>}
+          />
+          <div className="flex min-w-64 flex-1 flex-col gap-2">
+            <div className="flex items-center gap-2">
+              {node.capacity ? (
+                <CapacityBar
+                  usedPct={usedPct}
+                  capPct={m.absCapPct ?? m.capPct}
+                  maxPct={m.absMaxPct ?? m.maxPct}
+                  tone={tone}
+                  label={node.id}
+                  datum={{
+                    "data-yf": "queue.absoluteUsedCapacity",
+                    "data-yv": cap?.absoluteUsedCapacity == null ? "" : String(cap.absoluteUsedCapacity),
+                    "data-yfmt": "pct",
+                  }}
+                />
+              ) : (
+                <FairBar
+                  usedMb={m.usedMb}
+                  minMb={m.minMb}
+                  fairMb={m.fairMb}
+                  maxMb={m.maxMb}
+                  tone={tone}
+                  label={node.id}
+                  datum={{
+                    "data-yf": "queue.usedResources.memory",
+                    "data-yv": node.fair?.usedResources?.memory == null ? "" : String(node.fair.usedResources.memory),
+                    "data-yfmt": "mb",
+                  }}
+                />
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-micro text-ink-3" aria-label="Freeness bar legend">
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  aria-hidden="true"
+                  className="h-1 w-4 rounded-full"
+                  style={{ background: "linear-gradient(90deg, var(--ok), var(--live), var(--wait), var(--warn), var(--fail))" }}
+                />
+                used · color shows pressure
+              </span>
+              {node.capacity ? (
+                <>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="burrow-progress-legend-guarantee" />
+                    guaranteed share
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="burrow-progress-legend-max" />
+                    max capacity
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="burrow-progress-legend-minimum" />
+                    minimum
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="burrow-progress-legend-fair" />
+                    fair share
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="burrow-progress-legend-max" />
+                    max
+                  </span>
+                </>
+              )}
+            </div>
+            {/* one column until `xl`: `KVRow` keeps its label at `shrink-0` and truncates the value, and this grid sits
               beside the freeness ring, so it is narrower than a full-width KV — three columns only fit on wide screens
               (≥1280px). At 390/768/1024 values like "16.0% free" collapsed to "16.0…" */}
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-0 text-body xl:grid-cols-3">
-            {node.capacity ? (
-              <>
-                <KVRow
-                  label="Used of its share"
-                  field="queue.capacities.queueCapacitiesByPartition.usedCapacity"
-                  raw={cap?.usedCapacity}
-                  fmt="pct"
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-0 text-body xl:grid-cols-3">
+              {node.capacity ? (
+                <>
+                  <KVRow
+                    label="Used of its share"
+                    field="queue.capacities.queueCapacitiesByPartition.usedCapacity"
+                    raw={cap?.usedCapacity}
+                    fmt="pct"
+                  >
+                    {pctText(m.usedPct)}
+                  </KVRow>
+                  <KVRowGroup label="Free inside the share">
+                    <FreeReadout freePct={freePct} freeMb={null} field="queue.derived.freeGuaranteedPct" />
+                  </KVRowGroup>
+                  <KVRowGroup label="Room before max">
+                    <FreeReadout
+                      freePct={Math.max(0, (m.absMaxPct ?? m.maxPct ?? 0) - (usedPct ?? 0))}
+                      freeMb={null}
+                      field="queue.derived.burstRoomPct"
+                    />
+                  </KVRowGroup>
+                </>
+              ) : (
+                <>
+                  <KVRowGroup label="Free inside the fair share">
+                    <FreeReadout
+                      freePct={null}
+                      freeMb={m.fairMb != null && m.usedMb != null ? m.fairMb - m.usedMb : null}
+                      field="queue.derived.fairShareFreeMb"
+                    />
+                  </KVRowGroup>
+                  <KVRowGroup label="Used of fair">
+                    <Datum field="queue.derived.usedOfFairPct" raw={m.fairMb ? ((m.usedMb ?? 0) / m.fairMb) * 100 : null} fmt="pct" />
+                  </KVRowGroup>
+                  <KVRowGroup label="Used of minimum">
+                    <Datum field="queue.derived.usedOfMinPct" raw={m.minMb ? ((m.usedMb ?? 0) / m.minMb) * 100 : null} fmt="pct" />
+                  </KVRowGroup>
+                </>
+              )}
+              <KVRowGroup label="Headroom to max">
+                <Datum
+                  field="queue.derived.headroomMb"
+                  raw={
+                    node.capacity?.maxEffectiveCapacity?.memory != null && m.usedMb != null
+                      ? node.capacity.maxEffectiveCapacity.memory - m.usedMb
+                      : m.maxMb != null && m.usedMb != null
+                        ? m.maxMb - m.usedMb
+                        : null
+                  }
+                  fmt="mb"
+                  className="tnum text-ink-2"
                 >
-                  {pctText(m.usedPct)}
-                </KVRow>
-                <KVRowGroup label="Free inside the share">
-                  <FreeReadout freePct={freePct} freeMb={null} field="queue.derived.freeGuaranteedPct" />
-                </KVRowGroup>
-                <KVRowGroup label="Room before max">
-                  <FreeReadout
-                    freePct={Math.max(0, (m.absMaxPct ?? m.maxPct ?? 0) - (usedPct ?? 0))}
-                    freeMb={null}
-                    field="queue.derived.burstRoomPct"
-                  />
-                </KVRowGroup>
-              </>
-            ) : (
-              <>
-                <KVRowGroup label="Free inside the fair share">
-                  <FreeReadout
-                    freePct={null}
-                    freeMb={m.fairMb != null && m.usedMb != null ? m.fairMb - m.usedMb : null}
-                    field="queue.derived.fairShareFreeMb"
-                  />
-                </KVRowGroup>
-                <KVRowGroup label="Used of fair">
-                  <Datum field="queue.derived.usedOfFairPct" raw={m.fairMb ? ((m.usedMb ?? 0) / m.fairMb) * 100 : null} fmt="pct" />
-                </KVRowGroup>
-                <KVRowGroup label="Used of minimum">
-                  <Datum field="queue.derived.usedOfMinPct" raw={m.minMb ? ((m.usedMb ?? 0) / m.minMb) * 100 : null} fmt="pct" />
-                </KVRowGroup>
-              </>
-            )}
-            <KVRowGroup label="Headroom to max">
-              <Datum
-                field="queue.derived.headroomMb"
-                raw={
-                  node.capacity?.maxEffectiveCapacity?.memory != null && m.usedMb != null
-                    ? node.capacity.maxEffectiveCapacity.memory - m.usedMb
-                    : m.maxMb != null && m.usedMb != null
-                      ? m.maxMb - m.usedMb
-                      : null
-                }
-                fmt="mb"
-                className="tnum text-ink-2"
+                  {fmtMB(Math.max(0, (m.maxMb ?? 0) - (m.usedMb ?? 0)))}
+                </Datum>
+              </KVRowGroup>
+              <KVRowGroup label="Reserved / pending">
+                <span className="inline-flex items-baseline gap-1 tnum">
+                  <Datum
+                    field="queue.resources.resourceUsagesByPartition.reserved.memory"
+                    raw={res?.reserved?.memory ?? node.fair?.reservedResources?.memory}
+                    fmt="mb"
+                    className="text-ink-2"
+                  >
+                    {countText(res?.reserved?.memory ?? m.reservedMb)}
+                  </Datum>
+                  <span className="text-ink-4">res ·</span>
+                  <Datum
+                    field="queue.resources.resourceUsagesByPartition.pending.memory"
+                    raw={res?.pending?.memory}
+                    fmt="mb"
+                    className="text-ink-2"
+                  >
+                    {countText(res?.pending?.memory ?? m.pendingMb)}
+                  </Datum>
+                  <span className="text-ink-4">pend</span>
+                </span>
+              </KVRowGroup>
+              <KVRow
+                label="Containers"
+                field="queue.allocatedContainers"
+                raw={node.capacity?.allocatedContainers ?? node.fair?.allocatedContainers}
+                fmt="int"
               >
-                {fmtMB(Math.max(0, (m.maxMb ?? 0) - (m.usedMb ?? 0)))}
-              </Datum>
-            </KVRowGroup>
-            <KVRowGroup label="Reserved / pending">
-              <span className="inline-flex items-baseline gap-1 tnum">
-                <Datum
-                  field="queue.resources.resourceUsagesByPartition.reserved.memory"
-                  raw={res?.reserved?.memory ?? node.fair?.reservedResources?.memory}
-                  fmt="mb"
-                  className="text-ink-2"
-                >
-                  {countText(res?.reserved?.memory ?? m.reservedMb)}
-                </Datum>
-                <span className="text-ink-4">res ·</span>
-                <Datum
-                  field="queue.resources.resourceUsagesByPartition.pending.memory"
-                  raw={res?.pending?.memory}
-                  fmt="mb"
-                  className="text-ink-2"
-                >
-                  {countText(res?.pending?.memory ?? m.pendingMb)}
-                </Datum>
-                <span className="text-ink-4">pend</span>
-              </span>
-            </KVRowGroup>
-            <KVRow
-              label="Containers"
-              field="queue.allocatedContainers"
-              raw={node.capacity?.allocatedContainers ?? node.fair?.allocatedContainers}
-              fmt="int"
-            >
-              {countText(m.containers)}
-            </KVRow>
-            <KVRow
-              label="Max containers"
-              field="queue.maxApplications"
-              raw={node.capacity?.maxApplications ?? node.fair?.maxApps}
-              fmt="int"
-            >
-              {countText(m.maxApps)}
-            </KVRow>
-          </dl>
-        </div>
-      </Card>
+                {countText(m.containers)}
+              </KVRow>
+              <KVRow
+                label="Max containers"
+                field="queue.maxApplications"
+                raw={node.capacity?.maxApplications ?? node.fair?.maxApps}
+                fmt="int"
+              >
+                {countText(m.maxApps)}
+              </KVRow>
+            </dl>
+          </div>
+        </Card>
+      </TabContent>
     </Section>
   );
 }

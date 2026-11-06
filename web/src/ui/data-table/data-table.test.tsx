@@ -7,6 +7,7 @@ const motionMocks = vi.hoisted(() => ({
   duration: null as number | null,
   flash: vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation),
 }));
+const scrollBottomMocks = vi.hoisted(() => ({ skipObserver: false }));
 const widthMocks = vi.hoisted(() => ({ width: 0 }));
 
 vi.mock("~/lib/motion", async (importOriginal) => ({
@@ -42,6 +43,15 @@ vi.mock("~/lib/size", async (importOriginal) => ({
   useElementWidth: () => [{ current: null }, widthMocks.width],
 }));
 
+vi.mock("../scroll-bottom-fade", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../scroll-bottom-fade")>();
+  return {
+    ...original,
+    useHasMoreBelow: (...args: Parameters<typeof original.useHasMoreBelow>) =>
+      scrollBottomMocks.skipObserver ? { visible: false, sync: () => undefined } : original.useHasMoreBelow(...args),
+  };
+});
+
 window.__BURROW_PARITY__ = true;
 
 const { cleanup, fireEvent, render, screen } = await import("@testing-library/react");
@@ -53,8 +63,10 @@ let originalClientHeight: PropertyDescriptor | null | undefined;
 let originalAnimate: PropertyDescriptor | null | undefined;
 let originalClientWidth: PropertyDescriptor | null | undefined;
 let originalRect: PropertyDescriptor | null | undefined;
+let originalGetAnimations: PropertyDescriptor | null | undefined;
 let originalMatchMedia: PropertyDescriptor | null | undefined;
-
+let originalInnerHeight: PropertyDescriptor | null | undefined;
+let originalVisualViewport: PropertyDescriptor | null | undefined;
 interface Row {
   id: string;
   name: string;
@@ -107,22 +119,32 @@ afterEach(() => {
   else if (originalClientWidth) Object.defineProperty(HTMLElement.prototype, "clientWidth", originalClientWidth);
   if (originalRect === null) delete (HTMLElement.prototype as { getBoundingClientRect?: () => DOMRect }).getBoundingClientRect;
   else if (originalRect) Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", originalRect);
-  if (originalMatchMedia === null) delete (window as { matchMedia?: typeof window.matchMedia }).matchMedia;
+  if (originalInnerHeight === null) delete (window as { innerHeight?: number }).innerHeight;
+  else if (originalInnerHeight) Object.defineProperty(window, "innerHeight", originalInnerHeight);
+  if (originalVisualViewport === null) delete (window as { visualViewport?: VisualViewport | null }).visualViewport;
+  else if (originalVisualViewport) Object.defineProperty(window, "visualViewport", originalVisualViewport);
+  if (originalMatchMedia === null) Reflect.deleteProperty(window, "matchMedia");
   else if (originalMatchMedia) Object.defineProperty(window, "matchMedia", originalMatchMedia);
   if (originalAnimate === null) delete (HTMLElement.prototype as { animate?: (...args: unknown[]) => Animation }).animate;
   else if (originalAnimate) Object.defineProperty(HTMLElement.prototype, "animate", originalAnimate);
+  if (originalGetAnimations === null) delete (HTMLElement.prototype as { getAnimations?: () => Animation[] }).getAnimations;
+  else if (originalGetAnimations) Object.defineProperty(HTMLElement.prototype, "getAnimations", originalGetAnimations);
+  originalGetAnimations = undefined;
   originalClientHeight = undefined;
   originalAnimate = undefined;
   originalClientWidth = undefined;
   originalRect = undefined;
   originalMatchMedia = undefined;
-  vi.unstubAllGlobals();
+  originalInnerHeight = undefined;
+  originalVisualViewport = undefined;
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
   motionMocks.allowed = false;
   motionMocks.duration = null;
   widthMocks.width = 0;
   motionMocks.flash.mockClear();
+  scrollBottomMocks.skipObserver = false;
 });
 
 describe("DataTable", () => {
@@ -172,6 +194,176 @@ describe("DataTable", () => {
     expect(screen.getByRole("button", { name: "Sort order: name ↑" })).toBeTruthy();
     sorted.unmount();
   });
+  it("does not add a table-entry animation while its page content is moving", () => {
+    originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
+    originalGetAnimations = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getAnimations") ?? null;
+    const animate = vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation);
+    const animation = (name: string, playState: AnimationPlayState) =>
+      ({ animationName: name, playState } as unknown as Animation);
+    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
+    Object.defineProperty(HTMLElement.prototype, "getAnimations", {
+      configurable: true,
+      value: () => [animation("other-animation", "running"), animation("burrow-page-content-shift", "running")],
+    });
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    motionMocks.allowed = true;
+    const { container } = render(
+      <div data-page-motion="content">
+        <DataTable<Row>
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          entityKey={(row) => row.id}
+          label="Nodes"
+          storageKey="test-data-table"
+          sorting={[]}
+          onSortingChange={vi.fn()}
+          columnVisibility={{}}
+          onColumnVisibilityChange={vi.fn()}
+          defaultVisibility={{ id: true, name: true, count: false }}
+          selectable
+          exportName="nodes"
+        />
+      </div>,
+    );
+    expect(container.querySelector("[data-burrow-table-root]")).not.toBeNull();
+    expect(animate).not.toHaveBeenCalled();
+  });
+  it("fades rows when their content identity changes and cancels the fade when rows disappear", () => {
+    originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
+    const animations: Array<{ cancel: ReturnType<typeof vi.fn>; playState: AnimationPlayState }> = [];
+    const animate = vi.fn(function (this: HTMLElement) {
+      const animation = { cancel: vi.fn(), playState: "running" as AnimationPlayState };
+      animations.push(animation);
+      return animation as unknown as Animation;
+    });
+    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const view = renderTable({ contentIdentity: "first", initialContentFade: false });
+    const renderIdentity = (contentIdentity: string, data = rows) =>
+      view.rerender(
+        <DataTable<Row>
+          data={data}
+          columns={columns}
+          getRowId={(row) => row.id}
+          entityKey={(row) => row.id}
+          label="Nodes"
+          storageKey="test-data-table"
+          sorting={[]}
+          onSortingChange={view.onSortingChange}
+          columnVisibility={{}}
+          onColumnVisibilityChange={view.onColumnVisibilityChange}
+          defaultVisibility={{ id: true, name: true, count: false }}
+          selectable
+          contentIdentity={contentIdentity}
+          exportName="nodes"
+        />,
+      );
+    renderIdentity("first");
+    expect(animate).not.toHaveBeenCalled();
+    renderIdentity("second");
+    expect(animate).toHaveBeenCalledTimes(1);
+    renderIdentity("second", []);
+    expect(animations[0]!.cancel).toHaveBeenCalledTimes(1);
+    renderIdentity("third");
+    expect(animate).toHaveBeenCalledTimes(1);
+  });
+  it("retargets an in-flight content fade and falls back to zero for a non-finite opacity", () => {
+    originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
+    const animations: Array<{
+      keyframes: Keyframe[] | PropertyIndexedKeyframes | null | undefined;
+      animation: { cancel: ReturnType<typeof vi.fn>; playState: AnimationPlayState };
+    }> = [];
+    const animate = vi.fn(function (
+      this: HTMLElement,
+      keyframes?: Keyframe[] | PropertyIndexedKeyframes | null,
+    ) {
+      const animation = { cancel: vi.fn(), playState: "running" as AnimationPlayState };
+      animations.push({ keyframes, animation });
+      return animation as unknown as Animation;
+    });
+    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const view = renderTable({ contentIdentity: "first", initialContentFade: false });
+    const body = view.container.querySelector<HTMLElement>('[role="rowgroup"].relative')!;
+    const getStyle = window.getComputedStyle.bind(window);
+    let opacity = "0.4";
+    vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudoElement) => {
+      const style = getStyle(element, pseudoElement);
+      return element === body ? ({ opacity, getPropertyValue: style.getPropertyValue.bind(style) } as CSSStyleDeclaration) : style;
+    });
+    const renderIdentity = (contentIdentity: string) =>
+      view.rerender(
+        <DataTable<Row>
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          entityKey={(row) => row.id}
+          label="Nodes"
+          storageKey="test-data-table"
+          sorting={[]}
+          onSortingChange={view.onSortingChange}
+          columnVisibility={{}}
+          onColumnVisibilityChange={view.onColumnVisibilityChange}
+          defaultVisibility={{ id: true, name: true, count: false }}
+          selectable
+          contentIdentity={contentIdentity}
+          initialContentFade={false}
+          exportName="nodes"
+        />,
+      );
+
+    renderIdentity("second");
+    expect((animations[0]!.keyframes as Keyframe[])[0]?.opacity).toBe(0);
+    renderIdentity("third");
+    expect((animations[1]!.keyframes as Keyframe[])[0]?.opacity).toBe(0.4);
+    expect(animations[0]!.animation.cancel).toHaveBeenCalledTimes(1);
+    opacity = "not-a-number";
+    renderIdentity("fourth");
+    expect((animations[2]!.keyframes as Keyframe[])[0]?.opacity).toBe(0);
+    expect(animations[1]!.animation.cancel).toHaveBeenCalledTimes(1);
+    expect(animate).toHaveBeenCalledTimes(3);
+  });
+
+
+  it.each(["finished", "idle"] as const)("does not mistake a %s page animation for active motion", (playState) => {
+    originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
+    originalGetAnimations = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getAnimations") ?? null;
+    const animate = vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation);
+    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
+    Object.defineProperty(HTMLElement.prototype, "getAnimations", {
+      configurable: true,
+      value: () => [{ animationName: "burrow-page-content-shift", playState } as unknown as Animation],
+    });
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    motionMocks.allowed = true;
+    const { container } = render(
+      <div data-page-motion="content">
+        <DataTable<Row>
+          data={rows}
+          columns={columns}
+          getRowId={(row) => row.id}
+          entityKey={(row) => row.id}
+          label="Nodes"
+          storageKey="test-data-table"
+          sorting={[]}
+          onSortingChange={vi.fn()}
+          columnVisibility={{}}
+          onColumnVisibilityChange={vi.fn()}
+          defaultVisibility={{ id: true, name: true, count: false }}
+          selectable
+          exportName="nodes"
+        />
+      </div>,
+    );
+    expect(container.querySelector("[data-burrow-table-root]")).not.toBeNull();
+    expect(animate).toHaveBeenCalledTimes(1);
+  });
+
 
   it("renders wrapped headers that cannot be sorted", () => {
     const fixedColumns: ColDef<Row>[] = [
@@ -223,7 +415,7 @@ describe("DataTable", () => {
     Object.defineProperty(content, "offsetHeight", { configurable: true, value: 100 });
     view.rerender(
       <DataTable<Row>
-        data={rows}
+        data={[...rows]}
         columns={columns}
         getRowId={(row) => row.id}
         entityKey={(row) => row.id}
@@ -240,6 +432,189 @@ describe("DataTable", () => {
       />,
     );
     expect(root.style.maxHeight).toBe("300px");
+  });
+  it.each([
+    [100, 380],
+    [480, 480],
+  ])("measures remaining page height at top %i and falls back to padded page height when too little remains", (rootTop, expectedHeight) => {
+    originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight") ?? null;
+    originalRect = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getBoundingClientRect") ?? null;
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+      configurable: true,
+      get() {
+        return this.classList.contains("burrow-page-scroll") ? 500 : 0;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+      configurable: true,
+      value: function (this: HTMLElement) {
+        const top = this.hasAttribute("data-burrow-table-root") ? rootTop : 0;
+        return { x: 0, y: top, top, left: 0, right: 800, bottom: top + 500, width: 800, height: 500, toJSON: () => ({}) } as DOMRect;
+      },
+    });
+    const data = Array.from({ length: 20 }, (_, index) => ({ id: `n-${index}`, name: `node-${index}`, count: index }));
+    const { container, rerender } = render(
+      <div className="burrow-page-scroll" style={{ paddingBottom: 20 }}>
+        <DataTable<Row>
+          data={data}
+          columns={columns}
+          getRowId={(row) => row.id}
+          label="Nodes"
+          storageKey="test-data-table"
+          sorting={[]}
+          onSortingChange={vi.fn()}
+          columnVisibility={{}}
+          onColumnVisibilityChange={vi.fn()}
+          defaultVisibility={{ id: true, name: true, count: false }}
+          selectable={false}
+          exportName="nodes"
+        />
+      </div>,
+    );
+    const root = container.querySelector<HTMLElement>("[data-burrow-table-root]")!;
+    const scroller = screen.getByRole("table", { name: "Nodes" });
+    const content = scroller.firstElementChild as HTMLElement;
+    Object.defineProperty(root, "offsetHeight", { configurable: true, value: 500 });
+    Object.defineProperty(scroller, "offsetHeight", { configurable: true, value: 400 });
+    Object.defineProperty(content, "offsetHeight", { configurable: true, value: 1000 });
+    rerender(
+      <div className="burrow-page-scroll" style={{ paddingBottom: 20 }}>
+        <DataTable<Row>
+          data={[...data]}
+          columns={columns}
+          getRowId={(row) => row.id}
+          label="Nodes"
+          storageKey="test-data-table"
+          sorting={[]}
+          onSortingChange={vi.fn()}
+          columnVisibility={{}}
+          onColumnVisibilityChange={vi.fn()}
+          defaultVisibility={{ id: true, name: true, count: false }}
+          selectable={false}
+          exportName="nodes"
+        />
+      </div>,
+    );
+    expect(root.style.maxHeight).toBe(`${expectedHeight}px`);
+  });
+  it("ignores a queued resize measurement after the table unmounts", () => {
+    let measure: ResizeObserverCallback | undefined;
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          measure = callback;
+        }
+        observe() {}
+        disconnect() {}
+        unobserve() {}
+      },
+    );
+    const view = renderTable();
+    view.unmount();
+    const measureRect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect");
+    measure?.([], {} as ResizeObserver);
+    expect(measureRect).not.toHaveBeenCalled();
+  });
+  it("re-measures visible table sizing on window resize when ResizeObserver is unavailable", () => {
+    originalInnerHeight = Object.getOwnPropertyDescriptor(window, "innerHeight") ?? null;
+    originalVisualViewport = Object.getOwnPropertyDescriptor(window, "visualViewport") ?? null;
+    originalRect = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getBoundingClientRect") ?? null;
+    vi.stubGlobal("ResizeObserver", undefined);
+    scrollBottomMocks.skipObserver = true;
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 600 });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: null });
+    Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+      configurable: true,
+      value: function (this: HTMLElement) {
+        const top = this.hasAttribute("data-burrow-table-root") ? 100 : 0;
+        return { x: 0, y: top, top, left: 0, right: 800, bottom: top + 500, width: 800, height: 500, toJSON: () => ({}) } as DOMRect;
+      },
+    });
+    const view = renderTable({ stableViewport: true });
+    const root = view.container.querySelector<HTMLElement>("[data-burrow-table-root]")!;
+    const scroller = screen.getByRole("table", { name: "Nodes" });
+    const content = scroller.firstElementChild as HTMLElement;
+    Object.defineProperty(root, "offsetHeight", { configurable: true, value: 500 });
+    Object.defineProperty(scroller, "offsetHeight", { configurable: true, value: 400 });
+    Object.defineProperty(content, "offsetHeight", { configurable: true, value: 1000 });
+
+    fireEvent.resize(window);
+    expect(root.style.maxHeight).toBe("500px");
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 700 });
+    fireEvent.resize(window);
+    expect(root.style.maxHeight).toBe("600px");
+  });
+
+  it("sizes five rows to their content and caps long results to the remaining viewport", () => {
+    originalRect = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getBoundingClientRect") ?? null;
+    const getRect = originalRect?.value as ((this: HTMLElement) => DOMRect) | undefined;
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    const rootTop = Math.floor(viewportHeight / 4);
+    const availableHeight = Math.floor(viewportHeight - rootTop);
+    Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+      configurable: true,
+      value: function (this: HTMLElement) {
+        if (this.hasAttribute("data-burrow-table-root")) {
+          return {
+            x: 0,
+            y: rootTop,
+            top: rootTop,
+            left: 0,
+            right: 800,
+            bottom: rootTop + 500,
+            width: 800,
+            height: 500,
+            toJSON: () => ({}),
+          } as DOMRect;
+        }
+        return getRect?.call(this) ?? ({ x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 } as DOMRect);
+      },
+    });
+    const fiveRows = [
+      ...rows,
+      { id: "n-3", name: "gamma", count: 6 },
+      { id: "n-4", name: "delta", count: 8 },
+      { id: "n-5", name: "epsilon", count: 10 },
+    ];
+    const view = renderTable({ data: fiveRows, stableViewport: true });
+    const root = view.container.querySelector<HTMLElement>("[data-burrow-table-root]")!;
+    const scroller = screen.getByRole("table", { name: "Nodes" });
+    const content = scroller.firstElementChild as HTMLElement;
+    Object.defineProperty(root, "offsetHeight", { configurable: true, value: 500 });
+    Object.defineProperty(scroller, "offsetHeight", { configurable: true, value: 400 });
+    Object.defineProperty(content, "offsetHeight", { configurable: true, value: 202 });
+    const renderRows = (data: Row[]) => (
+      <DataTable<Row>
+        data={[...data]}
+        columns={columns}
+        getRowId={(row) => row.id}
+        entityKey={(row) => row.id}
+        label="Nodes"
+        storageKey="test-data-table"
+        sorting={[]}
+        onSortingChange={view.onSortingChange}
+        columnVisibility={{}}
+        onColumnVisibilityChange={view.onColumnVisibilityChange}
+        defaultVisibility={{ id: true, name: true, count: false }}
+        selectable
+        onRowActivate={view.onRowActivate}
+        exportName="nodes"
+        stableViewport
+      />
+    );
+    view.rerender(renderRows(fiveRows));
+    expect(root.style.maxHeight).toBe("302px");
+    expect(root.className).not.toContain("h-[min(34dvh,360px)]");
+
+    const manyRows = Array.from({ length: 30 }, (_, index) => ({
+      id: `n-${index + 1}`,
+      name: `node-${index + 1}`,
+      count: index,
+    }));
+    Object.defineProperty(content, "offsetHeight", { configurable: true, value: 32 + manyRows.length * 34 });
+    view.rerender(renderRows(manyRows));
+    expect(root.style.maxHeight).toBe(`${availableHeight}px`);
   });
 
   it("updates horizontal overflow cues as the user scrolls across columns", () => {
@@ -362,7 +737,7 @@ describe("DataTable", () => {
       toolbar: <button type="button">Filter</button>,
     });
     expect(screen.getByText("5 of 10 rows")).toBeTruthy();
-    expect(container.querySelector('[data-burrow-table-root="test-data-table"]')?.className).toContain("h-[min(34dvh,360px)]");
+    expect(container.querySelector('[data-burrow-table-root="test-data-table"]')?.className).not.toContain("h-[min(34dvh,360px)]");
 
     const resize = screen.getByRole("separator", { name: "Resize Name" });
     fireEvent.mouseDown(resize, { clientX: 100 });
@@ -433,6 +808,53 @@ describe("DataTable", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sort order: none" }));
     expect(screen.queryByText("This is the table's default order")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Clear sort" }));
+  });
+
+  it("slides the table shell once when asynchronous rows become ready", () => {
+    originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
+    const tableAnimations: Array<{
+      keyframes: Keyframe[] | PropertyIndexedKeyframes | null | undefined;
+      options: number | KeyframeAnimationOptions | undefined;
+    }> = [];
+    Object.defineProperty(HTMLElement.prototype, "animate", {
+      configurable: true,
+      value: function (
+        this: HTMLElement,
+        keyframes?: Keyframe[] | PropertyIndexedKeyframes | null,
+        options?: number | KeyframeAnimationOptions,
+      ) {
+        if (this.hasAttribute("data-burrow-table-root")) tableAnimations.push({ keyframes, options });
+        return { cancel: vi.fn(), oncancel: null, onfinish: null } as unknown as Animation;
+      },
+    });
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    motionMocks.allowed = true;
+    const view = renderTable({ data: [] });
+    const renderRows = (data: Row[]) => (
+      <DataTable<Row>
+        data={data}
+        columns={columns}
+        getRowId={(row) => row.id}
+        entityKey={(row) => row.id}
+        label="Nodes"
+        storageKey="test-data-table"
+        sorting={[]}
+        onSortingChange={view.onSortingChange}
+        columnVisibility={{}}
+        onColumnVisibilityChange={view.onColumnVisibilityChange}
+        defaultVisibility={{ id: true, name: true, count: false }}
+        selectable
+        onRowActivate={view.onRowActivate}
+        exportName="nodes"
+      />
+    );
+    view.rerender(renderRows(rows));
+    expect(tableAnimations).toHaveLength(1);
+    expect(tableAnimations[0]?.keyframes).toEqual([{ transform: "translateY(10px)" }, { transform: "translateY(0px)" }]);
+    expect(tableAnimations[0]?.options).toMatchObject({ duration: 400, easing: "ease-in-out" });
+    view.rerender(renderRows([...rows, { id: "n-3", name: "gamma", count: 6 }]));
+    expect(tableAnimations).toHaveLength(1);
   });
 
   it("animates rows entering and leaving when a live result set changes", async () => {
@@ -624,10 +1046,13 @@ describe("DataTable", () => {
     originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate") ?? null;
     const animations: Array<{ cancel: ReturnType<typeof vi.fn>; oncancel: (() => void) | null; onfinish: (() => void) | null }> = [];
     const exitNodes: HTMLElement[] = [];
+    const exitAnimations: Array<{ cancel: ReturnType<typeof vi.fn>; oncancel: (() => void) | null; onfinish: (() => void) | null }> = [];
     const animate = vi.fn(function (this: HTMLElement) {
-      if (this.getAttribute("role") === "presentation") exitNodes.push(this);
+      const isExit = this.getAttribute("role") === "presentation";
+      if (isExit) exitNodes.push(this);
       const animation = { cancel: vi.fn(), oncancel: null, onfinish: null };
       animations.push(animation);
+      if (isExit) exitAnimations.push(animation);
       return animation as unknown as Animation;
     });
     Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
@@ -653,10 +1078,14 @@ describe("DataTable", () => {
       { id: "n-3", name: "gamma", count: 6 },
       { id: "n-4", name: "delta", count: 8 },
     ];
-    const view = renderTable({ data: first, columns: datumColumns, selectable: false });
+    const fourth = [
+      { id: "n-4", name: "delta", count: 8 },
+      { id: "n-5", name: "epsilon", count: 10 },
+    ];
+    const view = renderTable({ data: first, columns: datumColumns, selectable: false, contentIdentity: "first" });
     expect(await screen.findByText("alpha")).toBeTruthy();
 
-    const renderData = (data: readonly Row[]) =>
+    const renderData = (data: readonly Row[], contentIdentity = "first") =>
       view.rerender(
         <DataTable<Row>
           data={data}
@@ -664,6 +1093,7 @@ describe("DataTable", () => {
           getRowId={(row) => row.id}
           entityKey={(row) => row.id}
           label="Nodes"
+          exportName="nodes"
           storageKey="test-data-table"
           sorting={[]}
           onSortingChange={view.onSortingChange}
@@ -672,7 +1102,7 @@ describe("DataTable", () => {
           defaultVisibility={{ name: true }}
           selectable={false}
           rowVersion={(row) => row.count}
-          exportName="nodes"
+          contentIdentity={contentIdentity}
         />,
       );
 
@@ -681,12 +1111,19 @@ describe("DataTable", () => {
     expect(exitNodes).toHaveLength(1);
     expect(exitNodes[0]!.querySelector("[data-yf], [data-yv], [data-ye], [id]")).toBeNull();
 
-    renderData(third);
+    renderData(third, "second");
     expect(await screen.findByText("delta")).toBeTruthy();
     expect(animations.some((animation) => animation.cancel.mock.calls.length > 0)).toBe(true);
-    expect(exitNodes.length).toBeGreaterThan(1);
+    expect(exitNodes).toHaveLength(1);
+    expect(exitNodes[0]!.parentElement).toBeNull();
+    renderData(fourth, "second");
+    expect(await screen.findByText("epsilon")).toBeTruthy();
+    expect(exitNodes).toHaveLength(2);
+    expect(exitNodes[1]!.parentElement).not.toBeNull();
+    expect(exitAnimations[1]!.cancel).not.toHaveBeenCalled();
     view.unmount();
     expect(exitNodes.every((element) => element.parentElement === null)).toBe(true);
+    expect(exitAnimations[1]!.cancel).toHaveBeenCalledTimes(1);
     expect(animations.every((animation) => animation.cancel.mock.calls.length > 0)).toBe(true);
   });
 });

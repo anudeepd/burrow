@@ -54,6 +54,7 @@ function stubApi(routes: Record<string, unknown>) {
 function renderSqlTab(
   application: { id: string; attempts: { appSparkVersion: string; attemptId?: string }[] } | null = null,
   initialSearch = "",
+  attempt: string | null = null,
 ) {
   const rootRoute = createRootRoute();
   const appRoute = createRoute({ getParentRoute: () => rootRoute, path: "/apps/$appId" });
@@ -73,7 +74,7 @@ function renderSqlTab(
   const view = render(
     <QueryClientProvider client={client}>
       <SparkProvider
-        value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt: null, source: null, application, resolving: false }}
+        value={{ appId: APP_ID, kind: "static", sparkAppId: APP_ID, attempt, source: null, application, resolving: false }}
       >
         <RouterProvider router={router} />
       </SparkProvider>
@@ -169,7 +170,7 @@ afterEach(() => {
 describe("SqlPage over the captured sql-cache-union payload", () => {
   it("opens newest-first like the legacy UI and toggles through that default", async () => {
     stubApi({ [`spark/${APP_ID}/sql`]: SQL });
-    const { container, router } = renderSqlTab();
+    const { container, router } = renderSqlTab(null, "", "attempt-2");
 
     const header = await screen.findByRole("columnheader", { name: /ID/ });
     const idColumn = () =>
@@ -191,6 +192,33 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     (header.querySelector("button") as HTMLButtonElement).click();
     await waitFor(() => expect(router.state.location.search).toEqual({ sort: "id", dir: "desc" }));
     await waitFor(() => expect(idColumn()).toEqual(["7", "6", "5", "4", "3", "2", "1", "0"]));
+    fireEvent.click(container.querySelector('[data-burrow-table="spark-sql"] [data-yv="7"]')!);
+    await waitFor(() => expect(router.state.location.pathname).toContain("/spark/sql/7"));
+  });
+  it("carries the selected attempt when activating an SQL execution row", async () => {
+    stubApi({ [`spark/${APP_ID}/sql`]: SQL });
+    const { container, router } = renderSqlTab(null, "", "attempt-2");
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+    await waitFor(() =>
+      expect(container.querySelector('[data-burrow-table="spark-sql"] [data-yf="spark.sql.description"]')).not.toBeNull(),
+    );
+    fireEvent.click(container.querySelector('[data-burrow-table="spark-sql"] [data-yf="spark.sql.description"]')!);
+    await waitFor(() => expect(router.state.location.pathname).toContain("/spark/sql/7"));
+    expect(router.state.location.search).toEqual({ attempt: "attempt-2" });
+  });
+
+  it("omits the selected attempt when activating an SQL execution row without one", async () => {
+    stubApi({ [`spark/${APP_ID}/sql`]: SQL });
+    const { container, router } = renderSqlTab();
+    await screen.findByRole("table", { name: "Spark SQL executions" });
+    const description = await waitFor(() => {
+      const cell = container.querySelector('[data-burrow-table="spark-sql"] [data-yf="spark.sql.description"]');
+      expect(cell).not.toBeNull();
+      return cell!;
+    });
+    fireEvent.click(description);
+    await waitFor(() => expect(router.state.location.pathname).toContain("/spark/sql/7"));
+    expect(router.state.location.search).toEqual({});
   });
 
   it("renders SQL executions supplied by the Spark 2.4 compatibility adapter", async () => {
@@ -265,23 +293,19 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     expect(await screen.findByRole("heading", { name: "Not found in the Spark source" })).toBeTruthy();
   });
 
-  it("paginates SQL executions and links rows to their details", async () => {
+  it("paginates SQL executions", async () => {
     const rows = Array.from({ length: 30 }, (_, index) => {
       const seed = (SQL as { id: number; errorMessage?: string }[])[index % 8]!;
       return { ...seed, id: index, errorMessage: index === 0 ? "Execution failed after the stage was aborted." : "" };
     });
     stubApi({ [`spark/${APP_ID}/sql`]: rows });
     const { router } = renderSqlTab(null, "?size=25");
-    await screen.findByRole("table", { name: "Spark SQL executions" });
+    await waitFor(() => expect(screen.getByRole("button", { name: /Next/ }).hasAttribute("disabled")).toBe(false));
     fireEvent.click(screen.getByRole("button", { name: /Next/ }));
     await waitFor(() => expect(router.state.location.search).toMatchObject({ size: 25, page: "1" }));
     await screen.findByRole("table", { name: "Spark SQL executions" });
     fireEvent.click(screen.getByRole("button", { name: /Prev/ }));
     await waitFor(() => expect(router.state.location.search).toMatchObject({ size: 25, page: "0" }));
-    await waitFor(() => expect(screen.getByRole("table", { name: "Spark SQL executions" }).querySelector(".burrow-row")).toBeTruthy());
-    const navigate = vi.spyOn(router, "navigate");
-    fireEvent.click(screen.getByRole("table", { name: "Spark SQL executions" }).querySelector<HTMLElement>(".burrow-row")!);
-    expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/apps/$appId/spark/sql/$executionId" }));
   });
 
   it("links SQL error messages and shows the empty-list state", async () => {
@@ -336,13 +360,17 @@ describe("SqlPage over the captured sql-cache-union payload", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
-  it("renders an SQL execution's physical plan, job links, and derived stage links", async () => {
+  it("renders an SQL execution's physical plan, job links, raw-plan disclosure, and derived stage links", async () => {
     const { router } = renderSqlDetail();
     expect(await screen.findByRole("heading", { name: /^SQL execution 1/ })).toBeTruthy();
     expect(screen.getByRole("link", { name: "All SQL executions" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Plan DAG of SQL execution 1" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "Raw plan of SQL execution 1" })).toBeTruthy();
-    expect(screen.getByText("Raw plan tree")).toBeTruthy();
+    const disclosure = screen.getByText("Raw plan tree").closest("details")!;
+    fireEvent.click(screen.getByText("Raw plan tree"));
+    await waitFor(() => expect(disclosure.open).toBe(false));
+    fireEvent.click(screen.getByText("Raw plan tree"));
+    await waitFor(() => expect(disclosure.open).toBe(true));
     expect(screen.getByText("Succeeded")).toBeTruthy();
     const search = screen.getByRole("searchbox", { name: "Find in the SQL plan" });
     fireEvent.change(search, { target: { value: "SortMergeJoin" } });

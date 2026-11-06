@@ -76,4 +76,21 @@ describe("preference loading", () => {
       for (const listener of listeners) listener();
     });
   });
+  it("updates theme-specific favicons and leaves missing URLs untouched", async () => {
+    const { applyPrefsToDom, PREF_DEFAULTS } = await import("./prefs");
+    const icon = document.createElement("link");
+    icon.dataset.darkHref = "/dark.svg";
+    icon.dataset.lightHref = "/light.svg";
+    document.head.append(icon);
+    const missing = document.createElement("link");
+    missing.dataset.darkHref = "";
+    missing.dataset.lightHref = "";
+    document.head.append(missing);
+    applyPrefsToDom({ ...PREF_DEFAULTS, theme: "dark" });
+    expect(icon.getAttribute("href")).toBe("/dark.svg");
+    expect(missing.hasAttribute("href")).toBe(false);
+    applyPrefsToDom({ ...PREF_DEFAULTS, theme: "light" });
+    expect(icon.getAttribute("href")).toBe("/light.svg");
+    expect(missing.hasAttribute("href")).toBe(false);
+  });
 });

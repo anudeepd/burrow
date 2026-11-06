@@ -8,6 +8,7 @@ import { useMounted } from "~/lib/use-mounted";
 import { ErrorState } from "~/ui/feedback";
 import { StatusPill } from "~/ui/status";
 import { HelpTip } from "~/ui/tooltip";
+import { TabContent } from "~/ui/tabs";
 
 const FEATURES = [
   { key: "sparkLive", label: "Live Spark UI" },
@@ -46,6 +47,7 @@ export function BurrowCapabilities() {
   return (
     <section
       id="Burrow-capabilities"
+      data-page-motion="content"
       className="order-1 flex flex-col gap-2 rounded-lg border border-seam-soft bg-well p-3 md:order-1"
       data-testid="Burrow-capabilities"
     >
@@ -79,7 +81,7 @@ export function BurrowCapabilities() {
         />
       )}
       {capabilities ? (
-        <>
+        <TabContent initial value="ready" className="flex flex-col gap-2">
           <h3 className="m-0 text-micro font-medium tracking-wide text-ink-3 uppercase">Features</h3>
           <ul className="m-0 grid list-none grid-cols-1 gap-x-5 gap-y-1 p-0 text-small sm:grid-cols-2 xl:grid-cols-3">
             {FEATURES.map(({ key, label }) => {
@@ -125,7 +127,7 @@ export function BurrowCapabilities() {
               })}
             </ul>
           </div>
-        </>
+        </TabContent>
       ) : (
         !meta.error && <p className="m-0 text-small text-ink-3">Capability details are unavailable.</p>
       )}

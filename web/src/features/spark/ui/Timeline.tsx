@@ -28,6 +28,7 @@ import type { TzMode } from "~/lib/format";
 import { useParity } from "~/state/parity";
 import { Datum, Entity, datumAttrs } from "~/ui/datum";
 import { StatusPill } from "~/ui/status";
+import { TabContent } from "~/ui/tabs";
 import { jobDurationMs, parseSparkTime, stageDurationMs } from "../data/format";
 import type { SparkExecutor, SparkJob, SparkStage } from "../data/schemas";
 import { OptionalTooltip, Tooltip } from "~/ui/tooltip";
@@ -294,6 +295,8 @@ export interface TimelineChartProps {
   onSelectRange: (from: number, to: number) => void;
   onFit: () => void;
   label: string;
+  /** Semantic source selection only; keep pan, zoom and live geometry out of this identity. */
+  contentIdentity?: string;
 }
 
 export function TimelineChart({
@@ -307,6 +310,7 @@ export function TimelineChart({
   onSelectRange,
   onFit,
   label,
+  contentIdentity,
 }: TimelineChartProps) {
   const parity = useParity();
   const labelW = useLabelWidth();
@@ -484,137 +488,139 @@ export function TimelineChart({
         </div>
       </div>
 
-      <div
-        ref={figureRef}
-        aria-hidden="true"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={() => setDrag(null)}
-        className="flex min-w-0 shrink-0 flex-col overflow-hidden bg-fabric select-none"
-      >
-        <div ref={scrollRef} aria-hidden="true" className="burrow-scroll relative min-h-0 shrink-0 overflow-auto" style={{ height }}>
-          {/* sticky time axis — inside the scroller so its ticks share the rows' exact width */}
-          <div className="sticky top-0 z-rail flex border-b border-seam-soft bg-fabric" style={{ height: AXIS_H }}>
-            <div className="flex shrink-0 items-center border-r border-seam-soft px-2 text-micro text-ink-3" style={{ width: labelW }}>
-              Time ({tz === "utc" ? "UTC" : "local"})
+      <TabContent initial={contentIdentity !== undefined} value={contentIdentity ?? ""}>
+        <div
+          ref={figureRef}
+          aria-hidden="true"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={() => setDrag(null)}
+          className="flex min-w-0 shrink-0 flex-col overflow-hidden bg-fabric select-none"
+        >
+          <div ref={scrollRef} aria-hidden="true" className="burrow-scroll relative min-h-0 shrink-0 overflow-auto" style={{ height }}>
+            {/* sticky time axis — inside the scroller so its ticks share the rows' exact width */}
+            <div className="sticky top-0 z-rail flex border-b border-seam-soft bg-fabric" style={{ height: AXIS_H }}>
+              <div className="flex shrink-0 items-center border-r border-seam-soft px-2 text-micro text-ink-3" style={{ width: labelW }}>
+                Time ({tz === "utc" ? "UTC" : "local"})
+              </div>
+              <div ref={axisRef} className="relative min-w-0 flex-1">
+                {ticks.map((t) => (
+                  <span
+                    key={t}
+                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 text-micro whitespace-nowrap text-ink-4 tnum"
+                    style={{ left: `${pctOf(t)}%` }}
+                  >
+                    {fmtClock(t, tz)}
+                  </span>
+                ))}
+                {nowVisible && (
+                  <span aria-hidden="true" className="absolute top-0 bottom-0 w-px bg-(--live)" style={{ left: `${pctOf(now!)}%` }} />
+                )}
+              </div>
             </div>
-            <div ref={axisRef} className="relative min-w-0 flex-1">
-              {ticks.map((t) => (
-                <span
-                  key={t}
-                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 text-micro whitespace-nowrap text-ink-4 tnum"
-                  style={{ left: `${pctOf(t)}%` }}
-                >
-                  {fmtClock(t, tz)}
-                </span>
-              ))}
-              {nowVisible && (
-                <span aria-hidden="true" className="absolute top-0 bottom-0 w-px bg-(--live)" style={{ left: `${pctOf(now!)}%` }} />
-              )}
-            </div>
-          </div>
 
-          <div ref={listRef} className="relative" style={{ height: parity ? undefined : virt.getTotalSize() }}>
-            {drag && (
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute top-0 bottom-0 z-sticky bg-(--live) opacity-15"
-                style={{ left: `calc(${labelW}px + ${Math.min(drag.a, drag.b)}px)`, width: Math.abs(drag.b - drag.a) }}
-              />
-            )}
-            {items.map(({ index, start }) => {
-              const row = rows[index]!;
-              const isActive = index === activeIdx;
-              const placeAbove = index > (firstVisible + lastVisible) / 2;
-              const barPct = row.kind === "bar" ? pctOf(row.start ?? w0) : 0;
-              return (
+            <div ref={listRef} className="relative" style={{ height: parity ? undefined : virt.getTotalSize() }}>
+              {drag && (
                 <div
-                  key={row.key}
-                  className={cn("flex", start != null && "absolute right-0 left-0")}
-                  style={start != null ? { top: start, height: ROW_H } : { height: ROW_H }}
-                >
-                  {row.kind === "header" ? (
-                    <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-seam-soft bg-fabric-2 px-2 text-micro font-medium tracking-wide text-ink-2 uppercase">
-                      {row.label}
-                    </div>
-                  ) : (
-                    <Entity
-                      id={row.entity}
-                      className={cn(
-                        "flex min-w-0 flex-1 items-stretch transition-colors duration-(--dur-fast) ease-(--ease-out)",
-                        isActive && "bg-fabric-3",
-                      )}
-                      onMouseEnter={() => setActiveIdx(index)}
-                      onMouseLeave={() => setActiveIdx((cur) => (cur === index ? null : cur))}
-                    >
-                      <OptionalTooltip label={[row.name, row.sub].filter(Boolean).join(" — ")}>
-                        <div
-                          className="sticky left-0 z-sticky flex shrink-0 items-center gap-1.5 overflow-hidden border-r border-seam-soft bg-fabric px-2 text-small text-ink"
-                          style={{ width: labelW }}
-                        >
-                          <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-sm bg-(--tone)", `burrow-tone-${row.tone}`)} />
-                          <span className="shrink-0 whitespace-nowrap">{row.label}</span>
-                          {row.sub && <span className="min-w-0 flex-1 truncate text-micro text-ink-4">{row.sub}</span>}
-                        </div>
-                      </OptionalTooltip>
-                      {/* the bars paint with `var(--tone)`: the row's tone has to be in scope inside this cell, or the
-                          SVG falls back to the initial fill (black) in both themes */}
-                      <div className={cn("relative min-w-0 flex-1", `burrow-tone-${row.tone}`)}>
-                        <svg
-                          viewBox={`0 0 ${VIEW_W} ${ROW_H}`}
-                          preserveAspectRatio="none"
-                          className="block h-full w-full"
-                          aria-hidden="true"
-                        >
-                          {ticks.map((t) => (
-                            <line
-                              key={t}
-                              x1={x(t)}
-                              x2={x(t)}
-                              y1={0}
-                              y2={ROW_H}
-                              stroke="var(--seam-soft)"
-                              strokeWidth={1}
-                              vectorEffect="non-scaling-stroke"
-                            />
-                          ))}
-                          {nowVisible && (
-                            <line
-                              x1={x(now!)}
-                              x2={x(now!)}
-                              y1={0}
-                              y2={ROW_H}
-                              stroke="var(--live)"
-                              strokeWidth={1}
-                              strokeDasharray="3 3"
-                              vectorEffect="non-scaling-stroke"
-                            />
-                          )}
-                          <Bar row={row} x={x} />
-                        </svg>
-                        {isActive && (
-                          <div
-                            className={cn(
-                              // a plain conditional render: Base UI never sets data-starting-style here, so this is the
-                              // mount-entrance primitive rather than the overlay one (`.burrow-pop` did nothing at all)
-                              "burrow-enter-pop pointer-events-none absolute z-tooltip w-max max-w-[min(26rem,60vw)] rounded-md border border-seam-strong bg-fabric-2 px-2 py-1.5 text-caption text-ink shadow-(--shadow-overlay)",
-                              placeAbove ? "bottom-full mb-0.5 origin-bottom" : "top-full mt-0.5 origin-top",
-                            )}
-                            style={barPct > 55 ? { right: 4 } : { left: `${Math.max(2, barPct)}%` }}
-                          >
-                            <TimelineRowTooltip row={row} tz={tz} />
-                          </div>
-                        )}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-0 bottom-0 z-sticky bg-(--live) opacity-15"
+                  style={{ left: `calc(${labelW}px + ${Math.min(drag.a, drag.b)}px)`, width: Math.abs(drag.b - drag.a) }}
+                />
+              )}
+              {items.map(({ index, start }) => {
+                const row = rows[index]!;
+                const isActive = index === activeIdx;
+                const placeAbove = index > (firstVisible + lastVisible) / 2;
+                const barPct = row.kind === "bar" ? pctOf(row.start ?? w0) : 0;
+                return (
+                  <div
+                    key={row.key}
+                    className={cn("flex", start != null && "absolute right-0 left-0")}
+                    style={start != null ? { top: start, height: ROW_H } : { height: ROW_H }}
+                  >
+                    {row.kind === "header" ? (
+                      <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-seam-soft bg-fabric-2 px-2 text-micro font-medium tracking-wide text-ink-2 uppercase">
+                        {row.label}
                       </div>
-                    </Entity>
-                  )}
-                </div>
-              );
-            })}
+                    ) : (
+                      <Entity
+                        id={row.entity}
+                        className={cn(
+                          "flex min-w-0 flex-1 items-stretch transition-colors duration-(--dur-fast) ease-(--ease-out)",
+                          isActive && "bg-fabric-3",
+                        )}
+                        onMouseEnter={() => setActiveIdx(index)}
+                        onMouseLeave={() => setActiveIdx((cur) => (cur === index ? null : cur))}
+                      >
+                        <OptionalTooltip label={[row.name, row.sub].filter(Boolean).join(" — ")}>
+                          <div
+                            className="sticky left-0 z-sticky flex shrink-0 items-center gap-1.5 overflow-hidden border-r border-seam-soft bg-fabric px-2 text-small text-ink"
+                            style={{ width: labelW }}
+                          >
+                            <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-sm bg-(--tone)", `burrow-tone-${row.tone}`)} />
+                            <span className="shrink-0 whitespace-nowrap">{row.label}</span>
+                            {row.sub && <span className="min-w-0 flex-1 truncate text-micro text-ink-4">{row.sub}</span>}
+                          </div>
+                        </OptionalTooltip>
+                        {/* the bars paint with `var(--tone)`: the row's tone has to be in scope inside this cell, or the
+                          SVG falls back to the initial fill (black) in both themes */}
+                        <div className={cn("relative min-w-0 flex-1", `burrow-tone-${row.tone}`)}>
+                          <svg
+                            viewBox={`0 0 ${VIEW_W} ${ROW_H}`}
+                            preserveAspectRatio="none"
+                            className="block h-full w-full"
+                            aria-hidden="true"
+                          >
+                            {ticks.map((t) => (
+                              <line
+                                key={t}
+                                x1={x(t)}
+                                x2={x(t)}
+                                y1={0}
+                                y2={ROW_H}
+                                stroke="var(--seam-soft)"
+                                strokeWidth={1}
+                                vectorEffect="non-scaling-stroke"
+                              />
+                            ))}
+                            {nowVisible && (
+                              <line
+                                x1={x(now!)}
+                                x2={x(now!)}
+                                y1={0}
+                                y2={ROW_H}
+                                stroke="var(--live)"
+                                strokeWidth={1}
+                                strokeDasharray="3 3"
+                                vectorEffect="non-scaling-stroke"
+                              />
+                            )}
+                            <Bar row={row} x={x} />
+                          </svg>
+                          {isActive && (
+                            <div
+                              className={cn(
+                                // a plain conditional render: Base UI never sets data-starting-style here, so this is the
+                                // mount-entrance primitive rather than the overlay one (`.burrow-pop` did nothing at all)
+                                "burrow-enter-pop pointer-events-none absolute z-tooltip w-max max-w-[min(26rem,60vw)] rounded-md border border-seam-strong bg-fabric-2 px-2 py-1.5 text-caption text-ink shadow-(--shadow-overlay)",
+                                placeAbove ? "bottom-full mb-0.5 origin-bottom" : "top-full mt-0.5 origin-top",
+                              )}
+                              style={barPct > 55 ? { right: 4 } : { left: `${Math.max(2, barPct)}%` }}
+                            >
+                              <TimelineRowTooltip row={row} tz={tz} />
+                            </div>
+                          )}
+                        </div>
+                      </Entity>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
+      </TabContent>
 
       <p className="border-t border-seam px-3 py-2.5 text-micro text-ink-4">
         Scroll the time axis to zoom. Drag across the chart to select a time range.

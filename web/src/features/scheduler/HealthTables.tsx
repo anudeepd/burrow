@@ -14,6 +14,7 @@
  */
 import { Datum, Entity } from "~/ui/datum";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
+import { TabContent } from "~/ui/tabs";
 import { fmtInt } from "~/lib/format";
 import type { SchedulerHealth } from "~/api/schemas";
 import { Section, StateNote } from "./Chrome";
@@ -95,39 +96,41 @@ export function HealthTables({
             JMX unavailable: {aggregateError}
           </p>
         )}
-        <DetailTableScroller ariaLabel="Aggregate scheduler counts" className="rounded-lg border border-seam bg-fabric">
-          <table className="w-full text-body sm:min-w-[46rem]">
-            <thead>
-              <tr className="border-b border-seam bg-fabric-2 text-small text-ink-3">
-                {AGG_COLUMNS.map((c) => (
-                  <th key={c.field} scope="col" className="px-2 py-1.5 text-left font-medium sm:px-3">
-                    {c.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {AGG_COLUMNS.map((c) => {
-                  const v = aggregates ? c.read(aggregates) : null;
-                  return (
-                    <td key={c.field} className="px-2 py-1.5 tnum sm:px-3">
-                      {v == null ? (
-                        <Datum field={c.field} raw={null}>
-                          N/A
-                        </Datum>
-                      ) : (
-                        <Datum field={c.field} raw={v} fmt="int">
-                          {fmtInt(v)}
-                        </Datum>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            </tbody>
-          </table>
-        </DetailTableScroller>
+        <TabContent value={aggregates === undefined ? "pending" : "ready"}>
+          <DetailTableScroller ariaLabel="Aggregate scheduler counts" className="rounded-lg border border-seam bg-fabric">
+            <table className="w-full text-body sm:min-w-[46rem]">
+              <thead>
+                <tr className="border-b border-seam bg-fabric-2 text-small text-ink-3">
+                  {AGG_COLUMNS.map((c) => (
+                    <th key={c.field} scope="col" className="px-2 py-1.5 text-left font-medium sm:px-3">
+                      {c.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {AGG_COLUMNS.map((c) => {
+                    const v = aggregates ? c.read(aggregates) : null;
+                    return (
+                      <td key={c.field} className="px-2 py-1.5 tnum sm:px-3">
+                        {v == null ? (
+                          <Datum field={c.field} raw={null}>
+                            N/A
+                          </Datum>
+                        ) : (
+                          <Datum field={c.field} raw={v} fmt="int">
+                            {fmtInt(v)}
+                          </Datum>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </DetailTableScroller>
+        </TabContent>
       </Section>
 
       <Section

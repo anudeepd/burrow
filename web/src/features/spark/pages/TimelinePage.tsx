@@ -86,7 +86,7 @@ export function TimelinePage() {
     return [boundsFrom, boundsTo];
   }, [search.from, search.to, search.zoom, boundsFrom, boundsTo]);
 
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   /** Clamp a requested window to the data and write it to the URL (a fit clears `from`/`to`/`zoom`). */
   const applyWindow = (from: number, to: number) => {
@@ -139,7 +139,7 @@ export function TimelinePage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-4">
       {errored > 0 && (barCount > 0 || !failedWithoutData) && (
         <div
           className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-seam-strong bg-well px-2.5 py-1.5 text-small text-ink-3"
@@ -170,6 +170,7 @@ export function TimelinePage() {
           <SparkEmpty title="Nothing to plot yet" />
         ) : (
           <TimelineChart
+            contentIdentity={JSON.stringify([appId, attempt])}
             rows={rows}
             window={viewWindow}
             tz={tz}

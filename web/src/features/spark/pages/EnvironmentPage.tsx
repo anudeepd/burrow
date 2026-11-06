@@ -16,6 +16,7 @@ import { useParity } from "~/state/parity";
 import { DataTable } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
 import { Datum, Entity } from "~/ui/datum";
+import { TabContent } from "~/ui/tabs";
 import { sp } from "../data/queries";
 import { useSpark } from "../ui/context";
 import { compact, matchesQuery } from "../data/search";
@@ -103,12 +104,16 @@ function PropertyPane({
   rows,
   urlQ,
   setUrlQ,
+  loading,
+  contentIdentity,
 }: {
   title: string;
   field: string;
   rows: PropertyRow[];
   urlQ?: string;
   setUrlQ?: (v: string) => void;
+  loading: boolean;
+  contentIdentity: string;
 }) {
   const [localQ, setLocalQ] = useState("");
   const q = urlQ ?? localQ;
@@ -138,6 +143,8 @@ function PropertyPane({
     >
       <div className="flex h-72 min-h-0 flex-col">
         <DataTable<PropertyRow>
+          loading={loading}
+          contentIdentity={JSON.stringify([contentIdentity, field])}
           data={filtered}
           columns={columns}
           getRowId={(r) => r.key}
@@ -151,7 +158,11 @@ function PropertyPane({
           defaultVisibility={{}}
           totalCount={rows.length}
           exportName={`spark-env-${field}`}
-          empty={<span className="text-small text-ink-3">Spark returned no entries for {title}.</span>}
+          empty={
+            <TabContent initial value={JSON.stringify([contentIdentity, field])}>
+              <span className="text-small text-ink-3">Spark returned no entries for {title}.</span>
+            </TabContent>
+          }
         />
       </div>
     </Pane>
@@ -182,7 +193,7 @@ export function EnvironmentPage() {
   const [classpathSorting, setClasspathSorting] = useState<SortingState>([]);
   const [classpathVisibility, setClasspathVisibility] = useState<Record<string, boolean>>({});
 
-  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }) });
+  const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
   const classpathColumns = useMemo<ColDef<{ i: number; entry: string[] }>[]>(
     () => [
@@ -218,49 +229,74 @@ export function EnvironmentPage() {
     [],
   );
 
-  if (qEnv.isPending) return <SparkLoading rows={10} cols={2} />;
   if (qEnv.error && !env)
     return <SparkFailureState error={qEnv.error} subject="the Spark environment" onRetry={() => void qEnv.refetch()} />;
 
   return (
-    <div className="flex flex-col gap-4 pb-6">
+    <div data-page-motion="content" className="flex flex-col gap-4 pb-6">
       <PageHeader title="Environment" hideTitle />
       {qEnv.error && <SparkStaleErrorBanner error={qEnv.error} subject="the Spark environment" onRetry={() => void qEnv.refetch()} />}
 
-      <Entity id="_">
-        <MetricStrip>
-          <Metric label="Java version">
-            <Datum field="spark.env.runtime.javaVersion" raw={env?.runtime?.javaVersion} />
-          </Metric>
-          <Metric label="Java home" hint={env?.runtime?.javaHome ?? undefined}>
-            <Datum
-              field="spark.env.runtime.javaHome"
-              raw={env?.runtime?.javaHome}
-              className="block truncate font-mono text-micro"
-              title={env?.runtime?.javaHome ?? undefined}
-            />
-          </Metric>
-          <Metric label="Scala version">
-            <Datum field="spark.env.runtime.scalaVersion" raw={env?.runtime?.scalaVersion} />
-          </Metric>
-        </MetricStrip>
-      </Entity>
+      {!qEnv.isPending && (
+        <TabContent initial value={JSON.stringify([appId, attempt])}>
+          <Entity id="_">
+            <MetricStrip>
+              <Metric label="Java version">
+                <Datum field="spark.env.runtime.javaVersion" raw={env?.runtime?.javaVersion} />
+              </Metric>
+              <Metric label="Java home" hint={env?.runtime?.javaHome ?? undefined}>
+                <Datum
+                  field="spark.env.runtime.javaHome"
+                  raw={env?.runtime?.javaHome}
+                  className="block truncate font-mono text-micro"
+                  title={env?.runtime?.javaHome ?? undefined}
+                />
+              </Metric>
+              <Metric label="Scala version">
+                <Datum field="spark.env.runtime.scalaVersion" raw={env?.runtime?.scalaVersion} />
+              </Metric>
+            </MetricStrip>
+          </Entity>
+        </TabContent>
+      )}
 
       <PropertyPane
         title="Spark Properties"
         field="spark.env.sparkProperties"
         rows={sparkProperties}
+        loading={qEnv.isPending}
+        contentIdentity={JSON.stringify([appId, attempt])}
         urlQ={q}
         setUrlQ={(v) => patch({ q: v || undefined })}
       />
 
-      <PropertyPane title="System Properties" field="spark.env.systemProperties" rows={systemProperties} />
-      <PropertyPane title="Hadoop Properties" field="spark.env.hadoopProperties" rows={hadoopProperties} />
-      <PropertyPane title="Metrics Properties" field="spark.env.metricsProperties" rows={metricsProperties} />
+      <PropertyPane
+        title="System Properties"
+        field="spark.env.systemProperties"
+        rows={systemProperties}
+        loading={qEnv.isPending}
+        contentIdentity={JSON.stringify([appId, attempt])}
+      />
+      <PropertyPane
+        title="Hadoop Properties"
+        field="spark.env.hadoopProperties"
+        rows={hadoopProperties}
+        loading={qEnv.isPending}
+        contentIdentity={JSON.stringify([appId, attempt])}
+      />
+      <PropertyPane
+        title="Metrics Properties"
+        field="spark.env.metricsProperties"
+        rows={metricsProperties}
+        loading={qEnv.isPending}
+        contentIdentity={JSON.stringify([appId, attempt])}
+      />
 
       <Pane title="Classpath Entries" count={`${fmtInt(classpath.length)} entries`}>
         <div className="flex h-72 min-h-0 flex-col">
           <DataTable<{ i: number; entry: string[] }>
+            loading={qEnv.isPending}
+            contentIdentity={JSON.stringify([appId, attempt, "classpath"])}
             data={classpath}
             columns={classpathColumns}
             getRowId={(r) => String(r.i)}
@@ -274,72 +310,82 @@ export function EnvironmentPage() {
             defaultVisibility={{ kind: true }}
             totalCount={classpath.length}
             exportName="spark-env-classpath"
-            empty={<span className="text-small text-ink-3">Spark returned no classpath entries.</span>}
+            empty={
+              <TabContent initial value={JSON.stringify([appId, attempt, "classpath"])}>
+                <span className="text-small text-ink-3">Spark returned no classpath entries.</span>
+              </TabContent>
+            }
           />
         </div>
       </Pane>
 
       <Pane title="Resource Profiles" count={`${fmtInt(profiles.length)} ${profiles.length === 1 ? "profile" : "profiles"}`}>
-        {profiles.length === 0 ? (
-          <p className="text-small text-ink-3">No resource profiles reported.</p>
+        {qEnv.isPending ? (
+          <SparkLoading rows={3} cols={4} />
         ) : (
-          <div className="flex flex-wrap gap-3">
-            {profiles.map((p, i) => {
-              const exec = p.executorResources ?? {};
-              const task = p.taskResources ?? {};
-              return (
-                <Entity key={p.id ?? i} id={String(p.id ?? i)} className="min-w-56 rounded-md border border-seam bg-well p-2.5">
-                  <div className="mb-1 text-small font-semibold text-ink">
-                    Profile <Datum field="spark.env.resourceProfiles.id" raw={p.id} fmt="int" />
-                  </div>
-                  <MetricStrip>
-                    <Metric label="Cores">
-                      <Datum field="spark.env.resourceProfiles.executorResources.cores.amount" raw={exec.cores?.amount} fmt="int" />
-                    </Metric>
-                    <Metric label="Memory (MiB)">
-                      <Datum field="spark.env.resourceProfiles.executorResources.memory.amount" raw={exec.memory?.amount} fmt="int" />
-                    </Metric>
-                    <Metric label="Off-heap (MiB)">
-                      <Datum field="spark.env.resourceProfiles.executorResources.offHeap.amount" raw={exec.offHeap?.amount} fmt="int" />
-                    </Metric>
-                    <Metric label="Task CPUs">
-                      <Datum field="spark.env.resourceProfiles.taskResources.cpus.amount" raw={task.cpus?.amount} fmt="int" />
-                    </Metric>
-                  </MetricStrip>
-                  {Object.entries(exec)
-                    .filter(([name]) => !["cores", "memory", "offHeap"].includes(name))
-                    .map(([name, resource]) => (
-                      <div key={name} className="mt-2 text-small">
-                        <span className="font-mono text-ink-3">Executor {name}: </span>
-                        <Datum field={`spark.env.resourceProfiles.executorResources.${name}.amount`} raw={resource.amount} />
-                        {resource.vendor && (
-                          <Datum
-                            field={`spark.env.resourceProfiles.executorResources.${name}.vendor`}
-                            raw={resource.vendor}
-                            className="ml-2"
-                          />
-                        )}
-                        {resource.discoveryScript && (
-                          <Datum
-                            field={`spark.env.resourceProfiles.executorResources.${name}.discoveryScript`}
-                            raw={resource.discoveryScript}
-                            className="mt-1 block break-all font-mono text-micro"
-                          />
-                        )}
+          <TabContent initial value={JSON.stringify([appId, attempt, "profiles"])}>
+            {profiles.length === 0 ? (
+              <p className="text-small text-ink-3">No resource profiles reported.</p>
+            ) : (
+              <div className="flex flex-wrap gap-3">
+                {profiles.map((p, i) => {
+                  const exec = p.executorResources ?? {};
+                  const task = p.taskResources ?? {};
+                  return (
+                    <Entity key={p.id ?? i} id={String(p.id ?? i)} className="min-w-56 rounded-md border border-seam bg-well p-2.5">
+                      <div className="mb-1 text-small font-semibold text-ink">
+                        Profile <Datum field="spark.env.resourceProfiles.id" raw={p.id} fmt="int" />
                       </div>
-                    ))}
-                  {Object.entries(task)
-                    .filter(([name]) => name !== "cpus")
-                    .map(([name, resource]) => (
-                      <div key={name} className="mt-2 text-small">
-                        <span className="font-mono text-ink-3">Task {name}: </span>
-                        <Datum field={`spark.env.resourceProfiles.taskResources.${name}.amount`} raw={resource.amount} />
-                      </div>
-                    ))}
-                </Entity>
-              );
-            })}
-          </div>
+                      <MetricStrip>
+                        <Metric label="Cores">
+                          <Datum field="spark.env.resourceProfiles.executorResources.cores.amount" raw={exec.cores?.amount} fmt="int" />
+                        </Metric>
+                        <Metric label="Memory (MiB)">
+                          <Datum field="spark.env.resourceProfiles.executorResources.memory.amount" raw={exec.memory?.amount} fmt="int" />
+                        </Metric>
+                        <Metric label="Off-heap (MiB)">
+                          <Datum field="spark.env.resourceProfiles.executorResources.offHeap.amount" raw={exec.offHeap?.amount} fmt="int" />
+                        </Metric>
+                        <Metric label="Task CPUs">
+                          <Datum field="spark.env.resourceProfiles.taskResources.cpus.amount" raw={task.cpus?.amount} fmt="int" />
+                        </Metric>
+                      </MetricStrip>
+                      {Object.entries(exec)
+                        .filter(([name]) => !["cores", "memory", "offHeap"].includes(name))
+                        .map(([name, resource]) => (
+                          <div key={name} className="mt-2 text-small">
+                            <span className="font-mono text-ink-3">Executor {name}: </span>
+                            <Datum field={`spark.env.resourceProfiles.executorResources.${name}.amount`} raw={resource.amount} />
+                            {resource.vendor && (
+                              <Datum
+                                field={`spark.env.resourceProfiles.executorResources.${name}.vendor`}
+                                raw={resource.vendor}
+                                className="ml-2"
+                              />
+                            )}
+                            {resource.discoveryScript && (
+                              <Datum
+                                field={`spark.env.resourceProfiles.executorResources.${name}.discoveryScript`}
+                                raw={resource.discoveryScript}
+                                className="mt-1 block break-all font-mono text-micro"
+                              />
+                            )}
+                          </div>
+                        ))}
+                      {Object.entries(task)
+                        .filter(([name]) => name !== "cpus")
+                        .map(([name, resource]) => (
+                          <div key={name} className="mt-2 text-small">
+                            <span className="font-mono text-ink-3">Task {name}: </span>
+                            <Datum field={`spark.env.resourceProfiles.taskResources.${name}.amount`} raw={resource.amount} />
+                          </div>
+                        ))}
+                    </Entity>
+                  );
+                })}
+              </div>
+            )}
+          </TabContent>
         )}
       </Pane>
     </div>

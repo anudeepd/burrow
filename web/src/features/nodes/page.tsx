@@ -14,6 +14,7 @@ import { copyText } from "~/lib/copy";
 import type { Fmt } from "~/lib/format";
 import { Button } from "~/ui/button";
 import { Datum } from "~/ui/datum";
+import { Skeleton } from "~/ui/feedback";
 import { HelpTip, Tooltip } from "~/ui/tooltip";
 
 export function PageHead({ title, description, actions }: { title: ReactNode; description?: ReactNode; actions?: ReactNode }) {
@@ -114,15 +115,17 @@ export function Stat({
   sub,
   tone,
   className,
+  loading = false,
 }: {
   label: ReactNode;
   value: ReactNode;
   sub?: ReactNode;
   tone?: "ok" | "warn" | "fail" | "live" | "idle";
   className?: string;
+  loading?: boolean;
 }) {
   return (
-    <div className={cn("min-w-0 rounded-lg border border-seam bg-fabric px-3 py-2", className)}>
+    <div aria-busy={loading || undefined} className={cn("min-w-0 rounded-lg border border-seam bg-fabric px-3 py-2", className)}>
       <div className="text-caption uppercase tracking-wide text-ink-3">{label}</div>
       <div
         className={cn(
@@ -133,9 +136,9 @@ export function Stat({
           tone === "live" && "text-live",
         )}
       >
-        {value}
+        {loading ? <Skeleton className="h-[1lh] w-16" /> : value}
       </div>
-      {sub && <div className="mt-0.5 text-micro text-ink-3">{sub}</div>}
+      {sub && <div className="mt-0.5 text-micro text-ink-3">{loading ? <Skeleton className="h-[1lh] w-24" /> : sub}</div>}
     </div>
   );
 }

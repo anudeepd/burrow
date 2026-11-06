@@ -160,6 +160,26 @@ for (const pageCase of PAGES) {
   });
 }
 
+test("timeline zoom controls keep the outer page scroll position", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await open(page, sparkPath(APPS.rddWordcount, "timeline"), "dark");
+  const pageScroll = page.locator(".burrow-page-scroll");
+  const zoomIn = page.getByRole("button", { name: "Zoom in" });
+  await expect(zoomIn).toBeVisible();
+  const maxScroll = await pageScroll.evaluate((element) => element.scrollHeight - element.clientHeight);
+  expect(maxScroll).toBeGreaterThan(0);
+  const scrollTop = Math.min(120, maxScroll);
+  await pageScroll.evaluate((element, top) => {
+    element.scrollTop = top;
+  }, scrollTop);
+  await expect.poll(() => pageScroll.evaluate((element) => element.scrollTop)).toBe(scrollTop);
+  await zoomIn.click();
+  await expect(page).toHaveURL(/zoom=/);
+  await expect.poll(() => pageScroll.evaluate((element) => element.scrollTop)).toBe(scrollTop);
+  await page.getByRole("button", { name: "Fit" }).click();
+  await expect.poll(() => pageScroll.evaluate((element) => element.scrollTop)).toBe(scrollTop);
+});
+
 test.describe("spark version + retry deltas", () => {
   test("job detail renders when Spark omits the optional jobTags collection", async ({ page }) => {
     await page.route(`**/api/spark/${APPS.rddWordcount}/jobs/0`, async (route) => {

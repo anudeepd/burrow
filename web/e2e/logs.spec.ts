@@ -83,8 +83,17 @@ test.describe("container logs", () => {
     }
   });
 
-  test("scrolls horizontally through long unwrapped lines", async ({ page }) => {
+  test("wraps long lines by default on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(logUrl(FAILED, "&file=stderr"));
+    const log = pane(page);
+    await expect(log).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Wrap long lines" })).toHaveAttribute("aria-pressed", "true");
+    await expect(log.locator("[data-line]").first()).toHaveClass(/whitespace-pre-wrap/);
+  });
+
+  test("scrolls horizontally through long unwrapped lines", async ({ page }) => {
+    await page.goto(logUrl(FAILED, "&file=stderr&wrap=0"));
     const log = pane(page);
     await expect(log).toBeVisible({ timeout: 30_000 });
     await log.evaluate((el) => {
@@ -343,7 +352,7 @@ test.describe("phone log toolbar", () => {
     await expect(regex).toHaveAttribute("aria-pressed", "true");
 
     const wrap = page.getByRole("button", { name: "Wrap long lines" });
-    // Narrow viewports default to wrapping; tapping turns it off.
+    // Wrapping is the default at every viewport width; tapping turns it off.
     await expect(wrap).toHaveAttribute("aria-pressed", "true");
     await wrap.tap();
     await expect(wrap).toHaveAttribute("aria-pressed", "false");

@@ -182,7 +182,11 @@ export function NodeLabelsCard({
         onRowActivate={(row) => void navigate({ to: "/nodes/$nodeId", params: { nodeId: row.node.id } })}
         loading={loading}
         error={error}
-        empty={<div className="px-4 py-8 text-center text-body text-ink-3">No registered nodes.</div>}
+        empty={
+          <div role="status" className="burrow-enter px-4 py-8 text-center text-body text-ink-3">
+            No registered nodes.
+          </div>
+        }
         exportName="node-label-partitions"
         totalCount={rows.length}
         toolbar={
@@ -219,7 +223,6 @@ export function NodeLabelsCard({
           </div>
         }
         toolbarArrangement="inline"
-        className="h-[min(44dvh,420px)]"
       />
     </Section>
   );

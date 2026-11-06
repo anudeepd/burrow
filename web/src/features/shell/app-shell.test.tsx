@@ -79,22 +79,13 @@ function renderShell() {
       </AppShell>
     ),
   });
-  const nodes = createRoute({
-    getParentRoute: () => root,
-    path: "/nodes",
-    component: () => (
-      <AppShell>
-        <div>Node shell content</div>
-      </AppShell>
-    ),
-  });
-  const router = createRouter({ routeTree: root.addChildren([index, nodes]), history: createMemoryHistory({ initialEntries: ["/"] }) });
-  return { ...render(<RouterProvider router={router} />), router };
+  const router = createRouter({ routeTree: root.addChildren([index]), history: createMemoryHistory({ initialEntries: ["/"] }) });
+  return render(<RouterProvider router={router} />);
 }
 
 describe("AppShell overlays", () => {
   it("mounts and closes the navigation drawer and command palette", async () => {
-    const { router } = renderShell();
+    renderShell();
     expect(await screen.findByText("Shell content")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Open navigation" }));
@@ -116,8 +107,5 @@ describe("AppShell overlays", () => {
     expect(await screen.findByRole("dialog", { name: "Keyboard shortcuts" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Close keyboard shortcuts" }));
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Keyboard shortcuts" })).toBeNull());
-
-    await router.navigate({ to: "/nodes" });
-    await waitFor(() => expect(document.querySelector('[data-page-transition="none"]')).not.toBeNull());
   });
 });

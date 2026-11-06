@@ -29,6 +29,7 @@ import { Datum, Entity } from "~/ui/datum";
 import { Select } from "~/ui/select";
 import { PopoverContent, PopoverRoot, PopoverTrigger } from "~/ui/popover";
 import { Toggle } from "~/ui/toggles";
+import { TabContent } from "~/ui/tabs";
 import {
   confMatches,
   confRowVersion,
@@ -236,71 +237,72 @@ function PropertyDetail({ p, host, onClose }: { p: ConfProperty; host: string | 
           <X className="size-3.5" aria-hidden="true" />
         </Button>
       </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        {isOverridden(p) ? (
-          <Badge tone="live">overridden</Badge>
-        ) : (
-          <Badge tone="ink" title="came from a Hadoop default file">
-            hadoop default
-          </Badge>
-        )}
-        {p.isFinal && (
-          <Badge tone="warn">
-            <Lock className="size-3" aria-hidden="true" />
-            final
-          </Badge>
-        )}
-        {isRedacted(p) && <Badge tone="warn">redacted by Hadoop</Badge>}
-        {used && (
-          <OptionalTooltip label={`affects the ${used.label} view — ${used.why}`}>
-            <a href={used.to} className={CHIP}>
-              <ArrowUpRight className="size-3 shrink-0" aria-hidden="true" />
-              {used.label}
-            </a>
-          </OptionalTooltip>
-        )}
-      </div>
-
-      <dl className="grid grid-cols-2 gap-3 text-small">
-        <div className="min-w-0">
-          <dt className="text-micro uppercase tracking-wide text-ink-4">Source</dt>
-          <dd>
-            <Datum field="conf.resource" raw={p.resource} fmt="text" className="break-all text-ink-2">
-              {resourceName(p)}
-            </Datum>
-          </dd>
+      <TabContent value={p.key} className="flex min-h-0 flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {isOverridden(p) ? (
+            <Badge tone="live">overridden</Badge>
+          ) : (
+            <Badge tone="ink" title="came from a Hadoop default file">
+              hadoop default
+            </Badge>
+          )}
+          {p.isFinal && (
+            <Badge tone="warn">
+              <Lock className="size-3" aria-hidden="true" />
+              final
+            </Badge>
+          )}
+          {isRedacted(p) && <Badge tone="warn">redacted by Hadoop</Badge>}
+          {used && (
+            <OptionalTooltip label={`affects the ${used.label} view — ${used.why}`}>
+              <a href={used.to} className={CHIP}>
+                <ArrowUpRight className="size-3 shrink-0" aria-hidden="true" />
+                {used.label}
+              </a>
+            </OptionalTooltip>
+          )}
         </div>
-        <div className="min-w-0">
-          <dt className="text-micro uppercase tracking-wide text-ink-4">Value size</dt>
-          <dd className="text-ink-2 tnum">
-            {p.value ? `${p.value.length} chars` : "—"}
-            {lines > 1 && ` · ${lines} lines`}
-          </dd>
-        </div>
-      </dl>
 
-      <div className="flex min-w-0 flex-col gap-1">
-        <div className="flex items-center justify-between gap-2">
-          <FieldLabel>Value as the daemon dumped it</FieldLabel>
-          <CopyButton value={p.value ?? ""} label="Copy the value" />
-        </div>
-        <Datum
-          field="conf.value"
-          raw={p.value}
-          fmt="text"
-          as="pre"
-          className="burrow-scroll max-h-72 overflow-auto rounded-md border border-seam bg-well p-2 font-mono text-small whitespace-pre-wrap break-words text-ink"
-        />
-      </div>
+        <dl className="grid grid-cols-2 gap-3 text-small">
+          <div className="min-w-0">
+            <dt className="text-micro uppercase tracking-wide text-ink-4">Source</dt>
+            <dd>
+              <Datum field="conf.resource" raw={p.resource} fmt="text" className="break-all text-ink-2">
+                {resourceName(p)}
+              </Datum>
+            </dd>
+          </div>
+          <div className="min-w-0">
+            <dt className="text-micro uppercase tracking-wide text-ink-4">Value size</dt>
+            <dd className="text-ink-2 tnum">
+              {p.value ? `${p.value.length} chars` : "—"}
+              {lines > 1 && ` · ${lines} lines`}
+            </dd>
+          </div>
+        </dl>
 
-      {(noView || host) && (
-        <p className="text-micro text-ink-4" role="note">
-          {noView && `${p.key} — ${noView}.`}
-          {noView && host && " "}
-          {host && "Read from the NodeManager."}
-        </p>
-      )}
+        <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex items-center justify-between gap-2">
+            <FieldLabel>Value as the daemon dumped it</FieldLabel>
+            <CopyButton value={p.value ?? ""} label="Copy the value" />
+          </div>
+          <Datum
+            field="conf.value"
+            raw={p.value}
+            fmt="text"
+            as="pre"
+            className="burrow-scroll max-h-72 overflow-auto rounded-md border border-seam bg-well p-2 font-mono text-small whitespace-pre-wrap break-words text-ink"
+          />
+        </div>
+
+        {(noView || host) && (
+          <p className="text-micro text-ink-4" role="note">
+            {noView && `${p.key} — ${noView}.`}
+            {noView && host && " "}
+            {host && "Read from the NodeManager."}
+          </p>
+        )}
+      </TabContent>
     </Entity>
   );
 }
@@ -324,7 +326,8 @@ export function ConfView() {
   const hasData = (host ? nmConf.data : rmConf.data) !== undefined;
   const reload = host ? () => void nmConf.refetch() : () => void rmConf.refetch();
 
-  const setSearch = (patch: Partial<typeof search>) => navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+  const setSearch = (patch: Partial<typeof search>) =>
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
 
   const summary = useMemo(() => summarizeConf(properties), [properties]);
   const facets = useMemo(() => resourceFacets(properties), [properties]);
@@ -352,7 +355,7 @@ export function ConfView() {
   const overriddenPct = summary.total ? Math.round((summary.overridden / summary.total) * 100) : 0;
 
   return (
-    <div className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6">
+    <div data-page-motion="content" className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6">
       <PageHead
         title={
           <span className="inline-flex items-center gap-1.5">
@@ -410,27 +413,39 @@ export function ConfView() {
         </CenteredPageState>
       ) : (
         <>
-          <div className="order-2 grid grid-cols-2 gap-2 md:order-2 lg:grid-cols-4">
-            <Stat label="Properties" value={summary.total.toLocaleString("en-US")} sub={`from ${summary.sources} sources`} />
+          <TabContent
+            value={`${host ?? "rm"}:${hasData ? "ready" : "pending"}`}
+            className="order-2 grid grid-cols-2 gap-2 md:order-2 lg:grid-cols-4"
+            initial={hasData}
+          >
             <Stat
+              loading={isPending}
+              label="Properties"
+              value={summary.total.toLocaleString("en-US")}
+              sub={`from ${summary.sources} sources`}
+            />
+            <Stat
+              loading={isPending}
               label="Overridden"
               value={summary.overridden}
               sub={`${overriddenPct}% come from a *-site.xml or code`}
               tone={summary.overridden > 0 ? "live" : undefined}
             />
             <Stat
+              loading={isPending}
               label="Final"
               value={summary.final}
               sub="locked by <final>, cannot be overridden"
               tone={summary.final > 0 ? "warn" : undefined}
             />
             <Stat
+              loading={isPending}
               label="Redacted"
               value={summary.redacted}
               sub="sensitive keys masked by Hadoop"
               tone={summary.redacted > 0 ? "warn" : undefined}
             />
-          </div>
+          </TabContent>
 
           <div
             className={cn(
@@ -439,6 +454,7 @@ export function ConfView() {
             )}
           >
             <DataTable
+              contentIdentity={host ?? "rm"}
               data={rows}
               columns={columns}
               getRowId={(p) => p.key}
