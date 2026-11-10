@@ -8,6 +8,7 @@ import os
 import re
 import sys
 from collections import defaultdict
+from decimal import Decimal, InvalidOperation
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
@@ -16,6 +17,17 @@ API_ROOT = "https://api.github.com"
 API_VERSION = "2022-11-28"
 PAGE_SIZE = 100
 NEXT_LINK = re.compile(r'<([^>]+)>;\s*rel="next"')
+
+
+def parse_keep_runs(raw: str) -> int:
+    """GitHub serialises a workflow_dispatch number input as a float (`1` arrives as `1.0`)."""
+    try:
+        value = Decimal(raw.strip())
+    except (InvalidOperation, ValueError) as error:
+        raise ValueError("KEEP_RUNS must be a positive integer.") from error
+    if not value.is_finite() or value != value.to_integral_value() or value < 1:
+        raise ValueError("KEEP_RUNS must be a positive integer.")
+    return int(value)
 
 
 def request(url: str, token: str, method: str = "GET") -> tuple[bytes, str | None]:
@@ -57,12 +69,9 @@ def main() -> int:
         return 1
 
     try:
-        keep_runs = int(os.environ.get("KEEP_RUNS", "1"))
-    except ValueError:
-        print("KEEP_RUNS must be a positive integer.", file=sys.stderr)
-        return 1
-    if keep_runs < 1:
-        print("KEEP_RUNS must be at least 1.", file=sys.stderr)
+        keep_runs = parse_keep_runs(os.environ.get("KEEP_RUNS", "1"))
+    except ValueError as error:
+        print(error, file=sys.stderr)
         return 1
 
     dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
