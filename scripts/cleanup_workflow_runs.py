@@ -8,7 +8,7 @@ import os
 import re
 import sys
 from collections import defaultdict
-from decimal import Decimal, InvalidOperation
+from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
@@ -20,14 +20,14 @@ NEXT_LINK = re.compile(r'<([^>]+)>;\s*rel="next"')
 
 
 def parse_keep_runs(raw: str) -> int:
-    """GitHub serialises a workflow_dispatch number input as a float (`1` arrives as `1.0`)."""
-    try:
-        value = Decimal(raw.strip())
-    except (InvalidOperation, ValueError) as error:
-        raise ValueError("KEEP_RUNS must be a positive integer.") from error
-    if not value.is_finite() or value != value.to_integral_value() or value < 1:
+    """A positive decimal integer. The workflow passes a string so GitHub cannot float-serialise it as `1.0`."""
+    value = raw.strip()
+    if not value.isascii() or not value.isdecimal():
         raise ValueError("KEEP_RUNS must be a positive integer.")
-    return int(value)
+    keep_runs = int(value)
+    if keep_runs < 1:
+        raise ValueError("KEEP_RUNS must be a positive integer.")
+    return keep_runs
 
 
 def request(url: str, token: str, method: str = "GET") -> tuple[bytes, str | None]:
@@ -51,9 +51,9 @@ def request(url: str, token: str, method: str = "GET") -> tuple[bytes, str | Non
         raise RuntimeError(f"GitHub API {method} failed for {url}: {detail}") from error
 
 
-def list_runs(repo: str, token: str) -> list[dict[str, object]]:
+def list_runs(repo: str, token: str) -> list[dict[str, Any]]:
     url = f"{API_ROOT}/repos/{quote(repo, safe='/')}/actions/runs?per_page={PAGE_SIZE}"
-    runs: list[dict[str, object]] = []
+    runs: list[dict[str, Any]] = []
     while url:
         response, url = request(url, token)
         page = json.loads(response)
@@ -78,11 +78,11 @@ def main() -> int:
     current_run_id = os.environ.get("GITHUB_RUN_ID", "")
     runs = list_runs(repo, token)
 
-    by_workflow: dict[int, list[dict[str, object]]] = defaultdict(list)
+    by_workflow: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for run in runs:
         by_workflow[int(run["workflow_id"])].append(run)
 
-    deletions: list[dict[str, object]] = []
+    deletions: list[dict[str, Any]] = []
     for workflow_id, workflow_runs in sorted(by_workflow.items()):
         workflow_runs.sort(
             key=lambda run: (str(run.get("created_at", "")), int(run["id"])),

@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       keep_runs:
-        description: Recent runs to keep for each workflow; active runs are always retained
+        description: Positive integer number of recent runs to keep for each workflow; active runs are always retained
         required: true
-        type: number
-        default: 1
+        type: string
+        default: "1"
       dry_run:
         description: Preview deletions without removing workflow runs
         required: true
@@ -36,6 +36,6 @@ jobs:
       - name: Clean old workflow runs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KEEP_RUNS: ${{ inputs.keep_runs || 1 }}
+          KEEP_RUNS: ${{ inputs.keep_runs || '1' }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
         run: python3 scripts/cleanup_workflow_runs.py
