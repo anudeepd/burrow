@@ -5,7 +5,7 @@
  */
 import { type ClusterMetrics, isCapacityScheduler, isFairScheduler, type SchedulerInfo } from "~/api/schemas";
 import { useId, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ov } from "~/api/queries/overview";
 import { tq } from "~/api/queries/tools";
 import { selectNodes } from "~/api/schemas";
@@ -59,12 +59,12 @@ export function SchedulerMetrics({
   className?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const nodesQuery = useQuery(ov.nodes());
+  const nodesQuery = useStableQuery(ov.nodes());
   const averageMemory = averageNodeMemoryUtilization(nodesQuery.data ? selectNodes(nodesQuery.data) : []);
   const additionalMetricsId = useId();
   const capacity = isCapacityScheduler(info) ? info : null;
-  const overviewQuery = useQuery(ov.schedulerOverview());
-  const confQuery = useQuery(tq.conf());
+  const overviewQuery = useStableQuery(ov.schedulerOverview());
+  const confQuery = useStableQuery(tq.conf());
   const schedulerOverview = overviewQuery.data;
   const conf = confQuery.data;
   const nameText = schedulerDisplayName(info.type);

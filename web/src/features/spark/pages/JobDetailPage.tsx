@@ -4,7 +4,7 @@
  *
  * `?stage=N` (set by clicking a node in the DAG) highlights that stage's row; the DAG's own drawer is DagViz's business.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useMemo } from "react";
@@ -41,8 +41,8 @@ export function JobDetailPage() {
   const tz = usePref("tz");
 
   const numericJobId = Number(jobId);
-  const jobQ = useQuery(sp.job(appId, numericJobId, kind === "live" ? "live" : "static", attempt));
-  const stagesQ = useQuery(sp.stages(appId, { kind, attempt }));
+  const jobQ = useStableQuery(sp.job(appId, numericJobId, kind === "live" ? "live" : "static", attempt));
+  const stagesQ = useStableQuery(sp.stages(appId, { kind, attempt }));
   const job = jobQ.data;
 
   const stageIds = useMemo(() => new Set((job?.stageIds ?? []).map(Number)), [job?.stageIds]);
@@ -203,7 +203,7 @@ export function JobDetailPage() {
           <SparkStaleErrorBanner error={stagesQ.error} subject={`the stages of job ${job.jobId}`} onRetry={() => void stagesQ.refetch()} />
         )}
         <DataTable<SparkStage>
-          className="min-h-[24rem]"
+          className="min-h-96"
           data={jobStages}
           columns={columns}
           getRowId={(s) => `${s.stageId}/${s.attemptId ?? 0}`}

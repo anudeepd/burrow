@@ -25,6 +25,8 @@ pub struct Canned {
     pub headers: Vec<(String, String)>,
     /// Delay before the response is written — used to keep a request "in flight" while other callers join.
     pub delay: Duration,
+    /// Write headers, then close the socket before the body: a transport failure the client must handle.
+    pub close: bool,
 }
 
 impl Canned {
@@ -39,6 +41,7 @@ impl Canned {
             body: body.into(),
             headers: Vec::new(),
             delay: Duration::ZERO,
+            close: false,
         }
     }
 
@@ -54,6 +57,11 @@ impl Canned {
 
     pub fn with_delay(mut self, ms: u64) -> Self {
         self.delay = Duration::from_millis(ms);
+        self
+    }
+
+    pub fn with_close(mut self) -> Self {
+        self.close = true;
         self
     }
 }
@@ -322,6 +330,12 @@ async fn serve_conn(stream: TcpStream, state: Arc<Mutex<MockState>>) -> std::io:
             out.extend_from_slice(format!("{name}: {value}\r\n").as_bytes());
         }
         out.extend_from_slice(b"connection: keep-alive\r\n\r\n");
+        write_half.write_all(&out).await?;
+        write_half.flush().await?;
+        if canned.close {
+            return Ok(());
+        }
+        out.clear();
         out.extend_from_slice(&canned.body);
         write_half.write_all(&out).await?;
         write_half.flush().await?;

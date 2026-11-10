@@ -7,7 +7,7 @@ import { HorizontalScrollCues, useHorizontalScrollCues } from "./horizontal-scro
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const TAB_BASE_CLASS =
-  "burrow-tab relative inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 text-body font-medium text-ink-3 outline-offset-[-2px] transition-colors duration-(--dur-fast) ease-(--ease-out) hover:text-ink-2";
+  "burrow-tab relative inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap px-3 text-body font-medium text-ink-3 -outline-offset-2 transition-colors duration-(--dur-fast) ease-out hover:text-ink-2";
 export const TAB_STRIP_CLASS =
   "burrow-scroll burrow-scroll-hidden relative flex min-w-0 items-center gap-0.5 overflow-x-auto border-b border-seam";
 export const TAB_LINK_CLASS = `${TAB_BASE_CLASS} aria-[current=page]:text-ink`;

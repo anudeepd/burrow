@@ -274,6 +274,67 @@ describe("SchedulerPage over captured payloads", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/scheduler/root.large"));
   });
 
+  it("uses the short queue label in the tile and reveals the full path on focus", async () => {
+    const view = renderAt(
+      <QueueTreemap
+        items={[{ key: "root.prod.etl", label: "etl", value: 100, field: "queue.used", raw: 100, usedPct: 50, sub: "100 MiB used" }]}
+        basis="used"
+        height={300}
+        label="Short label map"
+      />,
+      ["/scheduler"],
+    );
+    const tile = await screen.findByRole("link", { name: /root\.prod\.etl/ });
+    const labels = [...tile.querySelectorAll("text")].map((node) => node.textContent);
+    expect(labels).toContain("etl");
+    expect(labels).not.toContain("root.prod.etl");
+    expect(view.container.querySelector("[data-burrow-treemap-tail]")).toBeNull();
+
+    fireEvent.focus(tile);
+    const tooltip = await screen.findByRole("tooltip");
+    expect(tooltip.textContent).toContain("root.prod.etl");
+    expect(tooltip.textContent).toContain("100 MiB");
+    expect(tooltip.textContent).toContain("100 MiB used");
+  });
+
+  it("lists queues too small for a labeled tile and keeps them navigable", async () => {
+    const items = [
+      { key: "root.big", value: 100, field: "queue.used", raw: 100, usedPct: 50, sub: "100 MiB used" },
+      { key: "root.tiny", value: 2, field: "queue.used", raw: 2, usedPct: null, sub: "2 MiB used" },
+    ];
+    const view = renderAt(<QueueTreemap items={items} basis="used" height={300} label="Tail queue map" />, ["/scheduler"]);
+
+    const tile = await screen.findByRole("link", { name: /root\.big/ });
+    fireEvent.click(tile);
+    await waitFor(() => expect(view.router.state.location.pathname).toBe("/scheduler/root.big"));
+
+    expect(await screen.findByText("Smaller queues")).toBeTruthy();
+    const tail = view.container.querySelector("[data-burrow-treemap-tail]")!;
+    expect(tail.textContent).toContain("root.tiny");
+    expect(tail.textContent).not.toContain("%");
+    expect(view.container.querySelectorAll('svg g[role="link"]')).toHaveLength(1);
+
+    fireEvent.click(within(tail as HTMLElement).getByRole("button", { name: /root\.tiny/ }));
+    await waitFor(() => expect(view.router.state.location.pathname).toBe("/scheduler/root.tiny"));
+    view.unmount();
+
+    // Two tail rows use the plural header and the capacity wording in the row label.
+    renderAt(
+      <QueueTreemap
+        items={[
+          { key: "root.big", value: 100, field: "queue.min", raw: 100, usedPct: 50, sub: "100 MiB guaranteed" },
+          { key: "root.small", value: 2, field: "queue.min", raw: 2, usedPct: 50, sub: "2 MiB guaranteed" },
+          { key: "root.tiny", value: 1, field: "queue.min", raw: 1, usedPct: null, sub: "1 MiB guaranteed" },
+        ]}
+        basis="capacity"
+        height={300}
+        label="Tail pair map"
+      />,
+      ["/scheduler"],
+    );
+    expect(await screen.findByText(/2 queues/)).toBeTruthy();
+  });
+
   it("renders the treemap label bands at their height boundaries and supports Space navigation", async () => {
     const longKey = `root.${"long-queue-name-".repeat(12)}`;
     const item = { key: longKey, value: 100, field: "queue.used", raw: 100, usedPct: null };

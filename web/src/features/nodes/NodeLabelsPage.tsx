@@ -12,7 +12,7 @@
  *
  * Two views: the label catalogue, and a read-only mapping "editor" (write actions are an explicit v1 non-goal).
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { Network, Table2 } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
@@ -37,8 +37,8 @@ export function NodeLabelsPage() {
   const navigate = route.useNavigate();
   const view = search.view ?? "labels";
 
-  const labelsQ = useQuery(nq.nodeLabels());
-  const nodesQ = useQuery(nq.nodes());
+  const labelsQ = useStableQuery(nq.nodeLabels());
+  const nodesQ = useStableQuery(nq.nodes());
 
   const nodes = nodesQ.data ?? [];
   const labelNames = useMemo(() => (labelsQ.data ?? []).map((l) => l.name), [labelsQ.data]);
@@ -58,14 +58,14 @@ export function NodeLabelsPage() {
     labelsQ.error && !labelsQ.data ? (
       <ErrorState
         title="Cannot read the node labels"
-        message={labelsQ.error instanceof Error ? labelsQ.error.message : String(labelsQ.error)}
+        error={labelsQ.error}
         hint="Burrow proxies /ws/v1/cluster/get-node-labels; label support requires yarn.node-labels.enabled on the ResourceManager."
         onRetry={() => void labelsQ.refetch()}
       />
     ) : nodesQ.error && !nodesQ.data ? (
       <ErrorState
         title="Cannot read nodes for label membership"
-        message={nodesQ.error instanceof Error ? nodesQ.error.message : String(nodesQ.error)}
+        error={nodesQ.error}
         hint="Active-node counts, the DEFAULT partition, and node-to-label mappings come from the ResourceManager node list."
         onRetry={() => void nodesQ.refetch()}
       />
@@ -74,7 +74,7 @@ export function NodeLabelsPage() {
   return (
     <div
       data-page-motion="content"
-      className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto pb-6 [&>*]:shrink-0"
+      className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto pb-6 *:shrink-0"
     >
       <PageHead
         title="Node labels"
@@ -113,7 +113,7 @@ export function NodeLabelsPage() {
         <ErrorState
           compact
           title="Node list refresh failed; showing the last loaded membership data"
-          message={nodesQ.error instanceof Error ? nodesQ.error.message : String(nodesQ.error)}
+          error={nodesQ.error}
           onRetry={() => void nodesQ.refetch()}
         />
       )}
@@ -393,7 +393,7 @@ function MappingView({
                 disabled
                 readOnly
                 aria-label={`${name} on ${row.original.id} (read-only)`}
-                className="size-3.5 accent-(--live)"
+                className="size-3.5 accent-live"
               />
               <span>{on ? "yes" : "no"}</span>
             </label>
@@ -431,7 +431,7 @@ function MappingView({
         totalCount={nodes.length}
         toolbar={<SearchField value={search} onChange={onSearch} label="Search nodes" placeholder="host, rack, label…" className="w-64" />}
         empty={<EmptyState title="No node matches">Clear the search box.</EmptyState>}
-        className="min-h-[20rem]"
+        className="min-h-80"
       />
     </Section>
   );

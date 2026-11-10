@@ -241,6 +241,8 @@ test.describe("/apps", () => {
     await expect(running).toBeVisible();
     await running.click();
     await expect(page).toHaveURL(/states=RUNNING/);
+    // The previous window stays visible until the filtered read lands; wait for it instead of reading stale rows.
+    await expect(page.locator('[data-yf="app.state"]').first()).toHaveText("Running");
     expect(new Set(await rowStates(page))).toEqual(new Set(["Running"]));
 
     const filterButton = page.getByTestId("apps-filter-toggle");
@@ -353,21 +355,19 @@ test.describe("/apps", () => {
     await filters.getByRole("combobox", { name: "User" }).click();
     await page.getByRole("option", { name: /^alice/ }).click();
     await expect(page).toHaveURL(/user=alice/);
-    const users = (await page.locator('[data-yf="app.user"]').allTextContents()).map((s) => s.trim());
-    expect(new Set(users)).toEqual(new Set(["alice"]));
+    const visibleValues = async (field: string) =>
+      [...new Set((await page.locator(`[data-yf="${field}"]`).allTextContents()).map((s) => s.trim()))].sort();
+    await expect.poll(() => visibleValues("app.user")).toEqual(["alice"]);
 
     await filters.getByRole("combobox", { name: "Queue" }).click();
     await page.getByRole("option", { name: /^root\.dev\.alice/ }).click();
     await expect(page).toHaveURL(/queue=root.dev.alice/);
-    const queues = (await page.locator('[data-yf="app.queue"]').allTextContents()).map((s) => s.trim());
-    expect(new Set(queues)).toEqual(new Set(["root.dev.alice"]));
+    await expect.poll(() => visibleValues("app.queue")).toEqual(["root.dev.alice"]);
 
     await filters.getByRole("combobox", { name: "Application type" }).click();
     await page.getByRole("option", { name: /^SPARK/ }).click();
     await expect(page).toHaveURL(/type=SPARK/);
-    const types = (await page.locator('[data-yf="app.applicationType"]').allTextContents()).map((s) => s.trim());
-    expect(types.length).toBeGreaterThan(0);
-    expect(new Set(types)).toEqual(new Set(["SPARK"]));
+    await expect.poll(() => visibleValues("app.applicationType")).toEqual(["SPARK"]);
 
     await page
       .getByRole("button", { name: /Clear filters/i })
@@ -625,6 +625,71 @@ test.describe("/apps", () => {
     // Follow the application's own ID link, the same route users reach from the table.
     await page.locator(`[data-yf="app.id"] a[href="/apps/${firstId}"]`).click();
     await expect(page).toHaveURL(new RegExp(`/apps/${firstId}`));
+  });
+
+  test("paints a bounded preview before the complete index is ready", async ({ page }) => {
+    await freezeLive(page);
+    const preview = SCREENSHOT_APPS.slice(0, 2);
+    const facets = (count: number) => ({
+      total: count,
+      byState: { RUNNING: count },
+      byFinal: { UNDEFINED: count },
+      active: count,
+      users: [],
+      queues: [],
+      types: [],
+      tags: [],
+    });
+    const requests: string[] = [];
+    let call = 0;
+    let releaseReady = () => {};
+    const readyGate = new Promise<void>((resolve) => {
+      releaseReady = resolve;
+    });
+    await page.route(
+      (url) => url.pathname === "/api/yarn/apps" && url.searchParams.get("window") === "1",
+      async (route) => {
+        const url = route.request().url();
+        requests.push(url);
+        call += 1;
+        const partial = call === 1;
+        // Hold the complete response until the test has observed the preview; otherwise the swap can
+        // happen before Playwright samples the indexing indicator.
+        if (!partial) await readyGate;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          headers: { "x-burrow-api": "1", "x-burrow-cache": partial ? "miss" : "hit" },
+          json: {
+            apps: { app: partial ? preview : SCREENSHOT_APPS },
+            window: {
+              offset: 0,
+              limit: partial ? 100 : 500,
+              total: partial ? null : SCREENSHOT_APPS.length,
+              filteredTotal: partial ? preview.length : SCREENSHOT_APPS.length,
+              ready: !partial,
+              partial,
+              stale: false,
+              version: partial ? 0 : 1,
+              ageMs: 0,
+              retryAfterMs: partial ? 500 : null,
+              refreshError: null,
+              facets: facets(partial ? preview.length : SCREENSHOT_APPS.length),
+            },
+          },
+        });
+      },
+    );
+
+    await page.goto("/apps");
+    await expect(page.getByTestId("apps-indexing")).toBeVisible();
+    await expect(page.locator('[data-yf="app.id"]').first()).toBeVisible();
+    releaseReady();
+    await expect(page.getByTestId("apps-indexing")).toHaveCount(0);
+    await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", String(SCREENSHOT_APPS.length));
+    expect(requests.length).toBeGreaterThanOrEqual(2);
+    expect(new URL(requests[0]!).searchParams.get("limit")).toBe("100");
+    expect(requests.slice(1).some((url) => new URL(url).searchParams.get("limit") === "500")).toBe(true);
   });
 
   test("virtualizes the table at scale (10k+ rows, a small window in the DOM)", async ({ page }) => {

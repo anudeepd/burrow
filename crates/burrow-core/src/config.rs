@@ -216,6 +216,40 @@ impl Default for HaConfig {
     }
 }
 
+/// Tuning for the server-side applications index behind `/api/yarn/apps?window=1`.
+///
+/// The first request asks the ResourceManager for `limit` rows only, then this index is filled in the
+/// background with the complete list. Paging, filtering and sorting are served from that one snapshot, so
+/// a browser window never has to hold (or process) the whole list.
+#[derive(Debug, Clone)]
+pub struct AppsIndexConfig {
+    /// Largest offset+limit the fast path will request from the RM before the full index exists.
+    pub preview_max: usize,
+    /// How long a complete snapshot is served before a background refresh is started.
+    pub refresh_after: Duration,
+    /// Minimum delay between failed refresh attempts.
+    pub retry_after: Duration,
+    /// How long an unused snapshot is kept in memory.
+    pub idle_after: Duration,
+    /// TTL for the small preview request. Purely a request-coalescing convenience.
+    pub preview_ttl: Duration,
+    /// Safety cap when the RM's full app list is larger than the normal cache body cap.
+    pub max_body_bytes: usize,
+}
+
+impl Default for AppsIndexConfig {
+    fn default() -> Self {
+        Self {
+            preview_max: 1_000,
+            refresh_after: Duration::from_secs(10),
+            retry_after: Duration::from_secs(5),
+            idle_after: Duration::from_secs(300),
+            preview_ttl: Duration::from_secs(2),
+            max_body_bytes: 128 * 1024 * 1024,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Config {
     pub rm_urls: Vec<Url>,
@@ -240,6 +274,7 @@ pub struct Config {
     pub tuning: Tuning,
     pub cache: CacheConfig,
     pub ha: HaConfig,
+    pub apps_index: AppsIndexConfig,
     /// key → human-readable provenance (`flag`, `env`, `config file`, `hadoop conf (…)`, `default`).
     pub sources: BTreeMap<&'static str, String>,
     pub discovery: HadoopDiscovery,
@@ -477,6 +512,7 @@ pub fn resolve(layers: Vec<Layer>, hadoop: HadoopDiscovery) -> Result<Config, Co
         tuning,
         cache,
         ha: HaConfig::default(),
+        apps_index: AppsIndexConfig::default(),
         sources,
         discovery: hadoop,
     })

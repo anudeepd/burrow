@@ -9,7 +9,7 @@
  * Spark omits several fields (removal time/reason, peak metrics, blacklist stages) unless it actually reports them: they
  * render as "—", never as zero.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import { CircleCheck, CircleOff } from "lucide-react";
@@ -79,7 +79,7 @@ export function ExecutorsPage() {
   const includeDead = boolParam(search.all) === true;
   const q = typeof search.q === "string" ? search.q : "";
 
-  const qExecutors = useQuery(includeDead ? sp.allExecutors(appId, kind, attempt) : sp.executors(appId, kind, attempt));
+  const qExecutors = useStableQuery(includeDead ? sp.allExecutors(appId, kind, attempt) : sp.executors(appId, kind, attempt));
   const executors = useMemo(() => qExecutors.data ?? [], [qExecutors.data]);
   const filtering = useMemo(() => (q ? executors.filter((e) => matchesQuery([e.id, e.hostPort], q)) : executors), [executors, q]);
 
@@ -599,7 +599,7 @@ export function ExecutorsPage() {
             </SparkEmpty>
           ) : undefined
         }
-        className="min-h-[24rem]"
+        className="min-h-96"
         data={filtering}
         columns={columns}
         getRowId={(e) => e.id}

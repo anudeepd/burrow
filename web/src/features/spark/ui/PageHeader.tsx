@@ -29,7 +29,7 @@ export function PageHeader({
     <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pb-1">
       <div className="min-w-0">
         <h2 className={hideTitle ? "sr-only" : "text-h2 font-semibold text-ink"}>{title}</h2>
-        {pageDescription && <p className="mt-1 max-w-3xl text-pretty text-body break-words text-ink-3">{pageDescription}</p>}
+        {pageDescription && <p className="mt-1 max-w-3xl text-pretty text-body wrap-break-word text-ink-3">{pageDescription}</p>}
       </div>
       {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
@@ -52,7 +52,7 @@ export function Metric({ label, children, hint }: { label: string; children: Rea
         {label}
         {hint && <HelpTip label={label}>{hint}</HelpTip>}
       </dt>
-      <dd className="min-w-0 break-words text-body font-medium leading-snug text-ink [overflow-wrap:anywhere]">{children}</dd>
+      <dd className="min-w-0 wrap-break-word text-body font-medium leading-snug text-ink wrap-anywhere">{children}</dd>
     </div>
   );
 }

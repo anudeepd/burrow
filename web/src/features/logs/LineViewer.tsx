@@ -69,9 +69,12 @@ export function LineViewer(props: LineViewerProps) {
   const tz = usePref("tz");
   const scrollRef = useRef<HTMLDivElement>(null);
   const [atBottom, setAtBottom] = useState(true);
+  /** Last scroll offset we observed; lets `onScroll` tell a user scroll-up from content growth. */
+  const lastScrollTop = useRef<number | null>(null);
 
   const filtered = visibleIdx != null;
   const count = filtered ? visibleIdx.length : buffer.length;
+  const searching = search.query.length > 0;
 
   const itemKey = useCallback((i: number) => (filtered ? visibleIdx[i]! : i), [filtered, visibleIdx]);
 
@@ -86,6 +89,7 @@ export function LineViewer(props: LineViewerProps) {
   });
 
   const bufferIndexOf = useCallback((visible: number) => (filtered ? visibleIdx[visible]! : visible), [filtered, visibleIdx]);
+  const total = virtualizer.getTotalSize();
   const visibleIndexOf = useCallback(
     (bufferIndex: number): number => {
       if (!filtered) return bufferIndex;
@@ -108,13 +112,17 @@ export function LineViewer(props: LineViewerProps) {
 
   // ── auto-scroll ────────────────────────────────────────────────────────────────────────────────────────────────
   // Follow pins to the tail only while the user is at the bottom and no search is being navigated; scrolling up
-  // releases it (the "jump to tail" chip re-arms it).
-  const searching = search.query.length > 0;
+  // releases it (the "jump to tail" chip re-arms it). Wrapped rows are measured after mount, which can grow the
+  // scroll height by several viewports — `total` is a dependency so those re-measures re-pin instead of leaving the
+  // pane short of the tail.
   useLayoutEffect(() => {
     if (parity || !follow || paused || searching || !atBottom || count === 0) return;
+    // The scroll element is mounted before layout effects run. Remember where the pin starts; the resulting scroll
+    // event is downward and must not release follow.
+    lastScrollTop.current = scrollRef.current!.scrollTop;
     virtualizer.scrollToIndex(count - 1, { align: "end" });
-    // version is the append signal; count covers filter changes.
-  }, [version, count, follow, paused, parity, searching, atBottom, virtualizer]);
+    // version is the append signal; count covers filter changes; total covers measured-height growth.
+  }, [version, count, total, follow, paused, parity, searching, atBottom, virtualizer]);
 
   // Stepping to a match scrolls that line into view.
   useEffect(() => {
@@ -136,8 +144,17 @@ export function LineViewer(props: LineViewerProps) {
   const onScroll = useCallback(() => {
     // React only dispatches this handler from the mounted scroll element, so the ref is present here.
     const el = scrollRef.current!;
-    const near = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
-    setAtBottom((prev) => (prev === near ? prev : near));
+    const top = el.scrollTop;
+    const previous = lastScrollTop.current;
+    lastScrollTop.current = top;
+    const near = el.scrollHeight - top - el.clientHeight < 48;
+    if (near) {
+      setAtBottom(true);
+      return;
+    }
+    // Measuring wrapped rows grows the content without moving scrollTop. Only an actual upward scroll means the
+    // user wants to leave the tail; content growth under a pinned view must not release follow.
+    if (previous == null || top < previous) setAtBottom(false);
   }, []);
 
   const jumpToTail = useCallback(() => {
@@ -146,7 +163,6 @@ export function LineViewer(props: LineViewerProps) {
   }, [count, virtualizer]);
 
   const renderAll = parity && count <= PARITY_MAX_ROWS;
-  const total = virtualizer.getTotalSize();
   const items = renderAll ? Array.from({ length: count }, (_, i) => ({ index: i, start: i * LINE_HEIGHT })) : virtualizer.getVirtualItems();
 
   const showJump = follow && !atBottom && !renderAll;
@@ -270,7 +286,7 @@ const LineRow = memo(function LineRow({
       className={cn(
         "relative flex items-start gap-2 px-2",
         !wrap && "h-5 overflow-hidden whitespace-pre",
-        wrap && "break-words whitespace-pre-wrap",
+        wrap && "wrap-break-word whitespace-pre-wrap",
         level ? LEVEL_ROW[level] : "",
       )}
     >

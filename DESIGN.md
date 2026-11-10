@@ -408,10 +408,14 @@ tween `stroke-dashoffset` inline). Entrance *primitives* are transitions, not ke
    changes may fade the result wrapper with `--dur-content`; never animate each row. Hover motion is pointer-gated (Tailwind
    v4's `hover:` compiles to `@media (hover: hover)`; raw CSS `:hover` needs the media query by hand). Theme changes are
    forced to snap by `data-switching` (a flip that cross-fades every colour on the page reads as a smear, not a state change).
-8. Three explicit exceptions to rules 3/7: `.burrow-rail` width moves between 56px and 248px on a user toggle (the main column
+8. Four explicit exceptions to rules 3/7: `.burrow-rail` width moves between 56px and 248px on a user toggle (the main column
    reflows for the 240ms shell transition); the tab indicator tweens `width` alongside `translate` (one absolutely-positioned
-   2px bar re-lays out nothing); and the `ResourceRing` tweens `stroke-dashoffset` (a ring cannot be expressed as
-   transform/opacity without rotation tricks). No other layout transition.
+   2px bar re-lays out nothing); the `ResourceRing` tweens `stroke-dashoffset` (a ring cannot be expressed as
+   transform/opacity without rotation tricks); and the technical-details disclosure (`TechnicalDetails` in
+   `ui/feedback.tsx`) animates its own `grid-template-rows` between `0fr` and `1fr` on `--dur-base`/`--ease-out` so
+   expanding or collapsing a panel does not jump the surrounding content, keeping the payload mounted until the row
+   reaches `0fr`. Under reduced motion that height step snaps (the token zeroes); the `--dur-fade` opacity remains. No
+   other layout transition.
 9. Rejected by this pass: whole-page route slides, unbounded/per-row list entrances, and per-line log entrances (the new-line
    *flash* covers it without dimming text the reader is mid-sentence in); animated
    Gantt bars/marquee/now-line (they *are* the datum), DAG viewport tweens on pan/zoom/fit (direct manipulation; the e2e

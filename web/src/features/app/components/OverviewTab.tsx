@@ -55,7 +55,7 @@ function Diagnostics({ text }: { text: string }) {
           {!parity && (
             <Button variant="quiet" size="sm" onClick={() => setExpanded((v) => !v)} aria-expanded={open}>
               <ChevronDown
-                className={cn("size-3.5 transition-transform duration-(--dur-fast) ease-(--ease-out)", open && "rotate-180")}
+                className={cn("size-3.5 transition-transform duration-(--dur-fast) ease-out", open && "rotate-180")}
                 aria-hidden="true"
               />
               {open ? "Collapse" : "Show all"}

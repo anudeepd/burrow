@@ -5,7 +5,7 @@
  * This is the part of the Overview that should feel alive: progress advances, elapsed time is computed against the
  * shell's clock (skew-corrected from `/api/meta`), and each row opens Burrow's application detail.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { ov } from "~/api/queries/overview";
@@ -66,14 +66,14 @@ function AppRow({ app, stale }: { app: App; stale: boolean }) {
   const progress = typeof app.progress === "number" ? app.progress : 0;
   return (
     <Entity id={app.id} as="li" className="group border-b border-seam-soft last:border-b-0" data-testid={`app-row-${app.id}`}>
-      <div className="burrow-active-app-row grid min-w-0 grid-cols-1 gap-y-3 px-3 py-2.5 transition-colors duration-(--dur-fast) ease-(--ease-out) group-hover:bg-fabric-2 group-focus-within:bg-fabric-2 lg:grid-cols-[minmax(12rem,1.2fr)_minmax(7rem,0.8fr)_minmax(15rem,1.5fr)] lg:items-center lg:gap-x-5">
+      <div className="burrow-active-app-row grid min-w-0 grid-cols-1 gap-y-3 px-3 py-2.5 transition-colors duration-(--dur-fast) ease-out group-hover:bg-fabric-2 group-focus-within:bg-fabric-2 lg:grid-cols-[minmax(12rem,1.2fr)_minmax(7rem,0.8fr)_minmax(15rem,1.5fr)] lg:items-center lg:gap-x-5">
         <div className="min-w-0">
           <div className="flex min-w-0 flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
             <StatusPill domain="app.state" state={app.state} field="app.state" size="sm" />
             <Tooltip label={`Open ${app.name} in Burrow`} align="center">
               <CrossLink
                 href={`/apps/${encodeURIComponent(app.id)}`}
-                className="min-w-0 whitespace-normal rounded-sm text-body font-medium hover:text-live hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-live [overflow-wrap:anywhere]"
+                className="min-w-0 whitespace-normal rounded-sm text-body font-medium hover:text-live hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-live wrap-anywhere"
                 aria-label={`Open application ${app.name}`}
                 data-testid={`app-link-${app.id}`}
               >
@@ -112,7 +112,7 @@ function AppRow({ app, stale }: { app: App; stale: boolean }) {
             fmt="text"
             factClassName="col-span-full xl:col-span-2"
             truncate={false}
-            valueClassName="font-mono whitespace-normal [overflow-wrap:anywhere]"
+            valueClassName="font-mono whitespace-normal wrap-anywhere"
           />
           <AppFact
             label="Started"
@@ -148,7 +148,7 @@ function AppRow({ app, stale }: { app: App; stale: boolean }) {
 const RAIL_LIMIT = 5;
 
 export function ActiveRail({ parity, bordered = false }: { parity: boolean; bordered?: boolean }) {
-  const apps = useQuery(ov.appsActive());
+  const apps = useStableQuery(ov.appsActive());
   const stale = useStale();
 
   const list: App[] = useMemo(() => (apps.data ? rankApps(apps.data) : []), [apps.data]);
@@ -178,9 +178,8 @@ export function ActiveRail({ parity, bordered = false }: { parity: boolean; bord
     return (
       <ErrorState
         title="The active applications could not be read"
-        message={
-          apps.error instanceof Error ? apps.error.message : String(apps.error ?? "The ResourceManager did not return active applications.")
-        }
+        error={apps.error}
+        message={apps.error == null ? "The ResourceManager did not return active applications." : undefined}
         hint="Cluster metrics above may still show active application counts."
         onRetry={() => void apps.refetch()}
       />
@@ -188,7 +187,7 @@ export function ActiveRail({ parity, bordered = false }: { parity: boolean; bord
   }
   if (list.length === 0) {
     return (
-      <div className="flex flex-col gap-[var(--gap-card)]">
+      <div className="flex flex-col gap-(--gap-card)">
         {apps.isError && (
           <StaleErrorBanner
             title="Active applications refresh failed; showing the last loaded result"
@@ -206,7 +205,7 @@ export function ActiveRail({ parity, bordered = false }: { parity: boolean; bord
   }
 
   return (
-    <div className="flex flex-col gap-[var(--gap-card)]">
+    <div className="flex flex-col gap-(--gap-card)">
       {apps.isError && list.length > 0 && (
         <StaleErrorBanner
           title="Active applications refresh failed; showing the last loaded rows"
@@ -214,7 +213,7 @@ export function ActiveRail({ parity, bordered = false }: { parity: boolean; bord
           onRetry={() => void apps.refetch()}
         />
       )}
-      <TabContent value="active-applications" initial className="flex flex-col gap-[var(--gap-card)]">
+      <TabContent value="active-applications" initial className="flex flex-col gap-(--gap-card)">
         <div
           className={cn(
             "relative min-w-0 overflow-hidden rounded-md",

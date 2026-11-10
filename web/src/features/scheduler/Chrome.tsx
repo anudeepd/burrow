@@ -24,7 +24,7 @@ export function PageHeader({
     <header className={cn("flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pb-2", className)}>
       <div className="min-w-0">
         <h1 className="text-h1 font-semibold text-ink text-balance">{title}</h1>
-        {subtitle && <p className="mt-1 max-w-3xl text-body break-words text-ink-3">{subtitle}</p>}
+        {subtitle && <p className="mt-1 max-w-3xl text-body wrap-break-word text-ink-3">{subtitle}</p>}
         {meta && <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-small text-ink-3">{meta}</div>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -60,7 +60,7 @@ export function Section({
 }
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]", className)}>{children}</div>;
+  return <div className={cn("min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)", className)}>{children}</div>;
 }
 
 export function Tile({ children, className, ...rest }: { children: ReactNode; className?: string } & React.HTMLAttributes<HTMLDivElement>) {

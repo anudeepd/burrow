@@ -18,6 +18,7 @@ export function SparkFailureState({ error, subject, onRetry }: { error: unknown;
       title={f.title}
       message={f.message}
       hint={f.hint}
+      error={error}
       detail={f.detail}
       onRetry={f.kind === "backend-missing" ? undefined : onRetry}
       className="py-10"
@@ -34,6 +35,7 @@ export function SparkStaleErrorBanner({ error, subject, onRetry }: { error: unkn
       title={`Could not refresh ${subject}`}
       message={f.message}
       hint={f.hint}
+      error={error}
       onRetry={f.kind === "backend-missing" ? undefined : onRetry}
     />
   );

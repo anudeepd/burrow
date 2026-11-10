@@ -8,6 +8,7 @@ use std::time::{Duration, Instant};
 use http::header::{HeaderMap, HeaderName, HeaderValue, RANGE};
 use parking_lot::Mutex;
 
+use crate::apps_index::AppsIndex;
 use crate::cache::{Cache, Expect, Fetcher, Served, TtlPolicy, cache_key};
 use crate::config::{Config, ConfigError};
 use crate::error::ApiError;
@@ -122,6 +123,8 @@ impl<T: Clone> Memo<T> {
 pub struct Core {
     pub config: Arc<Config>,
     pub cache: Cache,
+    /// Complete-list index behind `/api/yarn/apps?window=1`.
+    pub apps: Arc<AppsIndex>,
     pub rm: Arc<Upstream>,
     pub nm: Arc<Upstream>,
     pub spark_history: Vec<Arc<Upstream>>,
@@ -182,6 +185,7 @@ impl Core {
         topics.set_enabled(true);
         let core = Arc::new(Self {
             cache: Cache::new(config.cache.clone()),
+            apps: Arc::new(AppsIndex::new(config.apps_index.clone())),
             config: Arc::new(config),
             rm,
             nm,

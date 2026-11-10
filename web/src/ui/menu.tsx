@@ -64,7 +64,7 @@ export function MenuItem({
 }) {
   const content = (
     <>
-      <span className={cn("min-w-0 flex-1", wrap ? "whitespace-normal break-words" : "truncate")}>{children}</span>
+      <span className={cn("min-w-0 flex-1", wrap ? "whitespace-normal wrap-break-word" : "truncate")}>{children}</span>
       {shortcut && <span className="text-micro text-ink-4">{shortcut}</span>}
     </>
   );
@@ -96,7 +96,7 @@ export function MenuCheckboxItem({
   return (
     <BMenu.CheckboxItem className={itemCls} checked={checked} onCheckedChange={onCheckedChange} closeOnClick={closeOnClick}>
       <span className="grid size-4 place-items-center">
-        <BMenu.CheckboxItemIndicator className="transition-opacity duration-(--dur-fast) ease-(--ease-out)">
+        <BMenu.CheckboxItemIndicator className="transition-opacity duration-(--dur-fast) ease-out">
           <Check className="size-3.5 text-live" aria-hidden="true" />
         </BMenu.CheckboxItemIndicator>
       </span>
@@ -123,7 +123,7 @@ export function MenuRadioGroup<T extends string>({
         {options.map((o) => (
           <BMenu.RadioItem key={o.value} value={o.value} className={itemCls} closeOnClick={false}>
             <span className="grid size-4 place-items-center">
-              <BMenu.RadioItemIndicator className="transition-opacity duration-(--dur-fast) ease-(--ease-out)">
+              <BMenu.RadioItemIndicator className="transition-opacity duration-(--dur-fast) ease-out">
                 <Check className="size-3.5 text-live" aria-hidden="true" />
               </BMenu.RadioItemIndicator>
             </span>

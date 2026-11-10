@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Boxes, CornerDownLeft, Moon, Pause, Play, Search, Sun, SunMoon } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
@@ -55,7 +55,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const navigate = useNavigate();
   const theme = usePref("theme");
   const paused = usePref("livePaused");
-  const appsQuery = useQuery({ ...q.apps(), enabled: open });
+  const appsQuery = useStableQuery({ ...q.apps(), enabled: open });
   const apps = appsQuery.data;
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -193,7 +193,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           <ErrorState
             compact
             title={apps ? "Application search refresh failed; showing cached results" : "Could not load applications for search"}
-            message={appsQuery.error instanceof Error ? appsQuery.error.message : String(appsQuery.error)}
+            error={appsQuery.error}
             onRetry={() => void appsQuery.refetch()}
           />
         )}

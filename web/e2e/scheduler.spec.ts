@@ -491,6 +491,21 @@ test.describe("scheduler", () => {
     }
   });
 
+  test("the treemap tile reveals its full queue path on hover", async ({ page }) => {
+    await page.goto("/scheduler");
+    const map = page.getByRole("img", { name: /Queue resource map/ });
+    await expect(map).toBeVisible();
+    const tile = map.locator('g[role="link"]').first();
+    const fullPath = await tile.getAttribute("data-ye");
+    expect(fullPath).toMatch(/^root\./);
+    await tile.hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toContainText(fullPath!);
+    await expect(tooltip).toContainText("used of");
+    // The tile itself shows the short label; the full path lives in the app tooltip, not a native title popup.
+    await expect(tile.locator("title")).toHaveCount(0);
+  });
+
   test("changing the treemap area basis updates its reading and queue layout", async ({ page }) => {
     await page.goto("/scheduler");
     const treemap = page.getByRole("img", { name: /Queue resource map/ });
@@ -510,7 +525,7 @@ test.describe("scheduler", () => {
     await expect(firstRect).toHaveCSS("transition-property", /width/);
     await expect(treemap).toHaveAttribute("aria-label", /guaranteed share/);
     await expect(guaranteedShareButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByText(/with a guaranteed share/)).toBeVisible();
+    await expect(page.getByText(/with a guaranteed share|shown by area/)).toBeVisible();
 
     const after = await rectangles.evaluateAll((rects) =>
       rects.map((rect) => [rect.getAttribute("x"), rect.getAttribute("y"), rect.getAttribute("width"), rect.getAttribute("height")]),

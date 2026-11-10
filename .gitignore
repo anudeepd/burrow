@@ -37,3 +37,10 @@ __pycache__/
 /web/app/plugins/impeccable-live.client.ts
 /web/src/plugins/impeccable-live.client.ts
 /web/src/impeccable/ImpeccableLiveRoot.tsx
+
+# Local editor state (Zed project settings stay on this machine)
+/.zed/
+
+# Ad-hoc coverage reports written to the repo root during verification
+/coverage-rust.txt
+/coverage-rust.json

@@ -69,7 +69,7 @@ function NameCell({
           >
             {/* one glyph that rotates: a swap between two mounts cannot be transitioned */}
             <ChevronRight
-              className={cn("size-3 transition-transform duration-(--dur-fast) ease-(--ease-out)", open && "rotate-90")}
+              className={cn("size-3 transition-transform duration-(--dur-fast) ease-out", open && "rotate-90")}
               aria-hidden="true"
             />
           </button>

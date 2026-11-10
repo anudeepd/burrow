@@ -38,8 +38,9 @@ export function entryMap<V extends z.ZodType>(value: V) {
 
 /**
  * `listOf` as an object-field schema: key may be absent (Hadoop omits empty collections), output is always an array.
- * (`listOf` alone makes zod treat the key as required because its output is non-optional.)
+ * (`listOf` alone makes zod treat the key as required because its output is non-optional.) The explicit return type
+ * stops older TypeScript versions from tying the alias's inferred type back to its own body.
  */
-export function list<S extends z.ZodType>(item: S) {
-  return listOf(item).default([]);
+export function list<S extends z.ZodType>(item: S): z.ZodType<z.output<S>[], unknown> {
+  return listOf(item);
 }

@@ -226,26 +226,20 @@ export function filteredApps(c: MockCluster, q: URLSearchParams): MockApp[] {
       throw badRequest(`Invalid application-state ${s} specified. It should be one of ${ALL_STATES.join(", ")}`);
   }
   const states = new Set(stateParams);
-  const finalStatus = q.get("finalStatus")?.toUpperCase();
+  const finalStatus = (q.get("finalStatus") ?? q.get("final"))?.toUpperCase();
   if (finalStatus && !FINAL_STATUSES.includes(finalStatus))
     throw badRequest(`Invalid application-state ${finalStatus} specified. It should be one of ${FINAL_STATUSES.join(", ")}`);
   const user = q.get("user");
   const queue = q.get("queue");
-  const limitRaw = q.get("limit");
-  let limit = Infinity;
-  if (limitRaw !== null && limitRaw !== "") {
-    limit = Number(limitRaw);
-    if (!Number.isInteger(limit) || limit < 0) throw badRequest("limit value must be greater then 0");
-  }
   const sb = longParam(q, "startedTimeBegin", 0);
   const se = longParam(q, "startedTimeEnd", Number.MAX_SAFE_INTEGER);
   const fb = longParam(q, "finishedTimeBegin", 0);
   const fe = longParam(q, "finishedTimeEnd", Number.MAX_SAFE_INTEGER);
-  const types = new Set(csv(q.get("applicationTypes")).map((s) => s.toUpperCase()));
-  const tags = new Set(csv(q.get("applicationTags")).map((s) => s.toLowerCase()));
+  const types = new Set([...csv(q.get("applicationTypes")), ...csv(q.get("type"))].map((s) => s.toUpperCase()));
+  const tags = new Set([...csv(q.get("applicationTags")), ...csv(q.get("tag"))].map((s) => s.toLowerCase()));
   const name = q.get("name");
   const out: MockApp[] = [];
-  for (let i = c.apps.length - 1; i >= 0 && out.length < limit; i--) {
+  for (let i = c.apps.length - 1; i >= 0; i--) {
     const a = c.apps[i]!;
     if (states.size && !states.has(a.state)) continue;
     if (finalStatus && a.finalStatus !== finalStatus) continue;
@@ -255,7 +249,12 @@ export function filteredApps(c: MockCluster, q: URLSearchParams): MockApp[] {
     if (fb > 0 || fe !== Number.MAX_SAFE_INTEGER) if (a.finishedTime < fb || a.finishedTime > fe) continue;
     if (types.size && !types.has(a.type.toUpperCase())) continue;
     if (tags.size && !a.tags.some((t) => tags.has(t.toLowerCase()))) continue;
-    if (name && a.name !== name) continue;
+    if (name) {
+      // The UI searches substrings in the app NAME, or in the id when the needle looks like one.
+      const needle = name.toLowerCase();
+      const hit = needle.includes("application_") ? a.id.toLowerCase().includes(needle) : a.name.toLowerCase().includes(needle);
+      if (!hit) continue;
+    }
     out.push(a);
   }
   return out;
@@ -263,8 +262,190 @@ export function filteredApps(c: MockCluster, q: URLSearchParams): MockApp[] {
 
 export function appsResponse(c: MockCluster, q: URLSearchParams) {
   const des = new Set(csv(q.get("deSelects")).map((s) => s.toLowerCase()));
-  const list = filteredApps(c, q).map((a) => appJson(c, a, des));
+  const filtered = filteredApps(c, q);
+  if (q.get("window") === "1") {
+    const offset = Math.max(0, longParam(q, "offset", 0));
+    const limit = Math.max(1, longParam(q, "limit", 100));
+    const sorted = sortMockApps(c, filtered, q.get("sort") ?? "-starttime");
+    const page = sorted.slice(offset, offset + limit).map((a) => appJson(c, a, des));
+    return {
+      apps: page.length ? { app: page } : null,
+      window: {
+        offset,
+        limit,
+        total: c.apps.length,
+        filteredTotal: sorted.length,
+        ready: true,
+        partial: false,
+        stale: false,
+        version: c.version,
+        ageMs: 0,
+        retryAfterMs: null,
+        refreshError: null,
+        facets: facetOf(c.apps),
+      },
+    };
+  }
+  const limitRaw = q.get("limit");
+  let limit = Number.POSITIVE_INFINITY;
+  if (limitRaw !== null && limitRaw !== "") {
+    limit = Number(limitRaw);
+    if (!Number.isInteger(limit) || limit < 0) throw badRequest("limit value must be greater then 0");
+  }
+  const list = filtered.slice(0, limit).map((a) => appJson(c, a, des));
   return { apps: list.length ? { app: list } : null };
+}
+
+const ACTIVE_MOCK_STATES = new Set(["NEW", "NEW_SAVING", "SUBMITTED", "ACCEPTED", "RUNNING"]);
+
+function facetList(counts: Map<string, number>) {
+  return [...counts.entries()]
+    .map(([value, count]) => ({ value, count }))
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+}
+
+function facetOf(apps: MockApp[]) {
+  const byState: Record<string, number> = {};
+  const byFinal: Record<string, number> = {};
+  const users = new Map<string, number>();
+  const queues = new Map<string, number>();
+  const types = new Map<string, number>();
+  const tags = new Map<string, number>();
+  let active = 0;
+  for (const app of apps) {
+    byState[app.state] = (byState[app.state] ?? 0) + 1;
+    if (app.finalStatus) byFinal[app.finalStatus] = (byFinal[app.finalStatus] ?? 0) + 1;
+    if (ACTIVE_MOCK_STATES.has(app.state)) active += 1;
+    users.set(app.user, (users.get(app.user) ?? 0) + 1);
+    queues.set(app.queue, (queues.get(app.queue) ?? 0) + 1);
+    if (app.type) types.set(app.type, (types.get(app.type) ?? 0) + 1);
+    for (const tag of app.tags) if (tag) tags.set(tag, (tags.get(tag) ?? 0) + 1);
+  }
+  return {
+    total: apps.length,
+    byState,
+    byFinal,
+    active,
+    users: facetList(users),
+    queues: facetList(queues),
+    types: facetList(types),
+    tags: facetList(tags),
+  };
+}
+
+function sortValue(c: MockCluster, app: MockApp, field: string): string | number | undefined {
+  const running = app.state === "RUNNING";
+  switch (field) {
+    case "id":
+      return app.id;
+    case "user":
+      return app.user;
+    case "name":
+      return app.name;
+    case "type":
+      return app.type;
+    case "apptag":
+      return app.tags.join(",");
+    case "queue":
+      return app.queue;
+    case "state":
+      return app.state;
+    case "finalstatus":
+      return app.finalStatus;
+    case "ui":
+      return app.finishedTime === 0 ? "ApplicationMaster" : "History";
+    case "priority":
+      return app.priority;
+    case "starttime":
+      return app.startedTime;
+    case "IDlaunchtime":
+      return app.launchTime;
+    case "finishtime":
+      return app.finishedTime;
+    case "runningcontainer":
+      return running ? app.containers : 0;
+    case "allocatedCpu":
+      return running ? app.containers * app.cvc : 0;
+    case "allocatedMemory":
+      return running ? app.containers * app.cmb : 0;
+    case "allocatedGpu":
+      return running && app.label === "gpu" ? 1 : 0;
+    case "reservedCpu":
+      return running ? app.reservedVc : 0;
+    case "reservedMemory":
+      return running ? app.reservedMb : 0;
+    case "reservedGpu":
+      return 0;
+    case "queuePercentage":
+      return running ? queueUsagePct(c, app) : 0;
+    case "clusterPercentage":
+      return running ? round(((app.containers * app.cmb) / Math.max(1, clusterTotalMb(c))) * 100, 4) : 0;
+    case "progress":
+      return app.progress;
+    default:
+      return undefined;
+  }
+}
+
+const MOCK_SORT_FIELDS = new Set([
+  "id",
+  "user",
+  "name",
+  "type",
+  "apptag",
+  "queue",
+  "state",
+  "finalstatus",
+  "ui",
+  "priority",
+  "starttime",
+  "IDlaunchtime",
+  "finishtime",
+  "runningcontainer",
+  "allocatedCpu",
+  "allocatedMemory",
+  "allocatedGpu",
+  "reservedCpu",
+  "reservedMemory",
+  "reservedGpu",
+  "queuePercentage",
+  "clusterPercentage",
+  "progress",
+]);
+
+function sortMockApps(c: MockCluster, apps: MockApp[], rawSort: string): MockApp[] {
+  const specs = rawSort
+    .split(",")
+    .map((token) => {
+      const trimmed = token.trim();
+      const desc = trimmed.startsWith("-");
+      const field = desc ? trimmed.slice(1) : trimmed;
+      return field ? { field, desc } : null;
+    })
+    .filter((spec): spec is { field: string; desc: boolean } => spec !== null && MOCK_SORT_FIELDS.has(spec.field));
+  if (specs.length === 0) specs.push({ field: "starttime", desc: true });
+  const compare = (a: MockApp, b: MockApp): number => {
+    for (const spec of specs) {
+      const av = sortValue(c, a, spec.field);
+      const bv = sortValue(c, b, spec.field);
+      if (av === undefined || bv === undefined) continue;
+      const order =
+        typeof av === "number" && typeof bv === "number"
+          ? av === bv
+            ? 0
+            : av > bv
+              ? 1
+              : -1
+          : String(av).toLowerCase() === String(bv).toLowerCase()
+            ? 0
+            : String(av).toLowerCase() > String(bv).toLowerCase()
+              ? 1
+              : -1;
+      if (order !== 0) return spec.desc ? -order : order;
+    }
+    return a.id.localeCompare(b.id);
+  };
+  return [...apps].sort(compare);
 }
 
 export function appResponse(c: MockCluster, id: string, q: URLSearchParams) {

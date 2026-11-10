@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Boxes, RotateCw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { q } from "~/api/queries";
+import { useStableQuery } from "~/api/use-stable-query";
 import type { App } from "~/api/schemas";
 import { useConnection } from "~/api/connection";
 import { useElementWidth } from "~/lib/size";
@@ -32,7 +33,9 @@ import {
   type AppsSearch,
 } from "./search";
 import { useNow } from "~/features/shell/use-now";
-import { computeFacets, filterApps, NO_FACETS } from "./view";
+import { computeFacets, filterApps, NO_FACETS, type Facets } from "./view";
+import { simpleErrorText } from "~/lib/error-details";
+import { expandWindow, initialWindow, nextWindow, viewKey, windowFilters, type AppWindowState } from "./window";
 
 const EMPTY_APPS: App[] = [];
 const DEFAULT_VISIBLE_IDS = new Set(["id", "name", "state", "user", "queue", "starttime", "progress"]);
@@ -61,9 +64,10 @@ export function applyStateSelection(value: AppTabId | null, patch: Patch): void 
   if (update) patch(update);
 }
 
-export function errorMessageView(message: string | undefined, renderVersion: "pre" | "post" | undefined) {
+export function errorMessageView(message: string | undefined, renderVersion?: "pre" | "post") {
   if (!message) return undefined;
-  return renderVersion === "pre" ? message : <span className="break-words">{message}</span>;
+  const simple = simpleErrorText(message);
+  return renderVersion === "pre" ? simple : <span className="wrap-break-word">{simple}</span>;
 }
 
 /**
@@ -99,23 +103,78 @@ export function AppsPage({
   const compact = pageWidth > 0 && pageWidth <= APPS_COMPACT_CONTENT_WIDTH;
   const now = useNow(15_000);
   const inReview = renderVersion !== undefined;
-  const appsQuery = useQuery({ ...q.apps(), enabled: !inReview });
+  const parityFull = parity && !inReview;
+  const viewIdentity = viewKey(search);
+  const [windowState, setWindowState] = useState<AppWindowState>(initialWindow);
+  const [windowView, setWindowView] = useState(viewIdentity);
+  if (windowView !== viewIdentity) {
+    setWindowView(viewIdentity);
+    setWindowState(initialWindow());
+  }
+  const windowQuery = useStableQuery({
+    ...q.appsWindow({
+      offset: windowState.offset,
+      limit: windowState.limit,
+      sort: search.sort ?? DEFAULT_SORT,
+      filters: windowFilters(search),
+    }),
+    enabled: !inReview && !parity,
+  });
+  const fullQuery = useStableQuery({ ...q.apps(), enabled: parityFull });
+  const queryClient = useQueryClient();
   const lastCache = useConnection((s) => s.lastCache);
 
   const reviewLoading = inReview && previewState === "loading";
   const reviewUnavailable = inReview && previewState === "unavailable";
-  const apps = inReview ? (previewState === "loaded" ? (previewApps ?? EMPTY_APPS) : EMPTY_APPS) : (appsQuery.data ?? EMPTY_APPS);
-  const hasData = inReview ? previewState === "loaded" : appsQuery.data !== undefined;
-  const initialLoading = inReview ? reviewLoading : appsQuery.isLoading && !hasData;
-  const loading = inReview ? reviewLoading : appsQuery.isLoading;
-  const facets = useMemo(() => (apps.length ? computeFacets(apps) : NO_FACETS), [apps]);
-  const rows = useMemo(() => filterApps(apps, search), [apps, search]);
+  const windowData = windowQuery.data;
+  const windowMeta = windowData?.window;
+  const serverMode = !inReview && !parity && windowMeta !== undefined;
+  const apps = inReview
+    ? previewState === "loaded"
+      ? (previewApps ?? EMPTY_APPS)
+      : EMPTY_APPS
+    : parity
+      ? (fullQuery.data ?? EMPTY_APPS)
+      : (windowData?.apps ?? EMPTY_APPS);
+  const hasData = inReview ? previewState === "loaded" : parity ? fullQuery.data !== undefined : windowData !== undefined;
+  const activeQuery = parity ? fullQuery : windowQuery;
+  const initialLoading = inReview ? reviewLoading : activeQuery.isLoading && !hasData;
+  const countsReady = inReview || parity || !serverMode || windowMeta!.ready;
+  const facets = useMemo<Facets>(
+    () => (serverMode && windowMeta ? windowMeta.facets : apps.length ? computeFacets(apps) : NO_FACETS),
+    [apps, serverMode, windowMeta],
+  );
+  const rows = useMemo(() => (serverMode ? apps : filterApps(apps, search)), [apps, search, serverMode]);
   const sorting = useMemo(() => sortFromParam(search.sort), [search.sort]);
   const hidden = useMemo(() => (search.cols === undefined ? DEFAULT_HIDDEN : hiddenFromParam(search.cols)), [search.cols]);
   const visibility = useMemo(() => visibilityOf(APPS_COLUMN_IDS, hidden), [hidden]);
   const tab = tabOf(search.states);
   const hasCustomView = filterCount(search) > 0 || (search.sort !== undefined && search.sort !== DEFAULT_SORT) || search.cols !== undefined;
-  const stale = !inReview && hasData && (appsQuery.isError || lastCache === "stale");
+  const stale = !inReview && hasData && (serverMode && windowMeta ? windowMeta.stale : activeQuery.isError || lastCache === "stale");
+  const totalCount = serverMode && windowMeta ? (windowMeta.total ?? windowMeta.filteredTotal) : apps.length;
+  const filteredTotal = serverMode && windowMeta ? windowMeta.filteredTotal : rows.length;
+
+  useEffect(() => {
+    if (!serverMode || !windowMeta) return;
+    setWindowState((state) => expandWindow(state, windowMeta.filteredTotal, windowMeta.ready));
+  }, [serverMode, windowMeta]);
+  const handleVisibleRange = useCallback(
+    (start: number, end: number) => {
+      setWindowState((state) => nextWindow(state, { start, end }, windowMeta!.filteredTotal));
+    },
+    [windowMeta?.filteredTotal],
+  );
+  const exportAll = useCallback(async () => {
+    const all = await queryClient.fetchQuery(
+      q.appsWindow({
+        offset: 0,
+        limit: Math.max(1, Math.min(totalCount, 10_000)),
+        sort: search.sort ?? DEFAULT_SORT,
+        filters: windowFilters(search),
+      }),
+    );
+    return all.apps;
+  }, [queryClient, search, totalCount]);
 
   const counts = useMemo(() => {
     const map = new Map<AppTabId, number>();
@@ -126,9 +185,9 @@ export function AppsPage({
     () =>
       APP_TABS.map((t) => ({
         value: t.id,
-        label: hasData ? `${t.label} · ${counts.get(t.id)!.toLocaleString("en-US")}` : t.label,
+        label: countsReady ? `${t.label} · ${counts.get(t.id)!.toLocaleString("en-US")}` : t.label,
       })),
-    [counts, hasData],
+    [counts, countsReady],
   );
 
   const error = reviewUnavailable
@@ -138,7 +197,7 @@ export function AppsPage({
       }
     : inReview
       ? null
-      : (appsQuery.error as { message?: string; hint?: string | null } | null);
+      : (activeQuery.error as { message?: string; hint?: string | null } | null);
 
   return (
     <div ref={pageRef} className="burrow-scroll burrow-page-scroll burrow-apps-page flex min-h-0 flex-1 flex-col gap-3">
@@ -149,7 +208,10 @@ export function AppsPage({
             YARN state tracks the application lifecycle; final status is a separate outcome.
           </p>
         </div>
-        {(hasCustomView || stale || (inReview && (hasData || (initialLoading && renderVersion === "pre")))) && (
+        {(hasCustomView ||
+          stale ||
+          (serverMode && windowMeta && !windowMeta.ready) ||
+          (inReview && (hasData || (initialLoading && renderVersion === "pre")))) && (
           <div className="ml-auto inline-flex min-h-7 shrink-0 flex-wrap items-center justify-end gap-x-2 gap-y-1 text-small text-ink-3">
             {hasCustomView && (
               <Button
@@ -185,6 +247,11 @@ export function AppsPage({
               </Tooltip>
             )}
             {inReview && hasData && <span className="text-ink-3">Sample data</span>}
+            {serverMode && windowMeta && !windowMeta.ready && (
+              <span className="text-ink-3" data-testid="apps-indexing">
+                Indexing…
+              </span>
+            )}
             {inReview && initialLoading && renderVersion === "pre" && <span>Loading…</span>}
           </div>
         )}
@@ -210,7 +277,7 @@ export function AppsPage({
               <Tab
                 key={t.id}
                 value={t.id}
-                badge={hasData ? counts.get(t.id)!.toLocaleString("en-US") : undefined}
+                badge={countsReady ? counts.get(t.id)!.toLocaleString("en-US") : undefined}
                 field={`app.tab.${t.id}`}
               >
                 {t.label}
@@ -220,13 +287,13 @@ export function AppsPage({
         </TabsRoot>
       )}
 
-      {(initialLoading || (hasData && apps.length > 0)) && (
+      {(initialLoading || (hasData && (apps.length > 0 || (serverMode && countsReady)))) && (
         <div className="flex min-h-6 flex-wrap items-center gap-1.5 max-sm:min-h-12" aria-busy={initialLoading || undefined}>
           <span className="mr-1 inline-flex items-center gap-1 text-small font-medium text-ink-2">
             Final outcome
             <HelpTip label="Final outcome">The ApplicationMaster reports final status. Not set means no outcome has been reported.</HelpTip>
           </span>
-          {initialLoading ? (
+          {initialLoading || (!countsReady && serverMode) ? (
             <Skeleton className="h-6 w-64 max-w-full" />
           ) : (
             (["UNDEFINED", "SUCCEEDED", "FAILED", "KILLED", "ENDED"] as const).map((status) => {
@@ -250,15 +317,15 @@ export function AppsPage({
       )}
 
       <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col">
-        {appsQuery.error && hasData && !inReview && (
+        {activeQuery.error && hasData && !inReview && (
           <StaleErrorBanner
             title={
               apps.length > 0
                 ? "Applications refresh failed; showing the last loaded rows"
                 : "Applications refresh failed; showing the last loaded result"
             }
-            error={appsQuery.error}
-            onRetry={() => void appsQuery.refetch()}
+            error={activeQuery.error}
+            onRetry={() => void activeQuery.refetch()}
           />
         )}
         <DataTable
@@ -288,21 +355,33 @@ export function AppsPage({
           onColumnVisibilityChange={(v) => patch({ cols: columnsParam(v) })}
           defaultVisibility={DEFAULT_VISIBILITY}
           onRowActivate={(app) => onOpenApp(app.id)}
-          totalCount={apps.length}
-          loading={loading}
+          manualSorting={serverMode}
+          rowCount={serverMode && windowMeta ? windowMeta.filteredTotal : undefined}
+          rowOffset={serverMode && windowMeta ? windowMeta.offset : undefined}
+          preserveScrollAnchor={serverMode}
+          onVisibleRangeChange={serverMode ? handleVisibleRange : undefined}
+          scrollResetKey={serverMode ? viewIdentity : undefined}
+          exportAll={serverMode ? exportAll : undefined}
+          totalCount={totalCount}
+          loading={initialLoading}
           error={
             error && !hasData ? (
               <ErrorState
                 title="Cannot load applications"
+                error={activeQuery.error}
                 message={errorMessageView(error.message, renderVersion)}
-                hint={error.hint ? renderVersion === "pre" ? error.hint : <span className="break-words">{error.hint}</span> : undefined}
-                onRetry={() => void appsQuery.refetch()}
+                hint={errorMessageView(error.hint ?? undefined, renderVersion)}
+                onRetry={() => void activeQuery.refetch()}
                 className={renderVersion === "pre" ? undefined : "max-w-lg min-w-0"}
               />
             ) : undefined
           }
           empty={
-            apps.length === 0 ? (
+            serverMode && windowMeta && !windowMeta.ready && filteredTotal === 0 ? (
+              <EmptyState title="Indexing applications" icon={<Boxes className="size-5" aria-hidden="true" />}>
+                The first matching page is on its way; the complete list is still loading.
+              </EmptyState>
+            ) : totalCount === 0 ? (
               <EmptyState title="No applications" icon={<Boxes className="size-5" aria-hidden="true" />}>
                 The ResourceManager reported no applications at all.
               </EmptyState>

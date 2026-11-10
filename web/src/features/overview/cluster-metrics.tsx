@@ -6,7 +6,7 @@
  * Live: the numbers tween (`Ticker`), the rings animate, and the utilisation chart is a *session-local* history
  * sampled from `/api/yarn/metrics` (PLAN §5, `~/state/history.ts` — Burrow keeps no cluster history by design).
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ov } from "~/api/queries/overview";
 import { fmtClock, fmtEpoch, fmtInt, fmtMB, fmtPct } from "~/lib/format";
 import { utilizationTone } from "~/lib/progress-tone";
@@ -82,8 +82,8 @@ export function ClusterMetricsSection({
   historyWindow?: HistoryWindow;
   showRawAggregate?: boolean;
 }) {
-  const metrics = useQuery(ov.metrics());
-  const nodesQuery = useQuery(ov.nodes());
+  const metrics = useStableQuery(ov.metrics());
+  const nodesQuery = useStableQuery(ov.nodes());
   const stale = useStale();
   const history = useUtilisation();
   const tz = usePref("tz");
@@ -97,11 +97,8 @@ export function ClusterMetricsSection({
     return (
       <ErrorState
         title="Cluster metrics are not available"
-        message={
-          metrics.error instanceof Error
-            ? metrics.error.message
-            : String(metrics.error ?? "The ResourceManager did not return cluster metrics.")
-        }
+        error={metrics.error}
+        message={metrics.error == null ? "The ResourceManager did not return cluster metrics." : undefined}
         hint="Try again in a moment. Other Overview sections remain available."
         onRetry={() => void metrics.refetch()}
       />
@@ -126,7 +123,7 @@ export function ClusterMetricsSection({
   const pendSeries = withinWindow(history, historyWindow, Date.now()).map((s) => ({ t: s.t, v: s.appsPending }));
 
   return (
-    <Entity id={SINGLETON} className="burrow-overview-metrics-container flex flex-col gap-[var(--gap-card)]" data-testid="cluster-metrics">
+    <Entity id={SINGLETON} className="burrow-overview-metrics-container flex flex-col gap-(--gap-card)" data-testid="cluster-metrics">
       {metrics.isError && (
         <StaleErrorBanner
           title="Cluster metrics refresh failed; showing the last loaded values"
@@ -134,7 +131,7 @@ export function ClusterMetricsSection({
           onRetry={() => void metrics.refetch()}
         />
       )}
-      <TabContent value="cluster-metrics" initial className="flex flex-col gap-[var(--gap-card)]">
+      <TabContent value="cluster-metrics" initial className="flex flex-col gap-(--gap-card)">
         <div className="burrow-overview-metric-groups">
           <div className="burrow-overview-metric-group burrow-overview-metric-group--apps">
             <h3 className="m-0 text-small font-semibold text-ink-2">Applications</h3>
@@ -366,7 +363,7 @@ export function ClusterMetricsSection({
         </div>
 
         <div className="burrow-overview-utilization-grid">
-          <div className="flex flex-col gap-6 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]">
+          <div className="flex flex-col gap-6 rounded-lg border border-seam bg-fabric p-(--gap-card)">
             <div className="flex flex-col gap-2">
               <h3 className="m-0 text-caption font-semibold tracking-wide text-ink-2 uppercase">YARN allocation</h3>
               <div className="flex flex-wrap items-start justify-center gap-x-8 gap-y-4">
@@ -477,7 +474,7 @@ export function ClusterMetricsSection({
             </div>
           </div>
 
-          <div className="burrow-overview-history-card flex min-h-0 flex-col gap-2 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]">
+          <div className="burrow-overview-history-card flex min-h-0 flex-col gap-2 rounded-lg border border-seam bg-fabric p-(--gap-card)">
             <div className="flex flex-wrap items-baseline gap-x-2">
               <span className="text-caption tracking-wide text-ink-3 uppercase">YARN allocation · this session</span>
               <span className="text-micro text-ink-4">{memSeries.length > 1 ? `${memSeries.length} samples` : "collecting"}</span>
@@ -582,7 +579,7 @@ const RM_VCORE_METRICS = [
 ] as const;
 
 export function ResourceManagerMetricsSection() {
-  const metrics = useQuery(ov.metrics());
+  const metrics = useStableQuery(ov.metrics());
   const m = metrics.data as ClusterMetrics | undefined;
 
   if (metrics.isPending) return <MetricsGridSkeleton />;
@@ -590,11 +587,8 @@ export function ResourceManagerMetricsSection() {
     return (
       <ErrorState
         title="ResourceManager metrics are not available"
-        message={
-          metrics.error instanceof Error
-            ? metrics.error.message
-            : String(metrics.error ?? "The ResourceManager did not return its resource counters.")
-        }
+        error={metrics.error}
+        message={metrics.error == null ? "The ResourceManager did not return its resource counters." : undefined}
         hint="Try again in a moment. Other Overview sections remain available."
         onRetry={() => void metrics.refetch()}
       />
@@ -604,7 +598,7 @@ export function ResourceManagerMetricsSection() {
   return (
     <Entity
       id={SINGLETON}
-      className="burrow-overview-metrics-container flex flex-col gap-[var(--gap-card)]"
+      className="burrow-overview-metrics-container flex flex-col gap-(--gap-card)"
       data-testid="resource-manager-metrics"
     >
       {metrics.isError && (
@@ -614,7 +608,7 @@ export function ResourceManagerMetricsSection() {
           onRetry={() => void metrics.refetch()}
         />
       )}
-      <TabContent value="resource-manager-metrics" initial className="flex flex-col gap-[var(--gap-card)]">
+      <TabContent value="resource-manager-metrics" initial className="flex flex-col gap-(--gap-card)">
         {m.crossPartitionMetricsAvailable === true && (
           <p className="m-0 text-caption text-ink-3" data-testid="rm-capacity-basis-note">
             <span className="font-medium text-ink-2">Cluster-wide totals.</span>

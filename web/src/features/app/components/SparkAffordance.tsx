@@ -5,21 +5,24 @@
  * Spark UI or History Server URL.
  * When the backend cannot resolve a source we say so and why (reason/hint from the API); no guessed URLs.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "~/lib/cn";
 import { ACTION_LINK_CLASS, Button } from "~/ui/button";
-import { Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { describeError } from "~/lib/error-details";
+import { Skeleton, StaleErrorBanner, TechnicalDetails } from "~/ui/feedback";
 import { appSparkSource } from "../queries";
 
 export function SparkAffordance({ appId, className }: { appId: string; className?: string }) {
-  const source = useQuery(appSparkSource(appId));
+  const source = useStableQuery(appSparkSource(appId));
 
   let external: React.ReactNode;
   if (source.isPending) {
     external = <Skeleton className="h-4 w-40" />;
   } else if (!source.data?.available || !source.data.baseUrl) {
-    const reason = source.data?.reason ?? (source.error instanceof Error ? source.error.message : "no Spark source resolved");
+    const failure = source.error == null ? undefined : describeError(source.error);
+    const reason =
+      source.data?.reason ?? (source.error instanceof Error ? describeError(source.error).message : "no Spark source resolved");
     const historyNotConfigured = reason.includes("no Spark History Server is configured");
     const detail = historyNotConfigured ? "This application has finished, so its Spark driver UI is no longer available." : reason;
     const hint = historyNotConfigured
@@ -34,13 +37,10 @@ export function SparkAffordance({ appId, className }: { appId: string; className
         <Sparkles className="mt-0.5 size-3.5 shrink-0 text-ink-4" aria-hidden="true" />
         <div className="min-w-0">
           <p className="font-medium text-ink-2">Spark UI unavailable</p>
-          <p className="mt-0.5 break-words text-caption text-ink-3">{detail}</p>
-          {hint && <p className="mt-1 break-words text-caption text-ink-4">Next: {hint}</p>}
-          {source.error && source.data && (
-            <p className="mt-1 break-words text-caption text-fail">
-              Refresh failed: {source.error instanceof Error ? source.error.message : String(source.error)}
-            </p>
-          )}
+          <p className="mt-0.5 wrap-break-word text-caption text-ink-3">{detail}</p>
+          {hint && <p className="mt-1 wrap-break-word text-caption text-ink-4">Next: {hint}</p>}
+          {source.error && source.data && <p className="mt-1 wrap-break-word text-caption text-fail">Refresh failed: {failure?.message}</p>}
+          {source.error && failure && <TechnicalDetails detail={failure.details} className="mt-2" />}
         </div>
         {source.isError && (
           <Button variant="quiet" size="sm" className="shrink-0" onClick={() => void source.refetch()}>

@@ -59,7 +59,7 @@ function Cell({
           className={cn(
             "relative flex h-14 w-full min-w-0 flex-col justify-between overflow-hidden rounded-md border px-2 py-1 text-start",
             // colour and outline only: the old list animated `box-shadow`, which is a paint cost the design rules forbid
-            "border-seam bg-fabric-2 transition-[border-color,outline-color] duration-(--dur-fast) ease-(--ease-out) hover:border-seam-strong",
+            "border-seam bg-fabric-2 transition-[border-color,outline-color] duration-(--dur-fast) ease-out hover:border-seam-strong",
             selected && "border-live outline-2 outline-live/60",
           )}
           style={{

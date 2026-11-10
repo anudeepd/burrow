@@ -38,14 +38,14 @@ export function Select<T extends string>({
         className={cn(
           "burrow-control group inline-flex h-(--ctl-h) items-center justify-between gap-2 rounded-md border border-seam-strong bg-well px-2.5 text-body text-ink",
           "hover:bg-fabric-3 data-popup-open:bg-fabric-3",
-          "transition-[background-color,color,transform] duration-(--dur-fast) ease-(--ease-out) motion-safe:motion-ok:active:scale-[0.98]",
+          "transition-[background-color,color,transform] duration-(--dur-fast) ease-out motion-safe:motion-ok:active:scale-[0.98]",
           className,
         )}
       >
         <BSelect.Value placeholder={placeholder} className="truncate" />
         <BSelect.Icon>
           <ChevronDown
-            className="size-3.5 text-ink-3 transition-transform duration-(--dur-fast) ease-(--ease-out) group-data-popup-open:rotate-180"
+            className="size-3.5 text-ink-3 transition-transform duration-(--dur-fast) ease-out group-data-popup-open:rotate-180"
             aria-hidden="true"
           />
         </BSelect.Icon>
@@ -63,7 +63,7 @@ export function Select<T extends string>({
                   value={o.value}
                   className="flex h-7 cursor-default select-none items-center gap-2 rounded-sm px-2 text-ink-2 outline-none data-highlighted:bg-fabric-3 data-highlighted:text-ink"
                 >
-                  <BSelect.ItemIndicator className="grid size-4 place-items-center transition-opacity duration-(--dur-fast) ease-(--ease-out)">
+                  <BSelect.ItemIndicator className="grid size-4 place-items-center transition-opacity duration-(--dur-fast) ease-out">
                     <Check className="size-3.5 text-live" aria-hidden="true" />
                   </BSelect.ItemIndicator>
                   <BSelect.ItemText className="col-start-2 flex-1 truncate">{o.label}</BSelect.ItemText>

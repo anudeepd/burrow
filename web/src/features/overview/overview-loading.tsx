@@ -18,12 +18,12 @@ export function OverviewLoading() {
           <Skeleton className="h-9 w-40" />
         </header>
 
-        <div className="flex flex-col gap-3 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]">
+        <div className="flex flex-col gap-3 rounded-lg border border-seam bg-fabric p-(--gap-card)">
           <Skeleton className="h-4 w-44" />
           <Skeleton className="h-3 w-full max-w-2xl" />
         </div>
 
-        <section className="flex flex-col gap-4 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]">
+        <section className="flex flex-col gap-4 rounded-lg border border-seam bg-fabric p-(--gap-card)">
           <Skeleton className="h-4 w-32" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Skeleton className="h-16" />

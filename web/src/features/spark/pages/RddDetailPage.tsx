@@ -8,7 +8,7 @@
  * Spark only reports RDDs whose blocks are still held, and it omits a distribution entry for executors holding none —
  * both are stated rather than papered over.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { ACTION_LINK_CLASS } from "~/ui/button";
@@ -273,7 +273,7 @@ export function RddDetailPage() {
   const { appId, rddId } = route.useParams();
   const { kind, attempt } = useSpark();
 
-  const rddQ = useQuery(sp.rdd(appId, rddId, kind, attempt));
+  const rddQ = useStableQuery(sp.rdd(appId, rddId, kind, attempt));
   const rdd = rddQ.data?.rdd;
 
   if (rddQ.isPending) return <SparkLoading rows={8} cols={8} />;

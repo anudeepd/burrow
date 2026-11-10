@@ -5,7 +5,7 @@
  * of inventing columns; the plan is deep-linked to the execution detail. Sorting / visible columns / status / search /
  * paging all live in the URL. When `?size=` is set the list is fetched with Spark's `offset`/`length` server paging.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import { ListTree } from "lucide-react";
@@ -106,7 +106,7 @@ export function SqlPage() {
   const status = typeof search.status === "string" && search.status !== "" ? search.status : undefined;
   const q = typeof search.q === "string" ? search.q : "";
 
-  const sqlQ = useQuery(sp.sql(appId, limit != null ? { offset: page * limit, length: limit, kind, attempt } : { kind, attempt }));
+  const sqlQ = useStableQuery(sp.sql(appId, limit != null ? { offset: page * limit, length: limit, kind, attempt } : { kind, attempt }));
   const rows = useMemo(() => sqlQ.data ?? [], [sqlQ.data]);
 
   const filtering = useMemo(
@@ -284,7 +284,7 @@ export function SqlPage() {
           ) : undefined
         }
         empty={rows.length === 0 && limit == null ? <SparkEmpty title="No SQL executions" /> : undefined}
-        className="min-h-[24rem]"
+        className="min-h-96"
         data={filtering}
         columns={columns}
         getRowId={(e) => String(e.id)}

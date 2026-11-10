@@ -9,7 +9,7 @@
  * pushed into an imperative `LineBuffer`. The buffer, not the query cache, is the source of truth for the viewer,
  * because follow mutates it byte-by-byte from SSE — the query cache has no way to express "these 4 KB arrived".
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -23,6 +23,7 @@ import {
   orderLogFiles,
 } from "~/api/queries/logs";
 import { Entity } from "~/ui/datum";
+import { simpleErrorText } from "~/lib/error-details";
 import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { TabContent } from "~/ui/tabs";
 import { Unavailable } from "~/features/nodes/page";
@@ -55,7 +56,7 @@ export function logDownloadSize(meta: { size: number } | null | undefined): numb
 }
 
 export function logErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+  return simpleErrorText(error instanceof Error ? error.message : String(error));
 }
 
 export function LogsView() {
@@ -103,7 +104,7 @@ export function LogsView() {
   }, []);
 
   // ── file list ───────────────────────────────────────────────────────────────────────────────────────────────────
-  const filesQuery = useQuery({ ...lq.files(containerId ?? "", hints), enabled: !!containerId });
+  const filesQuery = useStableQuery({ ...lq.files(containerId ?? "", hints), enabled: !!containerId });
   const files = useMemo(() => (filesQuery.data ? orderLogFiles(filesQuery.data.files) : []), [filesQuery.data]);
 
   // Land on the most interesting file (stdout, then stderr) unless the URL names one.
@@ -114,7 +115,7 @@ export function LogsView() {
 
   // ── initial window ──────────────────────────────────────────────────────────────────────────────────────────────
   const tail = tailBytes(search.tail);
-  const initial = useQuery({
+  const initial = useStableQuery({
     queryKey: ["logs", "window", containerId, file, tail ?? 0, search.node ?? "", search.user ?? "", search.app ?? ""],
     queryFn: async ({ signal }) => {
       if (tail == null) return fetchLogWindow(containerId!, file!, { offset: 0, length: LOG_WINDOW_BYTES, hints }, signal);
@@ -249,7 +250,7 @@ export function LogsView() {
     return (
       <ErrorState
         title="Cannot list this container's log files"
-        message={logErrorMessage(listError)}
+        error={listError}
         hint="The file list is read from the NodeManager that ran the container, or from JobHistory once the logs are aggregated."
         onRetry={() => void filesQuery.refetch()}
       />
@@ -356,7 +357,7 @@ export function LogsView() {
             ) : (
               <ErrorState
                 title="Cannot read this log file"
-                message={logErrorMessage(windowError)}
+                error={windowError}
                 hint="A running container's log comes from its NodeManager; a finished one from the aggregated JobHistory/ATS copy."
                 onRetry={() => void initial.refetch()}
               />

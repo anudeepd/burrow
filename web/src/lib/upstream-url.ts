@@ -16,7 +16,7 @@
  * say "reachable from the cluster network" instead of pretending it will open.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { q } from "~/api/queries";
 
 export interface UpstreamBases {
@@ -112,7 +112,7 @@ export function rmProxyUrl(appId: string, bases: UpstreamBases = {}): string | n
 
 /** The operator-configured daemon bases, from `/api/meta` — used by every outbound-link call site. */
 export function useUpstreamBases(): UpstreamBases {
-  const meta = useQuery(q.meta());
+  const meta = useStableQuery(q.meta());
   return {
     rm: meta.data?.rm?.active ?? null,
     sparkHistory: meta.data?.services?.sparkHistory?.url ?? null,

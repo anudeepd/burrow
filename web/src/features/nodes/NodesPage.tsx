@@ -4,11 +4,11 @@
  * Layout: summary stats · legacy state tabs · filters · (table | rack heatmap) · top-consumers rail.
  * Every filter, the sort, the visible columns, the view and the selected node live in the URL.
  */
-import { useQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { LayoutGrid, Rows3 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { nq } from "~/api/queries/nodes";
+import { useStableQuery } from "~/api/use-stable-query";
 import { fmtClock, fmtMB } from "~/lib/format";
 import { utilizationTone } from "~/lib/progress-tone";
 import { usePref } from "~/state/prefs";
@@ -38,7 +38,9 @@ export function NodesPage() {
   const navigate = route.useNavigate();
   const [searchResetSignal, setSearchResetSignal] = useState(0);
   const paused = usePref("livePaused");
-  const { data: nodes, error, isPending, isFetching, dataUpdatedAt, refetch } = useQuery(nq.nodes());
+  const nodesQuery = useStableQuery(nq.nodes());
+  const { data: nodes, isPending, isFetching, dataUpdatedAt, refetch } = nodesQuery;
+  const error = nodesQuery.error;
 
   const tab = (search.state ?? "ALL") as NodeStateTab;
   const view = search.view ?? "table";
@@ -109,7 +111,7 @@ export function NodesPage() {
         <CenteredPageState>
           <ErrorState
             title="Cannot read the node list"
-            message={error instanceof Error ? error.message : String(error)}
+            error={error}
             hint="Burrow proxies /ws/v1/cluster/nodes from the active ResourceManager."
             onRetry={() => void refetch()}
           />
@@ -255,7 +257,7 @@ export function NodesPage() {
                         Widen the state tab, or clear the label, rack and text filters.
                       </EmptyState>
                     }
-                    className="min-h-[24rem]"
+                    className="min-h-96"
                   />
                 ) : (
                   <TabContent

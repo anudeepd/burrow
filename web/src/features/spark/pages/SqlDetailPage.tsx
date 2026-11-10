@@ -5,7 +5,7 @@
  * The SQL REST payload has no stage ids, so the stage-exploration links are derived from the job list
  * (jobId → stageIds) — fetched lazily and only when the execution actually has jobs.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -98,7 +98,7 @@ export function SqlDetailPage() {
   const q = search.q ?? "";
   const patch = (p: Record<string, unknown>) => void navigate({ search: (prev) => compact({ ...prev, ...p }), resetScroll: false });
 
-  const execQ = useQuery(sp.sqlExecution(appId, executionId, { kind, attempt }));
+  const execQ = useStableQuery(sp.sqlExecution(appId, executionId, { kind, attempt }));
   const exec: SparkSqlExecution | undefined = execQ.data;
 
   const running = useMemo(() => exec?.runningJobIds ?? [], [exec?.runningJobIds]);
@@ -107,7 +107,7 @@ export function SqlDetailPage() {
   const jobIds = useMemo(() => [...new Set([...running, ...success, ...failed])], [running, success, failed]);
   const jobKeyStr = jobIds.join(",");
 
-  const jobsQ = useQuery({ ...sp.jobs(appId, { kind: "static", attempt }), enabled: jobIds.length > 0 });
+  const jobsQ = useStableQuery({ ...sp.jobs(appId, { kind: "static", attempt }), enabled: jobIds.length > 0 });
   const stageIds = useMemo(() => {
     const wanted = new Set(jobKeyStr ? jobKeyStr.split(",").map(Number) : []);
     const out = new Set<number>();
@@ -198,7 +198,7 @@ export function SqlDetailPage() {
               field="spark.sql.errorMessage"
               raw={exec.errorMessage}
               as="pre"
-              className="max-h-72 overflow-auto rounded-md border border-seam bg-well p-3 font-mono text-micro leading-[1.5] text-ink-2 whitespace-pre-wrap"
+              className="max-h-72 overflow-auto rounded-md border border-seam bg-well p-3 font-mono text-micro leading-normal text-ink-2 whitespace-pre-wrap"
             />
           </Entity>
         </section>
@@ -276,12 +276,7 @@ export function SqlDetailPage() {
           ) : jobsQ.isPending ? (
             <span className="text-small text-ink-4">Resolving stage ids from the job list…</span>
           ) : jobsQ.error && jobsQ.data === undefined ? (
-            <ErrorState
-              compact
-              title="Could not resolve stage ids"
-              message={jobsQ.error instanceof Error ? jobsQ.error.message : String(jobsQ.error)}
-              onRetry={() => void jobsQ.refetch()}
-            />
+            <ErrorState compact title="Could not resolve stage ids" error={jobsQ.error} onRetry={() => void jobsQ.refetch()} />
           ) : stageIds.length === 0 ? (
             <TabContent initial value={`${appId}:${attempt ?? ""}:sql:${executionId}:stages`}>
               <span className="text-small text-ink-4">No stage ids reported for these jobs.</span>

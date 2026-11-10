@@ -13,9 +13,42 @@ import { Section } from "./Chrome";
 
 export type TreemapBasis = "used" | "capacity";
 
+/**
+ * The shortest dot-separated suffix that identifies each queue among the leaves in this map. The scheduler's `root`
+ * prefix earns its space only when it is what makes two labels distinct. The full path stays on the tile's title,
+ * aria-label, and the smaller-queues list.
+ */
+export function shortQueueLabels(keys: readonly string[]): Map<string, string> {
+  const parts = new Map<string, string[]>();
+  for (const key of keys) parts.set(key, key.split(".").filter(Boolean));
+  // Count every suffix once, so the label pass can pick the first suffix that occurs exactly once.
+  const seen = new Map<string, number>();
+  for (const segments of parts.values()) {
+    for (let take = 1; take <= segments.length; take++) {
+      const suffix = segments.slice(-take).join(".");
+      seen.set(suffix, (seen.get(suffix) ?? 0) + 1);
+    }
+  }
+  const labels = new Map<string, string>();
+  for (const [key, segments] of parts) {
+    let label = key;
+    for (let take = 1; take <= segments.length; take++) {
+      const suffix = segments.slice(-take).join(".");
+      if (seen.get(suffix) === 1) {
+        label = suffix;
+        break;
+      }
+    }
+    labels.set(key, label);
+  }
+  return labels;
+}
+
 export function treemapItems(root: QueueNode, basis: TreemapBasis, partition = ""): TreemapItem[] {
   const isDefault = partition === "";
-  return leafNodes(root).map((node) => {
+  const leaves = leafNodes(root);
+  const labels = shortQueueLabels(leaves.map((node) => node.id));
+  return leaves.map((node) => {
     const m = metricsOf(node, partition);
     const { cap: pcap, res: pres } = partitionOf(node, partition);
     const cap = node.capacity;
@@ -48,6 +81,7 @@ export function treemapItems(root: QueueNode, basis: TreemapBasis, partition = "
         : fair?.minResources?.memory;
     return {
       key: node.id,
+      label: labels.get(node.id),
       value,
       field,
       raw,

@@ -547,7 +547,7 @@ export function TimelineChart({
                       <Entity
                         id={row.entity}
                         className={cn(
-                          "flex min-w-0 flex-1 items-stretch transition-colors duration-(--dur-fast) ease-(--ease-out)",
+                          "flex min-w-0 flex-1 items-stretch transition-colors duration-(--dur-fast) ease-out",
                           isActive && "bg-fabric-3",
                         )}
                         onMouseEnter={() => setActiveIdx(index)}

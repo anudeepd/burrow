@@ -12,13 +12,13 @@ function csvCell(v: unknown): string {
 }
 
 /** RFC 4180 CSV of raw values (not formatted text) so exports round-trip into other tools. */
-export function toCsv(cols: ExportColumn[], rows: unknown[]): string {
+export function toCsv(cols: ExportColumn[], rows: readonly unknown[]): string {
   const head = cols.map((c) => csvCell(c.label)).join(",");
   const body = rows.map((r) => cols.map((c) => csvCell(c.value(r))).join(","));
   return [head, ...body].join("\r\n");
 }
 
-export function toJson(cols: ExportColumn[], rows: unknown[]): string {
+export function toJson(cols: ExportColumn[], rows: readonly unknown[]): string {
   return JSON.stringify(
     rows.map((r) => Object.fromEntries(cols.map((c) => [c.id, c.value(r) ?? null]))),
     null,

@@ -6,7 +6,7 @@
  * contributed by the FE-Spark slice through `~/features/app/tabs` and stays disabled (with a reason) when absent.
  */
 import { useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, Outlet, createFileRoute, useRouterState, useSearch } from "@tanstack/react-router";
 import { q } from "~/api/queries";
 import { selectAppAttempts } from "~/api/schemas";
@@ -30,8 +30,8 @@ function AppLayout() {
   const routeSearch = useSearch({ strict: false }) as Record<string, unknown>;
   const logsViewerActive =
     pathname.replace(/\/$/, "") === `/apps/${appId}/logs` && typeof routeSearch.container === "string" && routeSearch.container.length > 0;
-  const app = useQuery(q.app(appId));
-  const attempts = useQuery(q.appAttempts(appId));
+  const app = useStableQuery(q.app(appId));
+  const attempts = useStableQuery(q.appAttempts(appId));
   const now = useNow(!!app.data && !isAppFinal(app.data.state));
   const current = activeTab(pathname, appId);
   const tabs = appTabs(appId);
@@ -57,7 +57,8 @@ function AppLayout() {
       <CenteredPageState>
         <ErrorState
           title={`Could not load ${appId}`}
-          message={app.error instanceof Error ? app.error.message : "The ResourceManager did not return the application."}
+          error={app.error}
+          message={app.error instanceof Error ? undefined : "The ResourceManager did not return the application."}
           hint="The application may have expired out of the RM's memory; finished applications stay queryable only while the RM retains them."
           onRetry={() => void app.refetch()}
         />
@@ -71,7 +72,7 @@ function AppLayout() {
       id={appId}
       className={cn(
         "burrow-scroll burrow-page-scroll burrow-app-scroll flex min-h-0 flex-1 flex-col pb-6",
-        logsViewerActive ? "burrow-app-scroll--logs overflow-y-auto" : "overflow-y-auto [&>*]:shrink-0",
+        logsViewerActive ? "burrow-app-scroll--logs overflow-y-auto" : "overflow-y-auto *:shrink-0",
       )}
     >
       {app.error && (
@@ -93,7 +94,7 @@ function AppLayout() {
           <ErrorState
             compact
             title="Application attempt history unavailable"
-            message={attempts.error instanceof Error ? attempts.error.message : String(attempts.error)}
+            error={attempts.error}
             hint="Application details remain available; retry to load attempt history."
             onRetry={() => void attempts.refetch()}
           />

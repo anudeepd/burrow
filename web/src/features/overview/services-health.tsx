@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ov } from "~/api/queries/overview";
 import { useConnection } from "~/api/connection";
 import type { Meta, MetaService } from "~/api/schemas";
@@ -43,7 +43,7 @@ const CAPABILITIES = [
 ] as const satisfies readonly { key: keyof Meta["features"]; label: string; description: string }[];
 
 export function ServicesHealthSection({ renderVersion = "post" }: { renderVersion?: "pre" | "post" }) {
-  const meta = useQuery(ov.meta());
+  const meta = useStableQuery(ov.meta());
   const lastOkAt = useConnection((state) => state.lastOkAt);
   const failures = useConnection((state) => state.consecutiveFailures);
 
@@ -66,9 +66,8 @@ export function ServicesHealthSection({ renderVersion = "post" }: { renderVersio
     return (
       <ErrorState
         title="Service status is unavailable"
-        message={
-          meta.error instanceof Error ? meta.error.message : String(meta.error ?? "The ResourceManager did not return service details.")
-        }
+        error={meta.error}
+        message={meta.error == null ? "The ResourceManager did not return service details." : undefined}
         hint="Try again in a moment."
         onRetry={() => void meta.refetch()}
       />

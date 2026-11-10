@@ -6,7 +6,7 @@
  * (`docs/contracts/api.md` §4). When that route is missing or Spark's HTML had no `#dag-viz-metadata`, the panel says so
  * — it never draws an approximated graph.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { DagViewLazy } from "~/features/dag/react/DagViewLazy";
 import { stageMetricsFromRest } from "~/features/dag/metrics";
 import { EXPAND_LIMIT } from "~/features/dag/dag-model";
@@ -158,7 +158,7 @@ export function JobDagPanel({
 }) {
   const { attempt } = useSpark();
   const phoneViewport = usePhoneViewport();
-  const q = useQuery(sp.dagJob(appId, jobId, attempt));
+  const q = useStableQuery(sp.dagJob(appId, jobId, attempt));
   const metrics = useMemo(
     () => (stages?.length ? stageMetricsFromRest(stages as Parameters<typeof stageMetricsFromRest>[0]) : undefined),
     [stages],
@@ -244,7 +244,7 @@ export function StageDagPanel({
   onSelectRdd?: (rddId: number) => void;
 }) {
   const { attempt } = useSpark();
-  const q = useQuery(sp.dagStage(appId, stageId, attemptId, attempt));
+  const q = useStableQuery(sp.dagStage(appId, stageId, attemptId, attempt));
   const metrics = useMemo(() => (stage ? stageMetricsFromRest([stage] as Parameters<typeof stageMetricsFromRest>[0]) : undefined), [stage]);
 
   if (q.isPending) return <SparkLoading rows={5} cols={1} />;

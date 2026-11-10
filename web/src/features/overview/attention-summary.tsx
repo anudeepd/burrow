@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, Info } from "lucide-react";
 import type { ClusterMetrics } from "~/api/schemas";
 import { ov } from "~/api/queries/overview";
@@ -60,7 +60,7 @@ export function OverviewAttentionSummary({
   metricsPending: boolean;
   metricsError: boolean;
 }) {
-  const meta = useQuery(ov.meta());
+  const meta = useStableQuery(ov.meta());
 
   if (!metrics && metricsPending && meta.isPending) {
     return (

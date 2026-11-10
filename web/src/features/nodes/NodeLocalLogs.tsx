@@ -7,7 +7,7 @@
  *   - a real file list when the log routes are implemented,
  *   - an explicit "source unavailable + reason" state when they are not (never invented files).
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { z } from "zod";
 import { apiGet } from "~/api/client";
 import { nq } from "~/api/queries/nodes";
@@ -38,10 +38,10 @@ type LogSource = z.infer<typeof LogSourceSchema>;
 export function NodeLocalLogs({ node }: { node: Node }) {
   const address = node.nodeHTTPAddress;
   const tz = usePref("tz");
-  const containers = useQuery({ ...nq.nmContainers(address), enabled: address !== "" });
+  const containers = useStableQuery({ ...nq.nmContainers(address), enabled: address !== "" });
   const first = containers.data?.[0];
 
-  const probe = useQuery({
+  const probe = useStableQuery({
     queryKey: ["logs", "containers", first?.id, address],
     queryFn: ({ signal }) =>
       apiGet(`logs/containers/${encodeURIComponent(first!.id)}`, {
@@ -65,6 +65,7 @@ export function NodeLocalLogs({ node }: { node: Node }) {
           title="Cannot read this node's containers"
           message="The NodeManager did not return its container list."
           hint="Check that the NodeManager is reachable, then retry."
+          error={containers.error}
           onRetry={() => void containers.refetch()}
         />
       ) : !first ? (
@@ -85,6 +86,7 @@ export function NodeLocalLogs({ node }: { node: Node }) {
           title="Could not check NodeManager logs"
           message={`Burrow could not read log metadata for ${first.id}.`}
           hint="Check that the NodeManager is reachable and has logs for this container, then retry."
+          error={probe.error}
           onRetry={() => void probe.refetch()}
         />
       ) : !probe.data ? (
@@ -104,6 +106,7 @@ export function NodeLocalLogs({ node }: { node: Node }) {
                 compact
                 title="Could not refresh NodeManager logs"
                 message="The previously loaded log list is still shown."
+                error={probe.error}
                 onRetry={() => void probe.refetch()}
               />
             )}

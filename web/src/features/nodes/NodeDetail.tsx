@@ -5,7 +5,7 @@
  * The whole page is one `Entity` keyed by the node id, so `(node id, field id) → raw` stays unambiguous
  * (docs/contracts/parity-dom.md).
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import { ArrowLeft, ExternalLink, Server } from "lucide-react";
 import { nq } from "~/api/queries/nodes";
@@ -29,7 +29,7 @@ const route = getRouteApi("/nodes/$nodeId");
 
 export function NodeDetail() {
   const { nodeId } = route.useParams();
-  const query = useQuery(nq.node(nodeId));
+  const query = useStableQuery(nq.node(nodeId));
   const node = query.data;
 
   if (query.error && !node) {
@@ -37,7 +37,7 @@ export function NodeDetail() {
       <CenteredPageState>
         <ErrorState
           title="Cannot read this node"
-          message={query.error instanceof Error ? query.error.message : String(query.error)}
+          error={query.error}
           hint={`Burrow proxies /ws/v1/cluster/nodes/${nodeId} from the active ResourceManager. A node that has been shut down long enough is dropped from the inactive-node map and will 404.`}
           onRetry={() => void query.refetch()}
         />
@@ -59,8 +59,8 @@ export function NodeDetail() {
 function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: unknown; onRetry: () => void }) {
   const util = utilOf(node);
   const address = node.nodeHTTPAddress;
-  const nm = useQuery({ ...nq.nmInfo(address), enabled: address !== "" });
-  const containers = useQuery({ ...nq.nmContainers(address), enabled: address !== "" });
+  const nm = useStableQuery({ ...nq.nmInfo(address), enabled: address !== "" });
+  const containers = useStableQuery({ ...nq.nmContainers(address), enabled: address !== "" });
   const total = { mem: totalMemoryMB(node), vcores: totalVCores(node) };
   const vcoresTotal = total.vcores || numOf(node.totalResource?.vCores);
   const runningContainers = containers.data?.filter((container) => container.state === "RUNNING");
@@ -83,7 +83,7 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
       tabIndex={0}
       aria-label="Node details"
       data-page-motion="content"
-      className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-5 overflow-y-auto pb-6 [&>*]:shrink-0"
+      className="burrow-scroll burrow-page-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-5 overflow-y-auto pb-6 *:shrink-0"
     >
       {refreshError != null && (
         <StaleErrorBanner title="Node refresh failed; showing the last loaded details" error={refreshError} onRetry={onRetry} />
@@ -360,7 +360,7 @@ function NodeBody({ node, refreshError, onRetry }: { node: Node; refreshError: u
         ) : nm.error && !nm.data ? (
           <ErrorState
             title="Cannot read the NodeManager"
-            message={nm.error instanceof Error ? nm.error.message : String(nm.error)}
+            error={nm.error}
             hint={`Burrow proxies /ws/v1/node/info from ${address}; the port must be reachable from the Burrow host.`}
             onRetry={() => void nm.refetch()}
           />
@@ -464,7 +464,7 @@ function ResourceMatrix({ node }: { node: Node }) {
     );
   return (
     <DetailTableScroller ariaLabel="Node resource totals" className="rounded-lg border border-seam bg-fabric">
-      <table className="w-full min-w-[58rem] border-collapse text-small">
+      <table className="w-full min-w-232 border-collapse text-small">
         <thead className="bg-fabric-2 text-micro uppercase tracking-wide text-ink-4">
           <tr>
             <th className="px-3 py-1.5 text-start font-medium">Resource</th>

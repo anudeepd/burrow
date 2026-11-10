@@ -87,9 +87,11 @@ describe("LineViewer", () => {
     Object.defineProperties(log, {
       scrollHeight: { configurable: true, value: 200 },
       clientHeight: { configurable: true, value: 50 },
-      scrollTop: { configurable: true, value: 0 },
+      scrollTop: { configurable: true, value: 150 },
     });
-    fireEvent.scroll(log);
+    fireEvent.scroll(log); // at the bottom: follow stays pinned
+    Object.defineProperty(log, "scrollTop", { configurable: true, value: 0 });
+    fireEvent.scroll(log); // a real upward scroll releases follow
     fireEvent.click(screen.getByRole("button", { name: "Jump to tail" }));
     expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(1, { align: "end" });
   });
@@ -99,6 +101,29 @@ describe("LineViewer", () => {
     window.__BURROW_PARITY__ = false;
     render(<LineViewer {...base} buffer={makeBuffer("INFO one\nINFO two\n")} follow />);
     expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(1, { align: "end" });
+  });
+
+  it("stays pinned when measured rows grow the content without a user scroll", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    render(<LineViewer {...base} buffer={makeBuffer("INFO one\nINFO two\n")} follow />);
+    const log = screen.getByRole("log", { name: "Container log" });
+    Object.defineProperties(log, {
+      scrollHeight: { configurable: true, value: 200 },
+      clientHeight: { configurable: true, value: 50 },
+      scrollTop: { configurable: true, value: 150 },
+    });
+    fireEvent.scroll(log); // at the bottom, following
+
+    // A wrapped row measured taller grows the content without moving the scroll position.
+    Object.defineProperty(log, "scrollHeight", { configurable: true, value: 260 });
+    fireEvent.scroll(log);
+    expect(screen.queryByRole("button", { name: "Jump to tail" })).toBeNull();
+
+    // A real upward scroll still releases follow.
+    Object.defineProperty(log, "scrollTop", { configurable: true, value: 100 });
+    fireEvent.scroll(log);
+    expect(screen.getByRole("button", { name: "Jump to tail" })).toBeTruthy();
   });
 
   it("renders unstamped stack lines, absolute timestamps, and active and inactive search hits", () => {

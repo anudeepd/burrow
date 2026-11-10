@@ -73,6 +73,13 @@ pub async fn get(core: &Core, req: ApiRequest<'_>) -> Result<Reply, ApiError> {
     // Hadoop's own clients send collection URLs both ways (`…/containers` and `…/containers/`), and the RM
     // answers 200 for both; normalise before matching so we do not invent a 404 the upstream would not.
     let path = req.path.strip_suffix('/').unwrap_or(req.path);
+    // Synthesized paged view: the RM has `limit` but no `offset`, so offset windows are served from the
+    // backend's complete-list index. Without `window=1` this remains a verbatim RM passthrough.
+    if path == "apps"
+        && crate::routes::table::query_param(req.query, "window").as_deref() == Some("1")
+    {
+        return core.apps.window(core, req).await;
+    }
     let Some(r) = table().lookup(path) else {
         return Err(ApiError::not_found(format!(
             "'{}' is not an exposed ResourceManager resource",

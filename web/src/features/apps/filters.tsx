@@ -45,7 +45,7 @@ function FacetSelect({
       placeholder={anyLabel}
       options={options}
       onValueChange={(v) => onSelect(v === ANY || v === null ? undefined : v)}
-      className={cn("max-w-[13rem] text-small", className)}
+      className={cn("max-w-52 text-small", className)}
     />
   );
 }
@@ -354,7 +354,7 @@ export function AppFilters({
             data-filter-motion-key={a.key}
             type="button"
             onClick={a.clear}
-            className="burrow-control burrow-enter-pop inline-flex items-center gap-1 rounded-full border border-seam-strong bg-fabric-2 px-2 py-0.5 text-micro text-ink-2 transition-colors duration-(--dur-fast) ease-(--ease-out) hover:border-live hover:text-ink"
+            className="burrow-control burrow-enter-pop inline-flex items-center gap-1 rounded-full border border-seam-strong bg-fabric-2 px-2 py-0.5 text-micro text-ink-2 transition-colors duration-(--dur-fast) ease-out hover:border-live hover:text-ink"
           >
             {a.label}
             <X className="size-3" aria-hidden="true" />
@@ -400,7 +400,7 @@ export function AppFilters({
           onChange={(e) => updateDraft(e.target.value)}
           placeholder="Name or application ID…"
           aria-label="Filter by name or application ID"
-          className="burrow-apps-name-filter-input h-full w-[13rem] min-w-0 bg-transparent text-small text-ink outline-none placeholder:text-ink-3"
+          className="burrow-apps-name-filter-input h-full w-52 min-w-0 bg-transparent text-small text-ink outline-none placeholder:text-ink-3"
         />
         {draft && (
           <Tooltip label="Clear name filter">

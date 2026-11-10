@@ -5,13 +5,13 @@
  * because it carries the current `isActive`). The visible window lives in the URL (`?from`, `?to`, `?zoom`); zoom, pan and
  * drag-select all write it back, so a zoomed view is linkable.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { fmtEpoch, fmtInt } from "~/lib/format";
 import { usePref } from "~/state/prefs";
-import { Button } from "~/ui/button";
 import { ErrorState } from "~/ui/feedback";
+import { describeError } from "~/lib/error-details";
 import { compact, intParam } from "../data/search";
 import { sp } from "../data/queries";
 import type { SparkExecutor } from "../data/schemas";
@@ -36,10 +36,10 @@ export function TimelinePage() {
   /** A finished application has no "now": nothing is drawn to the present and no now line is shown. */
   const liveNow = kind === "live" ? now : null;
 
-  const jobsQ = useQuery(sp.jobs(appId, { kind, attempt }));
-  const stagesQ = useQuery(sp.stages(appId, { kind, attempt }));
-  const executorsQ = useQuery(sp.executors(appId, kind, attempt));
-  const allExecutorsQ = useQuery(sp.allExecutors(appId, kind, attempt));
+  const jobsQ = useStableQuery(sp.jobs(appId, { kind, attempt }));
+  const stagesQ = useStableQuery(sp.stages(appId, { kind, attempt }));
+  const executorsQ = useStableQuery(sp.executors(appId, kind, attempt));
+  const allExecutorsQ = useStableQuery(sp.allExecutors(appId, kind, attempt));
 
   const executors = useMemo(() => {
     const m = new Map<string, SparkExecutor>();
@@ -129,10 +129,9 @@ export function TimelinePage() {
     return (
       <ErrorState
         title={`${failedQueries.length} Spark timeline sources could not be loaded`}
-        message={failedQueries
-          .map(({ name, query }) => `${name}: ${query.error instanceof Error ? query.error.message : String(query.error)}`)
-          .join(" · ")}
+        message={failedQueries.map(({ name, query }) => `${name}: ${describeError(query.error).message}`).join(" · ")}
         hint="No timeline data was returned. Retry all failed sources; available data appears as each source recovers."
+        error={failedQueries.map(({ name, query }) => ({ name, error: query.error }))}
         onRetry={retry}
       />
     );
@@ -141,21 +140,13 @@ export function TimelinePage() {
   return (
     <div data-page-motion="content" className="flex min-h-0 flex-1 flex-col gap-4">
       {errored > 0 && (barCount > 0 || !failedWithoutData) && (
-        <div
-          className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-seam-strong bg-well px-2.5 py-1.5 text-small text-ink-3"
-          role="status"
-        >
-          <span>
-            {errored} of four timeline sources failed. Showing available data; errors:{" "}
-            {failedQueries
-              .map(({ name, query }) => `${name}: ${query.error instanceof Error ? query.error.message : String(query.error)}`)
-              .join("; ")}
-            .
-          </span>
-          <Button variant="quiet" size="sm" onClick={() => void Promise.all(failedQueries.map(({ query }) => query.refetch()))}>
-            Retry failed sources
-          </Button>
-        </div>
+        <ErrorState
+          compact
+          title={`${errored} of four timeline sources failed`}
+          message={failedQueries.map(({ name, query }) => `${name}: ${describeError(query.error).message}`).join("; ")}
+          error={failedQueries.map(({ name, query }) => ({ name, error: query.error }))}
+          onRetry={() => void Promise.all(failedQueries.map(({ query }) => query.refetch()))}
+        />
       )}
 
       <section aria-label="Timeline" className="min-w-0 overflow-hidden rounded-lg border border-seam bg-fabric">

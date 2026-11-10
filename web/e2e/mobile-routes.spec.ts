@@ -466,22 +466,24 @@ test("phone scheduler, node, and Spark row controls expose touch-sized targets",
 test("phone Spark failures keep raw diagnostics wrapped and collapsed", async ({ page }) => {
   await page.goto("/apps/application_1791010000001_0099/spark/jobs");
   await expect(page.getByRole("heading", { name: "No Spark data source for this application" })).toBeVisible();
-  const details = page.locator('[role="alert"] details');
+  const alert = page.getByRole("alert").filter({ has: page.getByRole("heading", { name: "No Spark data source for this application" }) });
+  const details = alert.locator("details");
   await expect(details.locator("summary")).toHaveText("Technical details");
-  const messageWidths = await page
-    .locator('[role="alert"] p')
+  const messageWidths = await alert
+    .locator("p")
     .evaluateAll((elements) => elements.map((element) => ({ client: element.clientWidth, scroll: element.scrollWidth })));
   expect(messageWidths.every(({ client, scroll }) => scroll <= client + 1)).toBe(true);
   await details.locator("summary").click();
   const detailBox = await details.locator("pre").evaluate((element) => {
     const style = getComputedStyle(element);
     const rect = element.getBoundingClientRect();
-    return { left: rect.left, right: rect.right, whiteSpace: style.whiteSpace, wordBreak: style.wordBreak };
+    return { left: rect.left, right: rect.right, whiteSpace: style.whiteSpace, overflowWrap: style.overflowWrap };
   });
   expect(detailBox.left).toBeGreaterThanOrEqual(0);
   expect(detailBox.right).toBeLessThanOrEqual(390);
   expect(detailBox.whiteSpace).toBe("pre-wrap");
-  expect(detailBox.wordBreak).toBe("break-all");
+  // Unbroken tokens (ids, URLs, stacks) wrap only when they have no other break; words stay intact.
+  expect(detailBox.overflowWrap).toBe("anywhere");
 });
 
 test("354px phone viewport keeps every route inside the document bounds", async ({ page }) => {

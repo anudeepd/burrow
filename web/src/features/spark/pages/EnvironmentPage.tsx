@@ -6,7 +6,7 @@
  * whose key is the property key (singleton sections use `_`); a property's `data-yv` stays the faithful `[key,value]`
  * pair while the table shows key and value in separate columns.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -181,7 +181,7 @@ export function EnvironmentPage() {
   const search = route.useSearch();
   const navigate = route.useNavigate();
   const q = typeof search.q === "string" ? search.q : "";
-  const qEnv = useQuery(sp.environment(appId, attempt));
+  const qEnv = useStableQuery(sp.environment(appId, attempt));
   const env = qEnv.data;
 
   const sparkProperties = useMemo(() => asPairs(env?.sparkProperties), [env?.sparkProperties]);

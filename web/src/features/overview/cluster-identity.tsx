@@ -2,7 +2,7 @@
  * (a) Cluster identity & state strip — the legacy `/cluster/cluster` "Cluster overview" block (AboutBlock.java:43-53),
  * field for field, from `GET /api/yarn/info`.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ov } from "~/api/queries/overview";
 import { fmtEpoch, fmtIsoTimestamp } from "~/lib/format";
 import { usePref } from "~/state/prefs";
@@ -20,7 +20,7 @@ function shortClassName(fqcn: string): string {
 }
 
 export function ClusterIdentity({ showUpstreamAnswer = false }: { showUpstreamAnswer?: boolean }) {
-  const info = useQuery(ov.info());
+  const info = useStableQuery(ov.info());
   const stale = useStale();
   const tz = usePref("tz");
 
@@ -40,7 +40,8 @@ export function ClusterIdentity({ showUpstreamAnswer = false }: { showUpstreamAn
     return (
       <ErrorState
         title="Cannot read the ResourceManager identity"
-        message={info.error instanceof Error ? info.error.message : String(info.error ?? "The ResourceManager did not respond.")}
+        error={info.error}
+        message={info.error == null ? "The ResourceManager did not respond." : undefined}
         hint="Try again in a moment. Other Overview sections remain available."
         onRetry={() => void info.refetch()}
       />
@@ -89,7 +90,7 @@ export function ClusterIdentity({ showUpstreamAnswer = false }: { showUpstreamAn
                 field="cluster.info.haZooKeeperConnectionState"
                 raw={c.haZooKeeperConnectionState ?? null}
                 fmt="text"
-                className="block min-w-0 whitespace-normal break-words text-body"
+                className="block min-w-0 whitespace-normal wrap-break-word text-body"
               />
             </dd>
           </div>
@@ -127,7 +128,7 @@ export function ClusterIdentity({ showUpstreamAnswer = false }: { showUpstreamAn
                   field="cluster.info.derived.rmVersionText"
                   raw={rmVersionText}
                   fmt="text"
-                  className="block whitespace-normal text-body [overflow-wrap:anywhere]"
+                  className="block whitespace-normal text-body wrap-anywhere"
                 >
                   <span className="font-medium">
                     <Datum field="cluster.info.resourceManagerVersion" raw={c.resourceManagerVersion} fmt="text">
@@ -156,7 +157,7 @@ export function ClusterIdentity({ showUpstreamAnswer = false }: { showUpstreamAn
                   field="cluster.info.derived.hadoopVersionText"
                   raw={hadoopVersionText}
                   fmt="text"
-                  className="block whitespace-normal text-body [overflow-wrap:anywhere]"
+                  className="block whitespace-normal text-body wrap-anywhere"
                 >
                   <span className="font-medium">
                     <Datum field="cluster.info.hadoopVersion" raw={c.hadoopVersion} fmt="text">

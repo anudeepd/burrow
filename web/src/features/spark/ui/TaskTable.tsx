@@ -384,7 +384,7 @@ export function TaskTable({
   const columns = useMemo(() => taskColumns({ tz, showMore }), [tz, showMore]);
   return (
     <DataTable<SparkTask>
-      className="min-h-[24rem]"
+      className="min-h-96"
       data={tasks}
       columns={columns}
       getRowId={taskRowKey}

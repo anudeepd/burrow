@@ -416,9 +416,18 @@ async fn live_aggregated_logs_come_from_the_jobhistoryserver() {
         }
         let name = files
             .iter()
+            .filter(|f| f["size"].as_u64().unwrap_or(0) > 0)
             .find(|f| f["name"] == "syslog")
-            .or_else(|| files.iter().find(|f| f["name"] == "stdout"))
-            .expect("a readable file");
+            .or_else(|| {
+                files
+                    .iter()
+                    .filter(|f| f["size"].as_u64().unwrap_or(0) > 0)
+                    .find(|f| f["name"] == "stdout")
+            });
+        let Some(name) = name else {
+            // A seeded app may legitimately have no non-empty aggregated output.
+            continue;
+        };
         let name = name["name"].as_str().unwrap();
         let r = h
             .get(&format!(

@@ -4,7 +4,7 @@
  * The list lives on the index route so that the route above it can be a pure layout (see `attempts.tsx`):
  * `/attempts` shows this list, `/attempts/$attemptId` shows the attempt detail page.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { q } from "~/api/queries";
 import { selectAppAttempts } from "~/api/schemas";
@@ -22,8 +22,8 @@ function AttemptsRoute() {
   const { appId } = Route.useParams();
   const search = parent.useSearch();
   const navigate = parent.useNavigate();
-  const app = useQuery(q.app(appId));
-  const attempts = useQuery(q.appAttempts(appId));
+  const app = useStableQuery(q.app(appId));
+  const attempts = useStableQuery(q.appAttempts(appId));
   const rows = selectAppAttempts(attempts.data ?? {});
   const live = rows.some((a) => a.finishedTime === 0);
   const now = useNow(live);
@@ -53,7 +53,8 @@ function AttemptsRoute() {
           attempts.isError && !attempts.data ? (
             <ErrorState
               title="Could not load the application attempts"
-              message={attempts.error instanceof Error ? attempts.error.message : "The RM did not return an attempts payload."}
+              error={attempts.error}
+              message={attempts.error instanceof Error ? undefined : "The RM did not return an attempts payload."}
               hint="`GET /ws/v1/cluster/apps/{id}/appattempts` — the application may have expired from the RM."
               onRetry={() => void attempts.refetch()}
             />

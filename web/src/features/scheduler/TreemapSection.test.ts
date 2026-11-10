@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { treemapItems } from "./TreemapSection";
+import { shortQueueLabels, treemapItems } from "./TreemapSection";
 
 describe("scheduler treemap derivation", () => {
   it("selects default and labeled capacity values for both sizing bases", () => {
@@ -35,6 +35,7 @@ describe("scheduler treemap derivation", () => {
     expect(treemapItems(root, "used")).toEqual([
       {
         key: "root.analytics",
+        label: "analytics",
         value: 256,
         field: "queue.resourcesUsed.memory",
         raw: 256,
@@ -60,6 +61,17 @@ describe("scheduler treemap derivation", () => {
       raw: 64,
       sub: "guaranteed 512 MiB, 256 MiB used",
     });
+  });
+
+  it("uses the shortest unique queue suffix, keeping root only when it disambiguates", () => {
+    expect([...shortQueueLabels(["root", "root.prod.etl", "root.dev.etl", "root.prod.reports", "root.team-01"]).entries()].sort()).toEqual([
+      ["root", "root"],
+      ["root.dev.etl", "dev.etl"],
+      ["root.prod.etl", "prod.etl"],
+      ["root.prod.reports", "reports"],
+      ["root.team-01", "team-01"],
+    ]);
+    expect(shortQueueLabels([""]).get("")).toBe("");
   });
 
   it("handles fair leaves and missing used or guaranteed resources", () => {
@@ -89,5 +101,6 @@ describe("scheduler treemap derivation", () => {
       { key: "root.fair", value: 256, field: "queue.minResources.memory", raw: 256, sub: "guaranteed 256 MiB, 128 MiB used" },
       { key: "root.empty", value: 0, field: "queue.minResources.memory", raw: undefined, sub: "guaranteed —" },
     ]);
+    expect(treemapItems(root, "used").map((entry) => entry.label)).toEqual(["fair", "empty"]);
   });
 });

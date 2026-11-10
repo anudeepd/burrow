@@ -3,7 +3,7 @@
  * failure mode (see `docs/contracts/api.md`). The page itself only arranges them and owns the one piece of URL state —
  * the utilisation-history window — so the whole view stays linkable.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMounted } from "~/lib/use-mounted";
@@ -91,7 +91,7 @@ export function OverviewPage({
   const mounted = useMounted();
   const storedParity = useParity();
   const parity = mounted && storedParity;
-  const metrics = useQuery(ov.metrics());
+  const metrics = useStableQuery(ov.metrics());
   const clusterMetrics = metrics.data as ClusterMetrics | undefined;
 
   return (
@@ -144,7 +144,7 @@ export function OverviewPage({
                 ))}
               </div>
             }
-            className="burrow-overview-panel burrow-overview-panel--metrics min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]"
+            className="burrow-overview-panel burrow-overview-panel--metrics min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)"
           >
             <ClusterMetricsSection historyWindow={historyWindow} showRawAggregate={isPre} />
           </Section>
@@ -155,7 +155,7 @@ export function OverviewPage({
               headingLevel={3}
               id="overview-rm-counters"
               help="ResourceManager cluster-wide memory and virtual-core counters: total, allocated, available, reserved, and pending. The YARN allocation figures in Cluster metrics sum scheduler capacity across partitions, so their totals can differ. Compare allocated with total within each source."
-              className="burrow-overview-panel burrow-overview-panel--rm-counters min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]"
+              className="burrow-overview-panel burrow-overview-panel--rm-counters min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)"
             >
               <ResourceManagerMetricsSection />
             </Section>
@@ -169,7 +169,7 @@ export function OverviewPage({
             id="overview-cluster-identity"
             help="ResourceManager identity, build versions and high-availability state. Times use the selected time zone."
             hint={isPre ? "Identity, versions and state · /api/yarn/info" : undefined}
-            className="burrow-overview-panel burrow-overview-panel--identity min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]"
+            className="burrow-overview-panel burrow-overview-panel--identity min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)"
           >
             <ClusterIdentity showUpstreamAnswer={isPre} />
           </Section>
@@ -179,7 +179,7 @@ export function OverviewPage({
             id="overview-service-health"
             help="Status of Burrow's configured supporting services."
             hint={isPre ? "Configured services and capabilities · /api/meta" : undefined}
-            className="burrow-overview-panel burrow-overview-panel--services min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]"
+            className="burrow-overview-panel burrow-overview-panel--services min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)"
           >
             <ServicesHealthSection renderVersion={isPre ? "pre" : "post"} />
           </Section>
@@ -197,7 +197,7 @@ export function OverviewPage({
                 queue tree →
               </CrossLink>
             }
-            className="burrow-overview-panel burrow-overview-panel--scheduler min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]"
+            className="burrow-overview-panel burrow-overview-panel--scheduler min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)"
           >
             <SchedulerSection />
           </Section>
@@ -212,7 +212,7 @@ export function OverviewPage({
                 all nodes →
               </CrossLink>
             }
-            className="burrow-overview-panel burrow-overview-panel--nodes min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]"
+            className="burrow-overview-panel burrow-overview-panel--nodes min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)"
           >
             <NodeStatesSection metrics={clusterMetrics} />
           </Section>
@@ -237,7 +237,7 @@ export function OverviewPage({
                 </CrossLink>
               </>
             }
-            className="burrow-overview-panel burrow-overview-panel--active min-w-0 rounded-lg border border-seam bg-fabric p-[var(--gap-card)]"
+            className="burrow-overview-panel burrow-overview-panel--active min-w-0 rounded-lg border border-seam bg-fabric p-(--gap-card)"
           >
             <ActiveRail parity={parity} bordered={false} />
           </Section>

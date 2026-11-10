@@ -7,9 +7,10 @@
  * never a fabricated log line.
  */
 import { FileText } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { q } from "~/api/queries";
 import { cn } from "~/lib/cn";
+import { describeError } from "~/lib/error-details";
 import { Button } from "~/ui/button";
 import { Tooltip } from "~/ui/tooltip";
 
@@ -32,7 +33,7 @@ export function LogLink({
   className?: string;
   compact?: boolean;
 }) {
-  const meta = useQuery(q.meta());
+  const meta = useStableQuery(q.meta());
   const features = meta.data?.features;
   const available = !!features && (features.nodeLogs || features.aggregatedLogs);
   const href = `/apps/${appId}/logs?container=${encodeURIComponent(containerId)}${node ? `&node=${encodeURIComponent(node)}` : ""}${
@@ -48,7 +49,7 @@ export function LogLink({
     );
   }
   if (meta.error) {
-    const error = meta.error instanceof Error ? meta.error.message : String(meta.error);
+    const error = describeError(meta.error).message;
     return (
       <Tooltip label={`Burrow could not confirm log support. ${error}`}>
         <Button

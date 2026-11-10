@@ -1,5 +1,5 @@
 /** Node state totals and the live NodeManager inventory shown on Overview. */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnVisibilityState, SortingState } from "@tanstack/react-table";
 import { useState } from "react";
@@ -189,7 +189,7 @@ export function NodeStatesSection({
   metrics: ClusterMetrics | undefined;
   collapseInventory?: boolean;
 }) {
-  const nodes = useQuery(ov.nodes());
+  const nodes = useStableQuery(ov.nodes());
   const navigate = useNavigate();
   const stale = useStale();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -229,7 +229,7 @@ export function NodeStatesSection({
           nodes.isError && nodes.data === undefined ? (
             <ErrorState
               title="The node list is unavailable"
-              message={nodes.error instanceof Error ? nodes.error.message : String(nodes.error)}
+              error={nodes.error}
               hint={metrics ? "Node state counts above remain available." : undefined}
               onRetry={() => void nodes.refetch()}
               compact
@@ -244,20 +244,20 @@ export function NodeStatesSection({
         exportName="overview-nodes"
         stableViewport
         maxHeight={360}
-        className="min-h-[13rem] w-full flex-none"
+        className="min-h-52 w-full flex-none"
       />
     </div>
   );
 
   return (
-    <div className="burrow-overview-metrics-container flex flex-col gap-[var(--gap-card)]" data-testid="node-states">
+    <div className="burrow-overview-metrics-container flex flex-col gap-(--gap-card)" data-testid="node-states">
       {metrics ? (
         <TabContent value="node-counts" initial>
           <Entity
             id={SINGLETON}
             className={
               collapseInventory
-                ? "burrow-overview-row-grid burrow-overview-row-grid--node-states rounded-lg border border-seam bg-fabric px-[var(--gap-card)]"
+                ? "burrow-overview-row-grid burrow-overview-row-grid--node-states rounded-lg border border-seam bg-fabric px-(--gap-card)"
                 : "burrow-overview-row-grid burrow-overview-row-grid--node-states"
             }
           >

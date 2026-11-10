@@ -11,6 +11,7 @@
 //! The crate never depends on axum/hyper: the binary owns the HTTP layer and only translates.
 
 pub mod api;
+pub mod apps_index;
 pub mod cache;
 pub mod config;
 pub mod core;

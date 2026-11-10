@@ -41,7 +41,7 @@ export function NodeContainers({
           title="Cannot read the NodeManager's container list"
           message="The NodeManager did not return its container list."
           hint={`Burrow proxies /ws/v1/node/containers from ${address}. The ResourceManager only reports a count, so this list needs the NodeManager.`}
-          detail={error instanceof Error ? error.message : undefined}
+          error={error}
           onRetry={onRetry}
         />
       ) : (
@@ -68,7 +68,7 @@ export function NodeContainers({
                 Containers will appear here when YARN schedules work.
               </EmptyState>
             }
-            className="min-h-[15rem] sm:min-h-[13rem]"
+            className="min-h-60 sm:min-h-52"
           />
         </>
       )}

@@ -5,7 +5,7 @@
  * brief asks for. Every REST value is stamped with a `spark.job.*` field id; the computed duration uses
  * `spark.job.derived.durationMs`. Sorting / visible columns / status filter live in the URL.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
@@ -40,7 +40,7 @@ export function JobsPage() {
 
   const status = typeof search.status === "string" && search.status !== "" ? search.status : undefined;
   const q = typeof search.q === "string" ? search.q : "";
-  const qJobs = useQuery(sp.jobs(appId, { status, kind, attempt }));
+  const qJobs = useStableQuery(sp.jobs(appId, { status, kind, attempt }));
   const jobs = useMemo(() => qJobs.data ?? [], [qJobs.data]);
 
   const filtering = useMemo(() => (q ? jobs.filter((j) => matchesQuery([j.jobId, j.name, j.description, j.status], q)) : jobs), [jobs, q]);
@@ -211,7 +211,7 @@ export function JobsPage() {
             </SparkEmpty>
           ) : undefined
         }
-        className="min-h-[24rem]"
+        className="min-h-96"
         data={filtering}
         columns={columns}
         getRowId={(j) => String(j.jobId)}

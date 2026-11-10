@@ -8,7 +8,7 @@
  * There is no defaults endpoint to diff against, so the page states exactly what "overridden" means here and colours it:
  * a property loaded from a `*-site.xml` (or set programmatically) is overridden; everything else is a Hadoop default.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUpRight, CircleHelp, Lock, RotateCw, X } from "lucide-react";
 import { useEffect, useMemo } from "react";
@@ -77,13 +77,13 @@ function KeyCell({ p, selected }: { p: ConfProperty; selected: boolean }) {
   const over = isOverridden(p);
   return (
     <span className={cn("relative flex min-w-0 items-center gap-1.5 py-0.5", over && OVERRIDDEN_TINT)}>
-      {over && <span aria-hidden="true" className="absolute inset-y-0 left-[calc(var(--cell-px)*-1)] w-[3px] rounded-full bg-live" />}
+      {over && <span aria-hidden="true" className="absolute inset-y-0 -left-(--cell-px) w-0.75 rounded-full bg-live" />}
       <Datum
         field="conf.key"
         raw={p.key}
         fmt="text"
         className={cn(
-          "truncate font-mono text-small transition-colors duration-(--dur-fast) ease-(--ease-out)",
+          "truncate font-mono text-small transition-colors duration-(--dur-fast) ease-out",
           selected ? "text-live" : "text-ink",
         )}
         title={p.key}
@@ -291,7 +291,7 @@ function PropertyDetail({ p, host, onClose }: { p: ConfProperty; host: string | 
             raw={p.value}
             fmt="text"
             as="pre"
-            className="burrow-scroll max-h-72 overflow-auto rounded-md border border-seam bg-well p-2 font-mono text-small whitespace-pre-wrap break-words text-ink"
+            className="burrow-scroll max-h-72 overflow-auto rounded-md border border-seam bg-well p-2 font-mono text-small whitespace-pre-wrap wrap-break-word text-ink"
           />
         </div>
 
@@ -313,8 +313,8 @@ export function ConfView() {
   const parity = useParity();
   const host = search.host;
 
-  const rmConf = useQuery({ ...tq.conf(), enabled: !host });
-  const nmConf = useQuery({
+  const rmConf = useStableQuery({ ...tq.conf(), enabled: !host });
+  const nmConf = useStableQuery({
     ...nq.nmConf(host ?? "-"),
     enabled: !!host,
     select: (r: { properties: ConfProperty[] }): ConfProperty[] => r.properties,
@@ -402,7 +402,7 @@ export function ConfView() {
         <CenteredPageState>
           <ErrorState
             title={host ? `Cannot read the NodeManager configuration at ${host}` : "Cannot read the ResourceManager configuration"}
-            message={error instanceof Error ? error.message : String(error)}
+            error={error}
             hint={
               host
                 ? "Check that this NodeManager is running and still registered with the ResourceManager."
@@ -449,7 +449,7 @@ export function ConfView() {
 
           <div
             className={cn(
-              "order-3 grid min-h-0 flex-none grid-cols-[minmax(0,1fr)] gap-4 md:order-3 md:min-h-[26rem] md:flex-1",
+              "order-3 grid min-h-0 flex-none grid-cols-[minmax(0,1fr)] gap-4 md:order-3 md:min-h-104 md:flex-1",
               open && "xl:grid-cols-[minmax(0,1fr)_24rem]",
             )}
           >
@@ -471,7 +471,7 @@ export function ConfView() {
               loading={isPending}
               totalCount={properties.length}
               exportName={host ? `nm-conf-${host.replace(/[^A-Za-z0-9.-]/g, "_")}` : "rm-conf"}
-              className="h-[26rem] md:h-full"
+              className="h-104 md:h-full"
               toolbar={
                 <>
                   <SearchField

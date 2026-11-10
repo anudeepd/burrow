@@ -54,7 +54,7 @@ export function Panel({
   as?: "div" | "article" | "li" | "section";
 } & React.HTMLAttributes<HTMLElement>) {
   return (
-    <Tag className={cn("rounded-lg border border-seam bg-fabric p-[var(--gap-card)]", className)} {...rest}>
+    <Tag className={cn("rounded-lg border border-seam bg-fabric p-(--gap-card)", className)} {...rest}>
       {children}
     </Tag>
   );

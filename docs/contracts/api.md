@@ -87,6 +87,40 @@ from the application-attempt path. The singular `/apps/{appId}/timeout` is a mut
 expiry with `/apps/{appId}/timeouts/{type}`. Per-app `statistics` / `appactivities` / `activities` compatibility paths may
 return 404; `appstatistics` and `scheduler/app-activities/{appId}` are the supported resources on Hadoop 3.4.3.
 
+### Windowed applications list (synthesized)
+
+`GET /api/yarn/apps?window=1&offset=0&limit=100&sort=-starttime&…` serves a page from the backend's complete-list
+index. Without `window=1` the same path remains a verbatim RM passthrough (parity harness, fixture replay, command
+palette). The RM has `limit` but no `offset`, so offset paging cannot be delegated upstream.
+
+| Parameter | Meaning |
+|---|---|
+| `offset`, `limit` | page slice; `limit` defaults to 100 and is clamped to 1000 |
+| `sort` | comma-joined column ids (`-` = descending); unknown ids are ignored; default `-starttime`, id tie-break |
+| `states`, `final`, `user`, `queue`, `type`, `tag`, `name`, `startedAfter`, `startedBefore`, `finishedAfter`, `finishedBefore` | the same UI filters as the `/apps` URL |
+
+The response is the RM wrapper plus metadata:
+
+```json
+{
+  "apps": { "app": [ … ] },
+  "window": {
+    "offset": 0, "limit": 100,
+    "total": 10000, "filteredTotal": 42,
+    "ready": true, "partial": false, "stale": false,
+    "version": 7, "ageMs": 1200,
+    "retryAfterMs": null, "refreshError": null,
+    "facets": { "total": 10000, "byState": {}, "byFinal": {}, "active": 12,
+                "users": [], "queues": [], "types": [], "tags": [] }
+  }
+}
+```
+
+On a cold index the first call returns a bounded `limit` preview immediately (`ready:false`, `partial:true`,
+`total:null`) and starts the complete fetch in the background. `retryAfterMs` tells the client when a deep-offset
+preview may be retried. A refresh failure keeps serving the previous complete snapshot as `stale:true` with
+`refreshError`; a successful refresh swaps the snapshot atomically (pages never mix versions).
+
 RM daemon pages (the legacy "Tools" menu):
 `GET /api/rm/conf?format=json` · `GET /api/rm/jmx[?qry=…]` · `GET /api/rm/stacks` (text) · `GET /api/rm/metrics` (if exposed).
 `GET /api/rm/logs` returns a **synthesized** JSON listing from RM HTML; `GET /api/rm/logs/{file}?offset&length` returns text.

@@ -1,11 +1,14 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Activity, CircleCheck, CircleX, Minus } from "lucide-react";
 import { q } from "~/api/queries";
+import { useStableQuery } from "~/api/use-stable-query";
 import { useConnection } from "~/api/connection";
 import { cn } from "~/lib/cn";
 import { type Theme, type TimeZoneMode, setPrefs, usePref } from "~/state/prefs";
 import { Datum, Entity, SINGLETON } from "~/ui/datum";
 import { useMounted } from "~/lib/use-mounted";
+import { describeError, simpleErrorText } from "~/lib/error-details";
+import { TechnicalDetails } from "~/ui/feedback";
 import { Select } from "~/ui/select";
 import { PopoverContent, PopoverRoot, PopoverTrigger } from "~/ui/popover";
 import { StatusDot, StatusPill } from "~/ui/status";
@@ -31,9 +34,9 @@ function Row({ label, children, ok }: { label: string; children: React.ReactNode
  */
 export function ConnectionPopover() {
   const queryClient = useQueryClient();
-  const metaQ = useQuery(q.meta());
-  const infoQ = useQuery(q.info());
-  const metricsQ = useQuery(q.metrics());
+  const metaQ = useStableQuery(q.meta());
+  const infoQ = useStableQuery(q.info());
+  const metricsQ = useStableQuery(q.metrics());
   const { data: meta } = metaQ;
   const { data: info } = infoQ;
   const failures = useConnection((s) => s.consecutiveFailures);
@@ -71,7 +74,7 @@ export function ConnectionPopover() {
           {visibleFailures > 0 && <span className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-fail" aria-hidden="true" />}
         </PopoverTrigger>
       </Tooltip>
-      <PopoverContent title="Connection" className="w-[22rem]">
+      <PopoverContent title="Connection" className="w-88">
         <Entity id={SINGLETON} className="flex flex-col divide-y divide-seam-soft">
           <div className="pb-1">
             <Row label="Cache">{cache}</Row>
@@ -110,15 +113,24 @@ export function ConnectionPopover() {
           {(queryErrors.length > 0 || (failures > 0 && lastError)) && (
             <div className="flex flex-col items-start gap-2 pt-2">
               {queryErrors.length > 0 ? (
-                queryErrors.map(({ label, error }) => (
-                  <p key={label} className="m-0 text-small text-fail" role="alert">
-                    {label} failed: {error instanceof Error ? error.message : String(error)}
-                  </p>
-                ))
+                queryErrors.map(({ label, error }) => {
+                  const described = describeError(error);
+                  return (
+                    <div key={label} className="w-full">
+                      <p className="m-0 text-small text-fail" role="alert">
+                        {label} failed: {described.message}
+                      </p>
+                      <TechnicalDetails detail={described.details} className="mt-1" />
+                    </div>
+                  );
+                })
               ) : (
-                <p className="m-0 text-small text-fail" role="alert">
-                  {lastError}
-                </p>
+                <div className="w-full">
+                  <p className="m-0 text-small text-fail" role="alert">
+                    {simpleErrorText(lastError!)}
+                  </p>
+                  <TechnicalDetails detail={lastError!} className="mt-1" />
+                </div>
               )}
               <Button
                 variant="quiet"

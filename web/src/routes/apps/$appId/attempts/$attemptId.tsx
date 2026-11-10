@@ -1,7 +1,7 @@
 /**
  * Attempt detail route (`/apps/$appId/attempts/$attemptId`) — the legacy `/cluster/appattempt/{id}` page.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { ApiError } from "~/api/client";
@@ -16,10 +16,10 @@ export const Route = createFileRoute("/apps/$appId/attempts/$attemptId")({ compo
 
 function AttemptRoute() {
   const { appId, attemptId } = Route.useParams();
-  const app = useQuery(q.app(appId));
-  const attempts = useQuery(q.appAttempts(appId));
-  const containers = useQuery(q.appContainers(appId, attemptId));
-  const detail = useQuery(q.appAttemptDetail(appId, attemptId));
+  const app = useStableQuery(q.app(appId));
+  const attempts = useStableQuery(q.appAttempts(appId));
+  const containers = useStableQuery(q.appContainers(appId, attemptId));
+  const detail = useStableQuery(q.appAttemptDetail(appId, attemptId));
   const attemptsList = selectAppAttempts(attempts.data ?? {});
   const now = useNow(attemptsList.some((a) => a.appAttemptId === attemptId && a.finishedTime === 0));
 
@@ -36,7 +36,7 @@ function AttemptRoute() {
     return (
       <ErrorState
         title="Could not load application attempts"
-        message={attempts.error instanceof Error ? attempts.error.message : String(attempts.error)}
+        error={attempts.error}
         hint="The attempt list is needed to confirm this id belongs to the application."
         onRetry={() => void attempts.refetch()}
       />
@@ -75,7 +75,7 @@ function AttemptRoute() {
         <ErrorState
           compact
           title="Attempt list refresh failed; showing the last loaded attempt"
-          message={attempts.error instanceof Error ? attempts.error.message : String(attempts.error)}
+          error={attempts.error}
           onRetry={() => void attempts.refetch()}
         />
       )}
@@ -83,17 +83,12 @@ function AttemptRoute() {
         <ErrorState
           compact
           title="Could not refresh this attempt's container list"
-          message={containers.error instanceof Error ? containers.error.message : String(containers.error)}
+          error={containers.error}
           onRetry={() => void containers.refetch()}
         />
       )}
       {detail.error && (
-        <ErrorState
-          compact
-          title="Could not load the detailed attempt record"
-          message={detail.error instanceof Error ? detail.error.message : String(detail.error)}
-          onRetry={() => void detail.refetch()}
-        />
+        <ErrorState compact title="Could not load the detailed attempt record" error={detail.error} onRetry={() => void detail.refetch()} />
       )}
       <AttemptDetail
         app={app.data!}

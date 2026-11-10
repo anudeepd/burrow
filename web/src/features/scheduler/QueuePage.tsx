@@ -6,7 +6,7 @@
  */
 import { useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ChevronRight, RotateCw } from "lucide-react";
 import { Datum, Entity } from "~/ui/datum";
 import { StatusPill } from "~/ui/status";
@@ -34,19 +34,19 @@ const EMPTY_VISIBILITY = {};
 
 export function QueuePage({ queue, search, patch }: { queue: string; search: QueueSearch; patch: (p: Partial<QueueSearch>) => void }) {
   const navigate = useNavigate();
-  const infoQ = useRemote(useQuery(schedulerQuery()));
+  const infoQ = useRemote(useStableQuery(schedulerQuery()));
   const info = infoQ.data;
   const kind = info ? schedKindOf(info) : "unknown";
   const root = useMemo(() => (info ? buildTree(info) : null), [info]);
   const node = useMemo(() => findQueue(root, queue), [root, queue]);
   const tab = search.tab ?? "users";
-  const appsQ = useRemote(useQuery(queueAppsQuery(queue, ["RUNNING", "ACCEPTED"])));
+  const appsQ = useRemote(useStableQuery(queueAppsQuery(queue, ["RUNNING", "ACCEPTED"])));
   const actQ = useRemote(
-    useQuery({ ...schedulerActivitiesQuery({ nodeId: search.nodeId, groupBy: search.groupBy }), enabled: tab === "activities" }),
+    useStableQuery({ ...schedulerActivitiesQuery({ nodeId: search.nodeId, groupBy: search.groupBy }), enabled: tab === "activities" }),
   );
-  const nodesQ = useRemote(useQuery({ ...nodesQuery(), enabled: tab === "activities" }));
+  const nodesQ = useRemote(useStableQuery({ ...nodesQuery(), enabled: tab === "activities" }));
   const confQ = useRemote(
-    useQuery({
+    useStableQuery({
       ...schedulerConfQuery(kind === "capacity" ? "capacityScheduler" : undefined),
       enabled: tab === "conf" && kind === "capacity",
     }),

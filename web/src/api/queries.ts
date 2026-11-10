@@ -3,7 +3,7 @@
  * Every factory carries `meta.topic` (the SSE topic = API path without /api/ + canonical query) so the events client can map
  * `invalidate` pushes to queries, and an adaptive refetch policy (see refetch.ts).
  */
-import { queryOptions } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 import { type Query, apiGet, apiText, topicOf } from "./client";
 import { adaptive } from "./refetch";
 import {
@@ -15,6 +15,8 @@ import {
   AppQueueResponseSchema,
   AppResponseSchema,
   AppsResponseSchema,
+  AppsWindowResponseSchema,
+  type AppsWindow as AppsWindowMeta,
   AppStateResponseSchema,
   AppStatisticsResponseSchema,
   AppTimeoutResponseSchema,
@@ -60,6 +62,21 @@ function rm<S extends import("zod").ZodType>(
 /** The apps list is fetched whole (all states) and filtered in the browser: one cache entry, exact tab counts, no comma-in-topic. */
 export const APPS_QUERY: Query = { deSelects: "resourceRequests" };
 
+/** One window request against the backend's complete-list index (see `apps_index.rs`). */
+export interface AppsWindowParams {
+  offset: number;
+  limit: number;
+  sort: string;
+  /** URL filter values, already in the UI's vocabulary (`final`, `type`, `tag`, time ranges…). */
+  filters: Query;
+}
+
+export interface AppsWindowData {
+  apps: App[];
+  /** absent when an older/mocked response served the complete list without window metadata */
+  window?: AppsWindowMeta;
+}
+
 export const q = {
   // ── synthesized ──────────────────────────────────────────────────────────────────────────────────────────────
   meta: () =>
@@ -87,6 +104,33 @@ export const q = {
     ...rm(["yarn", "apps"], "yarn/apps", AppsResponseSchema, "live", APPS_QUERY),
     select: (r: { apps?: { app?: App | App[] | null } | null }): App[] => asArray(r.apps?.app),
   }),
+  /**
+   * One page of the server-side applications index. Deliberately no SSE topic: every offset would otherwise become
+   * its own polled topic. The window polls at the live cadence and the backend refreshes its complete snapshot in
+   * the background, so the request itself is a cheap in-memory slice.
+   */
+  appsWindow: (params: AppsWindowParams) =>
+    queryOptions({
+      queryKey: ["yarn", "apps", "window", params],
+      queryFn: async ({ signal }) => {
+        const response = await apiGet("yarn/apps", {
+          schema: AppsWindowResponseSchema,
+          signal,
+          query: {
+            window: 1,
+            offset: params.offset,
+            limit: params.limit,
+            sort: params.sort,
+            deSelects: "resourceRequests",
+            ...params.filters,
+          },
+        });
+        return { apps: asArray(response.apps?.app), window: response.window } satisfies AppsWindowData;
+      },
+      ...adaptive("live"),
+      placeholderData: keepPreviousData,
+      gcTime: 30_000,
+    }),
   /** server-side filtered list, for slices that need a narrow query (e.g. a queue's running apps) */
   appsFiltered: (query: Query) => ({
     ...rm(["yarn", "apps", "filtered", query], "yarn/apps", AppsResponseSchema, "live", { deSelects: "resourceRequests", ...query }),

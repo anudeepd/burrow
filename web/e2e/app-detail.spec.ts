@@ -289,19 +289,19 @@ test.describe("honest states", () => {
     const activeApplicationTab = applicationNav.locator('[aria-current="page"]');
     await expect(applicationNav).toBeVisible();
     await expect(activeApplicationTab).toHaveCount(1);
-    expect(await visualStyle('nav[aria-label="Application sections"] a[aria-current="page"]')).toEqual(schedulerStyle);
+    await expect.poll(() => visualStyle('nav[aria-label="Application sections"] a[aria-current="page"]')).toEqual(schedulerStyle);
 
     await applicationNav.getByRole("link", { name: "Attempts", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/apps/${RUNNING_APP}/attempts$`));
     await expect(activeApplicationTab).toHaveCount(1);
     await expect(activeApplicationTab).toHaveText("Attempts");
-    expect(await visualStyle('nav[aria-label="Application sections"] a[aria-current="page"]')).toEqual(schedulerStyle);
+    await expect.poll(() => visualStyle('nav[aria-label="Application sections"] a[aria-current="page"]')).toEqual(schedulerStyle);
 
     await page.goto(`/apps/${SPARK_APP}/spark/jobs`);
     const sparkNav = page.getByRole("navigation", { name: "Spark pages" });
     await expect(sparkNav).toBeVisible();
     await expect(sparkNav.locator('[aria-current="page"]')).toHaveCount(1);
-    expect(await visualStyle('nav[aria-label="Spark pages"] a[aria-current="page"]')).toEqual(schedulerStyle);
+    await expect.poll(() => visualStyle('nav[aria-label="Spark pages"] a[aria-current="page"]')).toEqual(schedulerStyle);
   });
   test("keeps Spark in the YARN context without a redundant in-Burrow action", async ({ page }) => {
     await page.goto(`/apps/${RUNNING_APP}?parity=1`);

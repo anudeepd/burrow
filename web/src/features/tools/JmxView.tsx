@@ -10,7 +10,7 @@
  * Parity: entity = MBean name (`data-ye`), field = `"jmx." + attribute path` (`data-yf`), raw upstream value = `data-yv`.
  * JMX is open-ended, so that field-id grammar is the documented deviation (see features/tools/jmx.ts header).
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import type { JmxBean } from "~/api/schemas";
 import { getRouteApi } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -92,7 +92,7 @@ export function JmxView() {
     () => (host ? { ...nq.nmJmx(host, pattern), select: (r: { beans: JmxBean[] }): JmxBean[] => r.beans } : tq.jmx(pattern)),
     [host, pattern],
   );
-  const { data, error, isPending, isFetching, dataUpdatedAt, refetch } = useQuery(query);
+  const { data, error, isPending, isFetching, dataUpdatedAt, refetch } = useStableQuery(query);
   const beans = useMemo(() => data ?? [], [data]);
 
   const tree = useMemo(() => buildJmxTree(beans), [beans]);
@@ -296,7 +296,7 @@ export function JmxView() {
         <CenteredPageState>
           <ErrorState
             title="Cannot read the JMX beans"
-            message={error instanceof Error ? error.message : String(error)}
+            error={error}
             hint={
               host
                 ? `Burrow proxies /api/nm/${host}/jmx (the node must be in the RM's node list).`
@@ -361,7 +361,7 @@ export function JmxView() {
               <TabContent
                 initial
                 value={`${host ?? "rm"}:${pattern}`}
-                className="burrow-page-result-enter relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh_-_21rem),640px)]"
+                className="burrow-page-result-enter relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh-21rem),640px)]"
               >
                 <div
                   ref={scrollRef}
@@ -373,7 +373,7 @@ export function JmxView() {
                   onScroll={syncScrollHint}
                   data-burrow-jmx-tree="1"
                   data-burrow-jmx-rows={rows.length}
-                  className="burrow-scroll burrow-table-scroll relative min-h-0 flex-1 overflow-auto outline-none focus-visible:outline-offset-[-2px]"
+                  className="burrow-scroll burrow-table-scroll relative min-h-0 flex-1 overflow-auto outline-none focus-visible:-outline-offset-2"
                 >
                   <div role="group" className="relative" style={parity ? undefined : { height: virt.getTotalSize() }}>
                     {(parity
@@ -496,7 +496,7 @@ function JmxRow({ node, index, height, offset, query, tz, open, expandable, sele
               }}
               className="grid size-4 place-items-center rounded-sm text-ink-3 hover:bg-fabric-2 hover:text-ink"
             >
-              <ChevronRight className={cn("size-3.5 transition-transform duration-(--dur-fast) ease-(--ease-out)", open && "rotate-90")} />
+              <ChevronRight className={cn("size-3.5 transition-transform duration-(--dur-fast) ease-out", open && "rotate-90")} />
             </button>
           </OptionalTooltip>
         ) : (
@@ -593,7 +593,7 @@ function JmxValueCell({ node, query, tz }: { node: JmxNode; query: string; tz: T
           raw={node.value}
           fmt={kind === "number" ? "int" : "text"}
           className={cn(
-            "min-w-0 max-w-[22rem] shrink-0 truncate text-right",
+            "min-w-0 max-w-88 shrink-0 truncate text-right",
             kind === "number" && "tnum text-ink",
             (kind === "null" || kind === "string") && "text-ink-2",
           )}
@@ -687,7 +687,7 @@ function JmxDetails({
                     <span className="min-w-0 flex-1 truncate font-mono text-ink-2">{child.label}</span>
                     <span
                       className={cn(
-                        "max-w-[9rem] shrink-0 truncate text-right",
+                        "max-w-36 shrink-0 truncate text-right",
                         jmxValueKind(child.value) === "number" ? "tnum text-ink" : "text-ink-3",
                       )}
                     >

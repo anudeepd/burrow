@@ -22,7 +22,7 @@ export function PageHead({ title, description, actions }: { title: ReactNode; de
     <header className="flex flex-wrap items-end justify-between gap-4 pb-2">
       <div className="min-w-0">
         <h1 className="text-h1 font-semibold text-ink text-balance">{title}</h1>
-        {description && <div className="mt-1 max-w-3xl text-body break-words text-ink-3">{description}</div>}
+        {description && <div className="mt-1 max-w-3xl text-body wrap-break-word text-ink-3">{description}</div>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </header>
@@ -81,7 +81,7 @@ export function Field({
         {label}
         {hint && <HelpTip label={typeof label === "string" ? label : "Field details"}>{hint}</HelpTip>}
       </dt>
-      <dd className={cn("min-w-0 break-words text-body text-ink", mono && "font-mono text-small")}>
+      <dd className={cn("min-w-0 wrap-break-word text-body text-ink", mono && "font-mono text-small")}>
         {field !== undefined ? (
           <Datum field={field} raw={raw} fmt={fmt}>
             {children}

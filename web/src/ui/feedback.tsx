@@ -1,7 +1,9 @@
-import { Inbox, TriangleAlert } from "lucide-react";
-import type { ReactNode } from "react";
+import { Check, Copy, Inbox, TriangleAlert } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "~/lib/cn";
 import { useInView } from "~/lib/in-view";
+import { motionAllowed, tokenMs } from "~/lib/motion";
+import { copyText, describeError, simpleErrorText } from "~/lib/error-details";
 import { Button } from "./button";
 
 /** One row of skeleton. The shimmer loops only while the box is on screen (`data-visible` drives the CSS gate). */
@@ -75,10 +77,15 @@ export function EmptyState({
   );
 }
 
-/** Errors say what failed, where, and what to try; never apologise, never vague. */
+/** Errors say what failed, where, and what to try; never apologise, never vague.
+ *
+ * Every technical payload lives behind the same copyable disclosure: `error` derives it from an ApiError/Error, `detail`
+ * carries a bespoke string (e.g. a Spark failure reason). The normal state never shows a stack trace or raw envelope.
+ */
 export function ErrorState({
   title,
   message,
+  error,
   detail,
   hint,
   onRetry,
@@ -87,12 +94,20 @@ export function ErrorState({
 }: {
   title: string;
   message?: ReactNode;
+  /** Raw failure; supplies the one-line message, hint and technical details unless overridden. */
+  error?: unknown;
   detail?: ReactNode;
   hint?: ReactNode;
   onRetry?: () => void;
   compact?: boolean;
   className?: string;
 }) {
+  const described = error == null ? undefined : describeError(error);
+  const shownMessage = message ?? described?.message;
+  const shownHint = hint ?? described?.hint;
+  const messageText = typeof shownMessage === "string" ? simpleErrorText(shownMessage) : null;
+  const hintText = typeof shownHint === "string" ? simpleErrorText(shownHint) : null;
+  const technical = described?.details ?? detail;
   return (
     <div
       role="alert"
@@ -112,23 +127,23 @@ export function ErrorState({
       </div>
       <div className={cn(compact ? "min-w-0 flex-1 basis-48 text-left" : "contents")}>
         <h2 className={compact ? "text-small font-medium" : "text-lead"}>{title}</h2>
-        {message && (
-          <p className={cn("min-w-0 max-w-full [overflow-wrap:anywhere]", compact ? "text-caption text-ink-2" : "text-body text-ink-2")}>
-            {message}
+        {shownMessage != null && (
+          <p
+            className={cn(
+              "min-w-0 max-w-full wrap-anywhere",
+              compact ? "line-clamp-2 text-caption text-ink-2" : "line-clamp-3 text-body text-ink-2",
+            )}
+          >
+            {messageText ?? shownMessage}
           </p>
         )}
-        {hint && (
-          <p className={cn("min-w-0 max-w-full [overflow-wrap:anywhere]", compact ? "text-micro text-ink-3" : "text-small text-ink-3")}>
-            {hint}
+        {shownHint != null && (
+          <p className={cn("min-w-0 max-w-full wrap-anywhere line-clamp-2", compact ? "text-micro text-ink-3" : "text-small text-ink-3")}>
+            {hintText ?? shownHint}
           </p>
         )}
       </div>
-      {detail && (
-        <details className="mt-1 w-full min-w-0 max-w-full rounded-md bg-well px-2 py-1.5 text-left text-micro text-ink-3">
-          <summary className="min-h-6 cursor-pointer py-1 font-medium text-ink-2">Technical details</summary>
-          <pre className="mt-1 max-w-full whitespace-pre-wrap break-all">{detail}</pre>
-        </details>
-      )}
+      {technical != null && technical !== "" && <TechnicalDetails detail={technical} />}
       {onRetry && (
         <Button size={compact ? "sm" : "md"} className={compact ? "mt-0" : "mt-2"} onClick={onRetry}>
           Retry now
@@ -138,7 +153,135 @@ export function ErrorState({
   );
 }
 
+/**
+ * The one technical-details disclosure. The content mounts only while open, so collapsed errors can never duplicate
+ * the message in the DOM. Expansion and collapse animate one grid row (0fr ↔ 1fr) on the authored `--dur-base`
+ * entrance and fade the content with `--dur-fade`; the payload stays mounted until the collapse finishes, then is
+ * removed. Reduced motion snaps both steps, and parity drops the animation entirely.
+ *
+ * The payload spans the panel instead of sharing a row with Copy, wraps at whitespace (`wrap-anywhere` only breaks a
+ * token that has no break), and scrolls inside a capped well, so a large envelope never pushes the page. The error
+ * message itself is line-clamped by `ErrorState`; its full text is here.
+ */
+export function TechnicalDetails({ detail, className }: { detail: ReactNode; className?: string }) {
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
+  const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const summaryRef = useRef<HTMLElement>(null);
+  const textRef = useRef<HTMLPreElement>(null);
+  const closeTimer = useRef<number | null>(null);
+
+  const cancelClose = () => {
+    if (closeTimer.current != null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!open) {
+      setExpanded(false);
+      return;
+    }
+    const frame = requestAnimationFrame(() => setExpanded(true));
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current != null) window.clearTimeout(closeTimer.current);
+    },
+    [],
+  );
+
+  const toggle = () => {
+    if (open) {
+      setOpen(false);
+      setExpanded(false);
+      setClosing(true);
+      const duration = motionAllowed() ? tokenMs(detailsRef.current, "--dur-base", 240) : 0;
+      if (duration <= 0) {
+        setClosing(false);
+        return;
+      }
+      cancelClose();
+      closeTimer.current = window.setTimeout(() => {
+        closeTimer.current = null;
+        setClosing(false);
+      }, duration);
+      return;
+    }
+    // Reopening mid-collapse retargets the same row instead of remounting it.
+    cancelClose();
+    setClosing(false);
+    setOpen(true);
+  };
+
+  // The summary is the disclosure control: intercept its click with a native listener (not React's delegated onClick,
+  // which some render contexts do not receive), prevent the browser toggle, and drive the state machine ourselves.
+  const toggleRef = useRef(toggle);
+  useEffect(() => {
+    toggleRef.current = toggle;
+  });
+  useEffect(() => {
+    const summary = summaryRef.current!;
+    const onSummaryClick = (event: MouseEvent) => {
+      event.preventDefault();
+      toggleRef.current();
+    };
+    summary.addEventListener("click", onSummaryClick);
+    return () => summary.removeEventListener("click", onSummaryClick);
+  }, []);
+
+  return (
+    <details
+      ref={detailsRef}
+      open={open || closing}
+      className={cn("mt-1 w-full min-w-0 max-w-full rounded-md bg-well px-2 py-1.5 text-left text-micro text-ink-3", className)}
+    >
+      <summary ref={summaryRef} className="min-h-6 cursor-pointer py-1 font-medium text-ink-2">
+        Technical details
+      </summary>
+      {(open || closing) && (
+        <div
+          className={cn(
+            "grid transition-[grid-template-rows] duration-(--dur-base) ease-out",
+            expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+          )}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className={cn("mt-1 min-w-0 transition-opacity duration-(--dur-fade) ease-out", expanded ? "opacity-100" : "opacity-0")}>
+              <div className="mb-1 flex justify-end">
+                <Button
+                  variant="quiet"
+                  size="sm"
+                  className="min-w-26 shrink-0 justify-center"
+                  aria-label="Copy technical details"
+                  onClick={() => {
+                    void copyText(textRef.current!.textContent!).then((ok) => setState(ok ? "copied" : "failed"));
+                  }}
+                >
+                  {state === "copied" ? <Check className="size-3" aria-hidden="true" /> : <Copy className="size-3" aria-hidden="true" />}
+                  {state === "copied" ? "Copied" : state === "failed" ? "Copy failed" : "Copy"}
+                </Button>
+              </div>
+              <pre ref={textRef} className="burrow-scroll max-h-72 min-w-0 overflow-auto whitespace-pre-wrap wrap-anywhere text-ink-2">
+                {detail}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
+      <span className="sr-only" aria-live="polite">
+        {state === "copied" ? "Technical details copied" : state === "failed" ? "Could not copy technical details" : ""}
+      </span>
+    </details>
+  );
+}
+
 /** Compact warning for a failed refresh when the last successful response remains usable. */
 export function StaleErrorBanner({ title, error, onRetry }: { title: string; error: unknown; onRetry?: () => void }) {
-  return <ErrorState compact title={title} message={error instanceof Error ? error.message : String(error)} onRetry={onRetry} />;
+  return <ErrorState compact title={title} error={error} onRetry={onRetry} />;
 }

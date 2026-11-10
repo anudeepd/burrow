@@ -8,7 +8,7 @@
  * Task-aggregate metrics come from Spark only when the stage actually has task metrics; a skipped/reused stage reports
  * zeros or nothing, and those cells render as "—" rather than a fabricated number.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo } from "react";
@@ -56,7 +56,7 @@ export function StagesPage() {
   const q = strParam(search.q) ?? "";
   const grouped = boolParam(search.agg) === true;
 
-  const qStages = useQuery(sp.stages(appId, { status, kind, attempt }));
+  const qStages = useStableQuery(sp.stages(appId, { status, kind, attempt }));
   const stages = useMemo(() => qStages.data ?? [], [qStages.data]);
 
   const matching = useMemo(
@@ -161,7 +161,7 @@ export function StagesPage() {
             </SparkEmpty>
           ) : undefined
         }
-        className="min-h-[24rem]"
+        className="min-h-96"
         data={rows}
         columns={columns}
         getRowId={(s) => (grouped ? String(s.stageId) : `${s.stageId}/${s.attemptId ?? 0}`)}

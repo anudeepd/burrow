@@ -31,8 +31,8 @@ export function Switch({
         className,
       )}
     >
-      <span className="burrow-switch-track relative inline-flex h-5 w-9 items-center rounded-full border border-seam-strong bg-well px-0.5 transition-colors duration-(--dur-base) ease-(--ease-out)">
-        <BSwitch.Thumb className="block size-3.5 rounded-full bg-ink-3 transition-[background-color,transform] duration-(--dur-base) ease-(--ease-out) data-checked:translate-x-[18px] data-checked:bg-on-live" />
+      <span className="burrow-switch-track relative inline-flex h-5 w-9 items-center rounded-full border border-seam-strong bg-well px-0.5 transition-colors duration-(--dur-base) ease-out">
+        <BSwitch.Thumb className="block size-3.5 rounded-full bg-ink-3 transition-[background-color,transform] duration-(--dur-base) ease-out data-checked:translate-x-[18px] data-checked:bg-on-live" />
       </span>
     </BSwitch.Root>
   );
@@ -61,7 +61,7 @@ export function Toggle({
       aria-label={label}
       className={cn(
         "burrow-control inline-flex h-(--ctl-h) items-center gap-1.5 rounded-md border border-seam px-2.5 text-body text-ink-3 hover:bg-fabric-3 hover:text-ink data-pressed:border-seam-strong data-pressed:bg-fabric-3 data-pressed:text-ink",
-        "transition-[background-color,border-color,color,transform] duration-(--dur-fast) ease-(--ease-out) motion-safe:motion-ok:active:scale-[0.97]",
+        "transition-[background-color,border-color,color,transform] duration-(--dur-fast) ease-out motion-safe:motion-ok:active:scale-[0.97]",
         className,
       )}
     >
@@ -98,7 +98,7 @@ export function Segmented<T extends string>({
             key={o.value}
             value={o.value}
             aria-label={o.aria}
-            className="burrow-control inline-flex h-6 min-w-7 items-center justify-center gap-1 rounded-sm px-1.5 text-small text-ink-3 transition-[background-color,box-shadow,color,transform] duration-(--dur-fast) ease-(--ease-out) hover:text-ink motion-safe:motion-ok:active:scale-[0.96] data-pressed:bg-fabric-3 data-pressed:text-ink data-pressed:shadow-[0_0_0_1px_var(--seam)]"
+            className="burrow-control inline-flex h-6 min-w-7 items-center justify-center gap-1 rounded-sm px-1.5 text-small text-ink-3 transition-[background-color,box-shadow,color,transform] duration-(--dur-fast) ease-out hover:text-ink motion-safe:motion-ok:active:scale-[0.96] data-pressed:bg-fabric-3 data-pressed:text-ink data-pressed:shadow-[0_0_0_1px_var(--seam)]"
           >
             {o.label}
           </BToggle>

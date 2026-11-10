@@ -41,7 +41,7 @@ export const Route = createRootRoute({
           <ErrorState
             title="This view failed to render"
             message="An unexpected problem stopped this page from loading."
-            detail={error instanceof Error ? error.message : String(error)}
+            error={error}
             hint="Retry the view. If it keeps failing, share the technical details with your administrator."
             onRetry={reset}
           />

@@ -20,7 +20,7 @@ const SIZES: Record<Size, string> = {
 
 /** Anchor styled as a control for page actions and back navigation. Keep in sync with Button's default variant/md size. */
 export const ACTION_LINK_CLASS =
-  "inline-flex h-(--ctl-h) shrink-0 select-none items-center gap-2 whitespace-nowrap rounded-md border border-seam-strong bg-fabric-2 px-2.5 font-medium text-body text-ink transition-[background-color,color,transform,filter] duration-(--dur-fast) ease-(--ease-out) hover:bg-fabric-3 motion-safe:motion-ok:active:scale-[0.97]";
+  "inline-flex h-(--ctl-h) shrink-0 select-none items-center gap-2 whitespace-nowrap rounded-md border border-seam-strong bg-fabric-2 px-2.5 font-medium text-body text-ink transition-[background-color,color,transform,filter] duration-(--dur-fast) ease-out hover:bg-fabric-3 motion-safe:motion-ok:active:scale-[0.97]";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -36,7 +36,7 @@ export function Button({ variant = "default", size = "md", className, type = "bu
         "burrow-control inline-flex shrink-0 select-none items-center whitespace-nowrap rounded-md border font-medium",
         (size === "icon" || size === "icon-sm") && "burrow-control--icon",
         // press feedback is movement, so it is gated: reduced motion keeps the colour change and drops the 3% scale
-        "transition-[background-color,color,transform,filter] duration-(--dur-fast) ease-(--ease-out) motion-safe:motion-ok:active:scale-[0.97]",
+        "transition-[background-color,color,transform,filter] duration-(--dur-fast) ease-out motion-safe:motion-ok:active:scale-[0.97]",
         "disabled:pointer-events-none disabled:opacity-45 aria-disabled:opacity-45",
         VARIANTS[variant],
         SIZES[size],
@@ -63,7 +63,7 @@ export function Kbd({ children, className }: { children: React.ReactNode; classN
   return (
     <kbd
       className={cn(
-        "inline-flex shrink-0 min-w-[1.4em] items-center justify-center whitespace-nowrap rounded-xs border border-seam-strong bg-well px-1 font-mono text-micro text-ink-3 leading-[1.5]",
+        "inline-flex shrink-0 min-w-[1.4em] items-center justify-center whitespace-nowrap rounded-xs border border-seam-strong bg-well px-1 font-mono text-micro text-ink-3 leading-normal",
         className,
       )}
     >

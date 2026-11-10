@@ -9,7 +9,7 @@
  * When `/streaming/statistics` exists the page shows the statistics strip, the per-batch series (a line per REST key over
  * `batchTime`), the batch table over the newest `?size=` batches and the receiver table with its inline rate trend.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -101,15 +101,15 @@ export function StreamingPage() {
 
   // No retry: Spark's 404 for a non-streaming application is a definitive answer, and the honest state should appear
   // immediately instead of after three backoff attempts.
-  const statsQ = useQuery({ ...sp.streamingStatistics(appId, kind, attempt), retry: false });
+  const statsQ = useStableQuery({ ...sp.streamingStatistics(appId, kind, attempt), retry: false });
   const failure = statsQ.error ? classifySparkError(statsQ.error, "the streaming statistics") : null;
   /** Spark's own 404 for a non-streaming app — distinct from `backend-missing` ("unknown API group"). */
   const notStreaming = failure?.kind === "not-found";
   const streaming = statsQ.isSuccess && statsQ.data != null;
 
   // Only ask for the batch/receiver lists once Spark has confirmed there is a streaming listener.
-  const batchesQ = useQuery({ ...sp.streamingBatches(appId, kind, attempt), enabled: streaming });
-  const receiversQ = useQuery({ ...sp.streamingReceivers(appId, kind, attempt), enabled: streaming });
+  const batchesQ = useStableQuery({ ...sp.streamingBatches(appId, kind, attempt), enabled: streaming });
+  const receiversQ = useStableQuery({ ...sp.streamingReceivers(appId, kind, attempt), enabled: streaming });
 
   const stats = statsQ.data;
   const size = Math.max(1, intParam(search.size, DEFAULT_SIZE));
@@ -550,7 +550,7 @@ export function StreamingPage() {
           <h3 className="text-body font-semibold text-ink">Batches</h3>
         </div>
         <DataTable<SparkStreamingBatch>
-          className="min-h-[24rem]"
+          className="min-h-96"
           data={batches}
           columns={batchColumns}
           getRowId={(b) => String(b.batchId)}
@@ -624,7 +624,7 @@ export function StreamingPage() {
           <SparkStaleErrorBanner error={receiversQ.error} subject="the streaming receivers" onRetry={() => void receiversQ.refetch()} />
         )}
         <DataTable<SparkStreamingReceiver>
-          className="min-h-[24rem]"
+          className="min-h-96"
           data={receivers}
           columns={receiverColumns}
           getRowId={(r) => String(r.streamId ?? r.streamName ?? "receiver")}

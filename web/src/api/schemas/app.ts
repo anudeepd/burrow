@@ -120,6 +120,57 @@ export const AppsResponseSchema = obj({
 export type AppsResponse = z.infer<typeof AppsResponseSchema>;
 export const selectApps = (r: AppsResponse): App[] => r.apps?.app ?? [];
 
+/** One facet value/count pair (`computeFacets()` in the apps view has the same shape). */
+export const FacetCountSchema = obj({
+  value: z.string(),
+  count: num,
+});
+export type FacetCount = z.infer<typeof FacetCountSchema>;
+
+/** Global facet counts for the applications table; computed over the complete RM list, not the current filter. */
+export const FacetsSchema = obj({
+  total: num,
+  byState: z.record(z.string(), num).default({}),
+  byFinal: z.record(z.string(), num).default({}),
+  active: num,
+  users: list(FacetCountSchema),
+  queues: list(FacetCountSchema),
+  types: list(FacetCountSchema),
+  tags: list(FacetCountSchema),
+});
+export type Facets = z.infer<typeof FacetsSchema>;
+
+/**
+ * Metadata that accompanies a windowed application page (`GET /api/yarn/apps?window=1`).
+ * `ready:false` means the fast preview path answered: rows and facets are bounded by the RM preview and the full
+ * list is still being indexed. `total:null` therefore means "not known yet", not "zero".
+ */
+export const AppsWindowSchema = obj({
+  offset: num,
+  limit: num,
+  total: num.nullable(),
+  filteredTotal: num,
+  ready: z.boolean(),
+  partial: z.boolean(),
+  stale: z.boolean(),
+  version: num,
+  ageMs: num,
+  retryAfterMs: num.nullable().optional(),
+  refreshError: z.string().nullable().optional(),
+  facets: FacetsSchema,
+});
+export type AppsWindow = z.infer<typeof AppsWindowSchema>;
+
+/** `GET /apps?window=1` — a page slice plus the metadata needed to keep virtual scrolling coherent. */
+export const AppsWindowResponseSchema = obj({
+  apps: obj({ app: list(AppSchema) })
+    .nullable()
+    .optional(),
+  window: AppsWindowSchema.optional(),
+});
+export type AppsWindowResponse = z.infer<typeof AppsWindowResponseSchema>;
+export const selectAppsWindow = (r: AppsWindowResponse): App[] => r.apps?.app ?? [];
+
 /** `GET /apps/{id}`. */
 export const AppResponseSchema = obj({ app: AppSchema });
 export type AppResponse = z.infer<typeof AppResponseSchema>;

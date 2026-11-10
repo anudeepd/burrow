@@ -7,7 +7,7 @@
  * Spark reports an RDD here only while at least one of its blocks is still held; evicted RDDs disappear entirely, and
  * `spark.rdd` partitions are only the blocks Spark currently knows about.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import type { SortingState } from "@tanstack/react-table";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -39,7 +39,7 @@ export function StoragePage() {
 
   const q = typeof search.q === "string" ? search.q : "";
   const expandedId = intParam(search.rdd);
-  const qRdds = useQuery(sp.rdds(appId, kind, attempt));
+  const qRdds = useStableQuery(sp.rdds(appId, kind, attempt));
   const rdds = useMemo(() => qRdds.data ?? [], [qRdds.data]);
   const filtering = useMemo(() => (q ? rdds.filter((r) => matchesQuery([r.id, r.name, r.storageLevel], q)) : rdds), [rdds, q]);
   const expandedRdd = expandedId != null ? rdds.find((r) => r.id === expandedId) : undefined;
@@ -195,7 +195,7 @@ export function StoragePage() {
             </SparkEmpty>
           ) : undefined
         }
-        className="min-h-[24rem]"
+        className="min-h-96"
         data={filtering}
         columns={columns}
         getRowId={(r) => String(r.id)}

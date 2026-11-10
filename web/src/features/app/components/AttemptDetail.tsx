@@ -189,7 +189,7 @@ function DetailRow({
       <th scope="row" className="w-[38%] px-3 py-1.5 text-left align-top text-small font-medium text-ink-3">
         {label}
       </th>
-      <td className={`px-3 py-1.5 align-top break-words ${mono ? "font-mono text-caption" : "text-body"}`}>
+      <td className={`px-3 py-1.5 align-top wrap-break-word ${mono ? "font-mono text-caption" : "text-body"}`}>
         {field ? (
           <Datum field={field} raw={raw} fmt={fmt}>
             {children}

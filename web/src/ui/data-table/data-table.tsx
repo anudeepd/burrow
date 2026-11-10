@@ -125,6 +125,20 @@ export interface DataTableProps<T extends RowData> {
   empty?: ReactNode;
   /** rows before filtering, for the "n of m" readout */
   totalCount?: number;
+  /** When `data` is only a slice: total rows the virtualizer should expose. Defaults to `data.length`. */
+  rowCount?: number;
+  /** Global index of `data[0]` when `data` is a window slice. Defaults to 0. */
+  rowOffset?: number;
+  /** The server already ordered the slice; do not sort it locally. */
+  manualSorting?: boolean;
+  /** Virtualizer range changes, for a windowed table to request its next slice. */
+  onVisibleRangeChange?: (start: number, end: number) => void;
+  /** Keep the same row at the same pixel offset across window/snapshot swaps. */
+  preserveScrollAnchor?: boolean;
+  /** Changing this identity resets the scroll position to the top (filters/tabs/sort). */
+  scrollResetKey?: string;
+  /** Export every filtered row when nothing is selected (windowed tables only load a slice). */
+  exportAll?: () => Promise<readonly T[]>;
   toolbar?: ReactNode;
   /** inline toolbars share the action row whenever they fit, and wrap naturally on narrow tables */
   toolbarArrangement?: "stacked" | "inline";
@@ -204,6 +218,13 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     error,
     empty,
     totalCount,
+    rowCount,
+    rowOffset,
+    manualSorting = false,
+    onVisibleRangeChange,
+    preserveScrollAnchor = false,
+    scrollResetKey,
+    exportAll,
     toolbar,
     toolbarArrangement = "stacked",
     stableViewport = false,
@@ -239,6 +260,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     columnResizeMode: "onChange",
     enableRowSelection: !!selectable,
     enableMultiSort: true,
+    manualSorting,
     /* The legacy UI is DataTables with the default `asSorting: ['asc','desc']`: the first click on any column sorts
        ascending (every header there says "activate to sort column ascending"), and a second click flips the direction —
        there is no third "unsorted" state to land in. TanStack would otherwise infer `desc` first for numeric columns
@@ -249,6 +271,10 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   });
 
   const rows = table.getRowModel().rows as Row<TableFeatureSet, T>[];
+  const parityRows = parity ? data.length : undefined;
+  const windowed = rowCount !== undefined || rowOffset !== undefined;
+  const totalRows = parityRows ?? rowCount ?? rows.length;
+  const dataOffset = parity ? 0 : (rowOffset ?? 0);
   const leafCols = table.getVisibleLeafColumns();
   const [widthRef, viewportW] = useElementWidth<HTMLDivElement>(0);
   const explicitlySizedColumns = useMemo(() => {
@@ -323,7 +349,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     }
   }, []);
   const virt = useVirtualizer({
-    count: rows.length,
+    count: totalRows,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => rowH,
     overscan: 14,
@@ -345,13 +371,21 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   );
   const doExport = (kind: "csv" | "json") => {
     const selected = rows.filter((r) => r.getIsSelected());
-    const source = (selected.length ? selected : rows).map((r) => r.original);
-    if (kind === "csv") download(`${exportName}.csv`, "text/csv", toCsv(exportCols, source));
-    else download(`${exportName}.json`, "application/json", toJson(exportCols, source));
+    const finish = (source: readonly T[]) => {
+      if (kind === "csv") download(`${exportName}.csv`, "text/csv", toCsv(exportCols, source));
+      else download(`${exportName}.json`, "application/json", toJson(exportCols, source));
+    };
+    if (selected.length === 0 && exportAll && totalRows > rows.length) {
+      void exportAll()
+        .then(finish)
+        .catch(() => undefined);
+      return;
+    }
+    finish((selected.length ? selected : rows).map((r) => r.original));
   };
 
   const selectedCount = rows.filter((row) => row.getIsSelected()).length;
-  const showBody = !loading && !error && rows.length > 0;
+  const showBody = !loading && !error && totalRows > 0;
   const unavailable = !!error && data.length === 0;
   const hideControls = unavailable;
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -450,7 +484,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     const currentIds = dataChanged ? new Set(data.map((item) => (entityKey ? entityKey(item) : getRowId(item)))) : previous!.ids;
     // DataTable owns this behavior for every table. Compare row identities on data changes, but
     // refresh the visible-row snapshot on every commit so virtual scrolling cannot look like removal.
-    if (previous && previous.data !== data && previous.ready && previous.identity === contentIdentity && motionAllowed()) {
+    if (previous && previous.data !== data && previous.ready && previous.identity === contentIdentity && motionAllowed() && !windowed) {
       const duration = tokenMs(scroller, "--dur-content", 220);
       if (duration > 0) {
         const exitLayer = exitLayerRef.current!;
@@ -568,7 +602,20 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   }, [rowH, syncScrollCues]);
   useLayoutEffect(() => {
     measureTable();
-  }, [measureTable, data, rows.length, loading, error, contentIdentity, toolbar, toolbarArrangement, className, stableViewport, rowH]);
+  }, [
+    measureTable,
+    data,
+    rows.length,
+    totalRows,
+    loading,
+    error,
+    contentIdentity,
+    toolbar,
+    toolbarArrangement,
+    className,
+    stableViewport,
+    rowH,
+  ]);
   useLayoutEffect(() => {
     const root = rootRef.current!;
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measureTable);
@@ -594,8 +641,21 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
       : undefined;
   const vItems = parity ? null : virt.getVirtualItems();
 
-  const renderRow = (index: number, offset: number | null) => {
-    const row = rows[index]!;
+  const renderRow = (index: number, offset: number) => {
+    const local = index - dataOffset;
+    const row = local >= 0 && local < rows.length ? rows[local] : undefined;
+    if (!row) {
+      return (
+        <PlaceholderRow
+          key={`placeholder-${index}`}
+          index={index}
+          height={rowH}
+          offset={offset}
+          width={totalWidth}
+          columns={leafCols.length + (selectable ? 1 : 0)}
+        />
+      );
+    }
     return (
       <TableRow
         key={row.id}
@@ -618,6 +678,60 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
       />
     );
   };
+
+  /*
+   * Window/snapshot swaps can change a row's global index (preview -> complete list, inserts above the viewport).
+   * Capture the first mounted row and its pixel position, then compensate before paint so the user keeps looking
+   * at the same application. Fixed row height makes the correction exact.
+   */
+  const anchorRef = useRef<{ id: string; index: number } | null>(null);
+  const previousWindowRef = useRef<{ data: readonly T[]; rowOffset: number } | null>(null);
+  const scrollResetRef = useRef(scrollResetKey);
+  const captureAnchor = () => {
+    const scroller = scrollRef.current;
+    if (!scroller || !(preserveScrollAnchor || windowed)) return;
+    const index = Math.floor((scroller.scrollTop + 1) / rowH);
+    const local = index - dataOffset;
+    const row = local >= 0 && local < rows.length ? rows[local] : undefined;
+    anchorRef.current = row ? { id: getRowId(row.original as T), index } : null;
+  };
+  const captureAnchorRef = useRef(captureAnchor);
+  captureAnchorRef.current = captureAnchor;
+  useLayoutEffect(() => {
+    const scroller = scrollRef.current!;
+    if (scrollResetRef.current !== scrollResetKey) {
+      scrollResetRef.current = scrollResetKey;
+      anchorRef.current = null;
+      previousWindowRef.current = null;
+      scroller.scrollTop = 0;
+    } else {
+      const previous = previousWindowRef.current;
+      const anchor = anchorRef.current;
+      if (previous && anchor && (preserveScrollAnchor || windowed) && previous.data !== data) {
+        const local = data.findIndex((item) => getRowId(item) === anchor.id);
+        if (local >= 0) {
+          const nextIndex = dataOffset + local;
+          const delta = nextIndex - anchor.index;
+          if (delta !== 0) scroller.scrollTop = Math.max(0, scroller.scrollTop + delta * rowH);
+        }
+      }
+    }
+    previousWindowRef.current = { data, rowOffset: dataOffset };
+    captureAnchorRef.current();
+  }, [data, dataOffset, getRowId, rowH, scrollResetKey, preserveScrollAnchor, rows, windowed]);
+
+  const lastRangeRef = useRef("");
+  useEffect(() => {
+    if (!onVisibleRangeChange || parity) return;
+    const items = virt.getVirtualItems();
+    if (items.length === 0) return;
+    const start = items[0]!.index;
+    const end = items[items.length - 1]!.index;
+    const key = `${start}:${end}`;
+    if (key === lastRangeRef.current) return;
+    lastRangeRef.current = key;
+    onVisibleRangeChange(start, end);
+  });
 
   return (
     <div
@@ -765,14 +879,17 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
           }}
           role="table"
           aria-label={label}
-          aria-rowcount={rows.length + 1}
+          aria-rowcount={totalRows + 1}
           aria-colcount={leafCols.length + (selectable ? 1 : 0)}
           // biome-ignore lint/a11y/noNoninteractiveTabindex: the native scrollport needs keyboard scrolling for overflow columns and rows.
           tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
           aria-busy={loading || undefined}
-          onScroll={syncScrollCues}
+          onScroll={() => {
+            syncScrollCues();
+            captureAnchorRef.current();
+          }}
           data-burrow-table={storageKey}
-          data-burrow-rows={rows.length}
+          data-burrow-rows={totalRows}
           className="burrow-scroll burrow-table-scroll relative min-h-0 min-w-0 flex-1 overflow-auto"
         >
           {/* the cap effect measures this box (header block + rows) */}
@@ -801,7 +918,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                           if (el) el.indeterminate = table.getIsSomeRowsSelected();
                         }}
                         onChange={table.getToggleAllRowsSelectedHandler()}
-                        className="size-3.5 accent-(--live)"
+                        className="size-3.5 accent-live"
                       />
                     </div>
                   )}
@@ -857,7 +974,7 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                               // one glyph that rotates: a swap between two mounts could not be transitioned at all
                               <ArrowUp
                                 className={cn(
-                                  "size-3 shrink-0 text-live transition-transform duration-(--dur-fast) ease-(--ease-out)",
+                                  "size-3 shrink-0 text-live transition-transform duration-(--dur-fast) ease-out",
                                   sort === "desc" && "rotate-180",
                                 )}
                                 aria-hidden="true"
@@ -897,13 +1014,10 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
             <div
               ref={bodyRef}
               role="rowgroup"
-              className={cn(
-                "relative transition-opacity duration-(--dur-content) ease-(--ease-out)",
-                showBody ? "opacity-100" : "opacity-0",
-              )}
-              style={parity || !showBody ? undefined : { height: rows.length * rowH }}
+              className={cn("relative transition-opacity duration-(--dur-content) ease-out", showBody ? "opacity-100" : "opacity-0")}
+              style={parity || !showBody ? undefined : { height: totalRows * rowH }}
             >
-              {showBody && (parity ? rows.map((_, i) => renderRow(i, null)) : vItems?.map((v) => renderRow(v.index, v.start)))}
+              {showBody && (parity ? rows.map((_, i) => renderRow(i, 0)) : vItems?.map((v) => renderRow(v.index, v.start)))}
             </div>
           </div>
         </div>
@@ -933,9 +1047,9 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
               <Skeleton className="h-2.5 w-12" />
             ) : !unavailable ? (
               <span className="tnum">
-                {rows.length.toLocaleString("en-US")}
-                {totalCount != null && totalCount !== rows.length ? ` of ${totalCount.toLocaleString("en-US")}` : ""}{" "}
-                {rows.length === 1 ? "row" : "rows"}
+                {totalRows.toLocaleString("en-US")}
+                {totalCount != null && totalCount !== totalRows ? ` of ${totalCount.toLocaleString("en-US")}` : ""}{" "}
+                {totalRows === 1 ? "row" : "rows"}
               </span>
             ) : null}
           </div>
@@ -956,12 +1070,38 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   );
 }
 
+interface PlaceholderRowProps {
+  index: number;
+  height: number;
+  offset: number;
+  width: number;
+  columns: number;
+}
+
+/** A not-yet-loaded row in a windowed table. It reserves the exact row height/index so scrolling and anchoring stay
+ *  stable while the next slice is in flight. */
+function PlaceholderRow({ index, height, offset, width, columns }: PlaceholderRowProps) {
+  return (
+    <div
+      role="row"
+      aria-rowindex={index + 2}
+      data-placeholder="true"
+      className="burrow-row burrow-row-placeholder absolute left-0 flex items-stretch border-b border-seam-soft"
+      style={{ height, width, transform: `translateY(${offset}px)` }}
+    >
+      <div role="cell" aria-colspan={Math.max(1, columns)} className="flex min-w-0 flex-1 items-center px-(--cell-px)">
+        <Skeleton className="h-3 w-48 max-w-full" />
+      </div>
+    </div>
+  );
+}
+
 interface TableRowProps<T extends RowData> {
   row: Row<TableFeatureSet, T>;
   index: number;
   entity: string;
   height: number;
-  offset: number | null;
+  offset: number;
   width: number;
   /** fill factor applied to every cell so the row reaches the viewport's right edge (1 = columns already wider) */
   grow: number;
@@ -1027,7 +1167,7 @@ const TableRowInner = <T extends RowData>({
         parity && "burrow-row-static",
         !parity && "absolute left-0",
       )}
-      style={{ height, width, ...(offset == null ? {} : { transform: `translateY(${offset}px)` }) }}
+      style={{ height, width, transform: `translateY(${offset}px)` }}
       onClick={onActivate}
     >
       <span ref={flashRef} aria-hidden="true" className="pointer-events-none absolute inset-0 bg-live opacity-0" />
@@ -1046,7 +1186,7 @@ const TableRowInner = <T extends RowData>({
             aria-label={`Select ${entity}`}
             checked={selected}
             onChange={row.getToggleSelectedHandler()}
-            className="size-3.5 accent-(--live)"
+            className="size-3.5 accent-live"
           />
         </div>
       )}

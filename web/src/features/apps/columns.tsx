@@ -11,7 +11,7 @@
  * the formatted text, and `data-yfmt` tells the parity harness which normaliser to use. Where the legacy table showed
  * "N/A" for a sentinel value, the sentinel stays in `data-yv` and only the visible text changes.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link } from "@tanstack/react-router";
 import { q } from "~/api/queries";
 import { adaptive } from "~/api/refetch";
@@ -59,7 +59,7 @@ function gpuCell(app: App, field: string, value: number | undefined) {
 export function BlacklistedCell({ appId }: { appId: string }) {
   const parity = useParity();
   const query = q.appAttempts(appId);
-  const attempts = useQuery({
+  const attempts = useStableQuery({
     ...query,
     ...adaptive("slow", query.meta),
     staleTime: parity ? Number.POSITIVE_INFINITY : 60_000,

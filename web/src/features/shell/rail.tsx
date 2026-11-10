@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { q } from "~/api/queries";
@@ -18,7 +18,7 @@ const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : us
 
 /** Live figures for the rail badges. One query (cluster metrics) feeds every badge. */
 function useBadges(): Record<NavBadge, number> {
-  const { data } = useQuery(q.metrics());
+  const { data } = useStableQuery(q.metrics());
   return useMemo(
     () => ({
       running: data?.appsRunning ?? 0,
@@ -53,7 +53,7 @@ function Badge({ kind, value, collapsed }: { kind: NavBadge; value: number; coll
     <Tooltip label={label}>
       <span
         className={cn(
-          "relative z-10 ml-auto shrink-0 rounded-full px-1.5 text-micro leading-[1.5] tnum",
+          "relative z-10 ml-auto shrink-0 rounded-full px-1.5 text-micro leading-normal tnum",
           kind === "warnNodes"
             ? "bg-[color-mix(in_oklch,var(--warn)_18%,transparent)] text-warn"
             : kind === "running"
@@ -97,7 +97,7 @@ function RailItem({
       aria-label={collapsed ? item.label : undefined}
       className={cn(
         "burrow-nav-link relative flex h-9 shrink-0 items-center gap-2.5 rounded-sm px-2 text-body text-ink-2 outline-offset-2",
-        "transition-[background-color,color] duration-(--dur-base) ease-(--ease-out) hover:text-ink",
+        "transition-[background-color,color] duration-(--dur-base) ease-out hover:text-ink",
         "data-[status=active]:text-ink",
       )}
     >
@@ -206,7 +206,7 @@ export function Rail({ inDrawer = false, className, onNavigate }: { inDrawer?: b
   const { pathname } = useLocation();
   const navRef = useRef<HTMLElement>(null);
   const [selection, setSelection] = useState<{ top: number } | null>(null);
-  const { data: meta } = useQuery(q.meta());
+  const { data: meta } = useStableQuery(q.meta());
   const consecutiveFailures = useConnection((s) => s.consecutiveFailures);
   const lastCache = useConnection((s) => s.lastCache);
 

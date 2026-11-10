@@ -6,33 +6,33 @@ import { errorInfo, useRemote } from "./hooks";
 describe("scheduler remote query helpers", () => {
   it("maps empty, ordinary, schema, unreachable, and upstream errors to useful states", () => {
     expect(errorInfo(null)).toEqual({ title: "Something went wrong", message: "No error detail was provided." });
-    expect(errorInfo(new Error("offline"))).toEqual({ title: "Request failed", message: "offline" });
-    expect(errorInfo(new ApiError("bad shape", "schema", 200, null, null, "Check the daemon version."))).toEqual({
+
+    const ordinary = errorInfo(new Error("offline"));
+    expect(ordinary).toMatchObject({ title: "Request failed", message: "offline" });
+    expect(ordinary.detail).toContain('"name": "Error"');
+
+    const schema = errorInfo(new ApiError("bad shape", "schema", 200, null, null, "Check the daemon version."));
+    expect(schema).toMatchObject({
       title: "Unexpected response shape",
       message: "bad shape",
       hint: "Check the daemon version.",
-      detail: undefined,
     });
-    expect(errorInfo(new ApiError("offline", "network", null))).toEqual({
-      title: "Cannot reach the ResourceManager",
-      message: "offline",
-      hint: undefined,
-      detail: undefined,
-    });
-    expect(errorInfo(new ApiError("rejected", "http", 400, null, { url: "/api/yarn/scheduler" }, null))).toEqual({
-      title: "The ResourceManager returned an error",
-      message: "rejected",
-      hint: undefined,
-      detail: "/api/yarn/scheduler",
-    });
-    expect(
-      errorInfo(new ApiError("upstream unavailable", "http", 502, null, { url: "/api/yarn/scheduler", status: 503 }, "Retry")),
-    ).toEqual({
-      title: "Cannot reach the ResourceManager",
-      message: "upstream unavailable",
-      hint: "Retry",
-      detail: "/api/yarn/scheduler → HTTP 503",
-    });
+    expect(schema.detail).toContain('"kind": "schema"');
+
+    const network = errorInfo(new ApiError("offline", "network", null));
+    expect(network).toMatchObject({ title: "Cannot reach the ResourceManager", message: "offline" });
+    expect(network.detail).toContain('"kind": "network"');
+
+    const rejected = errorInfo(new ApiError("rejected", "http", 400, null, { url: "/api/yarn/scheduler" }, null));
+    expect(rejected).toMatchObject({ title: "The ResourceManager returned an error", message: "rejected" });
+    expect(rejected.detail).toContain('"url": "/api/yarn/scheduler"');
+
+    const upstream = errorInfo(
+      new ApiError("upstream unavailable", "http", 502, null, { url: "/api/yarn/scheduler", status: 503 }, "Retry"),
+    );
+    expect(upstream).toMatchObject({ title: "Cannot reach the ResourceManager", message: "upstream unavailable", hint: "Retry" });
+    expect(upstream.detail).toContain('"url": "/api/yarn/scheduler"');
+    expect(upstream.detail).toContain('"status": 503');
   });
 
   it("exposes query data, loading/fetching, stale status, and retry", () => {

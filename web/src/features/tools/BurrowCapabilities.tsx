@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { ov } from "~/api/queries/overview";
 import { useConnection } from "~/api/connection";
 import type { Meta, MetaService } from "~/api/schemas";
@@ -33,7 +33,7 @@ function serviceState(service: MetaService): "configured" | "reachable" | "unrea
 }
 
 export function BurrowCapabilities() {
-  const meta = useQuery(ov.meta());
+  const meta = useStableQuery(ov.meta());
   const lastOkAt = useConnection((state) => state.lastOkAt);
   const failures = useConnection((state) => state.consecutiveFailures);
   const lastError = useConnection((state) => state.lastError);
@@ -76,7 +76,7 @@ export function BurrowCapabilities() {
         <ErrorState
           compact
           title={capabilities ? "Capability refresh failed; showing the last loaded data" : "Could not load Burrow capabilities"}
-          message={meta.error instanceof Error ? meta.error.message : String(meta.error)}
+          error={meta.error}
           onRetry={() => void meta.refetch()}
         />
       )}

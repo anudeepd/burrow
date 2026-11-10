@@ -77,7 +77,9 @@ export default defineConfig({
           BURROW_WEB_ROOT: resolve(BUILD_DIR, "client"),
           BURROW_WEB_TARGET: "dist",
           MOCK_PORT: String(PORT),
-          MOCK_FROZEN: process.env.CI ? "1" : "0",
+          // Screenshots and DOM assertions must not depend on the wall clock. CI already froze the cluster;
+          // freeze it locally too so the same baseline is valid across runs. Set PW_MOCK_FROZEN=0 to opt out.
+          MOCK_FROZEN: process.env.PW_MOCK_FROZEN ?? "1",
           MOCK_NO_NEW_APPS: "1",
         },
         url: `${BASE_URL}/api/healthz`,

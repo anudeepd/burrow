@@ -10,7 +10,7 @@
  */
 import { useCallback, useMemo } from "react";
 import { RotateCw } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "~/ui/button";
 import { CenteredPageState, ErrorState, EmptyState } from "~/ui/feedback";
@@ -50,8 +50,8 @@ export function SchedulerPage({
   patch: (p: Partial<SchedulerSearch>, options?: { resetScroll?: boolean }) => void;
 }) {
   const navigate = useNavigate();
-  const infoQ = useRemote(useQuery(schedulerQuery()));
-  const metricsQ = useRemote(useQuery(q.metrics()));
+  const infoQ = useRemote(useStableQuery(schedulerQuery()));
+  const metricsQ = useRemote(useStableQuery(q.metrics()));
   const info = infoQ.data;
   const kind = info ? schedKindOf(info) : "unknown";
   const tab = search.tab ?? "queues";
@@ -96,16 +96,16 @@ export function SchedulerPage({
 
   const wantActivities = tab === "activities";
   const actQ = useRemote(
-    useQuery({ ...schedulerActivitiesQuery({ nodeId: search.nodeId, groupBy: search.groupBy }), enabled: wantActivities }),
+    useStableQuery({ ...schedulerActivitiesQuery({ nodeId: search.nodeId, groupBy: search.groupBy }), enabled: wantActivities }),
   );
-  const nodesQ = useRemote(useQuery({ ...nodesQuery(), enabled: tab === "queues" || tab === "activities" }));
+  const nodesQ = useRemote(useStableQuery({ ...nodesQuery(), enabled: tab === "queues" || tab === "activities" }));
   const confQ = useRemote(
-    useQuery({
+    useStableQuery({
       ...schedulerConfQuery(kind === "capacity" ? "capacityScheduler" : undefined),
       enabled: tab === "conf" && kind === "capacity",
     }),
   );
-  const jmxQ = useRemote(useQuery({ ...q.rmJmx(JMX_QUEUE_METRICS), enabled: tab === "health" && kind === "capacity" }));
+  const jmxQ = useRemote(useStableQuery({ ...q.rmJmx(JMX_QUEUE_METRICS), enabled: tab === "health" && kind === "capacity" }));
 
   if (infoQ.loading) {
     return (
@@ -167,7 +167,7 @@ export function SchedulerPage({
       data-page-motion="content"
       className={cn(
         "burrow-scroll burrow-page-scroll burrow-page-scroll--stable flex min-h-0 flex-1 flex-col overflow-y-auto",
-        tab !== "conf" && "[&>*]:shrink-0",
+        tab !== "conf" && "*:shrink-0",
         tab === "conf" && "pb-6",
       )}
     >

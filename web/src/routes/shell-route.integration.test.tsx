@@ -118,7 +118,8 @@ describe("top-level route screens", () => {
     });
     render(<RouterProvider router={router} />, { container: document });
     expect(await screen.findByRole("heading", { name: "This view failed to render" })).toBeTruthy();
-    expect(screen.getByText(/broken route fixture/)).toBeTruthy();
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(await screen.findByText(/broken route fixture/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Retry now" })).toBeTruthy();
     expect(document.documentElement.getAttribute("data-parity")).toBe("1");
   });
@@ -141,6 +142,7 @@ describe("top-level route screens", () => {
     parityStore.setState(() => ({ enabled: false }));
     document.documentElement.removeAttribute("data-parity");
     render(<RouterProvider router={router} />, { container: document });
+    fireEvent.click(await screen.findByText("Technical details"));
     expect(await screen.findByText(/broken route fixture/)).toBeTruthy();
     expect(document.documentElement.hasAttribute("data-parity")).toBe(false);
   });

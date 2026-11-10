@@ -231,7 +231,7 @@ export function PlanTree({
                     >
                       {/* one glyph that rotates rather than a swap between two mounts */}
                       <ChevronDown
-                        className={cn("size-3 transition-transform duration-(--dur-fast) ease-(--ease-out)", isCollapsed && "-rotate-90")}
+                        className={cn("size-3 transition-transform duration-(--dur-fast) ease-out", isCollapsed && "-rotate-90")}
                         aria-hidden="true"
                       />
                     </button>

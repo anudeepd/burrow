@@ -4,20 +4,22 @@
  *
  * "Spark-source banner on every spark page" is satisfied structurally: there is no Spark route that bypasses this frame.
  */
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useRouter, useSearch } from "@tanstack/react-router";
 import { Activity, DatabaseZap, History, Pause, TriangleAlert } from "lucide-react";
 import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { ApiError } from "~/api/client";
+import { useStableQuery } from "~/api/use-stable-query";
 import type { RefetchKind } from "~/api/refetch";
 import { cn } from "~/lib/cn";
 import { fmtEpoch } from "~/lib/format";
+import { errorDetails, simpleErrorText } from "~/lib/error-details";
 import { useParity } from "~/state/parity";
 import { usePref } from "~/state/prefs";
 import { Button } from "~/ui/button";
 import { RouteTabIndicator, TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
 import { Datum, Entity } from "~/ui/datum";
-import { ErrorState, Skeleton } from "~/ui/feedback";
+import { ErrorState, Skeleton, TechnicalDetails } from "~/ui/feedback";
 import { HorizontalScrollCues, useHorizontalScrollCues } from "~/ui/horizontal-scroll-cues";
 import { Select } from "~/ui/select";
 import { parseSparkTime } from "../data/format";
@@ -60,9 +62,10 @@ export function attemptValue(a: SparkAttempt, index: number): string {
 export function SparkShell({ appId, children }: { appId: string; children: ReactNode }) {
   const rawSearch = useSearch({ strict: false }) as Record<string, unknown>;
   const attempt = typeof rawSearch.attempt === "string" ? rawSearch.attempt : rawSearch.attempt != null ? String(rawSearch.attempt) : null;
-  const sourceQ = useQuery(sp.source(appId, attempt));
+  const sourceQ = useStableQuery(sp.source(appId, attempt));
   const previewKind: RefetchKind = "live";
-  const appQ = useQuery(sp.application(appId, sourceQ.data?.mode === "history" ? "static" : previewKind));
+  const appQ = useStableQuery(sp.application(appId, sourceQ.data?.mode === "history" ? "static" : previewKind));
+  const applicationError = appQ.error;
 
   const source: SparkSource | null = sourceQ.data ?? null;
   const application: SparkApplication | null = appQ.data ?? null;
@@ -101,7 +104,7 @@ export function SparkShell({ appId, children }: { appId: string; children: React
           source={source}
           sourceError={sourceQ.error}
           onRetrySource={() => void sourceQ.refetch()}
-          applicationError={appQ.error}
+          applicationError={applicationError}
           onRetryApplication={() => void appQ.refetch()}
           attempts={attempts}
           attempt={attempt}
@@ -231,6 +234,7 @@ function SparkHeader({
             application ? "Spark application refresh failed; showing the last loaded details" : "Could not load Spark application details"
           }
           message={applicationError instanceof Error ? applicationError.message : String(applicationError)}
+          error={applicationError}
           onRetry={onRetryApplication}
         />
       )}
@@ -281,15 +285,19 @@ function SourceBanner({ source, error, onRetry }: { source: SparkSource | null; 
       <div
         role="status"
         data-burrow-source="unavailable"
-        className="flex flex-wrap items-center gap-2 rounded-md border border-seam bg-fabric-2 px-3 py-2 text-small text-ink-2"
+        className="flex flex-col gap-1 rounded-md border border-seam bg-fabric-2 px-3 py-2 text-small text-ink-2"
       >
-        <TriangleAlert className="size-3.5 shrink-0 text-(--tone) burrow-tone-warn" aria-hidden="true" />
-        <OptionalTooltip label={missing ? f.message : undefined}>
-          <span className="font-medium">{missing ? "No Spark routes in this backend build" : "Spark source check failed"}</span>
-        </OptionalTooltip>
-        <Button variant="quiet" size="sm" onClick={onRetry}>
-          Retry
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <TriangleAlert className="size-3.5 shrink-0 text-(--tone) burrow-tone-warn" aria-hidden="true" />
+          <OptionalTooltip label={missing ? f.message : undefined}>
+            <span className="font-medium">{missing ? "No Spark routes in this backend build" : "Spark source check failed"}</span>
+          </OptionalTooltip>
+          {!missing && <span className="min-w-0 flex-1 basis-48 wrap-anywhere line-clamp-2 text-ink-3">{simpleErrorText(f.message)}</span>}
+          <Button variant="quiet" size="sm" onClick={onRetry}>
+            Retry
+          </Button>
+        </div>
+        <TechnicalDetails detail={errorDetails(error)} />
       </div>
     );
   }

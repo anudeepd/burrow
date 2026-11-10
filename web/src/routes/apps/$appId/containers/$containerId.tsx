@@ -4,7 +4,7 @@
  * The container id encodes its attempt, so the attempt id (needed by the RM's REST path) is recovered from it exactly
  * the way the RM does; `?attempt=` overrides that when the caller knows better.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ApiError } from "~/api/client";
 import { q } from "~/api/queries";
@@ -25,7 +25,7 @@ function ContainerRoute() {
   const { appId, containerId } = Route.useParams();
   const search = Route.useSearch();
   const attemptId = search.attempt ?? attemptIdFromContainerId(containerId);
-  const container = useQuery({ ...q.appContainer(appId, attemptId ?? "", containerId), enabled: attemptId != null });
+  const container = useStableQuery({ ...q.appContainer(appId, attemptId ?? "", containerId), enabled: attemptId != null });
   const now = useNow(container.data?.container.finishedTime === 0);
 
   if (!attemptId) {
@@ -73,7 +73,7 @@ function ContainerRoute() {
               ? "The ResourceManager removes container records when an attempt finishes."
               : "The ResourceManager did not return this container."
           }
-          detail={!gone && err instanceof Error ? err.message : undefined}
+          error={gone ? undefined : err}
           hint={
             gone ? "Open the attempt to review its remaining details and aggregated logs." : "Check the connection and retry the request."
           }

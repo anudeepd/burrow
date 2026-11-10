@@ -12,6 +12,7 @@ import { Entity, Datum } from "~/ui/datum";
 import { StatusPill } from "~/ui/status";
 import { Tooltip, OptionalTooltip } from "~/ui/tooltip";
 import { MenuItem } from "~/ui/menu";
+import { TechnicalDetails } from "~/ui/feedback";
 import { normalizeSegments } from "~/ui/progress-bar";
 import { fmtBytes, fmtDuration, fmtInt, fmtPct } from "~/lib/format";
 import type { Fmt } from "~/lib/format";
@@ -400,7 +401,7 @@ export function StageDrawer({ open, onClose, node, metric, now, stageHref, rddHr
         <Entity id={entityKey} className="flex w-full min-w-0 flex-col gap-3 p-3">
           <header className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h2 className="break-words text-lead font-semibold text-ink">{node.node.label}</h2>
+              <h2 className="wrap-break-word text-lead font-semibold text-ink">{node.node.label}</h2>
               <p className="truncate text-caption text-ink-3">
                 {node.node.kind === "sql"
                   ? "physical operator"
@@ -531,7 +532,7 @@ export function StageDrawer({ open, onClose, node, metric, now, stageHref, rddHr
           {node.node.detail ? (
             <section className="flex flex-col gap-1">
               <h3 className="text-caption font-semibold text-ink-2">Plan line</h3>
-              <p className="mono min-w-0 break-words whitespace-pre-line text-micro text-ink-3">{node.node.detail}</p>
+              <p className="mono min-w-0 wrap-break-word whitespace-pre-line text-micro text-ink-3">{node.node.detail}</p>
             </section>
           ) : null}
 
@@ -635,7 +636,7 @@ export function EdgeDrawer({ open, onClose, edge, graphKind, metrics, producer, 
             <div className="min-w-0">
               <h2 className="text-lead font-semibold text-ink">{title}</h2>
               <OptionalTooltip label={`${fromLabel} → ${toLabel}`}>
-                <p className="break-words text-caption text-ink-3">
+                <p className="wrap-break-word text-caption text-ink-3">
                   {fromLabel} → {toLabel}
                 </p>
               </OptionalTooltip>
@@ -697,7 +698,7 @@ export function DagLoadingPanel({ detail, hidden = false }: { detail?: string; h
         {[0, 1, 2].map((node) => (
           <Fragment key={node}>
             {node > 0 ? <span className="h-px w-3 shrink-0 bg-seam-strong" /> : null}
-            <span className="flex h-12 w-[4.5rem] shrink-0 flex-col justify-center gap-1.5 rounded-md border border-seam bg-fabric px-2">
+            <span className="flex h-12 w-18 shrink-0 flex-col justify-center gap-1.5 rounded-md border border-seam bg-fabric px-2">
               <span className="burrow-skeleton block h-1.5 w-6 rounded-sm" data-visible="true" />
               <span className="burrow-skeleton block h-1.5 w-full rounded-sm" data-visible="true" />
               <span className="burrow-skeleton block h-1.5 w-8 rounded-sm" data-visible="true" />
@@ -711,11 +712,22 @@ export function DagLoadingPanel({ detail, hidden = false }: { detail?: string; h
   );
 }
 
-export function DagStatePanel({ title, detail, action }: { title: string; detail?: string; action?: React.ReactNode }) {
+export function DagStatePanel({
+  title,
+  detail,
+  technicalDetail,
+  action,
+}: {
+  title: string;
+  detail?: string;
+  technicalDetail?: React.ReactNode;
+  action?: React.ReactNode;
+}) {
   return (
     <div className="burrow-dag-state" role="status" data-testid="dag-state">
       <p className="text-lead font-semibold text-ink-2">{title}</p>
       {detail ? <p className="text-caption text-ink-3">{detail}</p> : null}
+      {technicalDetail ? <TechnicalDetails detail={technicalDetail} className="mt-2 text-left" /> : null}
       {action ? <div className="mt-1 flex justify-center">{action}</div> : null}
     </div>
   );

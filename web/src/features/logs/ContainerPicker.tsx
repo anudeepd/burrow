@@ -6,13 +6,15 @@
  * carry the JobHistory aggregated-log URL (`logsLink`). Those are the primary source here; the live-container list is
  * shown when the RM still holds it, and a paste box covers the genuinely-unknown case (no attempts, no containers).
  */
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
 import { useState } from "react";
 import { q } from "~/api/queries";
+import { useStableQueries, useStableQuery } from "~/api/use-stable-query";
 import { type AppAttempt, selectAppAttempts, selectContainers } from "~/api/schemas";
 import { attemptIdFromContainerId } from "~/features/app/model";
+import { describeError } from "~/lib/error-details";
 import { Button } from "~/ui/button";
 import { Datum, Entity } from "~/ui/datum";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
@@ -55,20 +57,22 @@ interface AmRow {
 }
 
 export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
-  const attempts = useQuery(q.appAttempts(appId));
+  const attempts = useStableQuery(q.appAttempts(appId));
   const list = selectAppAttempts(attempts.data ?? {});
   const [manual, setManual] = useState("");
 
-  const containerQueries = useQueries({
-    queries: list.map((a: AppAttempt) => ({ ...q.appContainers(appId, a.appAttemptId), enabled: !!a.appAttemptId })),
-  });
+  const containerOptions = list.map((a: AppAttempt) => ({ ...q.appContainers(appId, a.appAttemptId), enabled: !!a.appAttemptId }));
+  const containerQueries = useStableQueries(
+    useQueries({ queries: containerOptions }),
+    containerOptions.map((options) => options.queryKey),
+  );
 
   if (attempts.isError && !attempts.data) {
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         <ErrorState
           title="Could not load application attempts"
-          message={attempts.error instanceof Error ? attempts.error.message : String(attempts.error)}
+          error={attempts.error}
           hint="The attempt list supplies the ApplicationMaster container ids and aggregated-log locations. Retry the ResourceManager request or open a container by id below."
           onRetry={() => void attempts.refetch()}
         />
@@ -106,13 +110,13 @@ export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
       {
         query,
         attemptId: attempt.appAttemptId,
-        message: query.error instanceof Error ? query.error.message : String(query.error),
+        message: describeError(query.error).message,
       },
     ];
   });
   const failedContainerSummary = failedContainerQueries
     .slice(0, 3)
-    .map(({ attemptId, message }) => `${attemptId}: ${message || "Unknown error"}`)
+    .map(({ attemptId, message }) => `${attemptId}: ${message}`)
     .join(" · ");
 
   return (
@@ -124,12 +128,7 @@ export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
         </div>
       )}
       {attempts.isError && (
-        <ErrorState
-          compact
-          title="Could not refresh application attempts"
-          message={attempts.error instanceof Error ? attempts.error.message : String(attempts.error)}
-          onRetry={() => void attempts.refetch()}
-        />
+        <ErrorState compact title="Could not refresh application attempts" error={attempts.error} onRetry={() => void attempts.refetch()} />
       )}
       {failedContainerQueries.length > 0 && (
         <ErrorState
@@ -139,6 +138,7 @@ export function ContainerPicker({ appId, onPick }: ContainerPickerProps) {
             failedContainerQueries.length > 3 ? ` · ${failedContainerQueries.length - 3} more failed.` : ""
           }`}
           hint="ApplicationMaster rows and any successful lookups remain available."
+          error={failedContainerQueries.map(({ attemptId, query }) => ({ attemptId, error: query.error }))}
           onRetry={() => void Promise.all(failedContainerQueries.map(({ query }) => query.refetch()))}
         />
       )}

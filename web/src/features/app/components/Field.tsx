@@ -43,7 +43,7 @@ export function FieldShell({
         <span className="min-w-0">{label}</span>
         {hint && <HelpTip label={typeof label === "string" ? label.replace(/:$/, "") : "Field details"}>{hint}</HelpTip>}
       </dt>
-      <dd className={cn("min-w-0 text-body break-words", valueClassName)}>{children}</dd>
+      <dd className={cn("min-w-0 text-body wrap-break-word", valueClassName)}>{children}</dd>
     </div>
   );
 }
@@ -224,7 +224,7 @@ export function Section({
     return (
       <section id={id} className={cn("flex min-w-0 flex-col gap-2", className)}>
         <header className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
-          <h2 className="min-w-0 break-words text-h3">{title}</h2>
+          <h2 className="min-w-0 wrap-break-word text-h3">{title}</h2>
           {actions && <div className="flex min-w-0 flex-wrap items-center gap-2">{actions}</div>}
         </header>
         {children}
@@ -234,7 +234,7 @@ export function Section({
   return (
     <section id={id} className={cn("rounded-lg border border-seam bg-fabric", className)}>
       <header className="flex min-w-0 min-h-9 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-seam-soft px-3 py-1.5">
-        <h2 className="min-w-0 flex-1 break-words text-small font-semibold tracking-wide text-ink-2 uppercase">{title}</h2>
+        <h2 className="min-w-0 flex-1 wrap-break-word text-small font-semibold tracking-wide text-ink-2 uppercase">{title}</h2>
         {actions && <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5">{actions}</div>}
       </header>
       <div className="p-3">{children}</div>

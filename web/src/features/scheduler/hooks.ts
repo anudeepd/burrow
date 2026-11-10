@@ -25,9 +25,12 @@ export function useRemote<T>(q: UseQueryResult<T, Error>): Remote<T> {
   };
 }
 
+import { describeError } from "~/lib/error-details";
+
 /** Human-facing error text + the actionable hint the API envelope carries. */
 export function errorInfo(e: ApiError | Error | null): { title: string; message: string; hint?: string; detail?: string } {
   if (!e) return { title: "Something went wrong", message: "No error detail was provided." };
+  const described = describeError(e);
   if (e instanceof ApiError) {
     return {
       title:
@@ -36,10 +39,10 @@ export function errorInfo(e: ApiError | Error | null): { title: string; message:
           : e.isUnreachable
             ? "Cannot reach the ResourceManager"
             : "The ResourceManager returned an error",
-      message: e.message,
-      hint: e.hint ?? undefined,
-      detail: e.upstream ? `${e.upstream.url}${e.upstream.status ? ` → HTTP ${e.upstream.status}` : ""}` : undefined,
+      message: described.message,
+      hint: described.hint,
+      detail: described.details,
     };
   }
-  return { title: "Request failed", message: e.message };
+  return { title: "Request failed", message: described.message, detail: described.details };
 }

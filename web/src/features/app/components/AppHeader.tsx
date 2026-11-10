@@ -5,7 +5,7 @@
  * repeated nowhere else except the overview tab's labelled InfoBlock rows — both carry the same field ids, which the
  * parity contract explicitly allows (rule 1: every occurrence must agree with the upstream value).
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { useLocation } from "@tanstack/react-router";
 import { ExternalLink, Tag } from "lucide-react";
 import type { App, AppAttempt } from "~/api/schemas";
@@ -55,11 +55,11 @@ export function AppHeader({
   insideSpark?: boolean;
   className?: string;
 }) {
-  const meta = useQuery(q.meta());
+  const meta = useStableQuery(q.meta());
   const { pathname } = useLocation();
   // SparkAffordance reads this same cached query. Resolve it here too so we can show one history action
   // when YARN's tracking link and the direct Spark History link lead to the same Spark application.
-  const sparkSource = useQuery(appSparkSource(app.id));
+  const sparkSource = useStableQuery(appSparkSource(app.id));
   const bases = useUpstreamBases();
   // The RM advertises its own hostname in `trackingUrl` (live: http://<host>:8088/proxy/<app>/); rewrite the target
   // to the base the operator configured for Burrow. The raw value is untouched — it stays in `data-yv`.

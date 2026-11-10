@@ -123,7 +123,7 @@ export function ContainerDetail({
         </dl>
         {mappedResources.length > 0 && (
           <div className="mt-1">
-            <p className="min-w-0 text-small text-ink-4 break-words">
+            <p className="min-w-0 text-small text-ink-4 wrap-break-word">
               Allocated resources (RM mapped notation):{" "}
               <Datum field="container.allocatedResources" raw={container.allocatedResources} className="font-mono text-small text-ink-2">
                 {mappedResources.map(([name, value]) => `${name}=${value}`).join(", ")}

@@ -16,6 +16,7 @@ import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "
 import type { PointerEvent as ReactPointerEvent } from "react";
 import "../dag.css";
 import { cn } from "~/lib/cn";
+import { simpleErrorText } from "~/lib/error-details";
 import { useInView } from "~/lib/in-view";
 import { fmtInt, fmtPct } from "~/lib/format";
 import { download } from "~/ui/data-table/export";
@@ -283,7 +284,7 @@ export function DagView({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setLayoutError(err instanceof Error ? err.message : String(err));
+        setLayoutError(simpleErrorText(err instanceof Error ? err.message : String(err)));
       });
     return () => {
       cancelled = true;
@@ -963,7 +964,7 @@ export function DagView({
                         Edges <span className="burrow-dag-edge-count">({graph.edges.length})</span>
                         <ChevronDown
                           className={cn(
-                            "size-3.5 text-ink-3 transition-transform duration-(--dur-fast) ease-(--ease-out)",
+                            "size-3.5 text-ink-3 transition-transform duration-(--dur-fast) ease-out",
                             edgeListOpen && "rotate-180",
                           )}
                           aria-hidden="true"
@@ -1009,6 +1010,7 @@ export function DagView({
             <DagStatePanel
               title="Could not lay out this DAG"
               detail={`${layoutError} — the graph structure is still available in the drawer/list views.`}
+              technicalDetail={layoutError}
               action={
                 <Button
                   size="sm"

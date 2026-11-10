@@ -6,7 +6,7 @@
  * `file`, `offset`, `len`, `tail` and `q` live in the URL; the sort of the file list is local (it is two rows, and the
  * schema has no `sort` param for it).
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import {
   ArrowDownToLine,
@@ -130,7 +130,7 @@ export function LogsView() {
   // The listing is the file table; in tail mode it must refresh at the live cadence too, because it is what makes the
   // window follow a growing file.
   const listingOpts = tq.logs();
-  const listing = useQuery({
+  const listing = useStableQuery({
     ...listingOpts,
     refetchInterval: tail && !paused && !parity ? liveIntervalMs : listingOpts.refetchInterval,
   });
@@ -149,7 +149,7 @@ export function LogsView() {
   const requestedOffset = tail ? lastPageOffset(size, pageBytes) : (search.offset ?? 0);
   const page = useMemo(() => logPage(size, requestedOffset, pageBytes), [size, requestedOffset, pageBytes]);
 
-  const chunk = useQuery({
+  const chunk = useStableQuery({
     queryKey: ["tools", "logs", "chunk", selected?.name ?? "", page.offset, page.length],
     queryFn: ({ signal }) => fetchLogChunk(selected!.name, { offset: page.offset, length: page.length, size }, signal),
     meta: { refetchKind: "live" },
@@ -238,7 +238,7 @@ export function LogsView() {
         <CenteredPageState>
           <ErrorState
             title="Cannot read the daemon's log directory"
-            message={error instanceof Error ? error.message : String(error)}
+            error={error}
             hint="Burrow requests the ResourceManager directory at /api/rm/logs. Check that the configured ResourceManager is reachable and serves its /logs/ directory."
             onRetry={() => void listing.refetch()}
           />
@@ -495,12 +495,12 @@ export function LogsView() {
               {chunk.error && (!chunk.data || chunk.isPlaceholderData) ? (
                 <ErrorState
                   title={`Cannot read ${selected!.name}`}
-                  message={chunk.error instanceof Error ? chunk.error.message : String(chunk.error)}
+                  error={chunk.error}
                   hint="Burrow streams a byte range from the daemon's own log directory."
                   onRetry={() => void chunk.refetch()}
                 />
               ) : listing.isPending || (chunk.isPending && !!selected) ? (
-                <div className="flex min-h-[18rem] flex-col gap-2 rounded-lg border border-seam bg-well p-3">
+                <div className="flex min-h-72 flex-col gap-2 rounded-lg border border-seam bg-well p-3">
                   {["1", "2", "3", "4", "5", "6"].map((k) => (
                     <Skeleton key={k} className="h-3 w-4/5" />
                   ))}
@@ -525,7 +525,7 @@ export function LogsView() {
                     aria-live="off"
                     aria-label={`${selected.name}, ${byteRangeLabel(chunk.data!)}`}
                     aria-busy={chunk.isFetching || undefined}
-                    className="burrow-scroll h-[min(34dvh,18rem)] min-h-56 shrink-0 overflow-auto rounded-lg border border-seam bg-well p-2 font-mono text-small break-words whitespace-pre-wrap text-ink lg:h-auto lg:min-h-[18rem] lg:flex-1 lg:shrink"
+                    className="burrow-scroll h-[min(34dvh,18rem)] min-h-56 shrink-0 overflow-auto rounded-lg border border-seam bg-well p-2 font-mono text-small wrap-break-word whitespace-pre-wrap text-ink lg:h-auto lg:min-h-72 lg:flex-1 lg:shrink"
                   >
                     <div ref={bodyRef}>
                       <TabContent initial value={bodyIdentity}>

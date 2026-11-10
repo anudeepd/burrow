@@ -89,10 +89,10 @@ export function Metric({
     >
       {layout === "row" ? (
         <>
-          <span className="min-w-0 break-words text-small font-medium text-ink-2">{label}</span>
+          <span className="min-w-0 wrap-break-word text-small font-medium text-ink-2">{label}</span>
           <div className="flex min-w-0 items-center justify-end gap-2">
             <div
-              className="min-w-0 break-words text-right text-body font-semibold text-ink"
+              className="min-w-0 wrap-break-word text-right text-body font-semibold text-ink"
               style={{ color: "color-mix(in oklch, var(--ink) 88%, var(--tone))" }}
             >
               {body}
@@ -115,17 +115,14 @@ export function Metric({
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-micro uppercase tracking-[0.06em] text-ink-3">{label}</span>
             {href && (
-              <span
-                aria-hidden="true"
-                className="text-ink-4 transition-colors duration-(--dur-fast) ease-(--ease-out) group-hover:text-live"
-              >
+              <span aria-hidden="true" className="text-ink-4 transition-colors duration-(--dur-fast) ease-out group-hover:text-live">
                 ↗
               </span>
             )}
           </div>
           <div className="burrow-metric-value-row flex items-end justify-between gap-3">
             <div
-              className={cn("min-w-0 font-semibold text-ink", children != null ? "break-words" : "truncate", SIZES[size])}
+              className={cn("min-w-0 font-semibold text-ink", children != null ? "wrap-break-word" : "truncate", SIZES[size])}
               style={{ color: "color-mix(in oklch, var(--ink) 88%, var(--tone))" }}
             >
               {body}

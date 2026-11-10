@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { type Ref, useRef } from "react";
 import { Menu, Monitor, Moon, Pause, Play, Search, Sun } from "lucide-react";
 import { q } from "~/api/queries";
@@ -114,14 +114,14 @@ function LiveControls() {
           <span className="relative grid place-items-center">
             <Pause
               className={cn(
-                "col-start-1 row-start-1 size-3.5 text-live transition-[opacity,scale,filter] duration-(--dur-fast) ease-(--ease-out)",
+                "col-start-1 row-start-1 size-3.5 text-live transition-[opacity,scale,filter] duration-(--dur-fast) ease-out",
                 pausedNow && "scale-[0.25] opacity-0 blur-[4px]",
               )}
               aria-hidden="true"
             />
             <Play
               className={cn(
-                "col-start-1 row-start-1 size-3.5 text-ink-3 transition-[opacity,scale,filter] duration-(--dur-fast) ease-(--ease-out)",
+                "col-start-1 row-start-1 size-3.5 text-ink-3 transition-[opacity,scale,filter] duration-(--dur-fast) ease-out",
                 !pausedNow && "scale-[0.25] opacity-0 blur-[4px]",
               )}
               aria-hidden="true"
@@ -168,7 +168,7 @@ export function Topbar({
   railTrigger?: Ref<HTMLButtonElement>;
 }) {
   const mounted = useMounted();
-  const { data: info } = useQuery(q.info());
+  const { data: info } = useStableQuery(q.info());
   const paused = usePref("livePaused");
   /* an attribute the server cannot know: `live` until mount, then the real state (React only patches an attribute when
      the *value it rendered before* differs — so it must differ *after* mount, never during hydration) */

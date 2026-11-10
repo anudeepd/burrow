@@ -9,7 +9,7 @@
  * Spark returns task aggregates only for stages that ran tasks: skipped/reused stages answer `taskSummary` with 404
  * ("No tasks reported metrics …") and their `taskList` is empty. Both cases are presented as such, never as zeros.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { Link, getRouteApi } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { SortingState } from "@tanstack/react-table";
@@ -85,13 +85,13 @@ export function StageDetailPage() {
   const now = useNow();
   const tz = usePref("tz");
 
-  const stageQ = useQuery(
+  const stageQ = useStableQuery(
     sp.stageAttempt(appId, stageId, attemptId, { details: true, withSummaries: true, quantiles: DEFAULT_QUANTILES, kind, attempt }),
   );
-  const attemptsQ = useQuery(sp.stageAttempts(appId, stageId, kind, attempt));
+  const attemptsQ = useStableQuery(sp.stageAttempts(appId, stageId, kind, attempt));
   const stage = stageQ.data;
   const dist = stage?.taskMetricsDistributions ?? null;
-  const summaryQ = useQuery({
+  const summaryQ = useStableQuery({
     ...sp.taskSummary(appId, stageId, attemptId, DEFAULT_QUANTILES, kind, attempt),
     enabled: stageQ.isSuccess && !dist,
   });
@@ -116,7 +116,7 @@ export function StageDetailPage() {
   const serverSortBy = paged && sortId === "duration" ? (sorting[0]?.desc ? "-runtime" : "runtime") : undefined;
   // Single statuses go to Spark's REST (one status at a time); "errors" is the failed+killed union, which REST cannot express.
   const serverStatus = statusFilter && statusFilter !== "errors" ? statusFilter : undefined;
-  const taskQ = useQuery(
+  const taskQ = useStableQuery(
     paged
       ? sp.taskList(appId, stageId, attemptId, {
           offset: (page - 1) * pageSize,
@@ -243,12 +243,7 @@ export function StageDetailPage() {
           <SparkStaleErrorBanner error={attemptsQ.error} subject="the stage attempts" onRetry={() => void attemptsQ.refetch()} />
         )}
         {attemptsQ.error && attemptsQ.data === undefined && (
-          <ErrorState
-            compact
-            title="Could not load stage attempts"
-            message={attemptsQ.error instanceof Error ? attemptsQ.error.message : String(attemptsQ.error)}
-            onRetry={() => void attemptsQ.refetch()}
-          />
+          <ErrorState compact title="Could not load stage attempts" error={attemptsQ.error} onRetry={() => void attemptsQ.refetch()} />
         )}
       </PageHeader>
 

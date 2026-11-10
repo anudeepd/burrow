@@ -1245,7 +1245,7 @@ describe("Spark list pages", () => {
     await screen.findByRole("region", { name: "Timeline" });
     await fail(stale.client, sp.jobs(APP_ID, { kind: "static", attempt: null }).queryKey, true);
     expect(await screen.findByText(/1 of four timeline sources failed/)).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Retry failed sources" }));
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     stale.unmount();
 
     const single = renderListPage("timeline");
@@ -1288,9 +1288,9 @@ describe("Spark list pages", () => {
       fetchStatus: "idle",
     });
     await waitFor(() =>
-      expect(screen.getAllByRole("status").some((node) => node.textContent?.includes("timeline sources failed"))).toBe(true),
+      expect(screen.getAllByRole("alert").some((node) => node.textContent?.includes("timeline sources failed"))).toBe(true),
     );
-    const staleStatus = (await screen.findAllByRole("status")).find((node) => node.textContent?.includes("timeline sources failed"))!;
+    const staleStatus = (await screen.findAllByRole("alert")).find((node) => node.textContent?.includes("timeline sources failed"))!;
     expect(staleStatus.textContent).toContain("jobs: job source unavailable");
     expect(screen.getByText("0 rows")).toBeTruthy();
     expect(screen.getByText("Nothing to plot yet")).toBeTruthy();
@@ -1315,7 +1315,7 @@ describe("Spark list pages", () => {
       });
     }
     await waitFor(() =>
-      expect(screen.getAllByRole("status").some((node) => node.textContent?.includes("2 of four timeline sources failed"))).toBe(true),
+      expect(screen.getAllByRole("alert").some((node) => node.textContent?.includes("2 of four timeline sources failed"))).toBe(true),
     );
     expect(screen.getByRole("region", { name: "Timeline" }).querySelector("svg")).toBeTruthy();
     missingExecutors.unmount();
@@ -1789,6 +1789,7 @@ describe("Spark list pages", () => {
     });
 
     expect(await screen.findByRole("heading", { name: "Stage failed" })).toBeTruthy();
+    fireEvent.click(screen.getByText("Technical details"));
     expect(screen.getByText("Executor exited unexpectedly")).toBeTruthy();
     expect(screen.getByText(/This stage was retried/)).toBeTruthy();
     const attemptSelect = screen.getByRole("combobox", { name: "Stage attempt" });

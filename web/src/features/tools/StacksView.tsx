@@ -6,7 +6,7 @@
  * daemon text). The page parses it with the pure parser in `./stacks`, summarises the state histogram, and renders a
  * virtualized monospace viewer: one collapsing row per thread, one row per frame.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ChevronRight, Layers, Minus, PanelRight, RotateCw } from "lucide-react";
@@ -45,7 +45,7 @@ export function StacksView() {
   const rowH = ROW_HEIGHT;
   const frameH = Math.max(18, rowH - 6);
 
-  const { data, error, isPending, isFetching, dataUpdatedAt, refetch } = useQuery(tq.stacks());
+  const { data, error, isPending, isFetching, dataUpdatedAt, refetch } = useStableQuery(tq.stacks());
   const dump = useMemo(() => parseThreadDump(data ?? ""), [data]);
 
   const [expanded, setExpanded] = useState<ReadonlySet<number>>(() => new Set());
@@ -210,7 +210,7 @@ export function StacksView() {
         <CenteredPageState>
           <ErrorState
             title="Cannot read the thread dump"
-            message={error instanceof Error ? error.message : String(error)}
+            error={error}
             hint="Burrow proxies /stacks from the active ResourceManager (text/plain, no pagination)."
             onRetry={() => void refetch()}
           />
@@ -307,7 +307,7 @@ export function StacksView() {
               <TabContent
                 initial
                 value={stateFilter ?? "all"}
-                className="burrow-page-result-enter relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh_-_22rem),640px)]"
+                className="burrow-page-result-enter relative flex h-[min(32dvh,400px)] min-h-60 flex-col overflow-hidden rounded-lg border border-seam bg-fabric sm:h-[min(48dvh,640px)] sm:min-h-72 xl:h-[min(64dvh,calc(100dvh-22rem),640px)]"
               >
                 <div
                   ref={scrollRef}
@@ -318,7 +318,7 @@ export function StacksView() {
                   onKeyDown={onKeyDown}
                   onScroll={syncScrollHint}
                   data-burrow-stacks-rows={rows.length}
-                  className="burrow-scroll burrow-table-scroll relative min-h-0 flex-1 overflow-auto outline-none focus-visible:outline-offset-[-2px]"
+                  className="burrow-scroll burrow-table-scroll relative min-h-0 flex-1 overflow-auto outline-none focus-visible:-outline-offset-2"
                 >
                   <div role="group" className="relative" style={parity ? undefined : { height: virt.getTotalSize() }}>
                     {(parity
@@ -443,7 +443,7 @@ function ThreadRowBody({ row, query, open, onToggle }: { row: Row; query: string
           }}
           className="ml-1 grid size-4 shrink-0 place-items-center rounded-sm text-ink-3 hover:bg-fabric-2 hover:text-ink"
         >
-          <ChevronRight className={cn("size-3.5 transition-transform duration-(--dur-fast) ease-(--ease-out)", open && "rotate-90")} />
+          <ChevronRight className={cn("size-3.5 transition-transform duration-(--dur-fast) ease-out", open && "rotate-90")} />
         </button>
       </OptionalTooltip>
       <span className="shrink-0 text-micro text-ink-4 tnum">#{row.thread.id}</span>

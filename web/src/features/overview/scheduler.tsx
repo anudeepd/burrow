@@ -5,7 +5,7 @@
  *
  * The queue teaser below reads `/api/yarn/scheduler` and is the Overview's door into `/scheduler`.
  */
-import { useQuery } from "@tanstack/react-query";
+import { useStableQuery } from "~/api/use-stable-query";
 import type { ColumnVisibilityState, SortingState } from "@tanstack/react-table";
 import { useState } from "react";
 import { tq } from "~/api/queries/tools";
@@ -43,8 +43,8 @@ import { CrossLink, Unavailable, useStale } from "./ui";
 function Cell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="burrow-overview-data-row">
-      <span className="min-w-0 break-words text-small font-medium text-ink-2">{label}</span>
-      <span className="min-w-0 break-words text-body text-ink">{children}</span>
+      <span className="min-w-0 wrap-break-word text-small font-medium text-ink-2">{label}</span>
+      <span className="min-w-0 wrap-break-word text-body text-ink">{children}</span>
     </div>
   );
 }
@@ -197,9 +197,9 @@ const QUEUE_DEFAULT_VISIBILITY = defaultVisibilityOf(QUEUE_COLUMNS);
  * first, then scheduler-overview. Busy percentage and event queue sizes come from ClusterMetrics, matching `/scheduler`.
  */
 export function SchedulerSection({ collapseQueueTable = false }: { collapseQueueTable?: boolean }) {
-  const overview = useQuery(ov.schedulerOverview());
-  const sched = useQuery(ov.scheduler());
-  const metricsQ = useQuery(ov.metrics());
+  const overview = useStableQuery(ov.schedulerOverview());
+  const sched = useStableQuery(ov.scheduler());
+  const metricsQ = useStableQuery(ov.metrics());
   const stale = useStale();
   const parity = useParity();
   const [queueSorting, setQueueSorting] = useState<SortingState>([]);
@@ -211,7 +211,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
   const overviewUnavailableReason =
     overview.error && !so && isSourceUnavailable(overview.error) ? `HTTP ${overview.error.status}: ${errorReason(overview.error)}` : null;
   const teasers = queueTeasers(info);
-  const confQ = useQuery(tq.conf());
+  const confQ = useStableQuery(tq.conf());
   const conf = confQ.data;
 
   const nameText = info?.type ? schedulerDisplayName(info.type) : (so?.schedulerType ?? null);
@@ -253,7 +253,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
         sched.isError && sched.data === undefined ? (
           <ErrorState
             title="Queue data is unavailable"
-            message={sched.error instanceof Error ? sched.error.message : String(sched.error)}
+            error={sched.error}
             hint="Try again in a moment."
             onRetry={() => void sched.refetch()}
           />
@@ -274,7 +274,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
       }
       toolbarArrangement="inline"
       exportName="overview-queue-headroom"
-      className="min-h-[13rem] w-full flex-none"
+      className="min-h-52 w-full flex-none"
     />
   );
 
@@ -297,13 +297,8 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
     return (
       <ErrorState
         title="The scheduler did not answer"
-        message={
-          overview.error instanceof Error
-            ? overview.error.message
-            : sched.error instanceof Error
-              ? sched.error.message
-              : "The ResourceManager did not return scheduler details."
-        }
+        error={overview.error instanceof Error ? overview.error : sched.error}
+        message={overview.error == null && sched.error == null ? "The ResourceManager did not return scheduler details." : undefined}
         hint="Try again in a moment. Cluster metrics remain available."
         onRetry={() => {
           void overview.refetch();
@@ -317,7 +312,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
   const why = so ? null : "Detailed scheduler information is unavailable on this cluster.";
 
   return (
-    <div className="burrow-overview-metrics-container flex flex-col gap-[var(--gap-card)]" data-testid="scheduler">
+    <div className="burrow-overview-metrics-container flex flex-col gap-(--gap-card)" data-testid="scheduler">
       {overview.error && so && (
         <StaleErrorBanner
           title="Scheduler overview refresh failed; showing the last loaded values"
@@ -332,12 +327,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
         </div>
       )}
       {overview.error && !so && !isSourceUnavailable(overview.error) && (
-        <ErrorState
-          compact
-          title="Scheduler overview could not be read"
-          message={overview.error instanceof Error ? overview.error.message : String(overview.error)}
-          onRetry={() => void overview.refetch()}
-        />
+        <ErrorState compact title="Scheduler overview could not be read" error={overview.error} onRetry={() => void overview.refetch()} />
       )}
       {sched.error && sched.data && (
         <StaleErrorBanner
@@ -357,7 +347,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
           <ErrorState
             compact
             title="Scheduler configuration could not be read; overview values are used where available"
-            message={confQ.error instanceof Error ? confQ.error.message : String(confQ.error)}
+            error={confQ.error}
             onRetry={() => void confQ.refetch()}
           />
         ))}
