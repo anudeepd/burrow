@@ -4,6 +4,10 @@
 //! available window as a `chunk`, and stops when the source can no longer grow (the container is no longer
 //! running) with an `eof`, or with an `error` when a cap is hit. It never buffers more than one chunk plus
 //! the daemon's page chrome, and it stops as soon as the client goes away (the frame channel closes).
+//!
+//! Progress must be proven. A proxy or a default-tail page that ignores `start`/`end` returns the same bytes
+//! for every offset; replaying those would append identical lines forever, so a repeated window (or bytes
+//! past a page-reported file length) ends the stream instead of becoming a `chunk`.
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -88,6 +92,7 @@ async fn run_with_limits(
     let mut offset = spec.start;
     let mut sent: u64 = 0;
     let mut backoff = IDLE_MIN;
+    let mut last_window: Option<Bytes> = None;
     loop {
         if Instant::now() >= deadline {
             let _ = tx
@@ -120,7 +125,45 @@ async fn run_with_limits(
             Ok(w) => {
                 if !w.text.is_empty() {
                     let n = w.text.len() as u64;
+                    let running = source::container_running(&core, &spec.location).await;
+                    // The JobHistoryServer reports the file's exact length and its aggregated file never
+                    // grows. Bytes served for a read that starts at or past that length cannot be new
+                    // output: the upstream ignored the byte range (a log proxy or a default-tail page does
+                    // this). The NodeManager's listing size can lag a container that just stopped, so its
+                    // total is left to the repeat check below.
+                    if running == Some(false)
+                        && matches!(spec.location.kind, source::LogSourceKind::Jhs)
+                        && offset >= w.total
+                    {
+                        let _ = tx.send(TailEvent::Eof).await;
+                        break;
+                    }
+                    // The same window offered again after the offset advanced is the other shape of the same
+                    // failure: the source is not honoring the range, so it can never reach a real EOF. A
+                    // full-size window from a log that is still running can legitimately repeat (a periodic
+                    // log); a short window, or any repeat from a finished container, cannot.
+                    let repeated = last_window.as_ref().is_some_and(|last| last == &w.text)
+                        && (running == Some(false) || n < end.saturating_sub(offset));
+                    if repeated {
+                        if running == Some(false) {
+                            let _ = tx.send(TailEvent::Eof).await;
+                        } else {
+                            let _ = tx
+                                .send(TailEvent::Failed {
+                                    code: "unavailable",
+                                    message: "the log source stopped advancing".to_string(),
+                                    hint: Some(
+                                        "the upstream log page returned the same bytes for a later offset; \
+                                         reload the log or download it to read the full file"
+                                            .to_string(),
+                                    ),
+                                })
+                                .await;
+                        }
+                        break;
+                    }
                     let text = String::from_utf8_lossy(&w.text).into_owned();
+                    last_window = Some(w.text.clone());
                     if tx
                         .send(TailEvent::Chunk {
                             start: offset,

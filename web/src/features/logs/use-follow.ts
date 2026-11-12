@@ -79,6 +79,8 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
     let failures = 0;
     let pollFailures = 0;
     let pollingReason = "stream unavailable";
+    /** The last non-empty poll window, to stop a source that repeats it instead of advancing. */
+    let lastPollText: string | null = null;
 
     const publish = (next: FollowMode, detail: string | null = null) => {
       if (cancelled) return;
@@ -121,7 +123,14 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
                 hints: hintsRef.current,
               });
               if (cancelled || ended) return;
+              if (w.text && w.text === lastPollText) {
+                // The source returned the same window for a later offset: it is not advancing, so polling it
+                // would append the same lines forever. Stop instead of duplicating.
+                finish();
+                return;
+              }
               if (w.text) {
+                lastPollText = w.text;
                 buffer.append(w.text, w.start);
                 onAppendRef.current();
               }

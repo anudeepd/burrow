@@ -293,6 +293,53 @@ describe("useFollow", () => {
     unmount();
   });
 
+  it("stops polling when the source returns the same window at a later offset", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    const repeated = "INFO repeated line\n";
+    fetchWindow
+      .mockResolvedValueOnce({
+        text: repeated,
+        start: 0,
+        end: 19,
+        size: 40,
+        source: "node",
+        ended: false,
+        responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+      })
+      .mockResolvedValueOnce({
+        text: repeated,
+        start: 19,
+        end: 38,
+        size: 40,
+        source: "node",
+        ended: false,
+        responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+      });
+    const opts = options({ intervalMs: 100 });
+    const { result, unmount } = renderHook(() => useFollow(opts));
+
+    act(() => FakeEventSource.instances[0]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    act(() => FakeEventSource.instances[1]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    act(() => FakeEventSource.instances[2]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+    expect(fetchWindow).toHaveBeenCalledOnce();
+    expect(opts.buffer.toLines()).toEqual(["INFO repeated line"]);
+
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+    expect(fetchWindow).toHaveBeenCalledTimes(2);
+    expect(opts.buffer.toLines()).toEqual(["INFO repeated line"]);
+    expect(opts.buffer.ended).toBe(true);
+    expect(result.current.status.mode).toBe("ended");
+    expect(opts.onEnded).toHaveBeenCalledOnce();
+
+    await act(async () => vi.advanceTimersByTimeAsync(60_000));
+    expect(fetchWindow).toHaveBeenCalledTimes(2);
+    unmount();
+  });
+
   it("does not finish when the final poll synchronously unmounts from onAppend", async () => {
     vi.useFakeTimers();
     globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;

@@ -947,6 +947,78 @@ async fn follow_stream_reports_growth_then_eof() {
 }
 
 #[tokio::test]
+async fn follow_stream_stops_when_a_finished_source_ignores_the_range() {
+    let mock = Mock::start().await;
+    mock.seed_rm().await;
+    seed_nodes(&mock).await;
+    seed_app(&mock, "FINISHED").await;
+    let jhs_base = format!("/jobhistory/logs/{RPC}/{CID}/{CID}/{USER}/");
+    mock.set(
+        &jhs_base,
+        Canned::new(
+            200,
+            "text/html;charset=utf-8",
+            "<html><body>Log Type: stdout\nLog Upload Time: Sat Oct 03 12:38:56 +0530 2026\nLog Length: 5\n<pre>hello</pre></body></html>",
+        ),
+    )
+    .await;
+    // Any request returns the same 4-byte tail: a log proxy or default-tail page that ignores start/end.
+    mock.set(
+        &format!("{jhs_base}stdout/"),
+        Canned::new(
+            200,
+            "text/html;charset=utf-8",
+            "<p>Showing 4 bytes of 5 total.</p><pre>tail</pre>",
+        ),
+    )
+    .await;
+    let h = Harness::start(logs_config(&mock)).await;
+
+    // The client holds the whole 5-byte file, so a conforming source would answer this with nothing.
+    // The broken source answers with bytes it already served; the stream must not append them.
+    let mut sse = Sse::open(
+        &h,
+        &format!(
+            "/api/logs/containers/{CID}/files/stdout/stream?node={}&user={USER}&offset=5",
+            mock.authority()
+        ),
+    )
+    .await;
+    let f = sse
+        .next_frame(Duration::from_secs(2))
+        .await
+        .expect("eof frame");
+    assert_eq!(f, "event: eof\ndata: {}");
+    assert!(
+        sse.next_frame(Duration::from_secs(1)).await.is_none(),
+        "the stream ends instead of replaying the fixed window"
+    );
+
+    // From the start, the first window is emitted once; the repeated window ends the stream instead of
+    // being appended again and again.
+    let mut sse = Sse::open(
+        &h,
+        &format!(
+            "/api/logs/containers/{CID}/files/stdout/stream?node={}&user={USER}&offset=0",
+            mock.authority()
+        ),
+    )
+    .await;
+    let f = sse
+        .next_frame(Duration::from_secs(2))
+        .await
+        .expect("first chunk");
+    assert!(f.starts_with("event: chunk"), "{f}");
+    assert!(f.contains("tail"), "{f}");
+    let f = sse
+        .next_frame(Duration::from_secs(2))
+        .await
+        .expect("eof after the repeated window");
+    assert_eq!(f, "event: eof\ndata: {}");
+    assert!(sse.next_frame(Duration::from_secs(1)).await.is_none());
+}
+
+#[tokio::test]
 async fn follow_stream_of_an_aggregated_log_replays_then_eofs() {
     let mock = Mock::start().await;
     mock.seed_rm().await;
