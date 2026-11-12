@@ -764,6 +764,29 @@ describe("overview sections", () => {
     expect(within(section).getByText(/at org\.apache\.hadoop/)).toBeTruthy();
   });
 
+  it("shows a cluster-metrics failure once with technical details", async () => {
+    const { client } = renderOverview(<SchedulerSection />);
+    const query = client.getQueryCache().find({ queryKey: ov.metrics().queryKey })!;
+    act(() =>
+      query.setState({
+        ...query.state,
+        data: undefined,
+        status: "error",
+        error: new ApiError(
+          "java.lang.IllegalStateException: metrics unavailable\n\tat org.apache.hadoop.RM.metrics(RM.java:1)",
+          "http",
+          503,
+        ),
+      }),
+    );
+
+    const section = await screen.findByTestId("scheduler");
+    expect(within(section).getByText("Cluster metrics could not be read.")).toBeTruthy();
+    expect(section.textContent).not.toContain("java.lang.IllegalStateException");
+    fireEvent.click(within(section).getByText("Technical details"));
+    expect(within(section).getByText(/java\.lang\.IllegalStateException/)).toBeTruthy();
+  });
+
   it("formats missing scheduler metric-source errors", () => {
     expect(clusterMetricsUnavailableReason(new Error("dispatcher counters unavailable"))).toBe(
       "Cluster metrics unavailable: dispatcher counters unavailable",

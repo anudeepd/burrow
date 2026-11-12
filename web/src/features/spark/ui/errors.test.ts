@@ -40,6 +40,18 @@ describe("Spark error classification", () => {
       title: "Spark request failed",
       status: 500,
     });
+    expect(classifySparkError(new ApiError("java.lang.IllegalStateException: broken", "http", 500), "the job")).toMatchObject({
+      kind: "other",
+      message: "The Spark request failed.",
+    });
+    expect(classifySparkError(new ApiError("java.lang.IllegalStateException: broken", "schema", 200), "the job")).toMatchObject({
+      kind: "schema",
+      message: "The upstream response did not match the expected shape.",
+    });
+    expect(classifySparkError(new ApiError("at Object.<anonymous> (file.js:1:2)", "timeout", null), "the job")).toMatchObject({
+      kind: "unreachable",
+      message: "The Spark source is unreachable.",
+    });
     expect(classifySparkError("unexpected value", "the job")).toMatchObject({ kind: "other", message: "unexpected value", status: null });
   });
 

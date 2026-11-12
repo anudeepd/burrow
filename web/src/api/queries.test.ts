@@ -189,6 +189,7 @@ describe("API query option factories", () => {
       errorReason(new ApiError("java.lang.IllegalStateException: warming up\n\tat org.apache.hadoop.RM.start(RM.java:1)", "http", 500)),
     ).toBe("The upstream service returned HTTP 500.");
     expect(errorReason(new ApiError("failed", "http", 500, null, null, "check the daemon\nsecond line"))).toBe("check the daemon");
+    expect(errorReason(new ApiError("failed", "http", 500, null, null, "  "))).toBe("unknown error");
     expect(errorReason(new Error("network down"))).toBe("network down");
     expect(errorReason("bad response")).toBe("bad response");
     for (const status of [404, 501, 502, 503]) expect(isSourceUnavailable(new ApiError("unavailable", "http", status))).toBe(true);

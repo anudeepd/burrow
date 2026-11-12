@@ -56,6 +56,37 @@ describe("error presentation", () => {
     expect(describeError(new ApiError("no route", "http", 404)).message).toBe("no route");
   });
 
+  it("recognizes each technical payload shape", () => {
+    for (const text of [
+      "IllegalStateException: broken",
+      'Exception in thread "main" java.lang.RuntimeException',
+      "Traceback (most recent call last):",
+      "panic: runtime error",
+      '{"error":{"message":"broken"}}',
+      "org.apache.hadoop.ipc.RemoteException: broken",
+      "<html><body>login</body></html>",
+      "at Object.<anonymous> (file.js:1:2)",
+    ]) {
+      expect(describeError(text).message, text).toBe("The request failed.");
+    }
+    expect(describeError("The ResourceManager did not return its log directory.").message).toBe(
+      "The ResourceManager did not return its log directory.",
+    );
+  });
+
+  it("summarizes network, timeout, abort and stateless failures", () => {
+    expect(describeError(new ApiError("java.io.IOException: socket", "network", null)).message).toBe(
+      "The upstream service could not be reached.",
+    );
+    expect(describeError(new ApiError("java.io.IOException: slow", "timeout", null)).message).toBe(
+      "The upstream service did not respond in time.",
+    );
+    expect(describeError(new ApiError("java.util.concurrent.CancellationException: cancelled", "abort", null)).message).toBe(
+      "The request was cancelled.",
+    );
+    expect(describeError(new ApiError("java.lang.IllegalStateException: broken", "http", null)).message).toBe("The request failed.");
+  });
+
   it("describes Error objects, including causes and empty messages", () => {
     const described = describeError(new Error("network down", { cause: new Error("socket closed") }));
     expect(described.message).toBe("network down");
