@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ApiError } from "~/api/client";
 import { CenteredPageState, EmptyState, ErrorState, StaleErrorBanner, TableSkeleton } from "./feedback";
 
@@ -116,7 +116,9 @@ describe("shared feedback states", () => {
 
     expect(details.open).toBe(true);
     expect(screen.getByText("request id 42")).toBeTruthy();
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    });
     expect(details.open).toBe(true);
     expect(screen.getByText("request id 42")).toBeTruthy();
   });
