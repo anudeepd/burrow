@@ -238,6 +238,7 @@ export function LogsView() {
         <CenteredPageState>
           <ErrorState
             title="Cannot read the daemon's log directory"
+            message="The ResourceManager did not return its log directory."
             error={error}
             hint="Burrow requests the ResourceManager directory at /api/rm/logs. Check that the configured ResourceManager is reachable and serves its /logs/ directory."
             onRetry={() => void listing.refetch()}
@@ -246,7 +247,12 @@ export function LogsView() {
       ) : (
         <>
           {error && (
-            <StaleErrorBanner title="Could not refresh the daemon log directory" error={error} onRetry={() => void listing.refetch()} />
+            <StaleErrorBanner
+              title="Could not refresh the daemon log directory"
+              message="The ResourceManager did not return its log directory."
+              error={error}
+              onRetry={() => void listing.refetch()}
+            />
           )}
           <div className="grid min-w-0 grid-cols-1 gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[24rem_minmax(0,1fr)]">
             <section aria-labelledby="log-files-heading" className="flex min-w-0 flex-col lg:min-h-0">
@@ -495,6 +501,7 @@ export function LogsView() {
               {chunk.error && (!chunk.data || chunk.isPlaceholderData) ? (
                 <ErrorState
                   title={`Cannot read ${selected!.name}`}
+                  message="The daemon did not return this log file."
                   error={chunk.error}
                   hint="Burrow streams a byte range from the daemon's own log directory."
                   onRetry={() => void chunk.refetch()}
@@ -512,6 +519,7 @@ export function LogsView() {
                   {chunk.error && (
                     <StaleErrorBanner
                       title={`Could not refresh ${selected.name}`}
+                      message="The daemon did not return the next log window."
                       error={chunk.error}
                       onRetry={() => void chunk.refetch()}
                     />

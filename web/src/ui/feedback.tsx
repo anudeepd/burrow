@@ -282,6 +282,17 @@ export function TechnicalDetails({ detail, className }: { detail: ReactNode; cla
 }
 
 /** Compact warning for a failed refresh when the last successful response remains usable. */
-export function StaleErrorBanner({ title, error, onRetry }: { title: string; error: unknown; onRetry?: () => void }) {
-  return <ErrorState compact title={title} error={error} onRetry={onRetry} />;
+export function StaleErrorBanner({
+  title,
+  message,
+  error,
+  onRetry,
+}: {
+  title: string;
+  /** Human summary; the raw error stays in Technical details. */
+  message?: ReactNode;
+  error: unknown;
+  onRetry?: () => void;
+}) {
+  return <ErrorState compact title={title} message={message} error={error} onRetry={onRetry} />;
 }

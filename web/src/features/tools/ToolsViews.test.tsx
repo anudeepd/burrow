@@ -510,6 +510,10 @@ describe("tools pages", () => {
 
     renderToolsPage("logs", "", { listingError: new Error("ResourceManager logs failed") });
     expect(await screen.findByRole("heading", { name: "Cannot read the daemon's log directory" })).toBeTruthy();
+    expect(screen.getByText("The ResourceManager did not return its log directory.")).toBeTruthy();
+    expect(screen.queryByText("ResourceManager logs failed")).toBeNull();
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/ResourceManager logs failed/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
@@ -686,7 +690,10 @@ describe("tools pages", () => {
     vi.mocked(fetchLogChunk).mockRejectedValueOnce("window unavailable" as unknown as Error);
     renderToolsPage("logs", "?file=rm.out");
     expect(await screen.findByRole("heading", { name: "Cannot read rm.out" })).toBeTruthy();
-    expect(screen.getByText("window unavailable")).toBeTruthy();
+    expect(screen.getByText("The daemon did not return this log file.")).toBeTruthy();
+    expect(screen.queryByText("window unavailable")).toBeNull();
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/window unavailable/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
     await waitFor(() => expect(document.body.textContent).toContain("INFO startup"));
 
@@ -694,7 +701,10 @@ describe("tools pages", () => {
     vi.mocked(fetchLogChunk).mockRejectedValueOnce(new Error("typed window failure"));
     renderToolsPage("logs", "?file=rm.out");
     expect(await screen.findByRole("heading", { name: "Cannot read rm.out" })).toBeTruthy();
-    expect(screen.getByText("typed window failure")).toBeTruthy();
+    expect(screen.getByText("The daemon did not return this log file.")).toBeTruthy();
+    expect(screen.queryByText("typed window failure")).toBeNull();
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/typed window failure/)).toBeTruthy();
 
     cleanup();
     const stale = renderToolsPage("logs", "?file=rm.out");
@@ -708,6 +718,10 @@ describe("tools pages", () => {
       errorUpdateCount: chunk.state.errorUpdateCount + 1,
     });
     expect(await screen.findByText("Could not refresh rm.out")).toBeTruthy();
+    expect(screen.getByText("The daemon did not return the next log window.")).toBeTruthy();
+    expect(screen.queryByText("chunk refresh failed")).toBeNull();
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/chunk refresh failed/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
@@ -719,14 +733,15 @@ describe("tools pages", () => {
     });
 
     expect(await screen.findByRole("heading", { name: "Cannot read the daemon's log directory" })).toBeTruthy();
-    expect(screen.getByText("java.lang.IllegalStateException: the ResourceManager log directory is not configured")).toBeTruthy();
-    expect(screen.queryByText(/at org\.apache\.hadoop/)).toBeNull();
+    expect(screen.getByText("The ResourceManager did not return its log directory.")).toBeTruthy();
+    expect(screen.queryByText(/java\.lang\.IllegalStateException|at org\.apache\.hadoop/)).toBeNull();
 
     fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/java\.lang\.IllegalStateException/)).toBeTruthy();
     expect(screen.getByText(/at org\.apache\.hadoop/)).toBeTruthy();
   });
 
-  it("stringifies an unexpected non-Error listing failure", async () => {
+  it("keeps an unexpected non-Error listing failure behind details", async () => {
     const { client } = renderToolsPage("logs", "?file=rm.out");
     await screen.findByRole("log", { name: /rm\.out/ });
     const query = client.getQueryCache().find({ queryKey: tq.logs().queryKey })!;
@@ -742,6 +757,9 @@ describe("tools pages", () => {
       });
     });
     expect(await screen.findByRole("heading", { name: "Cannot read the daemon's log directory" })).toBeTruthy();
+    expect(screen.getByText("The ResourceManager did not return its log directory.")).toBeTruthy();
+    expect(screen.queryByText("raw listing failure")).toBeNull();
+    fireEvent.click(screen.getByText("Technical details"));
     expect(screen.getByText("raw listing failure")).toBeTruthy();
   });
 });
