@@ -98,6 +98,28 @@ describe("BurrowCapabilities service status", () => {
     expect(document.querySelector('[data-burrow-help="Spark History Server endpoint probes"]')).not.toBeNull();
   });
 
+  it("keeps a multi-line connection failure to one line with technical details", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
+    client.setQueryData(ov.meta().queryKey, meta);
+    connectionStore.setState((state) => ({
+      ...state,
+      consecutiveFailures: 1,
+      lastError: "java.lang.IllegalStateException: connection lost\n\tat org.apache.hadoop.RM.connect(RM.java:12)",
+    }));
+    render(
+      <QueryClientProvider client={client}>
+        <BurrowCapabilities />
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(screen.getByLabelText("About Connection status"));
+    expect(await screen.findByText("java.lang.IllegalStateException: connection lost")).toBeTruthy();
+    expect(screen.queryByText(/at org\.apache\.hadoop/)).toBeNull();
+
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/at org\.apache\.hadoop/)).toBeTruthy();
+  });
+
   it("shows the initial-load failure and lets the user retry", async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
     const fetchMock = vi.fn(

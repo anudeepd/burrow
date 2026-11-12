@@ -14,11 +14,12 @@ import { useStableQuery } from "~/api/use-stable-query";
 import type { JmxBean } from "~/api/schemas";
 import { getRouteApi } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ChevronRight, Layers, Minus, PanelRight, RotateCw, Search, X } from "lucide-react";
+import { ChevronRight, Layers, Minus, PanelRight, RotateCw, X } from "lucide-react";
 import { type CSSProperties, type KeyboardEvent, type SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { nq } from "~/api/queries/nodes";
 import { tq } from "~/api/queries/tools";
 import { CopyButton, PageHead, SearchField, Section, Stat } from "~/features/nodes/page";
+import { simpleErrorText } from "~/lib/error-details";
 import { cn } from "~/lib/cn";
 import { utilizationTone } from "~/lib/progress-tone";
 import { revealDetail } from "~/lib/reveal";
@@ -311,9 +312,14 @@ export function JmxView() {
           <TableSkeleton rows={16} cols={3} />
         </div>
       ) : errorBean ? (
-        <EmptyState title="The daemon rejected this MBean pattern" icon={<Search className="size-5" aria-hidden="true" />}>
-          {errorBean.message} Clear the pattern to list every bean.
-        </EmptyState>
+        <CenteredPageState>
+          <ErrorState
+            title="The daemon rejected this MBean pattern"
+            message={simpleErrorText(errorBean.message)}
+            hint="Clear the pattern to list every bean."
+            detail={errorBean.message}
+          />
+        </CenteredPageState>
       ) : beans.length === 0 ? (
         <EmptyState title="This JVM exposes no MBeans">
           {source} answered <code className="text-micro">{'{"beans":[]}'}</code>. That usually means the daemon just started.

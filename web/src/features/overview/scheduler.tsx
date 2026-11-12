@@ -10,10 +10,11 @@ import type { ColumnVisibilityState, SortingState } from "@tanstack/react-table"
 import { useState } from "react";
 import { tq } from "~/api/queries/tools";
 import { errorReason, isSourceUnavailable, ov } from "~/api/queries/overview";
+import { errorDetails } from "~/lib/error-details";
 import { Datum, Entity, SINGLETON } from "~/ui/datum";
 import { DataTable, defaultVisibilityOf } from "~/ui/data-table/data-table";
 import type { ColDef } from "~/ui/data-table/features";
-import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { ErrorState, Skeleton, StaleErrorBanner, TechnicalDetails } from "~/ui/feedback";
 import { ProgressBar } from "~/ui/progress-bar";
 import { StatusPill } from "~/ui/status";
 import { TabContent } from "~/ui/tabs";
@@ -324,6 +325,7 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
         <div role="status" className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Unavailable reason={overviewUnavailableReason} />
           <span className="text-micro text-ink-3">Showing scheduler and configuration data where available.</span>
+          {overview.error && <TechnicalDetails detail={errorDetails(overview.error)} className="mt-1 w-full" />}
         </div>
       )}
       {overview.error && !so && !isSourceUnavailable(overview.error) && (
@@ -454,6 +456,12 @@ export function SchedulerSection({ collapseQueueTable = false }: { collapseQueue
           {stale && (
             <div className="col-span-full">
               <Unavailable variant="info" reason="upstream served stale cache" />
+            </div>
+          )}
+          {metricsQ.error && (
+            <div className="col-span-full">
+              <p className="m-0 text-small text-ink-3">Cluster metrics could not be read.</p>
+              <TechnicalDetails detail={errorDetails(metricsQ.error)} />
             </div>
           )}
         </Entity>

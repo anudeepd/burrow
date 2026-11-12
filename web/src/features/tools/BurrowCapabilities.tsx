@@ -4,8 +4,9 @@ import { useConnection } from "~/api/connection";
 import type { Meta, MetaService } from "~/api/schemas";
 import { fmtEpoch, fmtRelative } from "~/lib/format";
 import { PREF_DEFAULTS, usePref } from "~/state/prefs";
+import { simpleErrorText } from "~/lib/error-details";
 import { useMounted } from "~/lib/use-mounted";
-import { ErrorState } from "~/ui/feedback";
+import { ErrorState, TechnicalDetails } from "~/ui/feedback";
 import { StatusPill } from "~/ui/status";
 import { HelpTip } from "~/ui/tooltip";
 import { TabContent } from "~/ui/tabs";
@@ -62,10 +63,16 @@ export function BurrowCapabilities() {
             <dt className="flex items-center gap-1 text-ink-3">
               Connection
               <HelpTip label="Connection status">
-                {lastError ??
-                  (lastOkAt != null
-                    ? `Last successful API response at ${fmtEpoch(lastOkAt, tz)}.`
-                    : "Burrow has not received a successful API response yet.")}
+                {lastError ? (
+                  <div className="flex flex-col gap-1">
+                    <p className="m-0">{simpleErrorText(lastError)}</p>
+                    <TechnicalDetails detail={lastError} className="mt-1" />
+                  </div>
+                ) : lastOkAt != null ? (
+                  `Last successful API response at ${fmtEpoch(lastOkAt, tz)}.`
+                ) : (
+                  "Burrow has not received a successful API response yet."
+                )}
               </HelpTip>
             </dt>
             <dd className={failures > 0 ? "m-0 text-fail" : "m-0 text-ink-2"}>{apiStatus}</dd>

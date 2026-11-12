@@ -72,6 +72,7 @@ function renderToolPage(
     stacksFetching?: boolean;
     stacksError?: unknown;
     noJmxData?: boolean;
+    jmxData?: unknown;
     jmxFetching?: boolean;
   } = {},
 ) {
@@ -95,7 +96,7 @@ function renderToolPage(
   });
   const client = new QueryClient({ defaultOptions: { queries: { enabled: false, retry: false, refetchOnMount: false } } });
   const host = new URLSearchParams(search.replace(/^\?/, "")).get("host");
-  if (!options.noJmxData) client.setQueryData(tq.jmx("").queryKey, jmxPayload);
+  if (!options.noJmxData) client.setQueryData(tq.jmx("").queryKey, (options.jmxData ?? jmxPayload) as never);
   else if (options.jmxFetching) {
     const query = client.getQueryCache().build(client, tq.jmx("") as never);
     query.setState({ ...query.state, data: undefined, status: "pending", fetchStatus: "fetching", dataUpdatedAt: 0 });
@@ -138,6 +139,27 @@ afterEach(() => {
 });
 
 describe("JmxView", () => {
+  it("shows a daemon MBean-pattern rejection as one line with technical details", async () => {
+    renderToolPage("jmx", "", {
+      jmxData: {
+        beans: [
+          {
+            name: "Nope:*",
+            result: "ERROR",
+            message: "No MBean matching Nope:*\n\tat org.apache.hadoop.jmx.JMXJsonServlet.doGet(JMXJsonServlet.java:1)",
+          },
+        ],
+      },
+    });
+
+    expect(await screen.findByRole("heading", { name: "The daemon rejected this MBean pattern" })).toBeTruthy();
+    expect(screen.getByText("No MBean matching Nope:*")).toBeTruthy();
+    expect(screen.queryByText(/at org\.apache\.hadoop/)).toBeNull();
+
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/at org\.apache\.hadoop/)).toBeTruthy();
+  });
+
   it("renders nested values, follows a deep link, and updates the URL after searching", { timeout: 30_000 }, async () => {
     const { router, client } = renderToolPage("jmx", "?bean=java.lang%3Atype%3DMemory&attr=HeapMemoryUsage.used");
 

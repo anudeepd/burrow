@@ -185,6 +185,10 @@ describe("API query option factories", () => {
     expect(errorReason(new ApiError("missing", "http", 404))).toContain("not exposed");
     expect(errorReason(new ApiError("failed", "http", 500, null, null, "check the daemon"))).toBe("check the daemon");
     expect(errorReason(new ApiError("request failed", "http", 500))).toBe("request failed");
+    expect(
+      errorReason(new ApiError("java.lang.IllegalStateException: warming up\n\tat org.apache.hadoop.RM.start(RM.java:1)", "http", 500)),
+    ).toBe("java.lang.IllegalStateException: warming up");
+    expect(errorReason(new ApiError("failed", "http", 500, null, null, "check the daemon\nsecond line"))).toBe("check the daemon");
     expect(errorReason(new Error("network down"))).toBe("network down");
     expect(errorReason("bad response")).toBe("unknown error");
     for (const status of [404, 501, 502, 503]) expect(isSourceUnavailable(new ApiError("unavailable", "http", status))).toBe(true);

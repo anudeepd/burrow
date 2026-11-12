@@ -5,7 +5,7 @@ import type { ClusterInfoResponse, ClusterMetrics, NodesResponse } from "~/api/s
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, fireEvent, render, screen, waitFor, within } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen, waitFor, within } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
 const { q } = await import("~/api/queries");
@@ -743,6 +743,25 @@ describe("overview sections", () => {
     expect(scheduler.querySelector('[data-yf="scheduler.derived.maxAllocationText"]')?.className).toContain("tnum");
     expect(scheduler.querySelector('[data-yf="scheduler.derived.minAllocationText"]')?.textContent).toContain("256");
     expect(await screen.findAllByText("1 row")).toHaveLength(2);
+  });
+
+  it("keeps a multi-line scheduler source failure to one line with technical details", async () => {
+    const { client } = renderOverview(<SchedulerSection />);
+    const query = client.getQueryCache().find({ queryKey: ov.schedulerOverview().queryKey })!;
+    act(() =>
+      query.setState({
+        ...query.state,
+        data: undefined,
+        status: "error",
+        error: new ApiError("java.lang.IllegalStateException: warming up\n\tat org.apache.hadoop.RM.start(RM.java:1)", "http", 503),
+      }),
+    );
+
+    const section = await screen.findByTestId("scheduler");
+    expect(section.textContent).toContain("HTTP 503: java.lang.IllegalStateException: warming up");
+    expect(section.textContent).not.toContain("at org.apache.hadoop");
+    fireEvent.click(within(section).getByText("Technical details"));
+    expect(within(section).getByText(/at org\.apache\.hadoop/)).toBeTruthy();
   });
 
   it("formats missing scheduler metric-source errors", () => {

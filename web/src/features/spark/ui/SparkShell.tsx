@@ -233,7 +233,6 @@ function SparkHeader({
           title={
             application ? "Spark application refresh failed; showing the last loaded details" : "Could not load Spark application details"
           }
-          message={applicationError instanceof Error ? applicationError.message : String(applicationError)}
           error={applicationError}
           onRetry={onRetryApplication}
         />
