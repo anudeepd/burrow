@@ -1019,6 +1019,54 @@ async fn follow_stream_stops_when_a_finished_source_ignores_the_range() {
 }
 
 #[tokio::test]
+async fn follow_stream_stops_when_a_running_source_repeats_a_full_window() {
+    let mock = Mock::start().await;
+    mock.seed_rm().await;
+    seed_nodes(&mock).await;
+    seed_app(&mock, "RUNNING").await;
+    seed_nm(&mock, "RUNNING").await;
+    let window = "x".repeat(256 * 1024);
+    let page = format!("<pre>{window}</pre>");
+    // The same full-size window for every offset: the source ignores start/end.
+    mock.set(
+        &format!("{}stdout/?start=0&end=262144", nm_base()),
+        Canned::new(200, "text/html;charset=utf-8", page.as_str()),
+    )
+    .await;
+    mock.set(
+        &format!("{}stdout/?start=262144&end=524288", nm_base()),
+        Canned::new(200, "text/html;charset=utf-8", page.as_str()),
+    )
+    .await;
+    let h = Harness::start(logs_config(&mock)).await;
+
+    let mut sse = Sse::open(
+        &h,
+        &format!(
+            "/api/logs/containers/{CID}/files/stdout/stream?node={}&user={USER}&offset=0",
+            mock.authority()
+        ),
+    )
+    .await;
+
+    let f = sse
+        .next_frame(Duration::from_secs(5))
+        .await
+        .expect("first chunk");
+    assert!(f.starts_with("event: chunk"), "{f}");
+    assert!(f.contains("\"start\":0"), "{f}");
+    assert!(f.contains("\"end\":262144"), "{f}");
+
+    let f = sse
+        .next_frame(Duration::from_secs(5))
+        .await
+        .expect("stall error");
+    assert!(f.starts_with("event: error"), "{f}");
+    assert!(f.contains("stopped advancing"), "{f}");
+    assert!(sse.next_frame(Duration::from_secs(1)).await.is_none());
+}
+
+#[tokio::test]
 async fn follow_stream_of_an_aggregated_log_replays_then_eofs() {
     let mock = Mock::start().await;
     mock.seed_rm().await;

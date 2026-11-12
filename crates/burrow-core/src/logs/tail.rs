@@ -139,11 +139,11 @@ async fn run_with_limits(
                         break;
                     }
                     // The same window offered again after the offset advanced is the other shape of the same
-                    // failure: the source is not honoring the range, so it can never reach a real EOF. A
-                    // full-size window from a log that is still running can legitimately repeat (a periodic
-                    // log); a short window, or any repeat from a finished container, cannot.
-                    let repeated = last_window.as_ref().is_some_and(|last| last == &w.text)
-                        && (running == Some(false) || n < end.saturating_sub(offset));
+                    // failure: the source is not honoring the range, so it can never reach a real EOF. Any
+                    // repeat stalls the stream, full-size included. A source that honors the range cannot
+                    // return the same bytes for a later offset unless the file literally grew by a duplicate
+                    // chunk, and even then emitting it forever is worse than stopping.
+                    let repeated = last_window.as_ref().is_some_and(|last| last == &w.text);
                     if repeated {
                         if running == Some(false) {
                             let _ = tx.send(TailEvent::Eof).await;

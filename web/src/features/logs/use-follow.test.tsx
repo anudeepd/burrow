@@ -293,6 +293,64 @@ describe("useFollow", () => {
     unmount();
   });
 
+  it("stops when a reconnect replays the last stream window", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    const opts = options();
+    const { result, unmount } = renderHook(() => useFollow(opts));
+
+    const first = FakeEventSource.instances[0]!;
+    const chunk = JSON.stringify({ start: 0, text: "INFO repeated line\n" });
+    act(() => first.emit("chunk", chunk));
+    expect(opts.buffer.toLines()).toEqual(["INFO repeated line"]);
+    expect(opts.onAppend).toHaveBeenCalledOnce();
+
+    act(() => first.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    const second = FakeEventSource.instances[1]!;
+    act(() => second.emit("chunk", JSON.stringify({ start: 19, text: "INFO repeated line\n" })));
+
+    expect(opts.buffer.toLines()).toEqual(["INFO repeated line"]);
+    expect(opts.onAppend).toHaveBeenCalledOnce();
+    expect(opts.buffer.ended).toBe(true);
+    expect(result.current.status.mode).toBe("ended");
+    expect(opts.onEnded).toHaveBeenCalledOnce();
+    unmount();
+  });
+
+  it("does not append a poll window that repeats the last stream chunk", async () => {
+    vi.useFakeTimers();
+    globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;
+    fetchWindow.mockResolvedValue({
+      text: "INFO repeated line\n",
+      start: 19,
+      end: 38,
+      size: 40,
+      source: "node",
+      ended: false,
+      responseMeta: { api: null, cache: null, upstream: null, ageMs: null, etag: null },
+    });
+    const opts = options();
+    const { result, unmount } = renderHook(() => useFollow(opts));
+
+    const first = FakeEventSource.instances[0]!;
+    act(() => first.emit("chunk", JSON.stringify({ start: 0, text: "INFO repeated line\n" })));
+    act(() => first.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(1_000));
+    act(() => FakeEventSource.instances[1]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(2_000));
+    act(() => FakeEventSource.instances[2]?.emit("error"));
+    await act(async () => vi.advanceTimersByTimeAsync(250));
+
+    expect(fetchWindow).toHaveBeenCalledOnce();
+    expect(opts.buffer.toLines()).toEqual(["INFO repeated line"]);
+    expect(opts.onAppend).toHaveBeenCalledOnce();
+    expect(opts.buffer.ended).toBe(true);
+    expect(result.current.status.mode).toBe("ended");
+    expect(opts.onEnded).toHaveBeenCalledOnce();
+    unmount();
+  });
+
   it("stops polling when the source returns the same window at a later offset", async () => {
     vi.useFakeTimers();
     globalThis.EventSource = FakeEventSource as unknown as typeof EventSource;

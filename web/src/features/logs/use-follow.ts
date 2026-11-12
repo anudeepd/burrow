@@ -79,8 +79,8 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
     let failures = 0;
     let pollFailures = 0;
     let pollingReason = "stream unavailable";
-    /** The last non-empty poll window, to stop a source that repeats it instead of advancing. */
-    let lastPollText: string | null = null;
+    /** The last non-empty window from either transport, to stop a source that repeats it instead of advancing. */
+    let lastWindowText: string | null = null;
 
     const publish = (next: FollowMode, detail: string | null = null) => {
       if (cancelled) return;
@@ -123,14 +123,14 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
                 hints: hintsRef.current,
               });
               if (cancelled || ended) return;
-              if (w.text && w.text === lastPollText) {
+              if (w.text && w.text === lastWindowText) {
                 // The source returned the same window for a later offset: it is not advancing, so polling it
                 // would append the same lines forever. Stop instead of duplicating.
                 finish();
                 return;
               }
               if (w.text) {
-                lastPollText = w.text;
+                lastWindowText = w.text;
                 buffer.append(w.text, w.start);
                 onAppendRef.current();
               }
@@ -185,6 +185,12 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
         if (cancelled || ended) return;
         try {
           const d = JSON.parse((ev as MessageEvent<string>).data) as { start: number; text: string };
+          if (d.text && d.text === lastWindowText) {
+            // A reconnect replayed the same window at the current offset: the source is not advancing.
+            finish();
+            return;
+          }
+          lastWindowText = d.text;
           buffer.append(d.text, d.start);
           onAppendRef.current();
         } catch {
