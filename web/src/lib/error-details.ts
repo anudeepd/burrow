@@ -31,7 +31,7 @@ export function simpleErrorText(text: string): string {
 export function isTechnicalErrorText(text: string): boolean {
   const line = simpleErrorText(text);
   return (
-    /\b(?:java|javax|jdk|sun|com\.sun|org\.apache|com\.[a-z][\w$]*)\.[\w.$]+/.test(line) ||
+    /\b(?:java|javax|jdk|sun|com\.sun|org\.apache|com\.[a-z][\w$]*)\.[\w$]+/.test(line) ||
     /^\s*at\s+[^(]+\(/.test(line) ||
     /^(?:Caused by:\s*)?[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*(?:Exception|Error)\b\s*:/.test(line) ||
     /^(?:Exception in thread\b|Traceback \(most recent call last\):|panic:)/.test(line) ||

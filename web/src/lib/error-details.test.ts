@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "~/api/client";
-import { copyText, describeError, errorDetails, simpleErrorText } from "./error-details";
+import { copyText, describeError, errorDetails, isTechnicalErrorText, simpleErrorText } from "./error-details";
 
 afterEach(() => {
   Reflect.deleteProperty(navigator, "clipboard");
@@ -54,6 +54,23 @@ describe("error presentation", () => {
       "The upstream response did not match the expected shape.",
     );
     expect(describeError(new ApiError("no route", "http", 404)).message).toBe("no route");
+  });
+
+  it("recognizes Java fully qualified names without scanning past the next dot", () => {
+    for (const text of [
+      "java.lang.IllegalStateException: broken",
+      "javax.security.auth.login.LoginException: broken",
+      "jdk.internal.misc.Unsafe",
+      "sun.misc.Unsafe",
+      "com.sun.net.httpserver.HttpServer",
+      "org.apache.hadoop.ipc.RemoteException: broken",
+      "com.example.app.Broken: failed",
+    ]) {
+      expect(isTechnicalErrorText(text), text).toBe(true);
+    }
+    for (const text of ["org.example.Thing failed", "com.example", "The ResourceManager did not return its log directory."]) {
+      expect(isTechnicalErrorText(text), text).toBe(false);
+    }
   });
 
   it("recognizes each technical payload shape", () => {
