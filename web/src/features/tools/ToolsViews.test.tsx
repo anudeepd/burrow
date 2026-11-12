@@ -711,6 +711,21 @@ describe("tools pages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
   });
 
+  it("keeps a multi-line log-directory failure to one line with technical details", async () => {
+    renderToolsPage("logs", "", {
+      listingError: new Error(
+        "java.lang.IllegalStateException: the ResourceManager log directory is not configured\n\tat org.apache.hadoop.yarn.server.ResourceManager.getLogDir(ResourceManager.java:4321)",
+      ),
+    });
+
+    expect(await screen.findByRole("heading", { name: "Cannot read the daemon's log directory" })).toBeTruthy();
+    expect(screen.getByText("java.lang.IllegalStateException: the ResourceManager log directory is not configured")).toBeTruthy();
+    expect(screen.queryByText(/at org\.apache\.hadoop/)).toBeNull();
+
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/at org\.apache\.hadoop/)).toBeTruthy();
+  });
+
   it("stringifies an unexpected non-Error listing failure", async () => {
     const { client } = renderToolsPage("logs", "?file=rm.out");
     await screen.findByRole("log", { name: /rm\.out/ });
