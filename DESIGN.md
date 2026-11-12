@@ -376,7 +376,7 @@ tween `stroke-dashoffset` inline). Entrance *primitives* are transitions, not ke
   the same first-result slide; rows never stagger.
 - `.burrow-page-scroll` section content — a CSS `view()` timeline reveals direct content blocks after each section heading with an
   8px rise as native scroll enters them. Unsupported browsers and reduced motion keep content static.
-- `[role=tabpanel]` fades incoming/outgoing panels with `--dur-content`; `.burrow-tab-content` fades filtered results and explicit visualization modes in place (node table/heatmap, label catalogue/mapping, Overview history ranges, Scheduler treemap basis). Poll-driven geometry and individual rows remain unanimated.
+- `[role=tabpanel]` fades incoming/outgoing panels with `--dur-content`; `.burrow-tab-content` fades filtered results and explicit visualization modes in place (node table/heatmap, label catalogue/mapping, Overview history ranges, Scheduler treemap basis). The container log uses the same fade for a file switch with a 4px rise, and fades the pane in place from 40% opacity when wrap changes. Poll-driven geometry and individual rows remain unanimated.
 - `.burrow-tab-indicator` — one persistent underline per strip slides with `--dur-base`/`--ease-in-out`. Application and Spark navigation
   keep real router links; their shared frames stay mounted and only the outlet content fades. Indicator geometry follows tab and strip resizing.
 - Interrupted content fades preserve focus and in-progress inputs, cancel the previous animation before retargeting, and handle only
@@ -406,8 +406,11 @@ tween `stroke-dashoffset` inline). Entrance *primitives* are transitions, not ke
 6. Provide a static equivalent so the meaning survives gating.
 7. Do not animate layout properties, `box-shadow`, filters over large areas, or individual rows of the 10k-row table. Tab
    changes may fade the result wrapper with `--dur-content`; never animate each row. Hover motion is pointer-gated (Tailwind
-   v4's `hover:` compiles to `@media (hover: hover)`; raw CSS `:hover` needs the media query by hand). Theme changes are
-   forced to snap by `data-switching` (a flip that cross-fades every colour on the page reads as a smear, not a state change).
+   v4's `hover:` compiles to `@media (hover: hover)`; raw CSS `:hover` needs the media query by hand). Theme changes
+   crossfade two complete root snapshots through the View Transitions API at `--dur-base` when the platform supports it;
+   `data-switching` suppresses per-property transitions during the swap. Reduced motion and parity snap. This is a
+   snapshot crossfade, not a per-property colour interpolation. A log-file switch is an explicit content replace and may
+   add the 4px entrance rise to its `--dur-content` fade; a wrap toggle only fades the pane in place.
 8. Four explicit exceptions to rules 3/7: `.burrow-rail` width moves between 56px and 248px on a user toggle (the main column
    reflows for the 240ms shell transition); the tab indicator tweens `width` alongside `translate` (one absolutely-positioned
    2px bar re-lays out nothing); the `ResourceRing` tweens `stroke-dashoffset` (a ring cannot be expressed as

@@ -273,9 +273,13 @@ html[data-motion="reduced"] .animate-spin, html[data-motion="reduced"] .animate-
   .animate-spin, .animate-pulse { animation-duration: 2.4s !important; }
 }
 
-/* Theme changes flip every colour in one frame; `applyPrefsToDom()` sets the lock before the theme attribute lands and
-   clears it on the next frame (better-ui: suppress transitions on theme switch). */
+/* The theme swap crossfades two full-page snapshots, so text and its surface stay paired. The lock suppresses
+   per-property transitions during the capture; reduced motion and parity never start the view transition. */
 html[data-switching] *, html[data-switching] *::before, html[data-switching] *::after { transition: none !important; }
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-out);
+}
 
 /* ---------- keyframes (transform/opacity only; the DAG's SVG dash flow lives in features/dag/dag.css) ---------- */
 @keyframes burrow-needle {

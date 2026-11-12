@@ -162,6 +162,26 @@ describe("fadeIn()", () => {
     expect(getPropertyValue).toHaveBeenCalledWith("--dur-content");
     fadeIn(el, 0.4);
     expect(animate).toHaveBeenLastCalledWith([{ opacity: 0.4 }, { opacity: 1 }], { duration: 120, easing: EASE_OUT });
+    fadeIn(el, 0.4, 4);
+    expect(animate).toHaveBeenLastCalledWith([{ opacity: 0.4 }, { opacity: 1 }], { duration: 120, easing: EASE_OUT });
+  });
+
+  it("adds the requested rise only when motion is allowed", () => {
+    document.documentElement.removeAttribute("data-motion");
+    parityStore.setState(() => ({ enabled: false }));
+    const el = document.createElement("div");
+    const animate = vi.fn(() => ({ playState: "running", finished: Promise.resolve(), cancel: () => {} }) as unknown as Animation);
+    Object.defineProperty(el, "animate", { value: animate, configurable: true });
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({ getPropertyValue: () => "220ms" } as unknown as CSSStyleDeclaration);
+
+    fadeIn(el, 0, 4);
+    expect(animate).toHaveBeenCalledWith(
+      [
+        { opacity: 0, transform: "translateY(4px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ],
+      { duration: 220, easing: EASE_OUT },
+    );
   });
 
   it("disables tab fades in parity mode and without WAAPI", () => {

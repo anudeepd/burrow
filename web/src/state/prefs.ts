@@ -1,5 +1,6 @@
 /** User preferences: theme, time zone and live-refresh behaviour. Persisted to localStorage; applied to <html>. */
 import { createStore, useSelector } from "@tanstack/react-store";
+import { motionAllowed } from "~/lib/motion";
 import { prefsMotionProbe } from "./parity";
 
 export type Theme = "system" | "dark" | "light";
@@ -67,15 +68,52 @@ function setFaviconTheme(theme: "dark" | "light"): void {
   }
 }
 
+interface ThemeTransition {
+  finished: Promise<void>;
+}
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (update: () => void) => ThemeTransition;
+};
+
 /**
- * Theme flips every colour in one frame, so the transition lock prevents the palette from smearing while it changes.
- * Motion here is not an affordance, it is an artifact, so this is not the reduced-motion gate's business.
+ * A theme flip changes every colour at once. The view transition crossfades two complete snapshots, so the text and its
+ * surface stay paired; it is not a per-property colour interpolation. Reduced motion and parity snap.
+ */
+function startThemeTransition(write: () => void): ThemeTransition | null {
+  if (!motionAllowed()) {
+    write();
+    return null;
+  }
+  const doc = document as ViewTransitionDocument;
+  if (typeof doc.startViewTransition !== "function") {
+    write();
+    return null;
+  }
+  try {
+    return doc.startViewTransition(write);
+  } catch {
+    write();
+    return null;
+  }
+}
+
+/**
+ * The transition lock suppresses incidental per-property transitions during the swap. It stays until the root
+ * crossfade finishes; without a transition it clears after two frames, as before.
  */
 function withSwitchLock(changed: boolean, write: () => void): void {
   const el = document.documentElement;
-  if (changed) el.setAttribute("data-switching", "1");
-  write();
-  if (!changed) return;
+  if (!changed) {
+    write();
+    return;
+  }
+  el.setAttribute("data-switching", "1");
+  const transition = startThemeTransition(write);
+  if (transition) {
+    const clear = () => el.removeAttribute("data-switching");
+    void transition.finished.then(clear, clear);
+    return;
+  }
   requestAnimationFrame(() => requestAnimationFrame(() => el.removeAttribute("data-switching")));
 }
 

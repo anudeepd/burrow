@@ -3,7 +3,7 @@
  *
  * One policy, with a tier-3 exception: parity disables every JS animation; movement/feedback also obey reduced motion.
  * CSS state fades use `--dur-fade`; tab-content WAAPI fades use `--dur-content` so they stay in sync with CSS panels.
- * `fadeIn()` remains an opacity-only bridge and survives reduced motion through the content token's fallback.
+ * `fadeIn()` remains a transform/opacity bridge and survives reduced motion as opacity only, through the content token's fallback.
  *
  * `flash()` is the shared "this value just changed" cue used by data-table rows: a live-tinted overlay fades from 0.5
  * to 0, timed by `--dur-flash`, so the token and the code cannot drift apart.
@@ -48,11 +48,18 @@ export function cancelAnimation(animation: Animation | undefined): void {
   animation.cancel();
 }
 /** Fade changed tab content in place; `from` preserves opacity when a switch retargets in flight. */
-export function fadeIn(el: Element | null, from = 0): Animation | undefined {
+export function fadeIn(el: Element | null, from = 0, shiftY = 0): Animation | undefined {
   if (!el || isParity() || typeof el.animate !== "function") return undefined;
   const duration = tokenMs(el, "--dur-content", 220);
   if (duration <= 0) return undefined;
-  return el.animate([{ opacity: from }, { opacity: 1 }], { duration, easing: EASE_OUT });
+  const distance = motionAllowed() ? shiftY : 0;
+  const frames = distance
+    ? [
+        { opacity: from, transform: `translateY(${distance}px)` },
+        { opacity: 1, transform: "translateY(0)" },
+      ]
+    : [{ opacity: from }, { opacity: 1 }];
+  return el.animate(frames, { duration, easing: EASE_OUT });
 }
 
 /** The row/line change cue: overlay opacity 0.5 → 0 over `--dur-flash`. No-op when motion is off. */

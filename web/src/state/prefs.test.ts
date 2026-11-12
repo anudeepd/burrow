@@ -3,6 +3,11 @@ import { act, renderHook } from "@testing-library/react";
 
 afterEach(() => {
   localStorage.removeItem("burrow.prefs.v1");
+  if (typeof document !== "undefined") {
+    Reflect.deleteProperty(document, "startViewTransition");
+    document.documentElement.removeAttribute("data-switching");
+    document.documentElement.removeAttribute("data-motion");
+  }
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.resetModules();
@@ -76,6 +81,80 @@ describe("preference loading", () => {
       for (const listener of listeners) listener();
     });
   });
+  it("crossfades a theme change through a root view transition", async () => {
+    const { applyPrefsToDom, PREF_DEFAULTS } = await import("./prefs");
+    const el = document.documentElement;
+    el.setAttribute("data-theme", "dark");
+    el.removeAttribute("data-motion");
+    const start = vi.fn((write: () => void) => {
+      write();
+      return { finished: Promise.resolve() };
+    });
+    Object.defineProperty(document, "startViewTransition", { configurable: true, value: start });
+
+    applyPrefsToDom({ ...PREF_DEFAULTS, theme: "light" });
+
+    expect(start).toHaveBeenCalledOnce();
+    expect(el.getAttribute("data-theme")).toBe("light");
+    expect(el.getAttribute("data-switching")).toBe("1");
+    await Promise.resolve();
+    expect(el.hasAttribute("data-switching")).toBe(false);
+  });
+
+  it("snaps theme changes instead of crossfading under reduced motion", async () => {
+    const { applyPrefsToDom, PREF_DEFAULTS } = await import("./prefs");
+    const el = document.documentElement;
+    el.setAttribute("data-theme", "dark");
+    el.setAttribute("data-motion", "reduced");
+    const start = vi.fn((write: () => void) => {
+      write();
+      return { finished: Promise.resolve() };
+    });
+    Object.defineProperty(document, "startViewTransition", { configurable: true, value: start });
+
+    applyPrefsToDom({ ...PREF_DEFAULTS, theme: "light" });
+
+    expect(start).not.toHaveBeenCalled();
+    expect(el.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("falls back to a snap when the view transition API throws", async () => {
+    const { applyPrefsToDom, PREF_DEFAULTS } = await import("./prefs");
+    const el = document.documentElement;
+    el.setAttribute("data-theme", "dark");
+    el.removeAttribute("data-motion");
+    Object.defineProperty(document, "startViewTransition", {
+      configurable: true,
+      value: () => {
+        throw new Error("transition busy");
+      },
+    });
+
+    applyPrefsToDom({ ...PREF_DEFAULTS, theme: "light" });
+
+    expect(el.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("clears the switch lock when a view transition is skipped", async () => {
+    const { applyPrefsToDom, PREF_DEFAULTS } = await import("./prefs");
+    const el = document.documentElement;
+    el.setAttribute("data-theme", "dark");
+    el.removeAttribute("data-motion");
+    Object.defineProperty(document, "startViewTransition", {
+      configurable: true,
+      value: (write: () => void) => {
+        write();
+        return { finished: Promise.reject(new Error("skipped")) };
+      },
+    });
+
+    applyPrefsToDom({ ...PREF_DEFAULTS, theme: "light" });
+    await Promise.resolve();
+
+    expect(el.getAttribute("data-theme")).toBe("light");
+    expect(el.hasAttribute("data-switching")).toBe(false);
+  });
+
   it("updates theme-specific favicons and leaves missing URLs untouched", async () => {
     const { applyPrefsToDom, PREF_DEFAULTS } = await import("./prefs");
     const icon = document.createElement("link");

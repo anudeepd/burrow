@@ -323,6 +323,7 @@ export function LogsView() {
       >
         <TabContent
           value={`${windowIdentity}:${hasDisplayedWindow ? "ready" : "pending"}`}
+          shift={hasDisplayedWindow ? 4 : 0}
           className={`flex min-h-0 flex-1 flex-col${hasDisplayedWindow ? "" : " pointer-events-none"}`}
         >
           <LineViewer

@@ -96,6 +96,49 @@ describe("LineViewer", () => {
     expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(1, { align: "end" });
   });
 
+  it("fades the pane when wrap changes instead of snapping the reflow", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    document.documentElement.removeAttribute("data-motion");
+    const animate = vi.fn(() => ({ playState: "running", finished: Promise.resolve(), cancel: () => {} }) as unknown as Animation);
+    Object.defineProperty(Element.prototype, "animate", { configurable: true, value: animate });
+    try {
+      const buffer = makeBuffer("INFO one\nINFO two\n");
+      const view = render(<LineViewer {...base} buffer={buffer} wrap={false} />);
+      animate.mockClear();
+      virtualizer.scrollToIndex.mockClear();
+      view.rerender(<LineViewer {...base} buffer={buffer} wrap />);
+      expect(animate).toHaveBeenCalledWith([{ opacity: 0.4 }, { opacity: 1 }], expect.objectContaining({ duration: expect.any(Number) }));
+      expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(1, { align: "end" });
+
+      const log = screen.getByRole("log", { name: "Container log" });
+      Object.defineProperties(log, {
+        scrollHeight: { configurable: true, value: 200 },
+        clientHeight: { configurable: true, value: 50 },
+        scrollTop: { configurable: true, value: 0 },
+      });
+      fireEvent.scroll(log);
+      virtualizer.scrollToIndex.mockClear();
+      view.rerender(<LineViewer {...base} buffer={buffer} wrap={false} />);
+      expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(0, { align: "start" });
+      view.unmount();
+    } finally {
+      Reflect.deleteProperty(Element.prototype, "animate");
+    }
+  });
+
+  it("fades an empty log on wrap without choosing a scroll target", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    document.documentElement.removeAttribute("data-motion");
+    const buffer = makeBuffer("");
+    const view = render(<LineViewer {...base} buffer={buffer} wrap={false} />);
+    virtualizer.scrollToIndex.mockClear();
+    view.rerender(<LineViewer {...base} buffer={buffer} wrap />);
+    expect(virtualizer.scrollToIndex).not.toHaveBeenCalled();
+    view.unmount();
+  });
+
   it("pins to the last row while following and at the bottom", () => {
     parityStore.setState(() => ({ enabled: false }));
     window.__BURROW_PARITY__ = false;
