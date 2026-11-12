@@ -73,6 +73,15 @@ describe("error presentation", () => {
     }
   });
 
+  it("recognizes stack frames without overlapping whitespace quantifiers", () => {
+    for (const text of ["at Object.<anonymous> (file.js:1:2)", "\tat org.apache.hadoop.RM.getLogDir(RM.java:1)", "at foo(bar)"]) {
+      expect(isTechnicalErrorText(text), text).toBe(true);
+    }
+    for (const text of ["at foo", "at (foo)", "at    (foo)"]) {
+      expect(isTechnicalErrorText(text), text).toBe(false);
+    }
+  });
+
   it("recognizes each technical payload shape", () => {
     for (const text of [
       "IllegalStateException: broken",
