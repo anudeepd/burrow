@@ -23,7 +23,7 @@ import {
   orderLogFiles,
 } from "~/api/queries/logs";
 import { Entity } from "~/ui/datum";
-import { simpleErrorText } from "~/lib/error-details";
+import { describeError } from "~/lib/error-details";
 import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 import { TabContent } from "~/ui/tabs";
 import { Unavailable } from "~/features/nodes/page";
@@ -56,7 +56,7 @@ export function logDownloadSize(meta: { size: number } | null | undefined): numb
 }
 
 export function logErrorMessage(error: unknown): string {
-  return simpleErrorText(error instanceof Error ? error.message : String(error));
+  return describeError(error).message;
 }
 
 export function LogsView() {

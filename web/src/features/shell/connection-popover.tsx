@@ -7,7 +7,7 @@ import { cn } from "~/lib/cn";
 import { type Theme, type TimeZoneMode, setPrefs, usePref } from "~/state/prefs";
 import { Datum, Entity, SINGLETON } from "~/ui/datum";
 import { useMounted } from "~/lib/use-mounted";
-import { describeError, simpleErrorText } from "~/lib/error-details";
+import { describeError } from "~/lib/error-details";
 import { TechnicalDetails } from "~/ui/feedback";
 import { Select } from "~/ui/select";
 import { PopoverContent, PopoverRoot, PopoverTrigger } from "~/ui/popover";
@@ -127,7 +127,7 @@ export function ConnectionPopover() {
               ) : (
                 <div className="w-full">
                   <p className="m-0 text-small text-fail" role="alert">
-                    {simpleErrorText(lastError!)}
+                    {describeError(lastError!).message}
                   </p>
                   <TechnicalDetails detail={lastError!} className="mt-1" />
                 </div>

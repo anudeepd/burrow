@@ -19,7 +19,7 @@ import { type CSSProperties, type KeyboardEvent, type SetStateAction, useCallbac
 import { nq } from "~/api/queries/nodes";
 import { tq } from "~/api/queries/tools";
 import { CopyButton, PageHead, SearchField, Section, Stat } from "~/features/nodes/page";
-import { simpleErrorText } from "~/lib/error-details";
+import { describeError } from "~/lib/error-details";
 import { cn } from "~/lib/cn";
 import { utilizationTone } from "~/lib/progress-tone";
 import { revealDetail } from "~/lib/reveal";
@@ -315,7 +315,7 @@ export function JmxView() {
         <CenteredPageState>
           <ErrorState
             title="The daemon rejected this MBean pattern"
-            message={simpleErrorText(errorBean.message)}
+            message={describeError(errorBean.message).message}
             hint="Clear the pattern to list every bean."
             detail={errorBean.message}
           />

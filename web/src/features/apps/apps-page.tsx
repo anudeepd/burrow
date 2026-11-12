@@ -34,7 +34,7 @@ import {
 } from "./search";
 import { useNow } from "~/features/shell/use-now";
 import { computeFacets, filterApps, NO_FACETS, type Facets } from "./view";
-import { simpleErrorText } from "~/lib/error-details";
+import { describeError, simpleErrorText } from "~/lib/error-details";
 import { expandWindow, initialWindow, nextWindow, viewKey, windowFilters, type AppWindowState } from "./window";
 
 const EMPTY_APPS: App[] = [];
@@ -197,7 +197,8 @@ export function AppsPage({
       }
     : inReview
       ? null
-      : (activeQuery.error as { message?: string; hint?: string | null } | null);
+      : activeQuery.error;
+  const describedError = error ? describeError(error) : null;
 
   return (
     <div ref={pageRef} className="burrow-scroll burrow-page-scroll burrow-apps-page flex min-h-0 flex-1 flex-col gap-3">
@@ -369,8 +370,8 @@ export function AppsPage({
               <ErrorState
                 title="Cannot load applications"
                 error={activeQuery.error}
-                message={errorMessageView(error.message, renderVersion)}
-                hint={errorMessageView(error.hint ?? undefined, renderVersion)}
+                message={errorMessageView(describedError?.message, renderVersion)}
+                hint={errorMessageView(describedError?.hint, renderVersion)}
                 onRetry={() => void activeQuery.refetch()}
                 className={renderVersion === "pre" ? undefined : "max-w-lg min-w-0"}
               />

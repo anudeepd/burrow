@@ -113,7 +113,7 @@ describe("BurrowCapabilities service status", () => {
     );
 
     fireEvent.click(screen.getByLabelText("About Connection status"));
-    expect(await screen.findByText("java.lang.IllegalStateException: connection lost")).toBeTruthy();
+    expect(await screen.findByText("The request failed.")).toBeTruthy();
     expect(screen.queryByText(/at org\.apache\.hadoop/)).toBeNull();
 
     fireEvent.click(screen.getByText("Technical details"));

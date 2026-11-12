@@ -163,7 +163,7 @@ test.describe("retryable API failure states", () => {
   });
 
   test("bounds a long failure message and scrolls its payload", async ({ page }) => {
-    const long = "java.lang.IllegalStateException: the ResourceManager did not answer. ".repeat(40);
+    const long = "The ResourceManager did not answer. ".repeat(40);
     await page.route("**/api/yarn/nodes*", (route) =>
       route.fulfill({
         status: 502,

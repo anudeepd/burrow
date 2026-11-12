@@ -9,6 +9,7 @@
  *  3. `not-found`       — the app/entity genuinely is not in the source (Spark's own 404).
  */
 import { ApiError } from "~/api/client";
+import { describeError, isTechnicalErrorText } from "~/lib/error-details";
 
 export type SparkFailureKind = "backend-missing" | "unavailable" | "not-found" | "unreachable" | "schema" | "other";
 
@@ -30,6 +31,8 @@ const BACKEND_MISSING_RE = /unknown api group|not implemented|no route/i;
 
 export function classifySparkError(err: unknown, subject: string): SparkFailure {
   if (err instanceof ApiError) {
+    const described = describeError(err);
+    const hasMessage = err.message.trim().length > 0 && !isTechnicalErrorText(err.message);
     const detailParts = [
       err.message,
       err.code,
@@ -51,7 +54,7 @@ export function classifySparkError(err: unknown, subject: string): SparkFailure 
       return {
         kind: "unavailable",
         title: "No Spark data source for this application",
-        message: err.message || `The backend could not resolve a Spark REST source for ${subject}.`,
+        message: hasMessage ? described.message : `The backend could not resolve a Spark REST source for ${subject}.`,
         hint: err.hint ?? "A finished application needs the Spark History Server; a live one needs the running driver's web proxy.",
         detail,
         status: err.status,
@@ -62,7 +65,7 @@ export function classifySparkError(err: unknown, subject: string): SparkFailure 
       return {
         kind: "not-found",
         title: "Not found in the Spark source",
-        message: err.message || `Spark reports no ${subject}.`,
+        message: hasMessage ? described.message : `Spark reports no ${subject}.`,
         hint: "It may have been evicted by the history server's retention limit, or belong to a different application attempt.",
         detail,
         status: err.status,
@@ -73,7 +76,7 @@ export function classifySparkError(err: unknown, subject: string): SparkFailure 
       return {
         kind: "unreachable",
         title: "The Spark source is unreachable",
-        message: err.message,
+        message: hasMessage ? described.message : "The Spark source is unreachable.",
         hint: err.hint ?? "Check the ResourceManager web proxy / Spark History Server and retry.",
         detail,
         status: err.status,
@@ -83,15 +86,19 @@ export function classifySparkError(err: unknown, subject: string): SparkFailure 
     return {
       kind: err.kind === "schema" ? "schema" : "other",
       title: err.kind === "schema" ? "Unexpected Spark payload shape" : "Spark request failed",
-      message: err.message,
+      message: hasMessage
+        ? described.message
+        : err.kind === "schema"
+          ? "The upstream response did not match the expected shape."
+          : "The Spark request failed.",
       hint: err.hint ?? undefined,
       detail,
       status: err.status,
       code: err.code,
     };
   }
-  const message = err instanceof Error ? err.message : String(err);
-  return { kind: "other", title: "Spark request failed", message, detail: message, status: null, code: null };
+  const described = describeError(err);
+  return { kind: "other", title: "Spark request failed", message: described.message, detail: described.details, status: null, code: null };
 }
 
 /** True when a `source` payload says the app has no usable Spark REST base (distinct from a route failure). */

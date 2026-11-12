@@ -13,7 +13,7 @@ import { useStableQuery } from "~/api/use-stable-query";
 import type { RefetchKind } from "~/api/refetch";
 import { cn } from "~/lib/cn";
 import { fmtEpoch } from "~/lib/format";
-import { errorDetails, simpleErrorText } from "~/lib/error-details";
+import { errorDetails } from "~/lib/error-details";
 import { useParity } from "~/state/parity";
 import { usePref } from "~/state/prefs";
 import { Button } from "~/ui/button";
@@ -291,7 +291,7 @@ function SourceBanner({ source, error, onRetry }: { source: SparkSource | null; 
           <OptionalTooltip label={missing ? f.message : undefined}>
             <span className="font-medium">{missing ? "No Spark routes in this backend build" : "Spark source check failed"}</span>
           </OptionalTooltip>
-          {!missing && <span className="min-w-0 flex-1 basis-48 wrap-anywhere line-clamp-2 text-ink-3">{simpleErrorText(f.message)}</span>}
+          {!missing && <span className="min-w-0 flex-1 basis-48 wrap-anywhere line-clamp-2 text-ink-3">{f.message}</span>}
           <Button variant="quiet" size="sm" onClick={onRetry}>
             Retry
           </Button>

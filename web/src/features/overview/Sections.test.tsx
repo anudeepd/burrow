@@ -758,7 +758,7 @@ describe("overview sections", () => {
     );
 
     const section = await screen.findByTestId("scheduler");
-    expect(section.textContent).toContain("HTTP 503: java.lang.IllegalStateException: warming up");
+    expect(section.textContent).toContain("HTTP 503: The upstream service returned HTTP 503.");
     expect(section.textContent).not.toContain("at org.apache.hadoop");
     fireEvent.click(within(section).getByText("Technical details"));
     expect(within(section).getByText(/at org\.apache\.hadoop/)).toBeTruthy();

@@ -36,6 +36,26 @@ describe("error presentation", () => {
     expect(describeError(new ApiError("", "network", null)).message).toBe("Unknown error");
   });
 
+  it("summarizes technical messages and keeps the raw payload in details", () => {
+    const java = new ApiError(
+      "java.lang.IllegalStateException: the ResourceManager log directory is not configured\n\tat org.apache.hadoop.RM.getLogDir(RM.java:4321)",
+      "http",
+      503,
+    );
+    const described = describeError(java);
+    expect(described.message).toBe("The upstream service returned HTTP 503.");
+    expect(described.details).toContain("IllegalStateException");
+    expect(described.details).toContain("at org.apache.hadoop");
+
+    expect(describeError(new Error("at Object.<anonymous> (file.js:1:2)")).message).toBe("The request failed.");
+    expect(describeError("<html><body>login</body></html>").message).toBe("The request failed.");
+    expect(describeError(new ApiError("java.io.IOException: broken", "http", 502)).message).toBe("The upstream service returned HTTP 502.");
+    expect(describeError(new ApiError("java.lang.IllegalStateException: shape", "schema", null)).message).toBe(
+      "The upstream response did not match the expected shape.",
+    );
+    expect(describeError(new ApiError("no route", "http", 404)).message).toBe("no route");
+  });
+
   it("describes Error objects, including causes and empty messages", () => {
     const described = describeError(new Error("network down", { cause: new Error("socket closed") }));
     expect(described.message).toBe("network down");

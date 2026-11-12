@@ -4,7 +4,7 @@ import { useConnection } from "~/api/connection";
 import type { Meta, MetaService } from "~/api/schemas";
 import { fmtEpoch, fmtRelative } from "~/lib/format";
 import { PREF_DEFAULTS, usePref } from "~/state/prefs";
-import { simpleErrorText } from "~/lib/error-details";
+import { describeError } from "~/lib/error-details";
 import { useMounted } from "~/lib/use-mounted";
 import { ErrorState, TechnicalDetails } from "~/ui/feedback";
 import { StatusPill } from "~/ui/status";
@@ -65,7 +65,7 @@ export function BurrowCapabilities() {
               <HelpTip label="Connection status">
                 {lastError ? (
                   <div className="flex flex-col gap-1">
-                    <p className="m-0">{simpleErrorText(lastError)}</p>
+                    <p className="m-0">{describeError(lastError).message}</p>
                     <TechnicalDetails detail={lastError} className="mt-1" />
                   </div>
                 ) : lastOkAt != null ? (

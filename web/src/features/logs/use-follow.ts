@@ -9,7 +9,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { type LogHints, fetchLogWindow, logStreamUrl } from "~/api/queries/logs";
-import { simpleErrorText } from "~/lib/error-details";
+import { describeError } from "~/lib/error-details";
 import type { LineBuffer } from "./model";
 
 export type FollowMode = "off" | "connecting" | "streaming" | "reconnecting" | "polling" | "ended" | "error";
@@ -142,7 +142,7 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
               pollFailures = 0;
             } catch (error) {
               pollFailures++;
-              const message = simpleErrorText(error instanceof Error ? error.message : String(error));
+              const message = describeError(error).message;
               publish("polling", `poll read failed: ${message}`);
             }
             tick();
@@ -203,7 +203,7 @@ export function useFollow(opts: FollowOptions): { status: FollowStatus; retry: (
         if (data) {
           try {
             const parsed = JSON.parse(data) as { error?: { message?: string } };
-            detail = simpleErrorText(parsed.error?.message ?? "log stream error");
+            detail = parsed.error?.message ? describeError(parsed.error.message).message : "log stream error";
           } catch {
             detail = "log stream error";
           }

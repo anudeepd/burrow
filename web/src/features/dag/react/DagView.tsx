@@ -16,7 +16,7 @@ import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "
 import type { PointerEvent as ReactPointerEvent } from "react";
 import "../dag.css";
 import { cn } from "~/lib/cn";
-import { simpleErrorText } from "~/lib/error-details";
+import { describeError } from "~/lib/error-details";
 import { useInView } from "~/lib/in-view";
 import { fmtInt, fmtPct } from "~/lib/format";
 import { download } from "~/ui/data-table/export";
@@ -245,7 +245,7 @@ export function DagView({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dagKeyboardRef = useRef<HTMLDivElement | null>(null);
   const [layout, setLayout] = useState<LayoutResult | null>(null);
-  const [layoutError, setLayoutError] = useState<string | null>(null);
+  const [layoutError, setLayoutError] = useState<{ message: string; details: string } | null>(null);
   const [viewport, setViewport] = useState<Viewport | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
@@ -284,7 +284,8 @@ export function DagView({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setLayoutError(simpleErrorText(err instanceof Error ? err.message : String(err)));
+        const described = describeError(err);
+        setLayoutError({ message: described.message, details: described.details });
       });
     return () => {
       cancelled = true;
@@ -1009,8 +1010,8 @@ export function DagView({
           {layoutError && !empty ? (
             <DagStatePanel
               title="Could not lay out this DAG"
-              detail={`${layoutError} — the graph structure is still available in the drawer/list views.`}
-              technicalDetail={layoutError}
+              detail={`${layoutError.message} — the graph structure is still available in the drawer/list views.`}
+              technicalDetail={layoutError.details}
               action={
                 <Button
                   size="sm"

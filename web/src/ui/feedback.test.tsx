@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { ApiError } from "~/api/client";
 import { CenteredPageState, EmptyState, ErrorState, StaleErrorBanner, TableSkeleton } from "./feedback";
 
 afterEach(() => {
@@ -65,6 +66,19 @@ describe("shared feedback states", () => {
     expect(screen.getByRole("alert").textContent).toContain("Quiet failure");
     expect(screen.queryByText("Technical details")).toBeNull();
     expect(screen.getByText("Background refresh is paused")).toBeTruthy();
+  });
+
+  it("summarizes a technical error and keeps the payload in details", () => {
+    render(
+      <ErrorState
+        title="Load failed"
+        error={new ApiError("java.lang.IllegalStateException: broken\n\tat org.apache.hadoop.RM.start(RM.java:1)", "http", 502)}
+      />,
+    );
+    expect(screen.getByText("The upstream service returned HTTP 502.")).toBeTruthy();
+    expect(screen.queryByText(/java\.lang/)).toBeNull();
+    fireEvent.click(screen.getByText("Technical details"));
+    expect(screen.getByText(/java\.lang/)).toBeTruthy();
   });
 
   it("uses an Error message for stale refresh failures", () => {

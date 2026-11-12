@@ -8,7 +8,7 @@
 import { ApiError } from "~/api/client";
 
 export interface ErrorSummary {
-  /** First non-empty line of the error message. */
+  /** One-line human summary; never a stack frame, Java class, or raw HTML. */
   message: string;
   hint?: string;
   /** Full technical payload: code/status/upstream/raw envelope/stack. */
@@ -22,6 +22,41 @@ export function simpleErrorText(text: string): string {
     if (trimmed) return trimmed;
   }
   return text.trim();
+}
+
+/**
+ * A human error message names the failure. A technical payload starts with a Java/Python/JavaScript exception,
+ * a stack frame, an HTML page, or a raw error envelope, and must not become the visible summary.
+ */
+export function isTechnicalErrorText(text: string): boolean {
+  const line = simpleErrorText(text);
+  return (
+    /\b(?:java|javax|jdk|sun|com\.sun|org\.apache|com\.[a-z][\w$]*)\.[\w.$]+/.test(line) ||
+    /^\s*at\s+[^(]+\(/.test(line) ||
+    /^(?:Caused by:\s*)?[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*(?:Exception|Error)\b\s*:/.test(line) ||
+    /^(?:Exception in thread\b|Traceback \(most recent call last\):|panic:)/.test(line) ||
+    /^\s*(?:<!DOCTYPE\b|<html\b|<body\b|<head\b|<h1\b|<pre\b)/i.test(line) ||
+    /^\s*\{\s*"(?:error|RemoteException)"\s*:/.test(line) ||
+    /\bRemoteException\b/.test(line)
+  );
+}
+
+/** The human fallback for a technical payload. The operation title supplies the specific context. */
+function technicalSummary(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.kind === "network") return "The upstream service could not be reached.";
+    if (error.kind === "timeout") return "The upstream service did not respond in time.";
+    if (error.kind === "abort") return "The request was cancelled.";
+    if (error.kind === "schema") return "The upstream response did not match the expected shape.";
+    if (error.status != null) return `The upstream service returned HTTP ${error.status}.`;
+  }
+  return "The request failed.";
+}
+
+/** First line when it is human, otherwise a short summary. The raw payload is always in `details`. */
+function summarizedMessage(error: unknown, raw: string, fallback: string): string {
+  if (!raw) return fallback;
+  return isTechnicalErrorText(raw) ? technicalSummary(error) : raw;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -81,19 +116,21 @@ export function errorDetails(error: unknown): string {
 /** Normalise anything a query/route can throw into the shared presentation model. */
 export function describeError(error: unknown): ErrorSummary {
   if (error instanceof ApiError) {
+    const raw = simpleErrorText(error.message);
     return {
-      message: simpleErrorText(error.message) || "Unknown error",
+      message: summarizedMessage(error, raw, "Unknown error"),
       hint: error.hint ?? undefined,
       details: errorDetails(error),
     };
   }
   if (error instanceof Error) {
-    return { message: simpleErrorText(error.message) || "Unknown error", details: errorDetails(error) };
+    const raw = simpleErrorText(error.message);
+    return { message: summarizedMessage(error, raw, "Unknown error"), details: errorDetails(error) };
   }
   const record = isRecord(error) ? error : null;
-  const message = record && typeof record.message === "string" ? record.message : typeof error === "string" ? error : "";
+  const raw = simpleErrorText(record && typeof record.message === "string" ? record.message : typeof error === "string" ? error : "");
   return {
-    message: simpleErrorText(message) || "An unexpected error occurred",
+    message: summarizedMessage(error, raw, "An unexpected error occurred"),
     hint: record && typeof record.hint === "string" ? record.hint : undefined,
     details: errorDetails(error),
   };

@@ -11,7 +11,7 @@ import { apiGet, topicOf } from "~/api/client";
 import { q } from "~/api/queries";
 import { adaptive } from "~/api/refetch";
 import { ApiError } from "~/api/client";
-import { simpleErrorText } from "~/lib/error-details";
+import { describeError, simpleErrorText } from "~/lib/error-details";
 import { type ResourceInfo, ResourceInfoSchema } from "~/api/schemas";
 import { num, obj } from "~/api/schemas/_base";
 import { z } from "zod";
@@ -81,7 +81,8 @@ export function isSourceUnavailable(err: unknown): err is ApiError {
 export function errorReason(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status === 404) return "the endpoint is not exposed by this ResourceManager (or is not in the backend allowlist)";
-    return simpleErrorText(err.hint ?? err.message) || "unknown error";
+    if (err.hint) return simpleErrorText(err.hint) || "unknown error";
+    return describeError(err).message;
   }
-  return err instanceof Error ? simpleErrorText(err.message) || "unknown error" : "unknown error";
+  return describeError(err).message;
 }
