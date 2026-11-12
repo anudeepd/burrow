@@ -112,6 +112,7 @@ afterEach(() => {
   });
   parityStore.setState(() => ({ enabled: true }));
   window.__BURROW_PARITY__ = true;
+  Reflect.deleteProperty(document, "startViewTransition");
   if (originalCreateObjectURL) Object.defineProperty(URL, "createObjectURL", originalCreateObjectURL);
   else Reflect.deleteProperty(URL, "createObjectURL");
   if (originalRevokeObjectURL) Object.defineProperty(URL, "revokeObjectURL", originalRevokeObjectURL);
@@ -190,7 +191,7 @@ describe("LogsView", () => {
     const { router, container } = renderLogs();
     const log = await screen.findByRole("log", { name: "Container log" });
     await waitFor(() => expect(log.textContent).toContain("startup complete"));
-    const body = log.closest('[data-page-motion="content"]')!.parentElement!;
+    const body = log.closest('[data-page-motion="content"]')!;
     log.focus();
 
     await act(async () => {
@@ -533,5 +534,89 @@ describe("LogsView", () => {
     await waitFor(() => expect(router.state.location.search.follow).toBe(false));
     expect(clearInterval).toHaveBeenCalledWith(77);
     unmount();
+  });
+
+  it("keeps the old log until the selected window arrives, then crossfades", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const pending = Promise.withResolvers<Response>();
+    const start = vi.fn((run: () => void) => {
+      queueMicrotask(run);
+      return { finished: Promise.resolve() };
+    });
+    Object.defineProperty(document, "startViewTransition", { configurable: true, value: start });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => pending.promise),
+    );
+    renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Log file" }));
+    const stderr = await screen.findByRole("option", { name: /^stderr/ });
+    fireEvent.pointerDown(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.click(stderr);
+
+    await waitFor(() => expect(screen.getByText("Loading stderr…")).toBeTruthy());
+    expect(screen.getByRole("log")).toBe(log);
+
+    pending.resolve(
+      new Response("2026-10-31 10:00:03,000 ERROR stderr replacement\n", {
+        headers: {
+          "content-type": "text/plain",
+          "x-burrow-log-size": "51",
+          "x-burrow-log-start": "0",
+          "x-burrow-log-end": "51",
+          "x-burrow-log-source": "nm",
+        },
+      }),
+    );
+    await waitFor(() => expect(start).toHaveBeenCalledOnce());
+  });
+
+  it("keeps the old log and reports a failed selected-window load", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ error: { message: "stderr unavailable" } }), {
+          status: 502,
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(log.textContent).toContain("startup complete"));
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Log file" }));
+    const stderr = await screen.findByRole("option", { name: /^stderr/ });
+    fireEvent.pointerDown(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.click(stderr);
+
+    expect(await screen.findByText("Could not load the selected log")).toBeTruthy();
+    expect(screen.getByText("The previously loaded log remains visible.")).toBeTruthy();
+    expect(log.textContent).toContain("startup complete");
+    fireEvent.click(screen.getByRole("button", { name: "Retry now" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  });
+
+  it("crossfades a wrap change when the platform supports view transitions", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const start = vi.fn((run: () => void) => {
+      queueMicrotask(run);
+      return { finished: Promise.resolve() };
+    });
+    Object.defineProperty(document, "startViewTransition", { configurable: true, value: start });
+    renderLogs();
+    await screen.findByRole("log", { name: "Container log" });
+    const wrap = screen.getByRole("button", { name: "Wrap long lines" });
+    expect(wrap.getAttribute("aria-pressed")).toBe("true");
+
+    fireEvent.click(wrap);
+
+    expect(start).toHaveBeenCalledOnce();
+    await waitFor(() => expect(wrap.getAttribute("aria-pressed")).toBe("false"));
   });
 });

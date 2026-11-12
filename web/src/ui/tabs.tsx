@@ -105,15 +105,12 @@ export function TabContent({
   className,
   initial = false,
   motion = "content",
-  shift = 0,
 }: {
   value: string;
   children: ReactNode;
   className?: string;
   initial?: boolean;
   motion?: "content" | "cards";
-  /** Optional rise in px for a content switch that should read as a deliberate replace. */
-  shift?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const previousValue = useRef<string | null>(initial ? null : value);
@@ -127,8 +124,8 @@ export function TabContent({
     const element = ref.current!;
     const from = animation.current?.playState === "running" ? Number.parseFloat(getComputedStyle(element).opacity) : 0;
     cancelAnimation(animation.current);
-    animation.current = fadeIn(element, Number.isFinite(from) ? from : 0, shift);
-  }, [value, shift]);
+    animation.current = fadeIn(element, Number.isFinite(from) ? from : 0);
+  }, [value]);
 
   return (
     <div ref={ref} data-page-motion={motion} className={cn("burrow-tab-content", className)}>

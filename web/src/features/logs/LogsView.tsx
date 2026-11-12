@@ -24,8 +24,8 @@ import {
 } from "~/api/queries/logs";
 import { Entity } from "~/ui/datum";
 import { describeError } from "~/lib/error-details";
+import { cancelAnimation, fadeIn } from "~/lib/motion";
 import { ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
-import { TabContent } from "~/ui/tabs";
 import { Unavailable } from "~/features/nodes/page";
 import { useParity } from "~/state/parity";
 import { usePref } from "~/state/prefs";
@@ -47,8 +47,15 @@ import {
 import { followEnabled, tailBytes, timestampMode } from "./search";
 import { useFilteredIndex } from "./use-filtered";
 import { useFollow } from "./use-follow";
+import { withLogPaneTransition } from "./transition";
 
 const route = getRouteApi("/apps/$appId/logs");
+
+/** rAF is the animation frame; the timeout keeps tests and non-visual DOM shims deterministic. */
+function nextFrame(fn: () => void): void {
+  if (typeof requestAnimationFrame === "function") requestAnimationFrame(fn);
+  else setTimeout(fn, 0);
+}
 
 /** File metadata is fetched separately from the byte window; a click can race that metadata effect. */
 export function logDownloadSize(meta: { size: number } | null | undefined): number {
@@ -75,6 +82,7 @@ export function LogsView() {
   );
   const windowIdentity = JSON.stringify([appId, containerId, file, hints.node, hints.user, hints.app]);
   const [committedWindow, setCommittedWindow] = useState<string | null>(null);
+  const [displayWrap, setDisplayWrap] = useState<boolean | null>(null);
 
   const setSearch = useCallback(
     (patch: Record<string, unknown>) => {
@@ -87,6 +95,16 @@ export function LogsView() {
   const bufferRef = useRef<LineBuffer | null>(null);
   if (bufferRef.current === null) bufferRef.current = new LineBuffer();
   const buffer = bufferRef.current;
+  const logPaneRef = useRef<HTMLDivElement>(null);
+  const dataFade = useRef<Animation | undefined>(undefined);
+  const wrapFade = useRef<Animation | undefined>(undefined);
+  useEffect(
+    () => () => {
+      cancelAnimation(dataFade.current);
+      cancelAnimation(wrapFade.current);
+    },
+    [],
+  );
   // A successful empty window is usable too; line count is not a readiness signal.
   const hasDisplayedWindow = committedWindow === windowIdentity;
   const [version, setVersion] = useState(0);
@@ -137,21 +155,47 @@ export function LogsView() {
   });
 
   const [meta, setMeta] = useState<{ size: number; source: string | null; start: number; end: number } | null>(null);
+  const committedRef = useRef(committedWindow);
+  committedRef.current = committedWindow;
 
-  // A new container/file starts a new buffer (the old file's bytes must never linger).
+  // A different container or hint scope starts a new buffer. A file switch in the same scope keeps the old log visible
+  // until its replacement arrives, so the pane can crossfade instead of flashing through a skeleton.
+  const scope = JSON.stringify([containerId, hints.node, hints.user, hints.app]);
+  const previousScope = useRef<string | null>(null);
   useEffect(() => {
+    const changed = previousScope.current !== scope;
+    previousScope.current = scope;
+    if (!changed && file) return;
     buffer.reset();
     setCommittedWindow(null);
     setMeta(null);
     bump();
-  }, [windowIdentity, buffer, bump]);
+  }, [scope, file, buffer, bump]);
 
   useEffect(() => {
     if (!initial.data) return;
-    buffer.setWindow(initial.data.text, initial.data.start);
-    setMeta({ size: initial.data.size, source: initial.data.source, start: initial.data.start, end: initial.data.end });
-    setCommittedWindow(windowIdentity);
-    bump();
+    const data = initial.data;
+    const pane = logPaneRef.current!.querySelector<HTMLElement>('[role="log"]')!;
+    const commit = () => {
+      cancelAnimation(dataFade.current);
+      buffer.setWindow(data.text, data.start);
+      setMeta({ size: data.size, source: data.source, start: data.start, end: data.end });
+      setCommittedWindow(windowIdentity);
+      logPaneRef.current!.querySelector<HTMLElement>('[role="log"]')!.scrollTop = 0;
+      bump();
+    };
+    if (committedRef.current == null) {
+      commit();
+      nextFrame(() => {
+        dataFade.current = fadeIn(pane, 0, 4);
+      });
+      return;
+    }
+    const transitioned = withLogPaneTransition(pane, commit);
+    if (!transitioned)
+      nextFrame(() => {
+        dataFade.current = fadeIn(pane, 0, 4);
+      });
   }, [initial.data, windowIdentity, buffer, bump]);
 
   // ── follow ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -196,7 +240,25 @@ export function LogsView() {
   // ── display state ──────────────────────────────────────────────────────────────────────────────────────────────
   const filter = useMemo<LogLevel | null>(() => parseLevelFilter(search.filter), [search.filter]);
   // Long lines wrap by default; `?wrap=0` preserves an explicit no-wrap view.
-  const wrap = search.wrap ?? true;
+  const wrap = displayWrap ?? search.wrap ?? true;
+  useEffect(() => {
+    setDisplayWrap(null);
+  }, [search.wrap]);
+  const onWrap = useCallback(
+    (value: boolean) => {
+      const pane = logPaneRef.current!.querySelector<HTMLElement>('[role="log"]')!;
+      const update = () => {
+        setDisplayWrap(value);
+        setSearch({ wrap: value });
+      };
+      const transitioned = withLogPaneTransition(pane, update);
+      if (!transitioned)
+        nextFrame(() => {
+          wrapFade.current = fadeIn(pane, 0.4);
+        });
+    },
+    [setSearch],
+  );
   const tsMode = timestampMode(search);
   const visibleIdx = useFilteredIndex(buffer, filter);
   const shown = filter ? visibleIdx.length : buffer.length;
@@ -303,7 +365,7 @@ export function LogsView() {
         filter={filter}
         onFilter={(level) => setSearch({ filter: level ?? undefined })}
         wrap={wrap}
-        onWrap={(v) => setSearch({ wrap: v })}
+        onWrap={onWrap}
         timestamp={tsMode}
         onTimestamp={(v) => setSearch({ ts: v === "absolute" ? undefined : v })}
       />
@@ -321,9 +383,9 @@ export function LogsView() {
         aria-busy={(!hasDisplayedWindow && !windowError) || undefined}
         className="relative flex min-h-0 flex-1 flex-col"
       >
-        <TabContent
-          value={`${windowIdentity}:${hasDisplayedWindow ? "ready" : "pending"}`}
-          shift={hasDisplayedWindow ? 4 : 0}
+        <div
+          ref={logPaneRef}
+          data-burrow-log-pane="1"
           className={`flex min-h-0 flex-1 flex-col${hasDisplayedWindow ? "" : " pointer-events-none"}`}
         >
           <LineViewer
@@ -340,8 +402,16 @@ export function LogsView() {
             paused={paused}
             parity={parity}
           />
-        </TabContent>
-        {!hasDisplayedWindow && (
+        </div>
+        {committedWindow != null && !hasDisplayedWindow && windowError && (
+          <StaleErrorBanner
+            title="Could not load the selected log"
+            message="The previously loaded log remains visible."
+            error={windowError}
+            onRetry={() => void initial.refetch()}
+          />
+        )}
+        {!hasDisplayedWindow && committedWindow == null && (
           <div className="absolute inset-0 flex min-h-0 flex-col bg-fabric">
             {filesQuery.isPending || (initial.isPending && !hasDisplayedWindow) || (!hasDisplayedWindow && !windowError) ? (
               <div className="flex min-h-0 flex-1 flex-col gap-1 p-3" aria-busy="true">
@@ -381,7 +451,10 @@ export function LogsView() {
         heldBytes={buffer.heldBytes}
         ended={buffer.ended}
         gaps={buffer.gaps.length}
-        notice={errorNotice ?? windowNotice}
+        notice={
+          errorNotice ??
+          (committedWindow != null && !hasDisplayedWindow && !windowError && initial.isPending ? `Loading ${file}…` : windowNotice)
+        }
         onRetry={retry}
       />
     </Entity>

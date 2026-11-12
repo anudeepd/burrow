@@ -12,7 +12,6 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDownToLine } from "lucide-react";
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { cn } from "~/lib/cn";
-import { cancelAnimation, fadeIn } from "~/lib/motion";
 import { fmtClock, type TzMode } from "~/lib/format";
 import { usePref } from "~/state/prefs";
 import type { IndexedMatch, LineBuffer, LogLevel, Match, SearchSpec, TimestampReference } from "./model";
@@ -72,11 +71,8 @@ export function LineViewer(props: LineViewerProps) {
   const [atBottom, setAtBottom] = useState(true);
   /** Last scroll offset we observed; lets `onScroll` tell a user scroll-up from content growth. */
   const lastScrollTop = useRef<number | null>(null);
-  /** A wrap change is a display-mode change, not a content flush; fade the pane instead of snapping the reflow. */
-  const wrapFade = useRef<Animation | undefined>(undefined);
   const previousWrap = useRef(wrap);
   const topVisible = useRef(0);
-  useEffect(() => () => cancelAnimation(wrapFade.current), []);
 
   const filtered = visibleIdx != null;
   const count = filtered ? visibleIdx.length : buffer.length;
@@ -132,17 +128,14 @@ export function LineViewer(props: LineViewerProps) {
     // version is the append signal; count covers filter changes; total covers measured-height growth.
   }, [version, count, total, follow, paused, parity, searching, atBottom, virtualizer]);
 
-  // Wrapping changes the measured row heights. Keep the reader on the same line, or on the tail when they were there,
-  // and hide the reflow under the same fade the rest of the product uses for a display change.
+  // Wrapping changes the measured row heights. Keep the reader on the same line, or on the tail when they were there;
+  // LogsView owns the pane crossfade that hides the reflow.
   useLayoutEffect(() => {
     if (previousWrap.current === wrap) return;
     previousWrap.current = wrap;
-    if (count > 0) {
-      if (atBottom) virtualizer.scrollToIndex(count - 1, { align: "end" });
-      else virtualizer.scrollToIndex(topVisible.current, { align: "start" });
-    }
-    cancelAnimation(wrapFade.current);
-    wrapFade.current = fadeIn(scrollRef.current, 0.4);
+    if (count === 0) return;
+    if (atBottom) virtualizer.scrollToIndex(count - 1, { align: "end" });
+    else virtualizer.scrollToIndex(topVisible.current, { align: "start" });
   }, [wrap, atBottom, count, virtualizer]);
 
   // Stepping to a match scrolls that line into view.

@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { createRef } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { RouteTabIndicator, TabContent, TabsList, TabsRoot, Tab } from "./tabs";
 
 afterEach(cleanup);
@@ -25,34 +25,6 @@ describe("tab content", () => {
     view.unmount();
   });
 });
-describe("tab content motion", () => {
-  it("passes an optional rise to the content fade", () => {
-    document.documentElement.removeAttribute("data-motion");
-    const animate = vi.fn(() => ({ playState: "running", finished: Promise.resolve(), cancel: () => {} }) as unknown as Animation);
-    Object.defineProperty(HTMLElement.prototype, "animate", { configurable: true, value: animate });
-    try {
-      const content = (value: string) => (
-        <TabContent value={value} shift={4}>
-          {value}
-        </TabContent>
-      );
-      const view = render(content("stdout"));
-      animate.mockClear();
-      view.rerender(content("stderr"));
-      expect(animate).toHaveBeenCalledWith(
-        [
-          { opacity: 0, transform: "translateY(4px)" },
-          { opacity: 1, transform: "translateY(0)" },
-        ],
-        expect.objectContaining({ duration: expect.any(Number) }),
-      );
-      view.unmount();
-    } finally {
-      Reflect.deleteProperty(HTMLElement.prototype, "animate");
-    }
-  });
-});
-
 describe("tab navigation", () => {
   it("renders tabs without overflow cues by default", () => {
     render(
