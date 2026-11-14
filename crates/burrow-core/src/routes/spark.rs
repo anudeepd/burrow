@@ -130,7 +130,7 @@ impl SparkTable {
                 .iter()
                 .map(|r| {
                     Regex::new(&format!("^(?:{})$", r.pattern.replace("{id}", ID)))
-                        .unwrap_or_else(|e| panic!("bad Spark route pattern {:?}: {e}", r.pattern))
+                        .expect("Spark route patterns are valid regexes")
                 })
                 .collect(),
         }
@@ -831,6 +831,65 @@ async fn fetch_json(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use futures_util::StreamExt;
+
+    fn resolved_with(up: &Arc<Upstream>) -> Resolved {
+        Resolved {
+            source: resolve::Source {
+                mode: Mode::LiveProxy,
+                base_url: Some("http://rm:8088/proxy/application_1_1".into()),
+                spark_app_id: "application_1_1".into(),
+                attempt: None,
+                available: true,
+                reason: None,
+                hint: None,
+            },
+            upstream: Some(up.clone()),
+            rest_prefix: "/proxy/application_1_1/api/v1/applications/application_1_1".into(),
+            html_prefix: "/proxy/application_1_1".into(),
+            app_path: "/proxy/application_1_1/api/v1/applications/application_1_1".into(),
+            cache: CacheSource::Hit,
+            served_by: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn legacy_sql_route_rejects_paths_that_are_not_execution_ids() {
+        let core = Core::new(crate::config::Config::for_rm("http://127.0.0.1:0").unwrap()).unwrap();
+        let resolved = resolved_with(&core.rm);
+        let error = legacy_sql_route(&core, &resolved, "/sqlx", None, false)
+            .await
+            .err()
+            .expect("a non-SQL path must not reach the compatibility adapter");
+        assert_eq!(error.status, StatusCode::NOT_FOUND);
+        assert_eq!(error.message, "invalid Spark SQL execution path");
+    }
+
+    #[tokio::test]
+    async fn enclosing_job_is_none_when_the_job_list_cannot_be_read() {
+        let mut config = crate::config::Config::for_rm("http://127.0.0.1:9").unwrap();
+        config.tuning.connect_timeout = Duration::from_millis(1);
+        config.tuning.request_timeout = Duration::from_millis(1);
+        let core = Core::new(config).unwrap();
+        let resolved = resolved_with(&core.rm);
+        assert_eq!(
+            enclosing_job(&core, &resolved, &core.rm, 1, false).await,
+            None
+        );
+    }
+
+    #[test]
+    fn synthesized_stream_replies_skip_etags() {
+        let mut reply = Reply::synthesized(StatusCode::OK, "application/json", "");
+        reply.body = ReplyBody::Stream {
+            prefix: bytes::Bytes::new(),
+            rest: futures_util::stream::empty::<std::io::Result<bytes::Bytes>>().boxed(),
+        };
+        finish_synthesized(&mut reply, CacheSource::Miss, Some("rm:8088".into()));
+        assert!(reply.etag.is_none());
+        assert_eq!(reply.cache, Some(CacheSource::Miss));
+        assert_eq!(reply.upstream.as_deref(), Some("rm:8088"));
+    }
 
     #[test]
     fn application_id_validation() {

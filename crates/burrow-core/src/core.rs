@@ -373,6 +373,20 @@ mod tests {
         assert_eq!((first, second), (7, 7));
     }
 
+    #[tokio::test]
+    async fn served_rejects_range_headers_http_cannot_encode() {
+        let core = Core::new(Config::for_rm("http://127.0.0.1:0").unwrap()).unwrap();
+        let mut spec = GetSpec::new("/x", TtlPolicy::None, Expect::Any);
+        spec.range = Some("bytes=bad\nvalue");
+        let error = core
+            .served(&core.rm, &spec)
+            .await
+            .err()
+            .expect("an unencodable Range must fail before the fetch");
+        assert_eq!(error.status, http::StatusCode::BAD_REQUEST);
+        assert_eq!(error.message, "invalid Range header");
+    }
+
     #[test]
     fn node_authority_parser_handles_invalid_shapes_and_id_fallbacks() {
         assert!(parse_node_authorities(b"not JSON").is_empty());

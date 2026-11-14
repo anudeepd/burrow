@@ -24,18 +24,17 @@ pub struct DiscoverInput {
     pub spark_fallback_dirs: Vec<PathBuf>,
 }
 
+fn non_empty_path(value: Option<std::ffi::OsString>) -> Option<PathBuf> {
+    value.filter(|v| !v.is_empty()).map(PathBuf::from)
+}
+
 impl DiscoverInput {
     pub fn from_env() -> Self {
-        let var = |k: &str| {
-            std::env::var_os(k)
-                .filter(|v| !v.is_empty())
-                .map(PathBuf::from)
-        };
         Self {
-            hadoop_conf_dir: var("HADOOP_CONF_DIR"),
-            yarn_conf_dir: var("YARN_CONF_DIR"),
-            spark_conf_dir: var("SPARK_CONF_DIR"),
-            spark_home: var("SPARK_HOME"),
+            hadoop_conf_dir: non_empty_path(std::env::var_os("HADOOP_CONF_DIR")),
+            yarn_conf_dir: non_empty_path(std::env::var_os("YARN_CONF_DIR")),
+            spark_conf_dir: non_empty_path(std::env::var_os("SPARK_CONF_DIR")),
+            spark_home: non_empty_path(std::env::var_os("SPARK_HOME")),
             fallback_dirs: vec![PathBuf::from(DEFAULT_CONF_DIR)],
             spark_fallback_dirs: vec![PathBuf::from("/etc/spark/conf")],
         }
@@ -647,6 +646,34 @@ mod tests {
         )
         .unwrap();
         assert_eq!(fields.get("a").map(String::as_str), Some("one two&three"));
+    }
+
+    #[test]
+    fn env_paths_ignore_empty_values() {
+        assert_eq!(
+            non_empty_path(Some(std::ffi::OsString::from("/opt/hadoop/conf"))),
+            Some(PathBuf::from("/opt/hadoop/conf"))
+        );
+        assert_eq!(non_empty_path(Some(std::ffi::OsString::new())), None);
+        assert_eq!(non_empty_path(None), None);
+    }
+
+    #[test]
+    fn spark_defaults_history_tls_falls_back_to_the_global_spark_setting() {
+        let d = tmpdir("spark-tls");
+        let s = tmpdir("spark-tls-conf");
+        write(&d, "yarn-site.xml", &site(&[]));
+        write(
+            &s,
+            "spark-defaults.conf",
+            "spark.yarn.historyServer.address shs.example.com:18080\nspark.ssl.enabled true\n",
+        );
+        let mut i = input(&d);
+        i.spark_conf_dir = Some(s);
+        assert_eq!(
+            discover(&i).spark_history.as_deref(),
+            Some("https://shs.example.com:18080")
+        );
     }
 
     #[test]

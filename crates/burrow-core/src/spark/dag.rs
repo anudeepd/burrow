@@ -1729,6 +1729,31 @@ mod tests {
     }
 
     #[test]
+    fn defensive_dag_shapes_cover_empty_edges_and_missing_clusters() {
+        let mut meta = StageMeta::default();
+        apply_role(&mut meta, Role::Outgoing, "  ").unwrap();
+        assert!(meta.outgoing.is_empty());
+
+        let error = dot_to_stage(&StageMeta::default(), &DotGraph::default())
+            .err()
+            .expect("a DOT graph with no root cluster is malformed");
+        assert!(matches!(error, DagError::Malformed(_)));
+
+        let graph = DotGraph {
+            root: Some(DotCluster {
+                subgraph_name: "stage_5".into(),
+                attrs: HashMap::from([("label".to_string(), "Stage 5".to_string())]),
+                nodes: Vec::new(),
+                children: Vec::new(),
+            }),
+            edges: Vec::new(),
+        };
+        let parts = dot_to_stage(&StageMeta::default(), &graph).unwrap();
+        assert_eq!(parts.stage.stage_id, 5);
+        assert_eq!(parts.stage.attempt, 0);
+    }
+
+    #[test]
     fn metadata_edges_and_fallbacks_cover_remaining_dag_shapes() {
         let html = r#"<div id="job-dag-viz"></div><div id="dag-viz-metadata">
           <div class="stage-metadata" stage-id="1">

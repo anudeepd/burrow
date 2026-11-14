@@ -368,6 +368,28 @@ mod tests {
     }
 
     #[test]
+    fn java_date_parsing_maps_every_month_name() {
+        let months = [
+            ("Jan", 1_767_225_600),
+            ("Feb", 1_769_904_000),
+            ("Mar", 1_772_323_200),
+            ("Apr", 1_775_001_600),
+            ("May", 1_777_593_600),
+            ("Jun", 1_780_272_000),
+            ("Jul", 1_782_864_000),
+            ("Aug", 1_785_542_400),
+            ("Sep", 1_788_220_800),
+            ("Oct", 1_790_812_800),
+            ("Nov", 1_793_491_200),
+            ("Dec", 1_796_083_200),
+        ];
+        for (month, epoch) in months {
+            let stamp = format!("Thu {month} 01 00:00:00 +0000 2026");
+            assert_eq!(java_date_epoch(&stamp), Some(epoch), "{month}");
+        }
+    }
+
+    #[test]
     fn page_total_and_error_detection() {
         assert_eq!(
             page_total_len("<p>Showing 4096 bytes of 84941 total.</p>"),

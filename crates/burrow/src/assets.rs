@@ -364,6 +364,16 @@ mod tests {
             pick_encoding(Some("br;q=0.1, gzip;q=0.9"), true, true),
             Some(Coding::Gzip)
         );
+        // A malformed q-value falls back to 1.0, so it beats an explicit lower weight.
+        assert_eq!(
+            pick_encoding(Some("br;q=bad, gzip;q=0.5"), true, true),
+            Some(Coding::Br)
+        );
+        // Parameters other than `q=` are ignored.
+        assert_eq!(
+            pick_encoding(Some("gzip;level=9"), true, true),
+            Some(Coding::Gzip)
+        );
         assert_eq!(pick_encoding(Some("identity"), true, true), None);
         assert_eq!(pick_encoding(Some("*"), true, false), Some(Coding::Br));
         assert_eq!(pick_encoding(None, true, true), None);

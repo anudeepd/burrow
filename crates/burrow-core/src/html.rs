@@ -312,6 +312,14 @@ mod tests {
     }
 
     #[test]
+    fn duplicate_size_cells_keep_the_first_size() {
+        let html = r#"<table><tr><td class="name"><a href="/logs/x.log">x.log</a></td><td class="size">12 bytes</td><td class="size">99 bytes</td></tr></table>"#;
+        let files = parse_logs_listing(html);
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].size, 12);
+    }
+
+    #[test]
     fn anchors_only_fallback() {
         let f = parse_logs_listing(
             r#"<ul><li><a href="x.log">x.log</a></li><li><a href="../">up</a></li></ul>"#,

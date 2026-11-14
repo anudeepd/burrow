@@ -947,6 +947,13 @@ mod tests {
         );
         let err = upstream_for(&core, &location(LogSourceKind::Jhs, None, Some("other"))).unwrap();
         assert_eq!(err.base_url(), Some("http://jhs.example:19888"));
+        let mut no_log_server = crate::config::Config::for_rm("http://127.0.0.1:0").unwrap();
+        no_log_server.jhs = vec![url::Url::parse("http://jhs.example:19888").unwrap()];
+        let no_log_server = Core::new(no_log_server).unwrap();
+        assert_eq!(
+            jhs_prefix(&no_log_server, &no_log_server.jhs[0]),
+            "/jobhistory/logs"
+        );
         let missing =
             Core::new(crate::config::Config::for_rm("http://127.0.0.1:0").unwrap()).unwrap();
         let err = upstream_for(&missing, &location(LogSourceKind::Jhs, None, None))
@@ -963,6 +970,31 @@ mod tests {
         );
 
         assert_eq!(rpc_id_for(&missing, "nm.example:8042").await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn container_running_handles_unreachable_nodes_and_unexpected_states() {
+        let core = core();
+        assert_eq!(
+            container_running(
+                &core,
+                &location(LogSourceKind::Nm, Some("127.0.0.1:9"), None)
+            )
+            .await,
+            None
+        );
+
+        let (core, server) = rm_with_responses(vec![(
+            "/ws/v1/node/containers/container_1_2_3_4",
+            r#"{"container":{"state":42}}"#,
+        )])
+        .await;
+        let authority = crate::config::authority_of(&core.config.rm_urls[0]);
+        assert_eq!(
+            container_running(&core, &location(LogSourceKind::Nm, Some(&authority), None)).await,
+            None
+        );
+        server.await.unwrap();
     }
 
     #[tokio::test]

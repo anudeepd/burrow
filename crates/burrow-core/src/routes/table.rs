@@ -193,6 +193,14 @@ mod tests {
         route("apps/{id}", millis(25), Expect::Json),
     ];
 
+    static BAD_ROUTES: &[Route] = &[route("(", secs(1), Expect::Any)];
+
+    #[test]
+    #[should_panic(expected = "bad route pattern")]
+    fn invalid_static_patterns_panic_at_startup() {
+        let _ = RouteTable::new("/", BAD_ROUTES);
+    }
+
     #[test]
     fn lookup_rewrites_fixed_paths_and_appends_the_base_for_matches() {
         let table = RouteTable::new("/ws/v1/cluster/", ROUTES);

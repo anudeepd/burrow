@@ -718,6 +718,31 @@ mod tests {
     }
 
     #[test]
+    fn invalid_rm_and_duplicate_service_urls_are_handled() {
+        let error = resolve(
+            vec![layer("flag", |p| {
+                p.rm = Some(vec!["ftp://rm.example".into()])
+            })],
+            HadoopDiscovery::default(),
+        )
+        .unwrap_err();
+        assert!(error.0.contains("invalid --rm 'ftp://rm.example'"));
+
+        let c = resolve(
+            vec![layer("flag", |p| {
+                p.jhs = Some(StringList::Many(vec![
+                    "http://jhs:19888".into(),
+                    "http://jhs:19888".into(),
+                ]));
+            })],
+            HadoopDiscovery::default(),
+        )
+        .unwrap();
+        assert_eq!(c.jhs.len(), 1);
+        assert_eq!(url_string(&c.jhs[0]), "http://jhs:19888");
+    }
+
+    #[test]
     fn base_path_validation() {
         assert_eq!(normalize_base_path("/").unwrap(), "");
         assert_eq!(normalize_base_path("/burrow/").unwrap(), "/burrow");

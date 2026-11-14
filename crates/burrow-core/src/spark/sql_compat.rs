@@ -531,6 +531,26 @@ HashAggregate
     }
 
     #[test]
+    fn detail_without_an_object_execution_is_returned_unchanged() {
+        let html = r#"<html><head><title>app - SQL</title></head><body>
+          <div id="plan-viz-metadata"><div class="dot-file">digraph G {
+            0 [label="RDD [0]"];
+          }</div></div>
+        </body></html>"#;
+        assert_eq!(parse_detail(html, 1, json!([])), Some(json!([])));
+    }
+
+    #[test]
+    fn dot_cluster_ids_that_do_not_fit_are_ignored() {
+        let (nodes, edges) = parse_dot_plan(
+            "digraph G {\n  subgraph cluster99999999999999999999999 {\n    0 [label=\"RDD [0]\"];\n  }\n  1 -> 0;\n}",
+        );
+        assert_eq!(nodes.len(), 1);
+        assert!(nodes[0]["wholeStageCodegenId"].is_null());
+        assert_eq!(edges.len(), 1);
+    }
+
+    #[test]
     fn invalid_or_missing_sql_page_is_not_misread_as_an_empty_query_list() {
         assert!(parse_list("<html><title>Spark Jobs</title></html>").is_none());
         assert_eq!(

@@ -176,12 +176,11 @@ pub async fn discover(core: &Core) -> DiscoveryReport {
 
                 let redirects = futures_util::future::join_all(proxy_checks.into_iter().map(
                     |(app_id, app_type, path)| async move {
-                        let result = tokio::time::timeout(
+                        let result = bounded(
                             Duration::from_secs(4),
                             core.rm_pool().inspect_redirect(&path),
                         )
                         .await
-                        .map_err(|_| "timed out".to_string())
                         .and_then(|result| result.map_err(|error| error.message));
                         (app_id, app_type, result)
                     },
@@ -233,9 +232,8 @@ pub async fn discover(core: &Core) -> DiscoveryReport {
 async fn rm_get(core: &Core, path: &str) -> Result<Vec<u8>, String> {
     let mut request = FetchReq::get(path, BodyMode::Buffer { cap: MAX_RESPONSE });
     request.accept = Some("application/json");
-    let response = tokio::time::timeout(Duration::from_secs(8), core.rm.fetch(&request))
-        .await
-        .map_err(|_| "timed out".to_string())?
+    let response = bounded(Duration::from_secs(8), core.rm.fetch(&request))
+        .await?
         .map_err(|error| error.message)?;
     if !response.status.is_success() {
         return Err(format!("HTTP {}", response.status));
@@ -244,6 +242,12 @@ async fn rm_get(core: &Core, path: &str) -> Result<Vec<u8>, String> {
         UpBody::Full(body) => Ok(body.to_vec()),
         UpBody::Stream { .. } => Err("response exceeded the discovery size limit".into()),
     }
+}
+
+async fn bounded<T>(duration: Duration, future: impl Future<Output = T>) -> Result<T, String> {
+    tokio::time::timeout(duration, future)
+        .await
+        .map_err(|_| "timed out".to_string())
 }
 
 fn parse_conf(body: &[u8]) -> Result<std::collections::HashMap<String, String>, String> {
@@ -416,6 +420,7 @@ mod tests {
     struct TestServer {
         base: String,
         requests: Arc<Mutex<Vec<String>>>,
+        empty: Arc<tokio::sync::Notify>,
         task: Option<JoinHandle<()>>,
         stop: Option<tokio::sync::oneshot::Sender<()>>,
     }
@@ -426,6 +431,8 @@ mod tests {
             let addr = listener.local_addr().unwrap();
             let requests = Arc::new(Mutex::new(Vec::new()));
             let request_log = requests.clone();
+            let empty = Arc::new(tokio::sync::Notify::new());
+            let empty_signal = empty.clone();
             let handler: Arc<dyn Fn(&str) -> TestResponse + Send + Sync> = Arc::new(handler);
             let (stop, mut stop_rx) = tokio::sync::oneshot::channel();
             let task = tokio::spawn(async move {
@@ -436,11 +443,13 @@ mod tests {
                     };
                     let (stream, _) = accepted.expect("test listener remains available");
                     let requests = request_log.clone();
+                    let empty = empty_signal.clone();
                     let handler = handler.clone();
                     tokio::spawn(async move {
                         let mut reader = BufReader::new(stream);
                         let mut request_line = String::new();
                         if reader.read_line(&mut request_line).await.unwrap_or(0) == 0 {
+                            empty.notify_one();
                             return;
                         }
                         let path = request_line
@@ -481,6 +490,7 @@ mod tests {
             Self {
                 base: format!("http://{addr}"),
                 requests,
+                empty,
                 task: Some(task),
                 stop: Some(stop),
             }
@@ -493,7 +503,7 @@ mod tests {
         async fn close_without_request(&self) {
             let authority = self.base.strip_prefix("http://").unwrap();
             drop(TcpStream::connect(authority).await.unwrap());
-            tokio::task::yield_now().await;
+            self.empty.notified().await;
         }
 
         async fn shutdown(mut self) {
@@ -627,6 +637,55 @@ mod tests {
         }));
     }
 
+    #[tokio::test]
+    async fn bounded_requests_report_a_deadline_without_waiting_for_the_network() {
+        let timed_out: Result<(), String> =
+            bounded(Duration::from_millis(5), std::future::pending()).await;
+        assert_eq!(timed_out, Err("timed out".to_string()));
+        assert_eq!(bounded(Duration::from_secs(1), async { 7 }).await, Ok(7));
+    }
+
+    #[test]
+    fn runtime_properties_ignore_unusable_settings_and_fall_back_to_spark_tls() {
+        let props = std::collections::HashMap::from([
+            (
+                "yarn.log.server.url".to_string(),
+                "ftp://jhs.example/logs".to_string(),
+            ),
+            (
+                "spark.yarn.historyServer.address".to_string(),
+                "   ".to_string(),
+            ),
+            ("spark.ssl.enabled".to_string(), "true".to_string()),
+        ]);
+        let mut report = DiscoveryReport::default();
+        discover_properties(&props, &mut report);
+        assert!(report.log_server_url.is_none());
+        assert!(report.candidates.is_empty());
+
+        let mut tls_props = std::collections::HashMap::from([
+            (
+                "spark.yarn.historyServer.address".to_string(),
+                "shs.example".to_string(),
+            ),
+            ("spark.ssl.enabled".to_string(), "true".to_string()),
+        ]);
+        let mut tls_report = DiscoveryReport::default();
+        discover_properties(&tls_props, &mut tls_report);
+        assert!(tls_report.candidates.iter().any(|candidate| {
+            candidate.kind == ServiceKind::SparkHistory
+                && candidate.url == "https://shs.example:18080"
+        }));
+
+        tls_props.remove("spark.ssl.enabled");
+        let mut plain_report = DiscoveryReport::default();
+        discover_properties(&tls_props, &mut plain_report);
+        assert!(plain_report.candidates.iter().any(|candidate| {
+            candidate.kind == ServiceKind::SparkHistory
+                && candidate.url == "http://shs.example:18080"
+        }));
+    }
+
     #[test]
     fn tracking_parsers_strip_sensitive_url_parts_and_reject_unsafe_targets() {
         assert_eq!(
@@ -639,6 +698,10 @@ mod tests {
         assert_eq!(
             job_history_base_from_log_server("https://jhs.example/proxy/jobhistory").as_deref(),
             Some("https://jhs.example/proxy")
+        );
+        assert_eq!(
+            job_history_base_from_log_server("https://jhs.example/proxy/logs").as_deref(),
+            Some("https://jhs.example/proxy/logs")
         );
         assert_eq!(
             job_history_base_from_tracking(

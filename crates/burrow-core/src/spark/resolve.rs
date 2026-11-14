@@ -426,10 +426,12 @@ fn unavailable(source: Source, cache: CacheSource) -> Resolved {
 
 /// Base URL of the remembered active RM, else the first configured one.
 fn rm_base(core: &Core) -> Result<String, ApiError> {
-    core.rm_pool()
-        .active_url()
-        .or_else(|| core.rm_pool().urls().into_iter().next())
-        .ok_or_else(|| ApiError::internal("no ResourceManager is configured"))
+    let pool = core.rm_pool();
+    if let Some(url) = pool.active_url() {
+        return Ok(url);
+    }
+    let first = pool.urls().into_iter().next();
+    first.ok_or_else(|| ApiError::internal("no ResourceManager is configured"))
 }
 
 /// Cache policy of the RM application document the synthesized `/source` route resolves through: 1 s while the app is
@@ -535,6 +537,24 @@ pub fn history_base_from_tracking(tracking: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rm_base_falls_back_to_the_first_configured_manager() {
+        let config = crate::config::Config::for_rm("http://rm.example:8088").unwrap();
+        let core = crate::core::Core::new(config).unwrap();
+        assert!(core.rm_pool().active_url().is_none());
+        assert_eq!(rm_base(&core).unwrap(), "http://rm.example:8088");
+    }
+
+    #[test]
+    fn rm_base_reports_a_missing_resource_manager() {
+        let mut config = crate::config::Config::for_rm("http://rm.example:8088").unwrap();
+        config.rm_urls.clear();
+        let core = crate::core::Core::new(config).unwrap();
+        let error = rm_base(&core).unwrap_err();
+        assert_eq!(error.status, StatusCode::INTERNAL_SERVER_ERROR);
+        assert!(error.message.contains("no ResourceManager is configured"));
+    }
 
     #[test]
     fn state_classification_matches_yarn() {

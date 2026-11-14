@@ -107,11 +107,7 @@ async fn read(core: &Core, req: &ApiRequest<'_>, cid: &str, name: &str) -> Resul
     let ended = query_param(req.query, "follow").as_deref() == Some("1")
         && logs::source::container_running(core, loc).await == Some(false);
     let mut extra = HeaderMap::new();
-    let mut put = |k: &'static str, v: String| {
-        if let Ok(value) = HeaderValue::from_str(&v) {
-            extra.insert(HeaderName::from_static(k), value);
-        }
-    };
+    let mut put = |k: &'static str, v: String| insert_header(&mut extra, k, &v);
     put("x-burrow-log-size", window.total.to_string());
     put("x-burrow-log-start", window.start.to_string());
     put("x-burrow-log-end", window.end.to_string());
@@ -130,6 +126,14 @@ async fn read(core: &Core, req: &ApiRequest<'_>, cid: &str, name: &str) -> Resul
         age_ms: None,
         etag: None,
     })
+}
+
+/// Add a log-window header, skipping values HTTP cannot encode (an unencodable window header is never
+/// produced by the numeric values here, so the response stays valid rather than failing).
+fn insert_header(extra: &mut HeaderMap, key: &'static str, value: &str) {
+    if let Ok(value) = HeaderValue::from_str(value) {
+        extra.insert(HeaderName::from_static(key), value);
+    }
 }
 
 async fn stream(
@@ -247,6 +251,15 @@ mod tests {
             .unwrap();
         assert_eq!(invalid.status, StatusCode::BAD_REQUEST);
         assert!(invalid.message.contains("is not a container id"));
+    }
+
+    #[test]
+    fn header_insertion_skips_values_http_cannot_encode() {
+        let mut headers = HeaderMap::new();
+        insert_header(&mut headers, "x-burrow-log-size", "12");
+        assert_eq!(headers.get("x-burrow-log-size").unwrap(), "12");
+        insert_header(&mut headers, "x-burrow-log-start", "bad\nvalue");
+        assert!(!headers.contains_key("x-burrow-log-start"));
     }
 
     #[test]

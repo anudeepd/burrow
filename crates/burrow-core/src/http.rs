@@ -446,6 +446,26 @@ mod tests {
     }
 
     #[test]
+    fn error_text_fallback_redacts_the_url_only_when_one_is_known() {
+        assert_eq!(
+            error_text_parts(&[], "error sending request for url http://rm:8088/x", None),
+            "error sending request for url http://rm:8088/x"
+        );
+        assert_eq!(
+            error_text_parts(
+                &[],
+                "error sending request for url http://rm:8088/x",
+                Some("http://rm:8088/x"),
+            ),
+            "error sending request for url <url>"
+        );
+        assert_eq!(
+            error_text_parts(&["outer".into(), "inner".into()], "display", None),
+            "outer: inner"
+        );
+    }
+
+    #[test]
     fn client_build_errors_name_the_failure() {
         assert_eq!(
             client_build_error("boom").0,

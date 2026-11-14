@@ -586,5 +586,21 @@ mod tests {
             unavailable.error.as_deref(),
             Some("no ResourceManager answered")
         );
+
+        let down_url = url::Url::parse("http://127.0.0.1:9").unwrap();
+        let down = Upstream::rm(RmPool::new(
+            std::slice::from_ref(&down_url),
+            http(),
+            &tuning,
+            HaConfig::default(),
+        ));
+        let down_probe = down.probe().await;
+        assert!(!down_probe.reachable);
+        assert!(
+            down_probe
+                .error
+                .as_deref()
+                .is_some_and(|error| error != "no ResourceManager answered")
+        );
     }
 }
