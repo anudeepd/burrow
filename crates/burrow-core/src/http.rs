@@ -127,6 +127,10 @@ fn load_ca(path: &Path) -> Result<Vec<reqwest::Certificate>, ConfigError> {
     Ok(certs)
 }
 
+fn client_build_error(error: impl std::fmt::Display) -> ConfigError {
+    ConfigError(format!("cannot build HTTP client: {error}"))
+}
+
 impl HttpClient {
     pub fn new(s: &HttpSettings) -> Result<Arc<Self>, ConfigError> {
         install_crypto_provider();
@@ -148,9 +152,7 @@ impl HttpClient {
         if s.insecure {
             b = b.danger_accept_invalid_certs(true);
         }
-        let client = b
-            .build()
-            .map_err(|e| ConfigError(format!("cannot build HTTP client: {e}")))?;
+        let client = b.build().map_err(client_build_error)?;
         let mut headers = HeaderMap::new();
         for (k, v) in &s.headers {
             let name = HeaderName::from_bytes(k.as_bytes())
@@ -441,6 +443,15 @@ mod tests {
             String::from_utf8_lossy(&request).into_owned()
         });
         (format!("http://{address}"), task)
+    }
+
+    #[test]
+    fn client_build_errors_name_the_failure() {
+        assert_eq!(
+            client_build_error("boom").0,
+            "cannot build HTTP client: boom",
+            "the mapped error keeps the build failure text"
+        );
     }
 
     #[test]

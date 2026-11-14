@@ -940,9 +940,10 @@ mod tests {
             fresh_nonce_with(
                 |_| false,
                 || {
-                    std::time::SystemTime::UNIX_EPOCH
+                    let error = std::time::SystemTime::UNIX_EPOCH
                         .duration_since(std::time::SystemTime::now())
-                        .map(|d| d.as_nanos())
+                        .expect_err("the epoch is before now");
+                    Err(error)
                 }
             )
             .len(),
