@@ -65,6 +65,9 @@ describe("withLogPaneTransition", () => {
   it("dissolves old rows over new rows on a constant surface", async () => {
     const { animate, animations } = stubAnimate();
     const el = pane("old log");
+    el.setAttribute("role", "log");
+    el.setAttribute("aria-label", "Container log");
+    el.setAttribute("tabindex", "0");
     const update = vi.fn(() => {
       el.firstElementChild!.textContent = "new log";
     });
@@ -75,10 +78,14 @@ describe("withLogPaneTransition", () => {
     expect(host).not.toBeNull();
     expect(host.getAttribute("aria-hidden")).toBe("true");
     expect(host.inert).toBe(true);
+    const ghost = host.firstElementChild as HTMLElement;
+    expect(ghost.hasAttribute("role")).toBe(false);
+    expect(ghost.hasAttribute("aria-label")).toBe(false);
+    expect(ghost.hasAttribute("tabindex")).toBe(false);
     expect(host.textContent).toBe("old log");
     expect(el.textContent).toBe("new log");
-    expect((host.firstElementChild as HTMLElement).style.backgroundColor).toBe("transparent");
-    expect(animate.mock.contexts[0]).toBe(host.firstElementChild!.firstElementChild);
+    expect(ghost.style.backgroundColor).toBe("transparent");
+    expect(animate.mock.contexts[0]).toBe(ghost.firstElementChild);
     expect(animate.mock.contexts[1]).toBe(el.firstElementChild);
 
     expect(animate).toHaveBeenNthCalledWith(1, [{ opacity: 1 }, { opacity: 0 }], {

@@ -68,6 +68,11 @@ export function withLogPaneTransition(pane: HTMLElement | null, update: () => vo
   // Cover pane content and its sticky chip, but leave the topbar, popovers, toasts and tooltips above it.
   host.style.zIndex = "10";
   const ghost = pane.cloneNode(true) as HTMLElement;
+  // The ghost is a visual snapshot, not a second log. Drop the live pane's role and focus attributes so locators and
+  // assistive technology see one log, while the host stays inert and aria-hidden.
+  ghost.removeAttribute("role");
+  ghost.removeAttribute("aria-label");
+  ghost.removeAttribute("tabindex");
   ghost.style.width = `${rect.width}px`;
   ghost.style.height = `${rect.height}px`;
   // The live pane keeps the opaque well background. The ghost only contributes old rows, so both row layers can

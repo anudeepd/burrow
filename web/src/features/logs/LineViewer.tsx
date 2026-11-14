@@ -73,6 +73,8 @@ export function LineViewer(props: LineViewerProps) {
   const lastScrollTop = useRef<number | null>(null);
   const previousWrap = useRef(wrap);
   const topVisible = useRef(0);
+  /** Wrap uses this tail signal; `atBottom` stays the follow state so enabling follow still pins to the new tail. */
+  const atTail = useRef(true);
 
   const filtered = visibleIdx != null;
   const count = filtered ? visibleIdx.length : buffer.length;
@@ -128,12 +130,12 @@ export function LineViewer(props: LineViewerProps) {
     // version is the append signal; count covers filter changes; total covers measured-height growth.
   }, [version, count, total, follow, paused, parity, searching, atBottom, virtualizer]);
 
-  // `atBottom` starts true so follow can pin on mount, but with follow off nothing updates it before the first
-  // scroll. Seed it from the DOM until the first scroll so a wrap toggle at the top does not pin to the tail.
+  // `atBottom` starts true so follow can pin on mount. The wrap target needs its own tail signal: seed it from the
+  // DOM until the first scroll so a wrap toggle at the top does not pin to the tail.
   useLayoutEffect(() => {
     if (lastScrollTop.current != null) return;
     const el = scrollRef.current!;
-    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 48);
+    atTail.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48;
   }, [total, count]);
 
   // Wrapping changes the measured row heights. Keep the reader on the same line, or on the tail when they were there;
@@ -142,9 +144,9 @@ export function LineViewer(props: LineViewerProps) {
     if (previousWrap.current === wrap) return;
     previousWrap.current = wrap;
     if (count === 0) return;
-    if (atBottom) virtualizer.scrollToIndex(count - 1, { align: "end" });
+    if (atTail.current) virtualizer.scrollToIndex(count - 1, { align: "end" });
     else virtualizer.scrollToIndex(topVisible.current, { align: "start" });
-  }, [wrap, atBottom, count, virtualizer]);
+  }, [wrap, count, virtualizer]);
 
   // Stepping to a match scrolls that line into view.
   useEffect(() => {
@@ -174,6 +176,7 @@ export function LineViewer(props: LineViewerProps) {
     const previous = lastScrollTop.current;
     lastScrollTop.current = top;
     const near = el.scrollHeight - top - el.clientHeight < 48;
+    atTail.current = near;
     if (near) {
       setAtBottom(true);
       return;
