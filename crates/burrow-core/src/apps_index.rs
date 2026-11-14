@@ -232,12 +232,8 @@ impl AppFilters {
         let finished_before = self.finished_before.unwrap_or(i64::MAX);
         let has_finished_range =
             self.finished_after.is_some_and(|v| v > 0) || self.finished_before.is_some();
-        if has_finished_range
-            && (app.finished_time < finished_after || app.finished_time > finished_before)
-        {
-            return false;
-        }
-        true
+        !(has_finished_range
+            && (app.finished_time < finished_after || app.finished_time > finished_before))
     }
 }
 
