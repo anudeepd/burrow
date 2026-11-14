@@ -128,8 +128,16 @@ export function LineViewer(props: LineViewerProps) {
     // version is the append signal; count covers filter changes; total covers measured-height growth.
   }, [version, count, total, follow, paused, parity, searching, atBottom, virtualizer]);
 
+  // `atBottom` starts true so follow can pin on mount, but with follow off nothing updates it before the first
+  // scroll. Seed it from the DOM until the first scroll so a wrap toggle at the top does not pin to the tail.
+  useLayoutEffect(() => {
+    if (lastScrollTop.current != null) return;
+    const el = scrollRef.current!;
+    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 48);
+  }, [total, count]);
+
   // Wrapping changes the measured row heights. Keep the reader on the same line, or on the tail when they were there;
-  // LogsView owns the pane crossfade that hides the reflow.
+  // LogsView owns the pane fade-through that hides the reflow.
   useLayoutEffect(() => {
     if (previousWrap.current === wrap) return;
     previousWrap.current = wrap;
@@ -158,9 +166,11 @@ export function LineViewer(props: LineViewerProps) {
   const onScroll = useCallback(() => {
     // React only dispatches this handler from the mounted scroll element, so the ref is present here.
     const el = scrollRef.current!;
-    const items = virtualizerRef.current.getVirtualItems();
-    if (items.length > 0) topVisible.current = items[0]!.index;
     const top = el.scrollTop;
+    // getVirtualItems() includes overscan above the viewport; using its first item would jump the reader up by the
+    // overscan when a wrap change re-targets the top line. Store the first row whose bottom is below the viewport top.
+    const firstVisible = virtualizerRef.current.getVirtualItems().find((item) => item.end > top);
+    if (firstVisible) topVisible.current = firstVisible.index;
     const previous = lastScrollTop.current;
     lastScrollTop.current = top;
     const near = el.scrollHeight - top - el.clientHeight < 48;

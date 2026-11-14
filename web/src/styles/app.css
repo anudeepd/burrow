@@ -280,11 +280,6 @@ html[data-switching] *, html[data-switching] *::before, html[data-switching] *::
   animation-duration: var(--dur-base);
   animation-timing-function: var(--ease-out);
 }
-/* The log pane gets its own named snapshot pair, so a file switch or wrap reflow crossfades in place. */
-::view-transition-old(burrow-log-pane), ::view-transition-new(burrow-log-pane) {
-  animation-duration: var(--dur-content);
-  animation-timing-function: var(--ease-out);
-}
 
 /* ---------- keyframes (transform/opacity only; the DAG's SVG dash flow lives in features/dag/dag.css) ---------- */
 @keyframes burrow-needle {

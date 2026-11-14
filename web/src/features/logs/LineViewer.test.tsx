@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LineBuffer, type Match } from "./model";
 
-const virtualizer = vi.hoisted(() => ({ scrollToIndex: vi.fn(), measureElement: vi.fn() }));
+const virtualizer = vi.hoisted(() => ({
+  scrollToIndex: vi.fn(),
+  measureElement: vi.fn(),
+  items: null as { index: number; start: number; size: number; end: number }[] | null,
+}));
 
 vi.mock("@tanstack/react-virtual", () => ({
   useVirtualizer: (options: {
@@ -10,15 +14,16 @@ vi.mock("@tanstack/react-virtual", () => ({
     getItemKey: (index: number) => string | number;
     measureElement?: (element: Element) => number;
   }) => {
+    const size = options.estimateSize();
     const items = Array.from({ length: options.count }, (_, index) => {
       options.getItemKey(index);
-      return { index, start: index * options.estimateSize() };
+      return { index, start: index * size, size, end: (index + 1) * size };
     });
     if (options.measureElement) {
       options.measureElement({ getBoundingClientRect: () => ({ height: 44 }) } as Element);
     }
     return {
-      getVirtualItems: () => items,
+      getVirtualItems: () => virtualizer.items ?? items,
       getTotalSize: () => options.count * options.estimateSize(),
       measureElement: virtualizer.measureElement,
       scrollToIndex: virtualizer.scrollToIndex,
@@ -56,6 +61,7 @@ afterEach(() => {
   window.__BURROW_PARITY__ = true;
   virtualizer.scrollToIndex.mockClear();
   virtualizer.measureElement.mockClear();
+  virtualizer.items = null;
 });
 
 describe("LineViewer", () => {
@@ -115,6 +121,51 @@ describe("LineViewer", () => {
     virtualizer.scrollToIndex.mockClear();
     view.rerender(<LineViewer {...base} buffer={buffer} wrap={false} />);
     expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(0, { align: "start" });
+    view.unmount();
+  });
+
+  it("does not pin to the tail when unwrap happens before the first scroll", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const buffer = makeBuffer("INFO one\nINFO two\nINFO three\nINFO four\nINFO five\nINFO six\n");
+    const longer = makeBuffer(Array.from({ length: 12 }, (_, index) => `INFO ${index + 1}`).join("\n"));
+    const view = render(<LineViewer {...base} buffer={buffer} wrap={false} />);
+    const log = screen.getByRole("log", { name: "Container log" });
+    Object.defineProperties(log, {
+      scrollHeight: { configurable: true, value: 300 },
+      clientHeight: { configurable: true, value: 50 },
+      scrollTop: { configurable: true, value: 0 },
+    });
+    // The initial atBottom is true for follow. A count change re-runs the seed before any scroll event.
+    view.rerender(<LineViewer {...base} buffer={longer} wrap={false} />);
+    virtualizer.scrollToIndex.mockClear();
+    view.rerender(<LineViewer {...base} buffer={longer} wrap />);
+    expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(0, { align: "start" });
+    view.unmount();
+  });
+
+  it("targets the first row actually visible, not the overscan start", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    const buffer = makeBuffer("INFO one\nINFO two\nINFO three\nINFO four\nINFO five\nINFO six\n");
+    const view = render(<LineViewer {...base} buffer={buffer} wrap={false} />);
+    const log = screen.getByRole("log", { name: "Container log" });
+    Object.defineProperties(log, {
+      scrollHeight: { configurable: true, value: 300 },
+      clientHeight: { configurable: true, value: 50 },
+      scrollTop: { configurable: true, value: 45 },
+    });
+    // What TanStack returns for a viewport at 45px with overscan: index 0 and 1 are above the visible area.
+    virtualizer.items = [
+      { index: 0, start: 0, size: 20, end: 20 },
+      { index: 1, start: 20, size: 20, end: 40 },
+      { index: 2, start: 40, size: 20, end: 60 },
+      { index: 3, start: 60, size: 20, end: 80 },
+    ];
+    fireEvent.scroll(log);
+    virtualizer.scrollToIndex.mockClear();
+    view.rerender(<LineViewer {...base} buffer={buffer} wrap />);
+    expect(virtualizer.scrollToIndex).toHaveBeenCalledWith(2, { align: "start" });
     view.unmount();
   });
 

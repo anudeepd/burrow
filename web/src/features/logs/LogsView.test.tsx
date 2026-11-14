@@ -113,11 +113,21 @@ afterEach(() => {
   parityStore.setState(() => ({ enabled: true }));
   window.__BURROW_PARITY__ = true;
   Reflect.deleteProperty(document, "startViewTransition");
+  Reflect.deleteProperty(Element.prototype, "animate");
+  for (const ghost of document.querySelectorAll("[data-log-pane-ghost]")) ghost.remove();
   if (originalCreateObjectURL) Object.defineProperty(URL, "createObjectURL", originalCreateObjectURL);
   else Reflect.deleteProperty(URL, "createObjectURL");
   if (originalRevokeObjectURL) Object.defineProperty(URL, "revokeObjectURL", originalRevokeObjectURL);
   else Reflect.deleteProperty(URL, "revokeObjectURL");
 });
+
+function stubPaneAnimation(): void {
+  const { promise } = Promise.withResolvers<Animation>();
+  Object.defineProperty(Element.prototype, "animate", {
+    configurable: true,
+    value: vi.fn(() => ({ finished: promise, cancel: () => {}, playState: "running" }) as unknown as Animation),
+  });
+}
 
 function stubLogFetch(listStatus = 200, fileStatus = 200) {
   vi.stubGlobal(
@@ -536,15 +546,11 @@ describe("LogsView", () => {
     unmount();
   });
 
-  it("keeps the old log until the selected window arrives, then crossfades", async () => {
+  it("keeps the old log until the selected window arrives, then fades through", async () => {
     parityStore.setState(() => ({ enabled: false }));
     window.__BURROW_PARITY__ = false;
+    stubPaneAnimation();
     const pending = Promise.withResolvers<Response>();
-    const start = vi.fn((run: () => void) => {
-      queueMicrotask(run);
-      return { finished: Promise.resolve() };
-    });
-    Object.defineProperty(document, "startViewTransition", { configurable: true, value: start });
     vi.stubGlobal(
       "fetch",
       vi.fn(() => pending.promise),
@@ -572,7 +578,56 @@ describe("LogsView", () => {
         },
       }),
     );
-    await waitFor(() => expect(start).toHaveBeenCalledOnce());
+    await waitFor(() => expect(document.querySelector("[data-log-pane-ghost]")).not.toBeNull());
+  });
+
+  it("does not start a pane transition after unmount", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    stubPaneAnimation();
+    const pending = Promise.withResolvers<Response>();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => pending.promise),
+    );
+    const view = renderLogs();
+    await screen.findByRole("log", { name: "Container log" });
+
+    fireEvent.click(screen.getByRole("combobox", { name: "Log file" }));
+    const stderr = await screen.findByRole("option", { name: /^stderr/ });
+    fireEvent.pointerDown(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.pointerUp(stderr, { button: 0, pointerType: "mouse" });
+    fireEvent.click(stderr);
+    await waitFor(() => expect(screen.getByText("Loading stderr…")).toBeTruthy());
+
+    const captured: (() => void)[] = [];
+    const original = globalThis.queueMicrotask;
+    const spy = vi.spyOn(globalThis, "queueMicrotask").mockImplementation((callback) => {
+      if (String(callback).includes("withLogPaneTransition")) {
+        captured.push(callback as () => void);
+        return;
+      }
+      original.call(globalThis, callback);
+    });
+    try {
+      pending.resolve(
+        new Response("2026-10-31 10:00:03,000 ERROR stderr replacement\n", {
+          headers: {
+            "content-type": "text/plain",
+            "x-burrow-log-size": "51",
+            "x-burrow-log-start": "0",
+            "x-burrow-log-end": "51",
+            "x-burrow-log-source": "nm",
+          },
+        }),
+      );
+      await waitFor(() => expect(captured.length).toBeGreaterThan(0));
+      view.unmount();
+      for (const callback of captured) callback();
+    } finally {
+      spy.mockRestore();
+    }
+    expect(document.querySelector("[data-log-pane-ghost]")).toBeNull();
   });
 
   it("keeps the old log and reports a failed selected-window load", async () => {
@@ -601,14 +656,10 @@ describe("LogsView", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
   });
 
-  it("crossfades a wrap change when the platform supports view transitions", async () => {
+  it("fades a wrap change through a pane ghost", async () => {
     parityStore.setState(() => ({ enabled: false }));
     window.__BURROW_PARITY__ = false;
-    const start = vi.fn((run: () => void) => {
-      queueMicrotask(run);
-      return { finished: Promise.resolve() };
-    });
-    Object.defineProperty(document, "startViewTransition", { configurable: true, value: start });
+    stubPaneAnimation();
     renderLogs();
     await screen.findByRole("log", { name: "Container log" });
     const wrap = screen.getByRole("button", { name: "Wrap long lines" });
@@ -616,7 +667,7 @@ describe("LogsView", () => {
 
     fireEvent.click(wrap);
 
-    expect(start).toHaveBeenCalledOnce();
+    expect(document.querySelector("[data-log-pane-ghost]")).not.toBeNull();
     await waitFor(() => expect(wrap.getAttribute("aria-pressed")).toBe("false"));
   });
 });

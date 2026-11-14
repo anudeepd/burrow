@@ -11,6 +11,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import containersFixture from "../../fixtures/rm/logs/containers.json";
+import { CLUSTER_TS } from "./mock-data/cluster.ts";
 
 const WINDOW_BYTES = 1024 * 1024;
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -32,17 +33,29 @@ interface FixtureContainer {
 
 const CONTAINERS = containersFixture as Record<string, FixtureContainer>;
 
+/**
+ * The mock RM's generated apps use container ids with no captured bytes, so their Logs tab lands on a 404. Point the
+ * mock cluster's containers at the captured stderr/stdout fixture so the normal app flow has a working example.
+ */
+const CAPTURED_FIXTURE = "container_1791010984040_0033_01_000001";
+const MOCK_CONTAINER = new RegExp(`^container_${CLUSTER_TS}_\\d+_`);
+const fixtureContainer = (containerId: string): FixtureContainer | null =>
+  CONTAINERS[containerId] ?? (MOCK_CONTAINER.test(containerId) ? (CONTAINERS[CAPTURED_FIXTURE] ?? null) : null);
+const fixtureId = (containerId: string) =>
+  CONTAINERS[containerId] ? containerId : MOCK_CONTAINER.test(containerId) ? CAPTURED_FIXTURE : containerId;
+
 const fixturePath = (containerId: string, name: string) =>
-  fileURLToPath(new URL(`../../fixtures/rm/logs/${containerId}/${name}`, import.meta.url));
+  fileURLToPath(new URL(`../../fixtures/rm/logs/${fixtureId(containerId)}/${name}`, import.meta.url));
 
 /** Bytes are read once and cached: the big fixture is 5 MB and every ranged request would otherwise re-read it. */
 const cache = new Map<string, Buffer>();
 function fileBytes(containerId: string, name: string): Buffer | null {
-  const key = `${containerId}/${name}`;
+  const id = fixtureId(containerId);
+  const key = `${id}/${name}`;
   const hit = cache.get(key);
   if (hit) return hit;
   try {
-    const buf = readFileSync(fixturePath(containerId, name));
+    const buf = readFileSync(fixturePath(id, name));
     cache.set(key, buf);
     return buf;
   } catch {
@@ -59,7 +72,7 @@ const notFound = (message: string, hint?: string) =>
   });
 
 function filesResponse(containerId: string): Response | null {
-  const entry = CONTAINERS[containerId];
+  const entry = fixtureContainer(containerId);
   if (!entry) return null;
   const body = {
     source: entry.source,
@@ -95,7 +108,7 @@ function rangeResponse(containerId: string, name: string, url: URL): Response | 
       "x-burrow-log-size": String(size),
       "x-burrow-log-start": String(start),
       "x-burrow-log-end": String(end),
-      "x-burrow-log-source": CONTAINERS[containerId]?.source ?? "nm",
+      "x-burrow-log-source": fixtureContainer(containerId)?.source ?? "nm",
     },
   });
 }

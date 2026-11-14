@@ -159,7 +159,7 @@ export function LogsView() {
   committedRef.current = committedWindow;
 
   // A different container or hint scope starts a new buffer. A file switch in the same scope keeps the old log visible
-  // until its replacement arrives, so the pane can crossfade instead of flashing through a skeleton.
+  // until its replacement arrives, so the pane can fade through instead of flashing through a skeleton.
   const scope = JSON.stringify([containerId, hints.node, hints.user, hints.app]);
   const previousScope = useRef<string | null>(null);
   useEffect(() => {
@@ -191,11 +191,20 @@ export function LogsView() {
       });
       return;
     }
-    const transitioned = withLogPaneTransition(pane, commit);
-    if (!transitioned)
-      nextFrame(() => {
-        dataFade.current = fadeIn(pane, 0, 4);
-      });
+    // The ghost must be in the DOM before React commits, but `flushSync` is illegal inside a lifecycle method. A
+    // microtask leaves the effect's commit phase and keeps the old log visible until the pane transition starts.
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled || !pane.isConnected) return;
+      const transitioned = withLogPaneTransition(pane, commit, { rise: 4 });
+      if (!transitioned)
+        nextFrame(() => {
+          dataFade.current = fadeIn(pane, 0, 4);
+        });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [initial.data, windowIdentity, buffer, bump]);
 
   // ── follow ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -251,7 +260,7 @@ export function LogsView() {
         setDisplayWrap(value);
         setSearch({ wrap: value });
       };
-      const transitioned = withLogPaneTransition(pane, update);
+      const transitioned = withLogPaneTransition(pane, update, { rise: 0 });
       if (!transitioned)
         nextFrame(() => {
           wrapFade.current = fadeIn(pane, 0.4);
