@@ -567,6 +567,8 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
    standard scrollbar properties and Blink's WebKit scrollbar pseudo-elements otherwise produce different bars. */
 .burrow-table-scroll,
 .burrow-scroll-hidden { scrollbar-gutter: auto; scrollbar-width: none; scrollbar-color: transparent transparent; }
+/* Live rows update in place; Safari's scroll anchoring must not move a table the reader positioned. */
+.burrow-table-scroll { overflow-anchor: none; }
 .burrow-table-scroll::-webkit-scrollbar,
 .burrow-scroll-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
 

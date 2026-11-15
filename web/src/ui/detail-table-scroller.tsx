@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "~/lib/cn";
-import { useScrollRestore } from "~/lib/use-scroll-restore";
+import { SCROLL_RESTORE_LOCK_MS, useScrollRestore } from "~/lib/use-scroll-restore";
 import { ScrollBottomFade, useHasMoreBelow } from "./scroll-bottom-fade";
 
 /** Small detail tables share the data grid's quiet scrollbars and conditional right-edge fade. */
@@ -23,7 +23,7 @@ export function DetailTableScroller({
   const moreRightRef = useRef(false);
   const [moreRight, setMoreRight] = useState(false);
   const { visible: moreBelow, sync: syncVerticalCue } = useHasMoreBelow(scrollerRef, Boolean(maxHeight));
-  useScrollRestore(scrollerRef, scrollKey ?? "", Boolean(scrollKey));
+  useScrollRestore(scrollerRef, scrollKey ?? "", Boolean(scrollKey), SCROLL_RESTORE_LOCK_MS);
 
   const syncOverflowCue = useCallback(() => {
     const scroller = scrollerRef.current;

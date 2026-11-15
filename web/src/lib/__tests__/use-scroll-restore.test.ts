@@ -39,7 +39,7 @@ describe("useScrollRestore", () => {
     const element = scrollable();
     const ref = { current: element };
 
-    renderHook(() => useScrollRestore(ref, KEY, true));
+    renderHook(() => useScrollRestore(ref, KEY, true, 0));
 
     expect(element.scrollTop).toBe(120);
     await waitFor(() => expect(element.scrollTop).toBe(120));
@@ -50,7 +50,7 @@ describe("useScrollRestore", () => {
     sessionStorage.setItem(KEY, "30");
     const element = scrollable();
 
-    renderHook(() => useScrollRestore({ current: element }, KEY, true));
+    renderHook(() => useScrollRestore({ current: element }, KEY, true, 0));
 
     expect(element.scrollTop).toBe(30);
   });
@@ -60,22 +60,42 @@ describe("useScrollRestore", () => {
     const element = scrollable();
     const ref = { current: element };
 
-    renderHook(() => useScrollRestore(ref, KEY, false));
+    renderHook(() => useScrollRestore(ref, KEY, false, 0));
     expect(element.scrollTop).toBe(0);
 
     const nullRef = { current: null };
-    renderHook(() => useScrollRestore(nullRef, KEY, true));
+    renderHook(() => useScrollRestore(nullRef, KEY, true, 0));
     expect(nullRef.current).toBeNull();
   });
 
   it("saves scroll events on the next frame", async () => {
     const element = scrollable();
     const ref = { current: element };
-    renderHook(() => useScrollRestore(ref, KEY, true));
+    renderHook(() => useScrollRestore(ref, KEY, true, 0));
 
     element.scrollTop = 42;
     element.dispatchEvent(new Event("scroll"));
 
     await waitFor(() => expect(sessionStorage.getItem(KEY)).toBe("42"));
+  });
+
+  it("locks the restored position until the user scrolls", async () => {
+    sessionStorage.setItem(KEY, "100");
+    const element = scrollable();
+    const ref = { current: element };
+    renderHook(() => useScrollRestore(ref, KEY, true, 100));
+
+    element.scrollTop = 0;
+    element.dispatchEvent(new Event("scroll"));
+    expect(element.scrollTop).toBe(100);
+
+    element.scrollTop = 100;
+    element.dispatchEvent(new Event("scroll"));
+    expect(element.scrollTop).toBe(100);
+
+    element.dispatchEvent(new Event("wheel"));
+    element.scrollTop = 40;
+    element.dispatchEvent(new Event("scroll"));
+    await waitFor(() => expect(sessionStorage.getItem(KEY)).toBe("40"));
   });
 });

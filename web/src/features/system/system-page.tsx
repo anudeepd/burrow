@@ -12,7 +12,7 @@ import { useStableQuery } from "~/api/use-stable-query";
 import { Field, KvGrid, PageHead, Section, Stat } from "~/features/nodes/page";
 import { useNow } from "~/features/shell/use-now";
 import { fmtBytes, fmtClock, fmtDuration, fmtInt, fmtPct, fmtRelative } from "~/lib/format";
-import { useScrollRestore } from "~/lib/use-scroll-restore";
+import { SCROLL_RESTORE_LOCK_MS, useScrollRestore } from "~/lib/use-scroll-restore";
 import { Button } from "~/ui/button";
 import { AreaChart, type Point } from "~/ui/charts";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
@@ -73,7 +73,7 @@ export function SystemPage() {
   const retry = () => void refetch();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [savedScroll] = useState(() => Number(sessionStorage.getItem("burrow.system.scroll") ?? "0"));
-  useScrollRestore(scrollRef, "burrow.system.scroll", true);
+  useScrollRestore(scrollRef, "burrow.system.scroll", true, SCROLL_RESTORE_LOCK_MS);
   useLayoutEffect(() => {
     const previous = history.scrollRestoration;
     history.scrollRestoration = "manual";
