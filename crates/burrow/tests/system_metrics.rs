@@ -52,8 +52,8 @@ async fn system_reports_process_clients_requests_and_cache() {
         assert!(json["requests"]["byStatus"][class].is_u64());
     }
     assert!(json["requests"]["errorsLast15m"].is_u64());
-    assert!(json["requests"]["p50Ms"].is_u64());
-    assert!(json["requests"]["p95Ms"].is_u64());
+    assert!(json["requests"]["p50Ms"].is_number());
+    assert!(json["requests"]["p95Ms"].is_number());
     assert_eq!(json["requests"]["history"].as_array().unwrap().len(), 15);
     assert!(json["memoryHistory"].is_array());
     assert!(json["recentErrors"].is_array());

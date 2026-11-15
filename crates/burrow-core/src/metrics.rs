@@ -66,7 +66,7 @@ struct Failure {
     method: String,
     path: String,
     status: u16,
-    duration_ms: u64,
+    duration_us: u64,
 }
 
 struct Inner {
@@ -147,15 +147,16 @@ impl Metrics {
         duration: Duration,
         is_stream: bool,
     ) {
-        let duration_ms = duration.as_millis() as u64;
+        let duration_us = duration.as_micros() as u64;
         let mut inner = self.inner.lock();
         inner.total += 1;
         let class = status as usize / 100;
         if (1..=inner.by_status.len()).contains(&class) {
             inner.by_status[class - 1] += 1;
         }
-        if !is_stream {
-            inner.durations.push_back(duration_ms);
+        // Latency is an API signal: static assets are numerous and fast enough to hide the API tail.
+        if !is_stream && path.starts_with("/api/") {
+            inner.durations.push_back(duration_us);
             if inner.durations.len() > DURATION_RING {
                 inner.durations.pop_front();
             }
@@ -188,7 +189,7 @@ impl Metrics {
                 method: method.to_string(),
                 path: path.chars().take(PATH_MAX_CHARS).collect(),
                 status,
-                duration_ms,
+                duration_us,
             });
             while inner.failures.len() > FAILURE_RING {
                 inner.failures.pop_front();
@@ -262,7 +263,7 @@ impl Metrics {
                 method: f.method.clone(),
                 path: f.path.clone(),
                 status: f.status,
-                duration_ms: f.duration_ms,
+                duration_ms: f.duration_us as f64 / 1000.0,
             })
             .collect();
         let active = inner.clients.len();
@@ -296,8 +297,8 @@ impl Metrics {
                     five_xx: inner.by_status[4],
                 },
                 errors_last_15m,
-                p50_ms: percentile(&durations, 50),
-                p95_ms: percentile(&durations, 95),
+                p50_ms: percentile(&durations, 50) as f64 / 1000.0,
+                p95_ms: percentile(&durations, 95) as f64 / 1000.0,
                 history,
             },
             memory_history,
@@ -383,8 +384,8 @@ pub struct RequestsSnapshot {
     pub in_flight: usize,
     pub by_status: StatusCounts,
     pub errors_last_15m: u64,
-    pub p50_ms: u64,
-    pub p95_ms: u64,
+    pub p50_ms: f64,
+    pub p95_ms: f64,
     pub history: Vec<HistoryPoint>,
 }
 
@@ -424,7 +425,7 @@ pub struct RecentError {
     pub method: String,
     pub path: String,
     pub status: u16,
-    pub duration_ms: u64,
+    pub duration_ms: f64,
 }
 
 #[cfg(test)]
@@ -455,6 +456,26 @@ mod tests {
                 snapshot.requests.by_status.five_xx,
             ],
             [1, 1, 1, 1, 1]
+        );
+    }
+
+    #[test]
+    fn out_of_range_statuses_do_not_index_the_class_counters() {
+        let m = metrics();
+        m.record_request("GET", "/api/a", 99, Duration::from_millis(1), false);
+        m.record_request("GET", "/api/a", 600, Duration::from_millis(1), false);
+
+        let snapshot = m.snapshot_at(Instant::now(), now_ms(), None);
+        assert_eq!(snapshot.requests.total, 2);
+        assert_eq!(
+            [
+                snapshot.requests.by_status.one_xx,
+                snapshot.requests.by_status.two_xx,
+                snapshot.requests.by_status.three_xx,
+                snapshot.requests.by_status.four_xx,
+                snapshot.requests.by_status.five_xx,
+            ],
+            [0, 0, 0, 0, 0]
         );
     }
 
@@ -517,40 +538,40 @@ mod tests {
     fn percentiles_use_nearest_rank() {
         let m = metrics();
         for ms in 1..=100 {
-            m.record_request("GET", "/a", 200, Duration::from_millis(ms), false);
+            m.record_request("GET", "/api/a", 200, Duration::from_millis(ms), false);
         }
         let snapshot = m.snapshot_at(Instant::now(), now_ms(), None);
-        assert_eq!(snapshot.requests.p50_ms, 50);
-        assert_eq!(snapshot.requests.p95_ms, 95);
+        assert_eq!(snapshot.requests.p50_ms, 50.0);
+        assert_eq!(snapshot.requests.p95_ms, 95.0);
 
         let empty = metrics();
         let snapshot = empty.snapshot_at(Instant::now(), now_ms(), None);
-        assert_eq!(snapshot.requests.p50_ms, 0);
-        assert_eq!(snapshot.requests.p95_ms, 0);
+        assert_eq!(snapshot.requests.p50_ms, 0.0);
+        assert_eq!(snapshot.requests.p95_ms, 0.0);
     }
 
     #[test]
     fn duration_ring_keeps_the_newest_512() {
         let m = metrics();
         for ms in 1..=DURATION_RING as u64 + 1 {
-            m.record_request("GET", "/a", 200, Duration::from_millis(ms), false);
+            m.record_request("GET", "/api/a", 200, Duration::from_millis(ms), false);
         }
 
         let snapshot = m.snapshot_at(Instant::now(), now_ms(), None);
-        assert_eq!(snapshot.requests.p50_ms, 257);
-        assert_eq!(snapshot.requests.p95_ms, 488);
+        assert_eq!(snapshot.requests.p50_ms, 257.0);
+        assert_eq!(snapshot.requests.p95_ms, 488.0);
     }
 
     #[test]
     fn streams_are_counted_but_excluded_from_latency() {
         let m = metrics();
-        m.record_request("GET", "/fast", 200, Duration::from_millis(3), false);
-        m.record_request("GET", "/events", 200, Duration::from_secs(60), true);
+        m.record_request("GET", "/api/fast", 200, Duration::from_millis(3), false);
+        m.record_request("GET", "/api/events", 200, Duration::from_secs(60), true);
 
         let snapshot = m.snapshot_at(Instant::now(), now_ms(), None);
         assert_eq!(snapshot.requests.total, 2);
-        assert_eq!(snapshot.requests.p50_ms, 3);
-        assert_eq!(snapshot.requests.p95_ms, 3);
+        assert_eq!(snapshot.requests.p50_ms, 3.0);
+        assert_eq!(snapshot.requests.p95_ms, 3.0);
     }
 
     #[test]

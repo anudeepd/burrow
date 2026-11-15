@@ -81,12 +81,13 @@ the number of open `/api/events` connections, not their topic subscriptions. Mem
 platform cannot report them.
 
 `requests` counts every HTTP response, static files and host-guard rejections included, and `inFlight` includes the
-current `/api/system` request. `p50Ms`/`p95Ms` cover the last 512 non-streaming responses; SSE responses count as
-requests but are excluded from latency. `history` is 15 one-minute buckets, oldest first, with empty minutes filled
-in. `history.errors` and `errorsLast15m` count 5xx only (Burrow failed to serve); `recentErrors` keeps the last 20
-responses with status ≥ 400, newest first, so 4xx diagnostics remain visible. Paths carry no query string.
-`memoryHistory` samples at most once every 5 seconds for the last 15 minutes. `cache` mirrors the process-wide cache
-counters and current usage.
+current `/api/system` request. `p50Ms`/`p95Ms` cover the last 512 non-streaming `/api/` responses and are fractional
+milliseconds, so a sub-millisecond answer stays visible. Static assets and SSE responses count as requests but are
+excluded from latency. `history` is 15 one-minute buckets, oldest first, with empty minutes filled in.
+`history.errors` and `errorsLast15m` count 5xx only (Burrow failed to serve); `recentErrors` keeps the last 20
+responses with status ≥ 400, newest first, so 4xx diagnostics remain visible. `recentErrors[].durationMs` is also
+fractional milliseconds, and paths carry no query string. `memoryHistory` samples at most once every 5 seconds for the
+last 15 minutes. `cache` mirrors the process-wide cache counters and current usage.
 
 ## 3. ResourceManager passthrough
 

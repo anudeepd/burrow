@@ -138,6 +138,22 @@ describe("system page", () => {
     expect(await screen.findByText("3 live streams · last 5 min")).toBeTruthy();
   });
 
+  it("formats sub-millisecond API latency", async () => {
+    serveFixtures({
+      "/api/system": {
+        ...SYSTEM_FIXTURE,
+        requests: { ...SYSTEM_FIXTURE.requests, p50Ms: 0.2, p95Ms: 0.4 },
+        recentErrors: [{ ...SYSTEM_FIXTURE.recentErrors[0], durationMs: 0.5 }],
+      },
+    });
+    render(<RouterProvider router={routerAt("/system")} />);
+
+    expect(await screen.findByText("400 µs")).toBeTruthy();
+    expect(screen.getByText("p50 200 µs")).toBeTruthy();
+    expect(screen.getByText("500 µs")).toBeTruthy();
+    expect(screen.getByText(/p95 400 µs/)).toBeTruthy();
+  });
+
   it("shows the no-errors state and an ok failure tone when nothing failed", async () => {
     serveFixtures({
       "/api/system": {

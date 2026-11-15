@@ -32,6 +32,11 @@ function axisMax(value: number, step: number): number {
   return Math.max(step, Math.ceil(value / step) * step);
 }
 
+/** Format an API latency sample without collapsing sub-millisecond values to `0 ms`. */
+function fmtLatency(ms: number): string {
+  return ms > 0 && ms < 1 ? `${Math.round(ms * 1000)} µs` : fmtDuration(ms);
+}
+
 function SystemSkeleton() {
   return (
     <div data-testid="system" role="status" aria-busy="true" aria-label="Loading system metrics" className={SCROLL}>
@@ -131,7 +136,7 @@ export function SystemPage() {
             tone={serverFailures > 0 ? "fail" : "ok"}
           />
           <Stat label="Uptime" value={fmtDuration(process.uptimeSeconds * 1000)} sub={`since ${fmtClock(process.startedAtMs)}`} />
-          <Stat label="API latency" value={fmtDuration(requests.p95Ms)} sub={`p50 ${fmtDuration(requests.p50Ms)}`} />
+          <Stat label="API latency" value={fmtLatency(requests.p95Ms)} sub={`p50 ${fmtLatency(requests.p50Ms)}`} />
         </div>
         <p className="text-micro text-ink-3">
           Active browsers are distinct browser cookies seen in the last {windowMinutes} minutes. Live streams are open event streams.
@@ -150,7 +155,7 @@ export function SystemPage() {
               timeLabel={fmtClock}
             />
             <p className="text-micro text-ink-3">
-              15 one-minute buckets · {fmtInt(requests.total)} responses since startup · p95 {fmtDuration(requests.p95Ms)}
+              15 one-minute buckets · {fmtInt(requests.total)} responses since startup · p95 {fmtLatency(requests.p95Ms)}
             </p>
           </Section>
 
@@ -202,7 +207,7 @@ export function SystemPage() {
                       <td className="px-3 py-1.5 font-medium tnum text-fail">{fmtInt(row.status)}</td>
                       <td className="px-3 py-1.5 text-ink-2">{row.method}</td>
                       <td className="px-3 py-1.5 font-mono text-ink-2">{row.path}</td>
-                      <td className="px-3 py-1.5 text-end tnum text-ink-3">{fmtDuration(row.durationMs)}</td>
+                      <td className="px-3 py-1.5 text-end tnum text-ink-3">{fmtLatency(row.durationMs)}</td>
                     </tr>
                   ))}
                 </tbody>
