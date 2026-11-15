@@ -505,6 +505,17 @@ html:not([data-motion="reduced"]):not([data-parity]) .burrow-skeleton[data-visib
 .burrow-sheet[data-side="bottom"][data-starting-style], .burrow-sheet[data-side="bottom"][data-ending-style] { transform: translateY(100%); }
 /* a drawer is a long slide, so it gets the iOS drawer curve rather than the short-hop ease-out */
 .burrow-sheet[data-side="left"], .burrow-sheet[data-side="bottom"] { transition-timing-function: var(--ease-drawer); }
+/* Base UI does not mark a dialog that mounts already open with data-starting-style, so the first drawer open would appear
+   at its final position. Give the first insertion a start value; later opens keep the data-starting-style rules above. */
+@starting-style {
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-sheet[data-side="right"] { transform: translateX(100%); }
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-sheet[data-side="left"] { transform: translateX(-100%); }
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-sheet[data-side="bottom"] { transform: translateY(100%); }
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-scrim { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  @starting-style { .burrow-sheet[data-side] { transform: none; } }
+}
 /* reduced motion: overlays arrive by fade only — the panel keeps its place and never slides */
 html[data-motion="reduced"] .burrow-sheet[data-starting-style], html[data-motion="reduced"] .burrow-sheet[data-ending-style],
 html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-sheet[data-ending-style] { transform: none; }
