@@ -96,9 +96,11 @@ describe("shared node page components", () => {
   });
 
   it("shows a stat hint behind a help button", () => {
-    render(<Stat label="Process RSS" value="128 MiB" hint="Resident set size." />);
+    const view = render(<Stat label="Process RSS" value="128 MiB" hint="Resident set size." />);
     expect(screen.getByText("128 MiB")).toBeTruthy();
     expect(screen.getByRole("button", { name: "About Process RSS" })).toBeTruthy();
+    view.rerender(<Stat label={<span>Process RSS</span>} value="128 MiB" hint="Resident set size." />);
+    expect(screen.getByRole("button", { name: "About Stat details" })).toBeTruthy();
   });
 
   it("shows availability hints only when supplied", () => {
