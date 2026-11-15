@@ -24,6 +24,7 @@
     background: var(--ground);
     color: var(--ink);
     font-feature-settings: "ss01" 0, "kern" 1, "calt" 1;
+    overflow-anchor: none;
   }
   body {
     margin: 0;
@@ -33,7 +34,11 @@
     background: var(--ground);
     color: var(--ink);
     transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+    overflow-anchor: none;
   }
+  /* Safari anchors the page on an ancestor above the page scroller; the page-level
+     overflow-anchor alone does not stop the live-data poll from moving the viewport. */
+  main, #root { overflow-anchor: none; }
   h1, h2, h3, h4 { text-wrap: balance; font-weight: 600; letter-spacing: -0.012em; margin: 0; }
   p { text-wrap: pretty; margin: 0; }
   ::selection { background: var(--selection); }
