@@ -2,7 +2,7 @@ import { Dialog as BDialog } from "@base-ui/react/dialog";
 import type { RefObject } from "react";
 import { Rail } from "./rail";
 
-/** Mobile navigation drawer. It is code-split from the desktop shell and remains mounted after first open for its exit animation. */
+/** Mobile navigation drawer. Its chunk saved almost nothing, so it ships with the shell and remains mounted after first open for its exit animation. */
 export function RailDrawer({
   open,
   onOpenChange,
