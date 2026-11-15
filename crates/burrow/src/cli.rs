@@ -139,7 +139,8 @@ pub struct Opts {
     #[arg(long, global = true, env = "BURROW_NO_OPEN")]
     pub no_open: bool,
 
-    /// Append application logs to this file (console output is unchanged)
+    /// Append application logs to this file (console output is unchanged); it rotates at 10 MiB
+    /// and keeps one `.1` backup.
     #[arg(long, global = true, env = "BURROW_LOG_FILE", value_name = "FILE")]
     pub log_file: Option<PathBuf>,
 }

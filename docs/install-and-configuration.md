@@ -107,7 +107,7 @@ If no ResourceManager is configured or discovered, Burrow falls back to `http://
 | `--insecure` | Skip upstream TLS certificate verification; intended for development only. |
 | `--assets-dir DIR` | Serve a custom web UI directory instead of the embedded assets. |
 | `--config FILE` | Load settings from a TOML configuration file. |
-| `--log-file FILE` | Append application logs to FILE as well as the console; missing parent directories are created. |
+| `--log-file FILE` | Append application logs to FILE as well as the console; missing parent directories are created, and FILE rotates at 10 MiB with one `FILE.1` backup. |
 
 The corresponding environment variables use the `BURROW_` prefix, such as `BURROW_BIND`, `BURROW_PORT`, `BURROW_RM`, `BURROW_JHS`, `BURROW_SPARK_HISTORY` and `BURROW_LOG_FILE`. Run `burrow --help` for the complete list.
 

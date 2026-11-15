@@ -109,6 +109,54 @@ fn log_file_creates_parents_and_mirrors_logs_without_ansi() {
 }
 
 #[test]
+fn log_file_rotates_a_prefilled_file_to_one_backup() {
+    let dir = tempfile::tempdir().unwrap();
+    let log_path = dir.path().join("burrow.log");
+    let prefilled = 10 * 1024 * 1024 + 1;
+    std::fs::write(&log_path, vec![b'x'; prefilled]).unwrap();
+
+    let child = isolated_burrow()
+        .arg("--log-file")
+        .arg(&log_path)
+        .args([
+            "serve",
+            "--bind",
+            "127.0.0.1",
+            "--port",
+            "0",
+            "--no-open",
+            "--rm",
+            "http://127.0.0.1:1",
+        ])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .expect("start Burrow serving");
+    let guard = ChildGuard(Some(child));
+
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+    while std::time::Instant::now() < deadline {
+        if std::fs::read_to_string(&log_path).is_ok_and(|log| log.contains("ResourceManager")) {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
+    }
+    guard.kill_and_collect();
+
+    let mut backup = log_path.clone().into_os_string();
+    backup.push(".1");
+    let backup_path = std::path::PathBuf::from(backup);
+    assert_eq!(
+        std::fs::metadata(&backup_path).unwrap().len(),
+        prefilled as u64
+    );
+
+    let log = std::fs::read_to_string(&log_path).unwrap();
+    assert!(log.contains("ResourceManager"), "log file: {log:?}");
+    assert!(log.contains("UNREACHABLE"), "log file: {log:?}");
+}
+
+#[test]
 fn log_file_is_created_for_a_one_shot_command() {
     let dir = tempfile::tempdir().unwrap();
     let log_path = dir.path().join("doctor.log");
