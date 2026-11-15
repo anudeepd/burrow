@@ -88,6 +88,9 @@ describe("system page", () => {
     expect(within(table).getByText("GET")).toBeTruthy();
     expect(within(table).getByText("/api/apps")).toBeTruthy();
     expect(within(table).getByText("12 ms")).toBeTruthy();
+    const errorRegion = screen.getByRole("region", { name: "Recent failed requests" });
+    expect(errorRegion.style.maxHeight).toBe("20rem");
+    expect(errorRegion.className).toContain("overflow-y-auto");
 
     expect(screen.getByText("0.2.3")).toBeTruthy();
     expect(screen.getByText("12,345")).toBeTruthy();

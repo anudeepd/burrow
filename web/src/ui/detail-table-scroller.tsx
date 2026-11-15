@@ -2,7 +2,18 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { cn } from "~/lib/cn";
 
 /** Small detail tables share the data grid's quiet scrollbars and conditional right-edge fade. */
-export function DetailTableScroller({ children, className, ariaLabel }: { children: ReactNode; className?: string; ariaLabel: string }) {
+export function DetailTableScroller({
+  children,
+  className,
+  ariaLabel,
+  maxHeight,
+}: {
+  children: ReactNode;
+  className?: string;
+  ariaLabel: string;
+  /** Caps the scroll area so a long table cannot stretch the page; the header stays visible. */
+  maxHeight?: string;
+}) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const moreRightRef = useRef(false);
   const [moreRight, setMoreRight] = useState(false);
@@ -37,7 +48,11 @@ export function DetailTableScroller({ children, className, ariaLabel }: { childr
         // biome-ignore lint/a11y/noNoninteractiveTabindex: the scroll region must be keyboard focusable.
         tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
         onScroll={syncOverflowCue}
-        className="burrow-scroll burrow-table-scroll min-w-0 overflow-x-auto overflow-y-hidden outline-none focus-visible:outline focus-visible:-outline-offset-2 focus-visible:outline-live"
+        style={maxHeight ? { maxHeight } : undefined}
+        className={cn(
+          "burrow-scroll burrow-table-scroll min-w-0 overflow-x-auto outline-none focus-visible:outline focus-visible:-outline-offset-2 focus-visible:outline-live",
+          maxHeight ? "overflow-y-auto" : "overflow-y-hidden",
+        )}
       >
         {children}
       </div>

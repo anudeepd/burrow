@@ -178,10 +178,10 @@ export function SystemPage() {
           {recentErrors.length === 0 ? (
             <EmptyState compact title="No errors since startup" icon={<Check className="size-4" aria-hidden="true" />} />
           ) : (
-            <DetailTableScroller ariaLabel="Recent failed requests" className="rounded-lg border border-seam bg-fabric">
+            <DetailTableScroller ariaLabel="Recent failed requests" maxHeight="20rem" className="rounded-lg border border-seam bg-fabric">
               <table className="w-full min-w-140 border-collapse text-small">
                 <caption className="sr-only">Recent failed requests, newest first</caption>
-                <thead className="bg-fabric-2 text-micro uppercase tracking-wide text-ink-4">
+                <thead className="sticky top-0 z-10 bg-fabric-2 text-micro uppercase tracking-wide text-ink-4">
                   <tr>
                     <th scope="col" className="px-3 py-1.5 text-start font-medium">
                       Time
