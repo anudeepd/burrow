@@ -217,14 +217,24 @@ async fn a_failed_refresh_keeps_serving_the_last_snapshot_as_stale() {
         .await;
     wait_ready(&harness, "/api/yarn/apps?window=1&offset=0&limit=2").await;
 
-    // Break the upstream and let the snapshot age past its refresh window.
+    // Break the upstream. A refresh triggered by the readiness polling can still be in flight, so wait
+    // for the index to report the snapshot stale instead of assuming a fixed sleep is enough.
     mock.set(FULL_QUERY, Canned::json("{}").with_status(503))
         .await;
-    tokio::time::sleep(Duration::from_millis(80)).await;
 
-    let stale = harness
-        .get("/api/yarn/apps?window=1&offset=0&limit=2")
-        .await;
+    let mut stale = None;
+    for _ in 0..100 {
+        let response = harness
+            .get("/api/yarn/apps?window=1&offset=0&limit=2")
+            .await;
+        assert_eq!(response.status, 200, "{}", response.text());
+        if response.json()["window"]["stale"] == true {
+            stale = Some(response);
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(20)).await;
+    }
+    let stale = stale.expect("the application index never reported the snapshot stale");
     assert_eq!(stale.status, 200, "{}", stale.text());
     let body = stale.json();
     assert_eq!(body["window"]["ready"], true);

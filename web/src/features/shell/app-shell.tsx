@@ -1,12 +1,12 @@
 import { lazy, Suspense, useRef, useState } from "react";
 import { cn } from "~/lib/cn";
 import { Rail } from "./rail";
+import { RailDrawer } from "./rail-drawer";
 import { useShellHotkeys } from "./shortcuts";
 import { Topbar } from "./topbar";
 
 const CommandPalette = lazy(() => import("./command-palette").then((module) => ({ default: module.CommandPalette })));
 const ShortcutsDialog = lazy(() => import("./shortcuts-dialog").then((module) => ({ default: module.ShortcutsDialog })));
-const RailDrawer = lazy(() => import("./rail-drawer").then((module) => ({ default: module.RailDrawer })));
 
 /**
  * The application chrome: rail, top bar, content region, palette and shortcut help. Rendered by the root route, so every
@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className={cn("flex h-dvh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>
+    <div className={cn("flex h-svh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>
       <Rail className="hidden md:flex" />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Topbar railTrigger={railTrigger} onOpenRail={openDrawer} onOpenPalette={() => setPaletteOpen(true)} />
@@ -34,11 +34,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="burrow-page flex min-h-0 flex-1 flex-col">{children}</div>
         </main>
       </div>
-      {drawerMounted && (
-        <Suspense fallback={null}>
-          <RailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} returnFocus={railTrigger} />
-        </Suspense>
-      )}
+      {drawerMounted && <RailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} returnFocus={railTrigger} />}
       {/* the palette is keyboard-first (⌘K, `/`): it opens instantly in both directions, and it is unmounted while
           closed so each open starts from an empty query */}
       {paletteOpen && (

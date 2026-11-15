@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Activity, Boxes, FileText, Gauge, GitBranch, Layers, Server, Settings2, Tags } from "lucide-react";
+import { Activity, Boxes, Cpu, FileText, Gauge, GitBranch, Layers, Server, Settings2, Tags } from "lucide-react";
 
 /**
  * The rail is a static table (PLAN §5): routes are listed here, never derived from the router at runtime, so a missing
@@ -11,6 +11,7 @@ export type NavPath =
   | "/scheduler"
   | "/nodes"
   | "/node-labels"
+  | "/system"
   | "/tools/conf"
   | "/tools/jmx"
   | "/tools/stacks"
@@ -36,6 +37,13 @@ export const NAV_OVERVIEW: NavItem = {
   description: "Cluster about, metrics, utilisation history and the now-running rail",
   badge: "pending",
   key: "o",
+};
+
+export const NAV_SYSTEM: NavItem = {
+  to: "/system",
+  label: "System",
+  icon: Cpu,
+  description: "Burrow clients, process memory and failed requests",
 };
 
 export const NAV_PRIMARY: NavItem[] = [
@@ -68,6 +76,7 @@ export const NAV_PRIMARY: NavItem[] = [
     icon: Tags,
     description: "Partitions, exclusivity and node-to-label mappings",
   },
+  NAV_SYSTEM,
 ];
 
 export const NAV_TOOLS: NavItem[] = [

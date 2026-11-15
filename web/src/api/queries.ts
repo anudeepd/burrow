@@ -39,6 +39,7 @@ import {
   SchedulerActivitiesSchema,
   SchedulerConfSchema,
   SchedulerResponseSchema,
+  SystemSchema,
 } from "./schemas";
 
 const asArray = <T>(x: T | T[] | null | undefined): T[] => (Array.isArray(x) ? x : x == null ? [] : [x]);
@@ -84,6 +85,14 @@ export const q = {
       queryKey: ["meta"],
       queryFn: ({ signal }) => apiGet("meta", { schema: MetaSchema, signal }),
       ...adaptive("slow"),
+    }),
+
+  /** Burrow's own runtime; deliberately topicless so it never becomes an SSE subscription. */
+  system: () =>
+    queryOptions({
+      queryKey: ["system"],
+      queryFn: ({ signal }) => apiGet("system", { schema: SystemSchema, signal }),
+      ...adaptive("live"),
     }),
 
   // ── RM passthrough: /api/yarn/* ───────────────────────────────────────────────────────────────────────────

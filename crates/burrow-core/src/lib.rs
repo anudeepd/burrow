@@ -21,6 +21,7 @@ pub mod hadoop_conf;
 pub mod html;
 pub mod http;
 pub mod logs;
+pub mod metrics;
 pub mod reply;
 pub mod rm_pool;
 pub mod routes;

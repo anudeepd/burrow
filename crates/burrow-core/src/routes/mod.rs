@@ -7,6 +7,7 @@ pub mod meta;
 pub mod nm;
 pub mod rm;
 pub mod spark;
+pub mod system;
 pub mod table;
 pub mod yarn;
 
@@ -106,6 +107,7 @@ mod tests {
             "spark/notanapp/jobs",
             "logs/x",
             "meta",
+            "system",
         ] {
             assert!(topic_interval(bad).is_none(), "{bad} must not be pollable");
         }

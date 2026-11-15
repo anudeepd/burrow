@@ -136,11 +136,16 @@ describe("rail hydration shape", () => {
       configurable: true,
       value: function (this: HTMLElement) {
         const top = this.matches("nav") ? 20 : 60;
-        return { x: 0, y: top, top, left: 0, right: 200, bottom: top + 36, width: 200, height: 36, toJSON: () => ({}) } as DOMRect;
+        // A coarse pointer grows the active row to 44px through `.burrow-nav-link { min-height: 44px }`.
+        const height = this.matches(".burrow-nav-link[data-status='active']") ? 44 : 36;
+        return { x: 0, y: top, top, left: 0, right: 200, bottom: top + height, width: 200, height, toJSON: () => ({}) } as DOMRect;
       },
     });
     const view = render(<Rail />);
-    await waitFor(() => expect(view.container.querySelector(".burrow-rail-active-selection")?.getAttribute("style")).toContain("40px"));
+    const style = () => view.container.querySelector(".burrow-rail-active-selection")?.getAttribute("style") ?? "";
+    await waitFor(() => expect(style()).toContain("40px"));
+    // The highlight is the active row's height, so its icon and label sit centred inside it.
+    expect(style()).toContain("height: 44px");
     expect(view.container.textContent).toContain("2 failed request(s)");
     expect(view.container.textContent).toContain("parity");
 

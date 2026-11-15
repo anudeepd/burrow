@@ -113,6 +113,7 @@ export function Stat({
   label,
   value,
   sub,
+  hint,
   tone,
   className,
   loading = false,
@@ -120,13 +121,17 @@ export function Stat({
   label: ReactNode;
   value: ReactNode;
   sub?: ReactNode;
+  hint?: ReactNode;
   tone?: "ok" | "warn" | "fail" | "live" | "idle";
   className?: string;
   loading?: boolean;
 }) {
   return (
     <div aria-busy={loading || undefined} className={cn("min-w-0 rounded-lg border border-seam bg-fabric px-3 py-2", className)}>
-      <div className="text-caption uppercase tracking-wide text-ink-3">{label}</div>
+      <div className="flex items-center gap-1 text-caption uppercase tracking-wide text-ink-3">
+        {label}
+        {hint && <HelpTip label={typeof label === "string" ? label : "Stat details"}>{hint}</HelpTip>}
+      </div>
       <div
         className={cn(
           "mt-0.5 text-h3 font-semibold tnum text-ink",

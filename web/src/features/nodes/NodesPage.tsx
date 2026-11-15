@@ -6,11 +6,12 @@
  */
 import { getRouteApi } from "@tanstack/react-router";
 import { LayoutGrid, Rows3 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { nq } from "~/api/queries/nodes";
 import { useStableQuery } from "~/api/use-stable-query";
 import { fmtClock, fmtMB } from "~/lib/format";
 import { utilizationTone } from "~/lib/progress-tone";
+import { SCROLL_RESTORE_LOCK_MS, useScrollRestore } from "~/lib/use-scroll-restore";
 import { usePref } from "~/state/prefs";
 import { DataTable } from "~/ui/data-table/data-table";
 import { CenteredPageState, EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
@@ -37,6 +38,8 @@ export function NodesPage() {
   const search = route.useSearch();
   const navigate = route.useNavigate();
   const [searchResetSignal, setSearchResetSignal] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useScrollRestore(scrollRef, "burrow.nodes.scroll", true, SCROLL_RESTORE_LOCK_MS, { persist: false });
   const paused = usePref("livePaused");
   const nodesQuery = useStableQuery(nq.nodes());
   const { data: nodes, isPending, isFetching, dataUpdatedAt, refetch } = nodesQuery;
@@ -74,7 +77,11 @@ export function NodesPage() {
   const vcorePct = summary.vcoresTotal > 0 ? (summary.vcoresUsed / summary.vcoresTotal) * 100 : 0;
 
   return (
-    <div data-page-motion="content" className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6">
+    <div
+      ref={scrollRef}
+      data-page-motion="content"
+      className="burrow-scroll burrow-page-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6"
+    >
       <PageHead
         title="Nodes"
         description="Review node health, resource capacity, and utilization across the cluster."

@@ -13,7 +13,7 @@ use crate::cache::CacheSource;
 use crate::core::Core;
 use crate::error::ApiError;
 use crate::reply::{Reply, TEXT_CT};
-use crate::routes::{events, logs, meta, nm, rm, spark, yarn};
+use crate::routes::{events, logs, meta, nm, rm, spark, system, yarn};
 
 pub type BoxFut<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 pub type GroupFut<'a> = BoxFut<'a, Result<Reply, ApiError>>;
@@ -69,6 +69,7 @@ pub fn dispatch<'a>(core: &'a Core, req: ApiRequest<'a>) -> GroupFut<'a> {
         "logs" => logs::route_fn(core, req.rest()),
         "events" => events::route_fn(core, req.rest()),
         "spark" => spark::route_fn(core, req.rest()),
+        "system" => system::route_fn(core, req.rest()),
         "" => Box::pin(async { Err(ApiError::not_found("no /api resource requested")) }),
         other => Box::pin(async move {
             Err(ApiError::not_found(format!(

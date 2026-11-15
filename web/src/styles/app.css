@@ -24,16 +24,21 @@
     background: var(--ground);
     color: var(--ink);
     font-feature-settings: "ss01" 0, "kern" 1, "calt" 1;
+    overflow-anchor: none;
   }
   body {
     margin: 0;
-    min-height: 100dvh;
+    min-height: 100svh;
     font-size: var(--text-body);
     line-height: 1.55;
     background: var(--ground);
     color: var(--ink);
     transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+    overflow-anchor: none;
   }
+  /* Safari anchors the page on an ancestor above the page scroller; the page-level
+     overflow-anchor alone does not stop the live-data poll from moving the viewport. */
+  main, #root { overflow-anchor: none; }
   h1, h2, h3, h4 { text-wrap: balance; font-weight: 600; letter-spacing: -0.012em; margin: 0; }
   p { text-wrap: pretty; margin: 0; }
   ::selection { background: var(--selection); }
@@ -208,7 +213,6 @@ html[data-rail-collapsed="true"] .burrow-rail-docked .burrow-rail-footer-meta,
   right: 6px;
   left: 6px;
   z-index: 0;
-  height: 36px;
   background: color-mix(in srgb, var(--live) 9%, var(--fabric-3));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--live) 16%, transparent);
   will-change: transform;
@@ -501,6 +505,17 @@ html:not([data-motion="reduced"]):not([data-parity]) .burrow-skeleton[data-visib
 .burrow-sheet[data-side="bottom"][data-starting-style], .burrow-sheet[data-side="bottom"][data-ending-style] { transform: translateY(100%); }
 /* a drawer is a long slide, so it gets the iOS drawer curve rather than the short-hop ease-out */
 .burrow-sheet[data-side="left"], .burrow-sheet[data-side="bottom"] { transition-timing-function: var(--ease-drawer); }
+/* Base UI does not mark a dialog that mounts already open with data-starting-style, so the first drawer open would appear
+   at its final position. Give the first insertion a start value; later opens keep the data-starting-style rules above. */
+@starting-style {
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-sheet[data-side="right"] { transform: translateX(100%); }
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-sheet[data-side="left"] { transform: translateX(-100%); }
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-sheet[data-side="bottom"] { transform: translateY(100%); }
+  html:not([data-motion="reduced"]):not([data-parity]) .burrow-scrim { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  @starting-style { .burrow-sheet[data-side] { transform: none; } }
+}
 /* reduced motion: overlays arrive by fade only — the panel keeps its place and never slides */
 html[data-motion="reduced"] .burrow-sheet[data-starting-style], html[data-motion="reduced"] .burrow-sheet[data-ending-style],
 html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-sheet[data-ending-style] { transform: none; }
@@ -567,6 +582,8 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
    standard scrollbar properties and Blink's WebKit scrollbar pseudo-elements otherwise produce different bars. */
 .burrow-table-scroll,
 .burrow-scroll-hidden { scrollbar-gutter: auto; scrollbar-width: none; scrollbar-color: transparent transparent; }
+/* Live rows update in place; Safari's scroll anchoring must not move a table the reader positioned. */
+.burrow-table-scroll { overflow-anchor: none; }
 .burrow-table-scroll::-webkit-scrollbar,
 .burrow-scroll-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
 

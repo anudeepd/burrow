@@ -14,6 +14,7 @@ import { Route as AppsRouteImport } from './routes/apps'
 import { Route as NodeLabelsRouteImport } from './routes/node-labels'
 import { Route as NodesRouteImport } from './routes/nodes'
 import { Route as SchedulerRouteImport } from './routes/scheduler'
+import { Route as SystemRouteImport } from './routes/system'
 import { Route as AppsIndexRouteImport } from './routes/apps.index'
 import { Route as AppsAppIdRouteImport } from './routes/apps/$appId'
 import { Route as NodesIndexRouteImport } from './routes/nodes/index'
@@ -72,6 +73,11 @@ const NodesRoute = NodesRouteImport.update({
 const SchedulerRoute = SchedulerRouteImport.update({
   id: '/scheduler',
   path: '/scheduler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemRoute = SystemRouteImport.update({
+  id: '/system',
+  path: '/system',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppsIndexRoute = AppsIndexRouteImport.update({
@@ -259,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/node-labels': typeof NodeLabelsRoute
   '/nodes': typeof NodesRouteWithChildren
   '/scheduler': typeof SchedulerRouteWithChildren
+  '/system': typeof SystemRoute
   '/apps/$appId': typeof AppsAppIdRouteWithChildren
   '/nodes/$nodeId': typeof NodesNodeIdRoute
   '/scheduler/$queue': typeof SchedulerQueueRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/node-labels': typeof NodeLabelsRoute
+  '/system': typeof SystemRoute
   '/nodes/$nodeId': typeof NodesNodeIdRoute
   '/scheduler/$queue': typeof SchedulerQueueRoute
   '/tools/conf': typeof ToolsConfRoute
@@ -332,6 +340,7 @@ export interface FileRoutesById {
   '/node-labels': typeof NodeLabelsRoute
   '/nodes': typeof NodesRouteWithChildren
   '/scheduler': typeof SchedulerRouteWithChildren
+  '/system': typeof SystemRoute
   '/apps/$appId': typeof AppsAppIdRouteWithChildren
   '/nodes/$nodeId': typeof NodesNodeIdRoute
   '/scheduler/$queue': typeof SchedulerQueueRoute
@@ -375,6 +384,7 @@ export interface FileRouteTypes {
     | '/node-labels'
     | '/nodes'
     | '/scheduler'
+    | '/system'
     | '/apps/$appId'
     | '/nodes/$nodeId'
     | '/scheduler/$queue'
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/node-labels'
+    | '/system'
     | '/nodes/$nodeId'
     | '/scheduler/$queue'
     | '/tools/conf'
@@ -447,6 +458,7 @@ export interface FileRouteTypes {
     | '/node-labels'
     | '/nodes'
     | '/scheduler'
+    | '/system'
     | '/apps/$appId'
     | '/nodes/$nodeId'
     | '/scheduler/$queue'
@@ -489,6 +501,7 @@ export interface RootRouteChildren {
   NodeLabelsRoute: typeof NodeLabelsRoute
   NodesRoute: typeof NodesRouteWithChildren
   SchedulerRoute: typeof SchedulerRouteWithChildren
+  SystemRoute: typeof SystemRoute
   ToolsConfRoute: typeof ToolsConfRoute
   ToolsJmxRoute: typeof ToolsJmxRoute
   ToolsLogsRoute: typeof ToolsLogsRoute
@@ -530,6 +543,13 @@ declare module '@tanstack/react-router' {
       path: '/scheduler'
       fullPath: '/scheduler'
       preLoaderRoute: typeof SchedulerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system': {
+      id: '/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof SystemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/apps/': {
@@ -932,6 +952,7 @@ const rootRouteChildren: RootRouteChildren = {
   NodeLabelsRoute: NodeLabelsRoute,
   NodesRoute: NodesRouteWithChildren,
   SchedulerRoute: SchedulerRouteWithChildren,
+  SystemRoute: SystemRoute,
   ToolsConfRoute: ToolsConfRoute,
   ToolsJmxRoute: ToolsJmxRoute,
   ToolsLogsRoute: ToolsLogsRoute,
