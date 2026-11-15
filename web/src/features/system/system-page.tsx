@@ -6,7 +6,7 @@
  * memory counters) render an explicit `Unavailable`, never a fake zero.
  */
 import { Check, RefreshCw } from "lucide-react";
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { q } from "~/api/queries";
 import { useStableQuery } from "~/api/use-stable-query";
 import { Field, KvGrid, PageHead, Section, Stat } from "~/features/nodes/page";
@@ -74,6 +74,13 @@ export function SystemPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [savedScroll] = useState(() => Number(sessionStorage.getItem("burrow.system.scroll") ?? "0"));
   useScrollRestore(scrollRef, "burrow.system.scroll", true);
+  useLayoutEffect(() => {
+    const previous = history.scrollRestoration;
+    history.scrollRestoration = "manual";
+    return () => {
+      history.scrollRestoration = previous;
+    };
+  }, []);
 
   if (isPending) {
     return (
