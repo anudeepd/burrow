@@ -18,7 +18,7 @@ import { AreaChart, type Point } from "~/ui/charts";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
 import { EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
 
-const SCROLL = "burrow-scroll burrow-page-scroll min-h-0 flex-1 overflow-y-auto pb-6";
+const SCROLL = "burrow-scroll burrow-page-scroll burrow-page-scroll--stable min-h-0 flex-1 overflow-y-auto pb-6";
 const PANEL = "rounded-lg border border-seam bg-fabric p-(--gap-card)";
 
 function requestSample(point: Point): string {
