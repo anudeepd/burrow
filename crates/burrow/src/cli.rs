@@ -138,6 +138,10 @@ pub struct Opts {
     /// Do not open a browser at startup
     #[arg(long, global = true, env = "BURROW_NO_OPEN")]
     pub no_open: bool,
+
+    /// Append application logs to this file (console output is unchanged)
+    #[arg(long, global = true, env = "BURROW_LOG_FILE", value_name = "FILE")]
+    pub log_file: Option<PathBuf>,
 }
 
 fn parse_header_arg(s: &str) -> Result<(String, String), String> {
@@ -715,6 +719,7 @@ mod tests {
             ("bind", "BURROW_TEST_BIND"),
             ("port", "BURROW_TEST_PORT"),
             ("no_open", "BURROW_TEST_NO_OPEN"),
+            ("log_file", "BURROW_TEST_LOG_FILE"),
         ] {
             command = command.mut_arg(id, |arg| arg.env(env));
         }
@@ -919,6 +924,28 @@ base_path = "/from-file"
         assert_eq!(config.token.as_deref(), Some("secret-token"));
         assert_eq!(config.source("port"), "env BURROW_PORT");
         assert!(config.insecure && config.no_open);
+    }
+
+    #[test]
+    fn log_file_flag_wins_over_the_environment() {
+        let _guard = CLI_ENV_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let _env = EnvGuard::set(&[("BURROW_TEST_LOG_FILE", "/tmp/from-env.log")]);
+
+        let (from_env, _) = parse_cli_without_lock(["burrow", "doctor"].map(str::to_owned));
+        assert_eq!(
+            from_env.opts.log_file.as_deref(),
+            Some(std::path::Path::new("/tmp/from-env.log"))
+        );
+
+        let (from_flag, _) = parse_cli_without_lock(
+            ["burrow", "doctor", "--log-file", "/tmp/from-flag.log"].map(str::to_owned),
+        );
+        assert_eq!(
+            from_flag.opts.log_file.as_deref(),
+            Some(std::path::Path::new("/tmp/from-flag.log"))
+        );
     }
 
     #[test]
