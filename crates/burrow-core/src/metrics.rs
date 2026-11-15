@@ -671,7 +671,7 @@ mod tests {
         let m = Metrics::default();
         let snapshot = m.snapshot_at(Instant::now(), now_ms(), None);
 
-        assert_eq!(snapshot.process.version, "0.2.3");
+        assert_eq!(snapshot.process.version, env!("CARGO_PKG_VERSION"));
         assert_eq!(snapshot.process.pid, std::process::id());
         assert!(snapshot.process.started_at_ms > 0);
         assert_eq!(snapshot.process.memory.rss_bytes, None);
