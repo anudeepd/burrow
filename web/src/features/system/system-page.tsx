@@ -6,11 +6,13 @@
  * memory counters) render an explicit `Unavailable`, never a fake zero.
  */
 import { Check, RefreshCw } from "lucide-react";
+import { useRef } from "react";
 import { q } from "~/api/queries";
 import { useStableQuery } from "~/api/use-stable-query";
 import { Field, KvGrid, PageHead, Section, Stat } from "~/features/nodes/page";
 import { useNow } from "~/features/shell/use-now";
 import { fmtBytes, fmtClock, fmtDuration, fmtInt, fmtPct, fmtRelative } from "~/lib/format";
+import { useScrollRestore } from "~/lib/use-scroll-restore";
 import { Button } from "~/ui/button";
 import { AreaChart, type Point } from "~/ui/charts";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
@@ -40,7 +42,7 @@ function fmtLatency(ms: number): string {
 function SystemSkeleton() {
   return (
     <div data-testid="system" role="status" aria-busy="true" aria-label="Loading system metrics" className={SCROLL}>
-      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-4">
+      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-4" data-page-motion="content">
         <header className="flex flex-col gap-2 pb-2">
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-4 w-full max-w-md" />
@@ -65,13 +67,15 @@ export function SystemPage() {
   const { data, error, isPending, dataUpdatedAt, refetch } = useStableQuery(q.system());
   const now = useNow();
   const retry = () => void refetch();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useScrollRestore(scrollRef, "burrow.system.scroll", !isPending);
 
   if (isPending) return <SystemSkeleton />;
 
   if (!data) {
     return (
-      <div data-testid="system" className={SCROLL}>
-        <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-4">
+      <div ref={scrollRef} data-testid="system" className={SCROLL}>
+        <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-4" data-page-motion="content">
           <PageHead title="System" description="Burrow's own process, traffic and connected clients" />
           <ErrorState
             title="Cannot read Burrow's system metrics"
@@ -96,8 +100,8 @@ export function SystemPage() {
   const windowMinutes = Math.round(clients.windowSeconds / 60);
 
   return (
-    <div data-testid="system" className={SCROLL}>
-      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-4">
+    <div ref={scrollRef} data-testid="system" className={SCROLL}>
+      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-4" data-page-motion="content">
         <PageHead
           title="System"
           description="Burrow's own process, traffic and connected clients"
@@ -178,7 +182,12 @@ export function SystemPage() {
           {recentErrors.length === 0 ? (
             <EmptyState compact title="No errors since startup" icon={<Check className="size-4" aria-hidden="true" />} />
           ) : (
-            <DetailTableScroller ariaLabel="Recent failed requests" maxHeight="20rem" className="rounded-lg border border-seam bg-fabric">
+            <DetailTableScroller
+              ariaLabel="Recent failed requests"
+              maxHeight="20rem"
+              scrollKey="burrow.system.errors"
+              className="rounded-lg border border-seam bg-fabric"
+            >
               <table className="w-full min-w-140 border-collapse text-small">
                 <caption className="sr-only">Recent failed requests, newest first</caption>
                 <thead className="sticky top-0 z-10 bg-fabric-2 text-micro uppercase tracking-wide text-ink-4">

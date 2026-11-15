@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "~/lib/cn";
+import { useScrollRestore } from "~/lib/use-scroll-restore";
+import { ScrollBottomFade, useHasMoreBelow } from "./scroll-bottom-fade";
 
 /** Small detail tables share the data grid's quiet scrollbars and conditional right-edge fade. */
 export function DetailTableScroller({
@@ -7,16 +9,21 @@ export function DetailTableScroller({
   className,
   ariaLabel,
   maxHeight,
+  scrollKey,
 }: {
   children: ReactNode;
   className?: string;
   ariaLabel: string;
   /** Caps the scroll area so a long table cannot stretch the page; the header stays visible. */
   maxHeight?: string;
+  /** Persists this table's scroll position across reloads under the given session key. */
+  scrollKey?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const moreRightRef = useRef(false);
   const [moreRight, setMoreRight] = useState(false);
+  const { visible: moreBelow, sync: syncVerticalCue } = useHasMoreBelow(scrollerRef, Boolean(maxHeight));
+  useScrollRestore(scrollerRef, scrollKey ?? "", Boolean(scrollKey));
 
   const syncOverflowCue = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -27,6 +34,11 @@ export function DetailTableScroller({
       setMoreRight(next);
     }
   }, []);
+
+  const syncCues = useCallback(() => {
+    syncOverflowCue();
+    syncVerticalCue();
+  }, [syncOverflowCue, syncVerticalCue]);
 
   useEffect(() => {
     // The region is rendered unconditionally above, so its ref is set before this effect runs.
@@ -47,7 +59,7 @@ export function DetailTableScroller({
         role="region"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: the scroll region must be keyboard focusable.
         tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
-        onScroll={syncOverflowCue}
+        onScroll={syncCues}
         style={maxHeight ? { maxHeight } : undefined}
         className={cn(
           "burrow-scroll burrow-table-scroll min-w-0 overflow-x-auto outline-none focus-visible:outline focus-visible:-outline-offset-2 focus-visible:outline-live",
@@ -63,6 +75,7 @@ export function DetailTableScroller({
           moreRight ? "opacity-100" : "opacity-0",
         )}
       />
+      {maxHeight && <ScrollBottomFade visible={moreBelow} className="bottom-0" />}
     </div>
   );
 }

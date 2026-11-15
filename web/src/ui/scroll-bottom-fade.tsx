@@ -36,7 +36,7 @@ export function useHasMoreBelow(ref: RefObject<HTMLElement | null>, enabled = tr
   return { visible, sync };
 }
 
-export function ScrollBottomFade({ visible }: { visible: boolean }) {
+export function ScrollBottomFade({ visible, className }: { visible: boolean; className?: string }) {
   return (
     <div
       aria-hidden="true"
@@ -44,6 +44,7 @@ export function ScrollBottomFade({ visible }: { visible: boolean }) {
       className={cn(
         "burrow-table-bottom-fade pointer-events-none absolute inset-x-px bottom-7 z-10 h-12 transition-opacity duration-(--dur-fade)",
         visible ? "opacity-100" : "opacity-0",
+        className,
       )}
     />
   );
