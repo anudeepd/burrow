@@ -119,6 +119,38 @@ describe("useScrollRestore", () => {
     await waitFor(() => expect(sessionStorage.getItem(KEY)).toBe("90"));
   });
 
+  it("does not restore or persist when persist is false", async () => {
+    sessionStorage.setItem(KEY, "120");
+    const element = scrollable();
+    const ref = { current: element };
+    renderHook(() => useScrollRestore(ref, KEY, true, 0, { persist: false }));
+
+    expect(element.scrollTop).toBe(0);
+
+    element.dispatchEvent(new Event("wheel"));
+    element.scrollTop = 240;
+    element.dispatchEvent(new Event("scroll"));
+    await waitFor(() => expect(element.scrollTop).toBe(240));
+    expect(sessionStorage.getItem(KEY)).toBe("120");
+  });
+
+  it("rolls back a live reflow when persist is false", async () => {
+    vi.useFakeTimers({ toFake: ["performance", "requestAnimationFrame", "cancelAnimationFrame", "setTimeout", "clearTimeout"] });
+    const element = scrollable();
+    renderHook(() => useScrollRestore({ current: element }, KEY, true, 0, { persist: false }));
+
+    element.dispatchEvent(new Event("wheel"));
+    element.scrollTop = 240;
+    element.dispatchEvent(new Event("scroll"));
+    await vi.advanceTimersByTimeAsync(USER_SCROLL_WINDOW_MS + 100);
+
+    element.scrollTop = 140;
+    element.dispatchEvent(new Event("scroll"));
+
+    expect(element.scrollTop).toBe(240);
+    expect(sessionStorage.getItem(KEY)).toBeNull();
+  });
+
   it("keeps the user's scroll when fonts settle", async () => {
     const { promise, resolve } = Promise.withResolvers<void>();
     setFonts({ ready: promise });

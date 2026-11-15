@@ -9,15 +9,25 @@ export const USER_SCROLL_WINDOW_MS = 150;
  *
  * Live data can reflow the page and move the browser's scroll without input. That
  * movement is not the user's position, so it is never saved and is rolled back.
+ *
+ * With `persist: false` the hook only guards the position for this mount: it never
+ * reads or writes sessionStorage, so pages that do not restore across reloads still
+ * get the live-reflow rollback.
  */
-export function useScrollRestore(ref: RefObject<HTMLElement | null>, key: string, ready: boolean, lockMs: number) {
+export function useScrollRestore(
+  ref: RefObject<HTMLElement | null>,
+  key: string,
+  ready: boolean,
+  lockMs: number,
+  { persist = true }: { persist?: boolean } = {},
+) {
   const userInteracted = useRef(false);
   const lastUser = useRef(0);
   const applied = useRef(0);
   const lastInteraction = useRef(0);
 
   useLayoutEffect(() => {
-    if (!ready) return;
+    if (!ready || !persist) return;
     const element = ref.current;
     if (!element) return;
     const saved = Number(sessionStorage.getItem(key) ?? "0");
@@ -39,13 +49,13 @@ export function useScrollRestore(ref: RefObject<HTMLElement | null>, key: string
       cancelAnimationFrame(frame);
       clearTimeout(timer);
     };
-  }, [key, ready, ref]);
+  }, [key, ready, ref, persist]);
 
   useEffect(() => {
     if (!ready) return;
     const element = ref.current;
     if (!element) return;
-    const saved = Number(sessionStorage.getItem(key) ?? "0");
+    const saved = persist ? Number(sessionStorage.getItem(key) ?? "0") : element.scrollTop;
     lastUser.current = saved;
     let locked = saved > 0;
     let frame = 0;
@@ -78,7 +88,7 @@ export function useScrollRestore(ref: RefObject<HTMLElement | null>, key: string
       if (own) {
         lastUser.current = y;
         cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => sessionStorage.setItem(key, String(y)));
+        if (persist) frame = requestAnimationFrame(() => sessionStorage.setItem(key, String(y)));
         return;
       }
       if (Math.abs(y - lastUser.current) > 1) {
@@ -103,5 +113,5 @@ export function useScrollRestore(ref: RefObject<HTMLElement | null>, key: string
       }
       clearTimeout(timer);
     };
-  }, [key, lockMs, ready, ref]);
+  }, [key, lockMs, ready, ref, persist]);
 }
