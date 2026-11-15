@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className={cn("flex h-dvh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>
+    <div className={cn("flex h-svh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>
       <Rail className="hidden md:flex" />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Topbar railTrigger={railTrigger} onOpenRail={openDrawer} onOpenPalette={() => setPaletteOpen(true)} />
