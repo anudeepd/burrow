@@ -95,6 +95,12 @@ describe("shared node page components", () => {
     expect(container.querySelector(".text-ok")).toBeTruthy();
   });
 
+  it("shows a stat hint behind a help button", () => {
+    render(<Stat label="Process RSS" value="128 MiB" hint="Resident set size." />);
+    expect(screen.getByText("128 MiB")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About Process RSS" })).toBeTruthy();
+  });
+
   it("shows availability hints only when supplied", () => {
     const { rerender } = render(<Unavailable title="No data" reason="The endpoint is not available." />);
     expect(screen.getByRole("status").textContent).toContain("The endpoint is not available.");

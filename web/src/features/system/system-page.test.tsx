@@ -90,6 +90,8 @@ describe("system page", () => {
     expect(screen.getByText(/^since \d{2}:\d{2}:\d{2}$/)).toBeTruthy();
     expect(within(statFor("API latency")).getByText("21 ms")).toBeTruthy();
     expect(screen.getByText("p50 3 ms")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About Process RSS" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About API latency" })).toBeTruthy();
 
     const requestChart = screen.getByRole("group", { name: "Requests per minute over the last 15 minutes" });
     const memoryChart = screen.getByRole("group", { name: "Process RSS over the last 15 minutes" });
@@ -97,6 +99,9 @@ describe("system page", () => {
     expect(within(requestChart).getByRole("slider").getAttribute("aria-valuetext")).toContain("55 requests at");
     fireEvent.focus(within(memoryChart).getByRole("slider", { name: "Memory history samples" }));
     expect(within(memoryChart).getByRole("slider").getAttribute("aria-valuetext")).toContain("128 MiB at");
+    expect(screen.getByRole("button", { name: "About Requests per minute" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About Memory over time" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About Recent errors" })).toBeTruthy();
 
     const table = screen.getByRole("table", { name: "Recent failed requests, newest first" });
     expect(within(table).getByText("502")).toBeTruthy();
@@ -112,6 +117,7 @@ describe("system page", () => {
     expect(screen.getByText("95.2%")).toBeTruthy();
     expect(screen.getByText("120.6 KiB")).toBeTruthy();
     expect(screen.getByText("1.9 GiB")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About Cache hit rate" })).toBeTruthy();
   });
 
   it("renders an unavailable state when the platform reports no memory", async () => {

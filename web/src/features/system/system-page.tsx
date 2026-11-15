@@ -17,6 +17,7 @@ import { Button } from "~/ui/button";
 import { AreaChart, type Point } from "~/ui/charts";
 import { DetailTableScroller } from "~/ui/detail-table-scroller";
 import { EmptyState, ErrorState, Skeleton, StaleErrorBanner } from "~/ui/feedback";
+import { HelpTip } from "~/ui/tooltip";
 
 const SCROLL = "burrow-scroll burrow-page-scroll burrow-page-scroll--stable min-h-0 flex-1 overflow-y-auto pb-6";
 const PANEL = "rounded-lg border border-seam bg-fabric p-(--gap-card)";
@@ -146,28 +147,50 @@ export function SystemPage() {
             label="Active browsers"
             value={fmtInt(clients.active)}
             sub={`${fmtInt(clients.streams)} live stream${clients.streams === 1 ? "" : "s"} · last ${windowMinutes} min`}
+            hint={`Distinct browsers that sent a request in the last ${windowMinutes} minutes. Burrow counts each browser once, even with several tabs open.`}
             tone="ok"
           />
           <Stat
             label="Process RSS"
             value={memory.rssBytes == null ? "Unavailable" : fmtBytes(memory.rssBytes)}
             sub={memory.rssBytes == null ? "platform does not report process memory" : `peak ${fmtBytes(memory.peakRssBytes)}`}
+            hint="Resident set size. The physical memory this Burrow process holds now. Peak is the highest sample since startup. Some platforms do not report process memory."
           />
           <Stat
             label="Failed requests"
             value={fmtInt(serverFailures)}
             sub={`${fmtInt(requests.errorsLast15m)} in the last 15 min · ${fmtInt(requests.byStatus["4xx"])} client errors`}
+            hint="5xx responses since startup. The line below shows 5xx responses in the last 15 minutes and 4xx client errors since startup."
             tone={serverFailures > 0 ? "fail" : "ok"}
           />
-          <Stat label="Uptime" value={fmtDuration(process.uptimeSeconds * 1000)} sub={`since ${fmtClock(process.startedAtMs)}`} />
-          <Stat label="API latency" value={fmtLatency(requests.p95Ms)} sub={`p50 ${fmtLatency(requests.p50Ms)}`} />
+          <Stat
+            label="Uptime"
+            value={fmtDuration(process.uptimeSeconds * 1000)}
+            sub={`since ${fmtClock(process.startedAtMs)}`}
+            hint="Time since this Burrow process started. A restart resets the count."
+          />
+          <Stat
+            label="API latency"
+            value={fmtLatency(requests.p95Ms)}
+            sub={`p50 ${fmtLatency(requests.p50Ms)}`}
+            hint="95th percentile of /api response time over up to 512 recent non-streaming responses. p50 is the median."
+          />
         </div>
         <p className="text-micro text-ink-3">
           Active browsers are distinct browser cookies seen in the last {windowMinutes} minutes. Live streams are open event streams.
         </p>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <Section title="Requests per minute" className={PANEL}>
+          <Section
+            title="Requests per minute"
+            className={PANEL}
+            actions={
+              <HelpTip label="Requests per minute">
+                One-minute counts for the last 15 minutes. Every response counts, including static assets. The total below the chart counts
+                since startup.
+              </HelpTip>
+            }
+          >
             <AreaChart
               points={requestPoints}
               domain={[0, requestMax]}
@@ -183,7 +206,15 @@ export function SystemPage() {
             </p>
           </Section>
 
-          <Section title="Memory over time" className={PANEL}>
+          <Section
+            title="Memory over time"
+            className={PANEL}
+            actions={
+              <HelpTip label="Memory over time">
+                Resident memory samples for the last 15 minutes. Burrow takes at most one sample every 5 seconds.
+              </HelpTip>
+            }
+          >
             <AreaChart
               points={memoryPoints}
               domain={[0, memoryMax]}
@@ -198,7 +229,16 @@ export function SystemPage() {
           </Section>
         </div>
 
-        <Section title="Recent errors" className={PANEL}>
+        <Section
+          title="Recent errors"
+          className={PANEL}
+          actions={
+            <HelpTip label="Recent errors">
+              The last 20 responses with a 4xx or 5xx status, newest first. A 5xx response is a Burrow failure. A 4xx response is a client
+              error.
+            </HelpTip>
+          }
+        >
           {recentErrors.length === 0 ? (
             <EmptyState compact title="No errors since startup" icon={<Check className="size-4" aria-hidden="true" />} />
           ) : (
@@ -259,22 +299,25 @@ export function SystemPage() {
             <Field label="Started">
               <span className="tnum">{fmtClock(process.startedAtMs)}</span>
             </Field>
-            <Field label="In flight">
+            <Field label="In flight" hint="Requests the server is handling now. This includes static assets and open event streams.">
               <span className="tnum">{fmtInt(requests.inFlight)}</span>
             </Field>
-            <Field label="Live streams">
+            <Field label="Live streams" hint="Open server-sent event connections. Each open Burrow tab can hold more than one stream.">
               <span className="tnum">{fmtInt(clients.streams)}</span>
             </Field>
-            <Field label="Cache hit rate">
+            <Field
+              label="Cache hit rate"
+              hint="Fresh cache hits divided by fresh hits plus misses. Coalesced, stale, and bypassed responses are not counted."
+            >
               <span className="tnum">{hitRate == null ? "—" : fmtPct(hitRate, 1)}</span>
             </Field>
-            <Field label="Cache entries">
+            <Field label="Cache entries" hint="Responses held in the in-memory cache now.">
               <span className="tnum">{fmtInt(cache.entries)}</span>
             </Field>
-            <Field label="Cache bytes">
+            <Field label="Cache bytes" hint="Memory used by the cached response bodies.">
               <span className="tnum">{fmtBytes(cache.bytes)}</span>
             </Field>
-            <Field label="Virtual memory">
+            <Field label="Virtual memory" hint="Virtual address space reserved by the process. Some platforms do not report it.">
               {memory.virtualBytes == null ? (
                 <span className="text-ink-3">Unavailable</span>
               ) : (
