@@ -205,7 +205,7 @@ export function Rail({ inDrawer = false, className, onNavigate }: { inDrawer?: b
   const isCollapsed = mounted && !inDrawer && collapsedPref;
   const { pathname } = useLocation();
   const navRef = useRef<HTMLElement>(null);
-  const [selection, setSelection] = useState<{ top: number } | null>(null);
+  const [selection, setSelection] = useState<{ top: number; height: number } | null>(null);
   const { data: meta } = useStableQuery(q.meta());
   const consecutiveFailures = useConnection((s) => s.consecutiveFailures);
   const lastCache = useConnection((s) => s.lastCache);
@@ -220,6 +220,7 @@ export function Rail({ inDrawer = false, className, onNavigate }: { inDrawer?: b
     const activeRect = active.getBoundingClientRect();
     const next = {
       top: activeRect.top - nav.getBoundingClientRect().top - nav.clientTop + nav.scrollTop,
+      height: activeRect.height,
     };
     setSelection(next);
   }, [pathname, isCollapsed, inDrawer, mounted]);
@@ -256,6 +257,7 @@ export function Rail({ inDrawer = false, className, onNavigate }: { inDrawer?: b
             className="burrow-rail-active-selection pointer-events-none absolute rounded-sm"
             style={{
               transform: `translate3d(0, ${selection.top}px, 0)`,
+              height: selection.height,
             }}
           />
         )}
