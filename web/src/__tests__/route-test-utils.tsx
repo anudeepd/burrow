@@ -53,6 +53,33 @@ export const APP_ID = "application_1791010984040_0001";
 export const ATTEMPT_ID = "appattempt_1791010984040_0001_000001";
 export const CONTAINER_ID = "container_1791010984040_0001_01_000001";
 
+/** Deterministic `/api/system` sample for route tests that load the shell. */
+export const SYSTEM_FIXTURE = {
+  process: {
+    version: "0.2.3",
+    pid: 12345,
+    uptimeSeconds: 1234,
+    startedAtMs: 1_791_010_000_000,
+    memory: { rssBytes: 134_217_728, peakRssBytes: 157_286_400, virtualBytes: 2_000_000_000 },
+  },
+  clients: { active: 2, streams: 1, windowSeconds: 300 },
+  requests: {
+    total: 1234,
+    inFlight: 1,
+    byStatus: { "1xx": 0, "2xx": 1200, "3xx": 10, "4xx": 20, "5xx": 4 },
+    errorsLast15m: 2,
+    p50Ms: 3,
+    p95Ms: 21,
+    history: [
+      { atMs: 1_791_010_000_000, requests: 40, errors: 0 },
+      { atMs: 1_791_010_060_000, requests: 55, errors: 1 },
+    ],
+  },
+  memoryHistory: [{ atMs: 1_791_010_000_000, rssBytes: 134_217_728 }],
+  recentErrors: [{ atMs: 1_791_010_000_000, method: "GET", path: "/api/apps", status: 502, durationMs: 12 }],
+  cache: { entries: 12, bytes: 123456, hits: 100, misses: 5, coalesced: 3, stale: 1, bypass: 0, upstreamFetches: 9 },
+};
+
 const FIXTURES = resolve(process.cwd(), "../fixtures/rm");
 const SPARK_FIXTURES = resolve(process.cwd(), "../fixtures/spark/3.5.9/dstream/rest");
 export const readRm = (path: string) => JSON.parse(readFileSync(resolve(FIXTURES, path), "utf8")) as unknown;
@@ -77,6 +104,7 @@ export function serveFixtures(overrides: Record<string, unknown> = {}) {
     },
     "/api/yarn/info": readRm("overview/info.json"),
     "/api/yarn/metrics": readRm("overview/metrics.json"),
+    "/api/system": SYSTEM_FIXTURE,
     "/api/yarn/apps": readRm("app/running/apps.json"),
     "/api/yarn/scheduler": readRm("overview/scheduler.json"),
     "/api/yarn/scheduler-overview": readRm("overview/scheduler-overview.json"),

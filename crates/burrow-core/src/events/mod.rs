@@ -181,6 +181,8 @@ struct HubInner {
     topics: Mutex<HashMap<String, Arc<TopicState>>>,
     poller_started: AtomicBool,
     heartbeat: Mutex<Option<Duration>>,
+    /// Open SSE connections, independent of how many topics each one subscribes to.
+    connections: AtomicUsize,
 }
 
 /// The hub: one per [`Core`].
@@ -216,6 +218,11 @@ impl Hub {
             .values()
             .map(|t| t.subscribers.load(Ordering::Relaxed))
             .sum()
+    }
+
+    /// Open SSE connections (`GET /api/events`), regardless of topic count.
+    pub fn connection_count(&self) -> usize {
+        self.inner.connections.load(Ordering::Relaxed)
     }
 
     /// Subscribe `topics` and return the SSE frame stream for one connection.
@@ -293,6 +300,7 @@ impl Hub {
 
         self.ensure_poller(core);
 
+        self.inner.connections.fetch_add(1, Ordering::Relaxed);
         let (out_tx, out_rx) = mpsc::channel(FRAMES_BUF);
         let heartbeat = self.heartbeat();
         tokio::spawn(async move {
@@ -307,7 +315,10 @@ impl Hub {
             }
             forward_frames(ev_rx, out_tx, heartbeat).await;
         });
-        Ok(Subscription { rx: out_rx })
+        Ok(Subscription {
+            rx: out_rx,
+            connection: ConnectionGuard(self.inner.clone()),
+        })
     }
 
     fn ensure_poller(&self, core: &Arc<Core>) {
@@ -434,12 +445,23 @@ async fn reply_hash(reply: Reply) -> Option<String> {
 /// One connection's frame stream. Dropping it (client disconnect) ends the subscription promptly.
 pub struct Subscription {
     rx: mpsc::Receiver<Bytes>,
+    connection: ConnectionGuard,
+}
+
+/// Keeps [`HubInner::connections`] accurate for the whole life of a connection's frame stream.
+struct ConnectionGuard(Arc<HubInner>);
+
+impl Drop for ConnectionGuard {
+    fn drop(&mut self) {
+        self.0.connections.fetch_sub(1, Ordering::Relaxed);
+    }
 }
 
 impl Subscription {
     pub fn into_stream(self) -> BoxStream<'static, io::Result<Bytes>> {
-        stream::unfold(self.rx, |mut rx| async move {
-            rx.recv().await.map(|b| (Ok(b), rx))
+        let Self { rx, connection } = self;
+        stream::unfold((rx, connection), |(mut rx, connection)| async move {
+            rx.recv().await.map(|b| (Ok(b), (rx, connection)))
         })
         .boxed()
     }
@@ -529,6 +551,28 @@ mod tests {
         assert_eq!(state.subscribers.load(Ordering::Relaxed), 0);
         assert!(state.senders.lock().is_empty());
         assert!(state.due());
+    }
+
+    #[tokio::test]
+    async fn connection_count_counts_connections_not_topics() {
+        let core = core();
+        let hub = Hub::new();
+        assert_eq!(hub.connection_count(), 0);
+
+        let sub = hub
+            .subscribe(
+                &core,
+                &[
+                    parse_topic("yarn/metrics").unwrap(),
+                    parse_topic("yarn/nodes").unwrap(),
+                ],
+            )
+            .unwrap();
+        assert_eq!(hub.connection_count(), 1);
+        assert_eq!(hub.subscriber_count(), 2);
+
+        drop(sub);
+        assert_eq!(hub.connection_count(), 0);
     }
 
     #[tokio::test]

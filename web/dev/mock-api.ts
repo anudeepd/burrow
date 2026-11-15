@@ -54,6 +54,7 @@ const EXTENSION_MODULES = [
   "./mock-app.ts",
   "./mock-logs.ts",
   "./mock-dag.ts",
+  "./mock-system.ts",
 ];
 
 let extensions: MockHandler[] | null = null;

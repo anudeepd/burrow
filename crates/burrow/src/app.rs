@@ -258,7 +258,85 @@ pub fn router(state: Arc<AppState>) -> Router {
             HeaderValue::from_static(CSP),
         ))
         .layer(CompressionLayer::new().compress_when(compressible))
+        // Outermost: every response is counted, including host-guard 403s and static files.
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            track_requests,
+        ))
         .with_state(state)
+}
+
+/// The identity cookie the SPA keeps across tabs; 32 lowercase hex characters.
+const CLIENT_COOKIE: &str = "burrow_client";
+
+fn valid_client_id(id: &str) -> bool {
+    id.len() == 32
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+fn client_cookie(headers: &HeaderMap) -> Option<String> {
+    for value in headers
+        .get_all(header::COOKIE)
+        .iter()
+        .filter_map(|v| v.to_str().ok())
+    {
+        for pair in value.split(';') {
+            if let Some((name, id)) = pair.trim().split_once('=')
+                && name.trim() == CLIENT_COOKIE
+            {
+                return Some(id.trim().to_string());
+            }
+        }
+    }
+    None
+}
+
+fn client_cookie_header(id: &str) -> String {
+    format!("{CLIENT_COOKIE}={id}; Path=/; Max-Age=31536000; SameSite=Strict; HttpOnly")
+}
+
+fn is_sse(headers: &HeaderMap) -> bool {
+    headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|ct| {
+            ct.trim_start()
+                .to_ascii_lowercase()
+                .starts_with("text/event-stream")
+        })
+}
+
+/// Count every response and give each browser a stable identity for `clients.active`.
+async fn track_requests(
+    State(state): State<Arc<AppState>>,
+    req: Request<Body>,
+    next: Next,
+) -> Response {
+    let existing = client_cookie(req.headers()).filter(|id| valid_client_id(id));
+    let (client, issue) = match existing {
+        Some(id) => (id, false),
+        None => (fresh_nonce(), true),
+    };
+    state.core.metrics.record_client(&client);
+    let _in_flight = state.core.metrics.in_flight();
+    let method = req.method().clone();
+    let path = req.uri().path().to_string();
+    let started = std::time::Instant::now();
+
+    let mut response = next.run(req).await;
+    state.core.metrics.record_request(
+        method.as_str(),
+        &path,
+        response.status().as_u16(),
+        started.elapsed(),
+        is_sse(response.headers()),
+    );
+    if issue && let Ok(value) = HeaderValue::from_str(&client_cookie_header(&client)) {
+        response.headers_mut().append(header::SET_COOKIE, value);
+    }
+    response
 }
 
 /// Compression must never touch a server-sent event stream: the encoder buffers until its window fills, so
@@ -972,6 +1050,125 @@ mod tests {
         }));
         stop.send(()).unwrap();
         server.await.unwrap();
+    }
+
+    #[test]
+    fn client_cookie_parsing_accepts_only_lowercase_hex() {
+        let valid = "0123456789abcdef0123456789abcdef";
+        let mut headers = HeaderMap::new();
+        assert_eq!(client_cookie(&headers), None);
+
+        headers.append(
+            header::COOKIE,
+            HeaderValue::from_str(&format!("flag; session=x; burrow_client={valid}")).unwrap(),
+        );
+        assert_eq!(client_cookie(&headers).as_deref(), Some(valid));
+        assert!(valid_client_id(valid));
+        assert!(!valid_client_id("0123456789ABCDEF0123456789abcdef"));
+        assert!(!valid_client_id("too-short"));
+        assert!(!valid_client_id("0123456789abcdef0123456789abcdeg"));
+
+        let mut bad = HeaderMap::new();
+        bad.append(
+            header::COOKIE,
+            HeaderValue::from_bytes(b"burrow_client=\xff").unwrap(),
+        );
+        assert_eq!(client_cookie(&bad), None);
+
+        assert_eq!(
+            client_cookie_header(valid),
+            format!("burrow_client={valid}; Path=/; Max-Age=31536000; SameSite=Strict; HttpOnly")
+        );
+    }
+
+    #[test]
+    fn sse_detection_matches_the_event_stream_content_type() {
+        let mut headers = HeaderMap::new();
+        assert!(!is_sse(&headers));
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("text/event-stream; charset=utf-8"),
+        );
+        assert!(is_sse(&headers));
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/json"),
+        );
+        assert!(!is_sse(&headers));
+    }
+
+    #[tokio::test]
+    async fn router_issues_and_reuses_the_client_cookie_while_counting_requests() {
+        let core = Core::new(Config::for_rm("http://127.0.0.1:8088").unwrap()).unwrap();
+        let app = router(Arc::new(AppState::new(core.clone(), Assets::embedded())));
+
+        let first = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/system")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(first.status(), StatusCode::OK);
+        let issued = first
+            .headers()
+            .get(header::SET_COOKIE)
+            .expect("the first request is identified")
+            .to_str()
+            .unwrap()
+            .to_string();
+        let id = issued
+            .strip_prefix("burrow_client=")
+            .and_then(|rest| rest.split(';').next())
+            .unwrap()
+            .to_string();
+        assert!(valid_client_id(&id));
+        assert_eq!(core.metrics.snapshot().clients.active, 1);
+
+        let second = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/system")
+                    .header(header::COOKIE, format!("burrow_client={id}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(second.status(), StatusCode::OK);
+        assert!(second.headers().get(header::SET_COOKIE).is_none());
+        assert_eq!(core.metrics.snapshot().clients.active, 1);
+
+        let replaced = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/system")
+                    .header(header::COOKIE, "burrow_client=NOT-A-VALID-ID")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert!(replaced.headers().get(header::SET_COOKIE).is_some());
+        assert_eq!(core.metrics.snapshot().clients.active, 2);
+
+        let post = app
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/api/system")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(post.status(), StatusCode::METHOD_NOT_ALLOWED);
+        assert_eq!(core.metrics.snapshot().requests.by_status.four_xx, 1);
     }
 
     #[test]

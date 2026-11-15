@@ -36,6 +36,7 @@ const routes = [
   ["jmx", "/tools/jmx", '[data-burrow-jmx-root="1"]'],
   ["stacks", "/tools/stacks", '[data-burrow-stacks-root="1"]'],
   ["daemon-logs", "/tools/logs", 'tr[data-ye="resourcemanager.log"]'],
+  ["system", "/system", '[data-testid="system"]'],
 ] as const;
 
 async function checkMobileHelpControls(page: import("@playwright/test").Page) {

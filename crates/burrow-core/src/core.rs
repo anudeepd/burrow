@@ -14,6 +14,7 @@ use crate::config::{Config, ConfigError};
 use crate::error::ApiError;
 use crate::events::Hub;
 use crate::http::{BodyMode, FetchReq, HttpClient, HttpSettings};
+use crate::metrics::Metrics;
 use crate::reply::Reply;
 use crate::rm_pool::RmPool;
 use crate::topics::TopicRegistry;
@@ -133,6 +134,8 @@ pub struct Core {
     pub topics: TopicRegistry,
     /// The SSE hub behind `/api/events` (contract §6).
     pub events: Hub,
+    /// Process and request counters behind `/api/system` (contract §2.1).
+    pub metrics: Arc<Metrics>,
     pub(crate) meta_memo: Memo<Arc<serde_json::Value>>,
     pub(crate) node_set: Mutex<Option<(String, Arc<std::collections::HashSet<String>>)>>,
     /// A weak handle to self, so long-lived tasks (the SSE poller, log tailers) can own the state they
@@ -194,6 +197,7 @@ impl Core {
             timeline,
             topics,
             events: Hub::new(),
+            metrics: Arc::new(Metrics::new()),
             meta_memo: Memo::default(),
             node_set: Mutex::new(None),
             self_ref: OnceLock::new(),

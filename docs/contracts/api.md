@@ -51,6 +51,43 @@ that the `x-burrow-*` headers are still added. `502` is used for unreachable ups
 ```
 `GET /api/healthz` → `200 ok` (text, no upstream calls).
 
+### System (synthesized)
+
+`GET /api/system` (always `x-burrow-cache: bypass`) reports Burrow's own process health. Every value is local,
+so the SPA polls it on its existing live cadence; there is no SSE topic for this payload.
+
+```jsonc
+{
+  "process": {
+    "version": "0.2.3", "pid": 12345, "uptimeSeconds": 1234, "startedAtMs": 1763000000000,
+    "memory": { "rssBytes": 134217728, "peakRssBytes": 157286400, "virtualBytes": 2000000000 }
+  },
+  "clients": { "active": 2, "streams": 1, "windowSeconds": 300 },
+  "requests": {
+    "total": 1234, "inFlight": 1,
+    "byStatus": { "1xx": 0, "2xx": 1200, "3xx": 10, "4xx": 20, "5xx": 4 },
+    "errorsLast15m": 2, "p50Ms": 3, "p95Ms": 21,
+    "history": [{ "atMs": 1763000000000, "requests": 40, "errors": 0 }]
+  },
+  "memoryHistory": [{ "atMs": 1763000000000, "rssBytes": 134217728 }],
+  "recentErrors": [{ "atMs": 1763000000000, "method": "GET", "path": "/api/apps", "status": 502, "durationMs": 12 }],
+  "cache": { "entries": 12, "bytes": 123456, "hits": 100, "misses": 5, "coalesced": 3, "stale": 1, "bypass": 0, "upstreamFetches": 9 }
+}
+```
+
+`clients.active` counts distinct valid `burrow_client` cookies seen in the last 300 seconds; the server issues one
+(`Path=/; Max-Age=31536000; SameSite=Strict; HttpOnly`) when the cookie is missing or invalid. `clients.streams` is
+the number of open `/api/events` connections, not their topic subscriptions. Memory fields are `null` when the
+platform cannot report them.
+
+`requests` counts every HTTP response, static files and host-guard rejections included, and `inFlight` includes the
+current `/api/system` request. `p50Ms`/`p95Ms` cover the last 512 non-streaming responses; SSE responses count as
+requests but are excluded from latency. `history` is 15 one-minute buckets, oldest first, with empty minutes filled
+in. `history.errors` and `errorsLast15m` count 5xx only (Burrow failed to serve); `recentErrors` keeps the last 20
+responses with status ≥ 400, newest first, so 4xx diagnostics remain visible. Paths carry no query string.
+`memoryHistory` samples at most once every 5 seconds for the last 15 minutes. `cache` mirrors the process-wide cache
+counters and current usage.
+
 ## 3. ResourceManager passthrough
 
 `GET /api/yarn/{path}` ⇒ `{rm}/ws/v1/cluster/{path}` (query forwarded). The following JSON lists the read-only
