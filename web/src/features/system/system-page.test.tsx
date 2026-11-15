@@ -18,11 +18,13 @@ const errorResponse = (message: string) =>
   });
 
 beforeEach(() => {
+  sessionStorage.clear();
   parityStore.setState(() => ({ enabled: true }));
   serveFixtures();
 });
 
 afterEach(() => {
+  sessionStorage.clear();
   cleanup();
   vi.unstubAllGlobals();
   queryClient.clear();
@@ -47,6 +49,19 @@ describe("system page", () => {
 
     expect(await screen.findByText("Active browsers")).toBeTruthy();
     view.unmount();
+  });
+
+  it("reserves the saved scroll while the skeleton loads", async () => {
+    sessionStorage.setItem("burrow.system.scroll", "200");
+    const deferred = Promise.withResolvers<unknown>();
+    serveFixtures({ "/api/system": () => deferred.promise });
+    render(<RouterProvider router={routerAt("/system")} />);
+
+    const loading = await screen.findByRole("status", { name: "Loading system metrics" });
+    expect(loading.parentElement?.style.minHeight).toBe("calc(100% + 200px)");
+
+    deferred.resolve(SYSTEM_FIXTURE);
+    expect(await screen.findByText("Active browsers")).toBeTruthy();
   });
 
   it("renders process, client, request, chart, error and runtime data", async () => {

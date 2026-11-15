@@ -6,7 +6,7 @@
  * memory counters) render an explicit `Unavailable`, never a fake zero.
  */
 import { Check, RefreshCw } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { q } from "~/api/queries";
 import { useStableQuery } from "~/api/use-stable-query";
 import { Field, KvGrid, PageHead, Section, Stat } from "~/features/nodes/page";
@@ -41,24 +41,28 @@ function fmtLatency(ms: number): string {
 
 function SystemSkeleton() {
   return (
-    <div data-testid="system" role="status" aria-busy="true" aria-label="Loading system metrics" className={SCROLL}>
-      <div className="mx-auto flex w-full max-w-[1560px] flex-col gap-4" data-page-motion="content">
-        <header className="flex flex-col gap-2 pb-2">
-          <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-4 w-full max-w-md" />
-        </header>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: 5 }, (_, index) => (
-            <Skeleton key={index} className="h-20 rounded-lg" />
-          ))}
-        </div>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Skeleton className="h-52 rounded-lg" />
-          <Skeleton className="h-52 rounded-lg" />
-        </div>
-        <Skeleton className="h-64 rounded-lg" />
-        <Skeleton className="h-40 rounded-lg" />
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label="Loading system metrics"
+      className="mx-auto flex w-full max-w-[1560px] flex-col gap-4"
+      data-page-motion="content"
+    >
+      <header className="flex flex-col gap-2 pb-2">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-4 w-full max-w-md" />
+      </header>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        {Array.from({ length: 5 }, (_, index) => (
+          <Skeleton key={index} className="h-20 rounded-lg" />
+        ))}
       </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-52 rounded-lg" />
+        <Skeleton className="h-52 rounded-lg" />
+      </div>
+      <Skeleton className="h-64 rounded-lg" />
+      <Skeleton className="h-40 rounded-lg" />
     </div>
   );
 }
@@ -68,9 +72,18 @@ export function SystemPage() {
   const now = useNow();
   const retry = () => void refetch();
   const scrollRef = useRef<HTMLDivElement>(null);
-  useScrollRestore(scrollRef, "burrow.system.scroll", !isPending);
+  const [savedScroll] = useState(() => Number(sessionStorage.getItem("burrow.system.scroll") ?? "0"));
+  useScrollRestore(scrollRef, "burrow.system.scroll", true);
 
-  if (isPending) return <SystemSkeleton />;
+  if (isPending) {
+    return (
+      <div ref={scrollRef} data-testid="system" className={SCROLL}>
+        <div style={savedScroll > 0 ? { minHeight: `calc(100% + ${savedScroll}px)` } : undefined}>
+          <SystemSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   if (!data) {
     return (
