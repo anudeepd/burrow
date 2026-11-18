@@ -87,7 +87,8 @@ describe("system page", () => {
     expect(within(statFor("Failed requests")).getByText(/2 in the last 15 min · 20 client errors/)).toBeTruthy();
     expect(statFor("Failed requests").querySelector(".text-fail")).toBeTruthy();
     expect(within(statFor("Uptime")).getByText("20m 34s")).toBeTruthy();
-    expect(screen.getByText(/^since \d{2}:\d{2}:\d{2}$/)).toBeTruthy();
+    expect(screen.getByText(/^since \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)).toBeTruthy();
+    expect(screen.getByText("Started").closest("div")?.textContent).toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
     expect(within(statFor("API latency")).getByText("21 ms")).toBeTruthy();
     expect(screen.getByText("p50 3 ms")).toBeTruthy();
     expect(screen.getByRole("button", { name: "About Process RSS" })).toBeTruthy();
@@ -116,8 +117,10 @@ describe("system page", () => {
     expect(screen.getByText("12,345")).toBeTruthy();
     expect(screen.getByText("95.2%")).toBeTruthy();
     expect(screen.getByText("120.6 KiB")).toBeTruthy();
+    expect(screen.getByText("12 apps")).toBeTruthy();
     expect(screen.getByText("1.9 GiB")).toBeTruthy();
     expect(screen.getByRole("button", { name: "About Cache hit rate" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About App index" })).toBeTruthy();
   });
 
   it("renders an unavailable state when the platform reports no memory", async () => {
@@ -134,6 +137,19 @@ describe("system page", () => {
 
     expect(await screen.findByText("platform does not report process memory")).toBeTruthy();
     expect(screen.getAllByText("Unavailable")).toHaveLength(2);
+  });
+
+  it("shows the applications index as not loaded when no snapshot is held", async () => {
+    serveFixtures({
+      "/api/system": {
+        ...SYSTEM_FIXTURE,
+        appsIndex: { apps: null },
+      },
+    });
+    render(<RouterProvider router={routerAt("/system")} />);
+
+    expect(await screen.findByText("Not loaded")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "About App index" })).toBeTruthy();
   });
 
   it("shows a dash for cache hit rate before any cache lookup", async () => {

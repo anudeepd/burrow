@@ -301,7 +301,7 @@ export function StageDetailPage() {
             <Metric label="Duration">
               <Datum field="spark.stage.derived.durationMs" raw={stageDurationMs(stage, now)} fmt="dur" />
             </Metric>
-            <Metric label="Tasks (done / active / failed / killed)">
+            <Metric label="Tasks (done/active/failed/killed)">
               <CountsCell
                 counts={[
                   { field: "spark.stage.numCompleteTasks", raw: stage.numCompleteTasks, tone: "ok", label: "complete" },

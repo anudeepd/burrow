@@ -131,7 +131,7 @@ export function JobDetailPage() {
             <Metric label="Duration">
               <Datum field="spark.job.derived.durationMs" raw={jobDurationMs(job, now)} fmt="dur" />
             </Metric>
-            <Metric label="Stages (done / active / failed / skipped)">
+            <Metric label="Stages (done/active/failed/skipped)">
               <CountsCell
                 counts={[
                   { field: "spark.job.numCompletedStages", raw: job.numCompletedStages, tone: "ok", label: "succeeded" },
@@ -141,7 +141,7 @@ export function JobDetailPage() {
                 ]}
               />
             </Metric>
-            <Metric label="Tasks (done / active / failed / killed)">
+            <Metric label="Tasks (done/active/failed/killed)">
               <CountsCell
                 counts={[
                   { field: "spark.job.numCompletedTasks", raw: job.numCompletedTasks, tone: "ok", label: "succeeded" },

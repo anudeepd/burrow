@@ -3,16 +3,33 @@
 //! Why this exists: the ResourceManager applies `limit` while it walks its app map (so a small preview is
 //! fast), but it has no `offset`. Offset paging therefore has to be served from one complete snapshot. The
 //! first request answers with a `limit` preview so the page paints immediately; the complete list is fetched
-//! and parsed once in the background. Every later page, filter and sort is a cheap slice of that snapshot.
+//! and parsed once in the background.
+//!
+//! The complete snapshot is the source of totals, facets, column sorts and deep pages. It is deliberately not
+//! re-fetched at the browser's 3 s live cadence, because a long application history makes that list expensive.
+//! The visible page for the default newest-first sort is instead answered from a bounded `limit` preview on
+//! every request, so new rows appear at the live cadence while the complete index refreshes on its own
+//! 10 s window.
 //!
 //! The snapshot is an immutable `Arc<Snapshot>`: a refresh builds a new one off to the side and swaps it in
 //! with a single lock, so a response can never mix rows from two different lists. App objects stay as the
 //! upstream's raw JSON bytes (`RawValue`); only the fields needed for filtering/sorting are extracted into
-//! `AppMeta`. Unknown/new fields therefore pass through unchanged and memory stays close to the wire size.
+//! `AppMeta`. Unknown/new fields therefore pass through unchanged.
+//!
+//! A few fields on a real `AppInfo` dominate the wire size and are never rendered by the applications
+//! table: `resourceInfo` (Capacity Scheduler resources), `diagnostics` (long failure text) and the timeout
+//! block. The snapshot drops a small set of known, list-irrelevant fields before it stores a row; the
+//! per-application resource still carries them. That keeps the index close to the size of the fields the
+//! table actually uses.
+//!
+//! A complete snapshot can be tens of megabytes on a long-lived cluster, so it is evicted by a background
+//! reaper after `idle_after` without a window request. The request path also checks the age, but that alone
+//! would keep the memory for as long as the operator never returns to `/apps`.
 
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering as AtomicOrdering};
 use std::time::{Duration, Instant};
 
 use bytes::{Bytes, BytesMut};
@@ -496,6 +513,28 @@ struct AppsList<T> {
     app: Option<T>,
 }
 
+/// Optional `AppInfo` fields that only the per-application resource renders. A complete applications list
+/// carries one of each per row; dropping them from the snapshot keeps the index within reach of the columns
+/// the list actually shows without touching unknown fields.
+const LIST_IRRELEVANT_FIELDS: &[&str] = &[
+    "diagnostics",
+    "resourceInfo",
+    "resourceRequests",
+    "timeouts",
+    "amContainerLogs",
+    "resourceSecondsMap",
+    "preemptedResourceSecondsMap",
+    "preemptedMemorySeconds",
+    "preemptedVcoreSeconds",
+    "masterNodeId",
+    "amHostHttpAddress",
+    "amRPCAddress",
+    "logAggregationStatus",
+    "rmClusterId",
+    "appNodeLabelExpression",
+    "amNodeLabelExpression",
+];
+
 /// Parse the RM's wrapped list. Individual apps that are not JSON objects (or have no id) are skipped:
 /// one malformed row must not blank an otherwise usable 10k-app table.
 ///
@@ -520,16 +559,35 @@ pub fn parse_apps(body: &[u8]) -> Result<Vec<AppEntry>, ApiError> {
     };
     let mut out = Vec::with_capacity(raw.len());
     for raw in raw {
-        if let Some(meta) = parse_meta(&raw) {
+        let Ok(mut value) = serde_json::from_str::<serde_json::Value>(raw.get()) else {
+            continue;
+        };
+        let Some(meta) = parse_meta(&value) else {
+            continue;
+        };
+        let Some(obj) = value.as_object_mut() else {
+            continue;
+        };
+        let mut pruned = false;
+        for key in LIST_IRRELEVANT_FIELDS {
+            pruned |= obj.remove(*key).is_some();
+        }
+        if pruned {
+            let Ok(compact) = serde_json::to_string(&value) else {
+                continue;
+            };
+            let Ok(compact) = RawValue::from_string(compact) else {
+                continue;
+            };
+            out.push(AppEntry { raw: compact, meta });
+        } else {
             out.push(AppEntry { raw, meta });
         }
     }
     Ok(out)
 }
 
-fn parse_meta(raw: &RawValue) -> Option<AppMeta> {
-    let value: serde_json::Value =
-        serde_json::from_str(raw.get()).unwrap_or(serde_json::Value::Null);
+fn parse_meta(value: &serde_json::Value) -> Option<AppMeta> {
     let obj = value.as_object()?;
     let text = |key: &str| {
         obj.get(key)
@@ -599,6 +657,7 @@ struct Inner {
 pub struct AppsIndex {
     cfg: AppsIndexConfig,
     inner: Mutex<Inner>,
+    reaper_started: AtomicBool,
 }
 
 impl AppsIndex {
@@ -613,7 +672,46 @@ impl AppsIndex {
                 version: 0,
                 last_access: Instant::now(),
             }),
+            reaper_started: AtomicBool::new(false),
         }
+    }
+
+    /// Applications in the held snapshot, or `None` when no complete snapshot is in memory.
+    pub fn snapshot_apps(&self) -> Option<usize> {
+        self.inner
+            .lock()
+            .snapshot
+            .as_ref()
+            .map(|snapshot| snapshot.apps.len())
+    }
+
+    /// Drop an idle snapshot without waiting for the next `/apps` request. The request path checks the age
+    /// too, but an operator who opens the list once and then works elsewhere would otherwise hold the whole
+    /// snapshot for the life of the process.
+    fn ensure_idle_reaper(self: &Arc<Self>) {
+        if self.reaper_started.swap(true, AtomicOrdering::Relaxed) {
+            return;
+        }
+        let weak = Arc::downgrade(self);
+        let every =
+            (self.cfg.idle_after / 8).clamp(Duration::from_millis(5), Duration::from_secs(30));
+        tokio::spawn(async move {
+            let mut ticker = tokio::time::interval(every);
+            ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+            loop {
+                ticker.tick().await;
+                let Some(index) = weak.upgrade() else {
+                    return;
+                };
+                let mut inner = index.inner.lock();
+                if inner.snapshot.is_some()
+                    && !inner.loading
+                    && inner.last_access.elapsed() >= index.cfg.idle_after
+                {
+                    inner.snapshot = None;
+                }
+            }
+        });
     }
 
     /// Serve one window. Always returns quickly when a snapshot exists; the cold path asks the RM for a
@@ -623,6 +721,7 @@ impl AppsIndex {
         core: &Core,
         req: ApiRequest<'_>,
     ) -> Result<Reply, ApiError> {
+        self.ensure_idle_reaper();
         let window = WindowRequest::parse(req.query)?;
         let snapshot = {
             let mut inner = self.inner.lock();
@@ -634,20 +733,39 @@ impl AppsIndex {
             {
                 inner.snapshot = None;
             }
-            let stale = inner.snapshot.as_ref().is_some_and(|snapshot| {
-                snapshot.fetched_at.elapsed() >= self.cfg.refresh_after
-                    || inner.last_error.is_some()
-            });
-            (inner.snapshot.clone(), stale, inner.last_error.clone())
+            (inner.snapshot.clone(), inner.last_error.clone())
         };
         let reply = match snapshot {
-            (Some(snapshot), stale, error) => {
-                snapshot_reply(&window, &snapshot, self.cfg.refresh_after, stale, error)
+            (Some(snapshot), error) if self.can_preview_rows(&window) => {
+                // The complete snapshot supplies totals, facets and deep paging, but a long application
+                // history is too expensive to re-fetch at the 3 s live cadence. The visible top page comes
+                // from a bounded RM preview on each request, so rows follow the live cadence while the
+                // complete index refreshes in its own 10 s window.
+                match self
+                    .fresh_preview_reply(core, &window, &snapshot, error.clone())
+                    .await
+                {
+                    Ok(reply) => reply,
+                    Err(_) => snapshot_reply(&window, &snapshot, error),
+                }
             }
-            (None, _, _) => self.preview_reply(core, &window).await?,
+            (Some(snapshot), error) => snapshot_reply(&window, &snapshot, error),
+            (None, _) => self.preview_reply(core, &window).await?,
         };
         self.maybe_refresh(core);
         Ok(reply)
+    }
+
+    /// The current request can be answered with a bounded RM preview instead of the complete snapshot.
+    /// That is safe when the RM can push every filter down, the window fits the preview ceiling, and the
+    /// sort is the RM's native newest-first order. A text `name` filter and column sorts stay on the full
+    /// snapshot because a preview cannot rank the events it never fetched.
+    fn can_preview_rows(&self, window: &WindowRequest) -> bool {
+        window.offset.saturating_add(window.limit) <= self.cfg.preview_max
+            && window.filters.name.is_none()
+            && window.sort.len() == 1
+            && window.sort[0].field == SortField::StartTime
+            && window.sort[0].desc
     }
 
     fn maybe_refresh(self: &Arc<Self>, core: &Core) {
@@ -697,17 +815,13 @@ impl AppsIndex {
         }
     }
 
-    async fn preview_reply(&self, core: &Core, window: &WindowRequest) -> Result<Reply, ApiError> {
+    async fn preview_entries(
+        &self,
+        core: &Core,
+        window: &WindowRequest,
+    ) -> Result<Option<(Vec<AppEntry>, Facets)>, ApiError> {
         let Some(query) = window.preview_query(self.cfg.preview_max) else {
-            return Ok(window_reply(
-                Vec::new(),
-                WindowMeta::partial(
-                    window,
-                    window.offset.saturating_add(window.limit),
-                    Some(self.cfg.retry_after),
-                    None,
-                ),
-            ));
+            return Ok(None);
         };
         let mut spec = GetSpec::new(
             "/ws/v1/cluster/apps",
@@ -718,6 +832,22 @@ impl AppsIndex {
         let served = core.served(&core.rm, &spec).await?;
         let body = served_body(served, self.cfg.max_body_bytes).await?;
         let entries = parse_apps(&body)?;
+        let facets = compute_facets(&entries);
+        Ok(Some((entries, facets)))
+    }
+
+    async fn preview_reply(&self, core: &Core, window: &WindowRequest) -> Result<Reply, ApiError> {
+        let Some((entries, facets)) = self.preview_entries(core, window).await? else {
+            return Ok(window_reply(
+                Vec::new(),
+                WindowMeta::partial(
+                    window,
+                    window.offset.saturating_add(window.limit),
+                    Some(self.cfg.retry_after),
+                    None,
+                ),
+            ));
+        };
         let mut matched: Vec<&AppEntry> = entries
             .iter()
             .filter(|entry| window.filters.matches(&entry.meta))
@@ -730,7 +860,6 @@ impl AppsIndex {
             .take(window.limit)
             .map(|entry| entry.raw.as_ref())
             .collect::<Vec<_>>();
-        let facets = compute_facets(&entries);
         let mut meta = WindowMeta::partial(
             window,
             filtered_total,
@@ -739,6 +868,56 @@ impl AppsIndex {
         );
         meta.age_ms = 0;
         Ok(window_reply(page, meta))
+    }
+
+    async fn fresh_preview_reply(
+        &self,
+        core: &Core,
+        window: &WindowRequest,
+        snapshot: &Snapshot,
+        refresh_error: Option<String>,
+    ) -> Result<Reply, ApiError> {
+        let Some((entries, _)) = self.preview_entries(core, window).await? else {
+            return Ok(snapshot_reply(window, snapshot, refresh_error));
+        };
+        let mut matched: Vec<&AppEntry> = entries
+            .iter()
+            .filter(|entry| window.filters.matches(&entry.meta))
+            .collect();
+        sort_entries(&mut matched, &window.sort);
+        let page = matched
+            .iter()
+            .skip(window.offset)
+            .take(window.limit)
+            .map(|entry| entry.raw.as_ref())
+            .collect::<Vec<_>>();
+        let filtered_total = snapshot
+            .apps
+            .iter()
+            .filter(|entry| window.filters.matches(&entry.meta))
+            .count();
+        let stale = refresh_error.is_some();
+        let meta = WindowMeta {
+            offset: window.offset,
+            limit: window.limit,
+            total: Some(snapshot.apps.len()),
+            filtered_total,
+            ready: true,
+            partial: false,
+            stale,
+            version: snapshot.version,
+            age_ms: 0,
+            retry_after_ms: None,
+            refresh_error,
+            facets: snapshot.facets.clone(),
+        };
+        let mut reply = window_reply(page, meta);
+        reply.cache = Some(if stale {
+            CacheSource::Stale
+        } else {
+            CacheSource::Miss
+        });
+        Ok(reply)
     }
 }
 
@@ -865,8 +1044,6 @@ impl WindowMeta {
 fn snapshot_reply(
     window: &WindowRequest,
     snapshot: &Snapshot,
-    refresh_after: Duration,
-    stale: bool,
     refresh_error: Option<String>,
 ) -> Reply {
     let mut matched: Vec<&AppEntry> = snapshot
@@ -882,6 +1059,9 @@ fn snapshot_reply(
         .map(|entry| entry.raw.as_ref())
         .collect::<Vec<_>>();
     let age = snapshot.fetched_at.elapsed();
+    // `stale` tells the browser that the ResourceManager refused the last refresh, not that the snapshot
+    // is merely due for one. A complete snapshot is normally a few seconds old between refreshes.
+    let stale = refresh_error.is_some();
     let meta = WindowMeta {
         offset: window.offset,
         limit: window.limit,
@@ -889,7 +1069,7 @@ fn snapshot_reply(
         filtered_total: matched.len(),
         ready: true,
         partial: false,
-        stale: stale || age >= refresh_after,
+        stale,
         version: snapshot.version,
         age_ms: age.as_millis().min(u64::MAX as u128) as u64,
         retry_after_ms: None,
@@ -897,7 +1077,7 @@ fn snapshot_reply(
         facets: snapshot.facets.clone(),
     };
     let mut reply = window_reply(page, meta);
-    reply.cache = Some(if stale || age >= refresh_after {
+    reply.cache = Some(if stale {
         CacheSource::Stale
     } else {
         CacheSource::Hit
@@ -1302,15 +1482,14 @@ mod tests {
 
     #[test]
     fn parse_meta_accepts_fractional_timestamps_and_rejects_non_objects() {
-        let raw = RawValue::from_string(
-            r#"{"id":"application_1_1","startedTime":1.9,"launchTime":null}"#.to_string(),
-        )
-        .unwrap();
-        let parsed = parse_meta(&raw).unwrap();
+        let value: serde_json::Value =
+            serde_json::from_str(r#"{"id":"application_1_1","startedTime":1.9,"launchTime":null}"#)
+                .unwrap();
+        let parsed = parse_meta(&value).unwrap();
         assert_eq!(parsed.started_time, 1);
         assert_eq!(parsed.launch_time, 0);
-        let raw = RawValue::from_string("[1]".to_string()).unwrap();
-        assert!(parse_meta(&raw).is_none());
+        let value: serde_json::Value = serde_json::from_str("[1]").unwrap();
+        assert!(parse_meta(&value).is_none());
     }
 
     #[test]
@@ -1506,5 +1685,56 @@ mod tests {
         .await
         .unwrap_err();
         assert_eq!(err.status, StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[test]
+    fn the_snapshot_drops_only_list_irrelevant_known_fields() {
+        let body = br#"{"apps":{"app":[
+            {"id":"application_1_1","state":"RUNNING","resourceInfo":{"memory":8192},
+             "diagnostics":"a long failure trace","timeouts":{"timeout":[]},"amContainerLogs":"/logs",
+             "customFutureField":{"kept":true}}
+        ]}}"#;
+        let entries = parse_apps(body).unwrap();
+        let raw = entries[0].raw.get();
+        for removed in [
+            "diagnostics",
+            "resourceInfo",
+            "timeouts",
+            "amContainerLogs",
+            "resourceRequests",
+        ] {
+            assert!(
+                !raw.contains(removed),
+                "{removed} should not stay in the index: {raw}"
+            );
+        }
+        assert!(
+            raw.contains("customFutureField"),
+            "unknown fields stay: {raw}"
+        );
+        assert_eq!(entries[0].meta.id, "application_1_1");
+    }
+
+    #[tokio::test]
+    async fn the_idle_reaper_drops_a_snapshot_without_another_request() {
+        let cfg = AppsIndexConfig {
+            idle_after: Duration::from_millis(20),
+            ..AppsIndexConfig::default()
+        };
+        let index = Arc::new(AppsIndex::new(cfg));
+        {
+            let mut inner = index.inner.lock();
+            inner.last_access = Instant::now().checked_sub(Duration::from_secs(10)).unwrap();
+            inner.snapshot = Some(Arc::new(Snapshot {
+                apps: vec![entry("application_1_0001")],
+                facets: Facets::default(),
+                fetched_at: Instant::now(),
+                version: 1,
+            }));
+        }
+        assert_eq!(index.snapshot_apps(), Some(1));
+        index.ensure_idle_reaper();
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        assert_eq!(index.snapshot_apps(), None);
     }
 }

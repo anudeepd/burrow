@@ -103,7 +103,7 @@ export function AreaChart({
   sampleAriaLabel = "Chart samples",
   timeLabel,
   fillHeight = false,
-  /** horizontal room reserved for the right-aligned y-axis labels */
+  /** minimum horizontal room reserved for the right-aligned y-axis labels; wider labels widen it */
   gutter = 28,
 }: {
   points: Point[];
@@ -130,7 +130,12 @@ export function AreaChart({
   const [canFillHeight, setCanFillHeight] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const chartWidth = measuredWidth ?? width;
-  const plotW = Math.max(1, chartWidth - gutter);
+  const ticks = [domain[0], (domain[0] + domain[1]) / 2, domain[1]];
+  // The y-axis labels are right-aligned inside the plot's right gutter. A fixed gutter is too narrow for
+  // "304 MiB" / "1,234 req" and the trend line runs under the text. 11 px tabular text stays under ~7 px per
+  // character, so reserve that plus breathing room; the longest tick decides.
+  const labelChars = Math.max(...ticks.map((tick) => `${tick}${unit}`.length));
+  const plotW = Math.max(1, chartWidth - Math.max(gutter, labelChars * 7 + 8));
   const showTimeAxis = Boolean(timeLabel && points.length > 1);
   const defaultViewHeight = height + (showTimeAxis ? 12 : 0);
   const viewHeight =
@@ -222,7 +227,6 @@ export function AreaChart({
       setActiveIndex(next);
     }
   };
-  const ticks = [domain[0], (domain[0] + domain[1]) / 2, domain[1]];
   // Centre labels on their gridline but keep the glyphs inside the viewBox (the top/bottom
   // ticks sit at the plot edge, so unclamped text is clipped by the svg viewport).
   const labelY = (y: number) => Math.min(Math.max(y, 8), plotHeight - 8);

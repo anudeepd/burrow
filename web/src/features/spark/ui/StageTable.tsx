@@ -141,9 +141,10 @@ export function stageColumns({
     {
       id: "tasks",
       enableSorting: false,
+      size: 230,
       meta: {
-        label: "Tasks (done / active / failed)",
-        hint: "Task attempt counts. Retries and speculative attempts may exceed the number of partitions.",
+        label: "Tasks (done/active/failed/killed)",
+        hint: "Task attempt counts in that order. Retries and speculative attempts may exceed the number of partitions.",
       },
       header: "Tasks",
       cell: (info) => {

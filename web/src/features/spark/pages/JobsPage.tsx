@@ -132,14 +132,15 @@ export function JobsPage() {
       {
         id: "stages",
         enableSorting: false,
-        meta: { label: "Stages (done / active / failed / skipped)" },
+        size: 230,
+        meta: { label: "Stages (done/active/failed/skipped)" },
         header: "Stages",
         cell: (info) => {
           const j = info.row.original;
           return (
             <CountsCell
               counts={[
-                { field: "spark.job.numCompletedStages", raw: j.numCompletedStages, tone: "ok", label: "succeeded" },
+                { field: "spark.job.numCompletedStages", raw: j.numCompletedStages, tone: "ok", label: "completed" },
                 { field: "spark.job.numActiveStages", raw: j.numActiveStages, tone: "live", label: "active" },
                 { field: "spark.job.numFailedStages", raw: j.numFailedStages, tone: "fail", label: "failed" },
                 { field: "spark.job.numSkippedStages", raw: j.numSkippedStages, tone: "idle", label: "skipped" },
@@ -151,16 +152,18 @@ export function JobsPage() {
       {
         id: "tasks",
         enableSorting: false,
-        meta: { label: "Tasks (done / active / failed)" },
+        size: 230,
+        meta: { label: "Tasks (done/active/failed/killed)" },
         header: "Tasks",
         cell: (info) => {
           const j = info.row.original;
           return (
             <CountsCell
               counts={[
-                { field: "spark.job.numCompletedTasks", raw: j.numCompletedTasks, tone: "ok", label: "succeeded" },
+                { field: "spark.job.numCompletedTasks", raw: j.numCompletedTasks, tone: "ok", label: "completed" },
                 { field: "spark.job.numActiveTasks", raw: j.numActiveTasks, tone: "live", label: "active" },
                 { field: "spark.job.numFailedTasks", raw: j.numFailedTasks, tone: "fail", label: "failed" },
+                { field: "spark.job.numKilledTasks", raw: j.numKilledTasks, tone: "idle", label: "killed" },
               ]}
             />
           );

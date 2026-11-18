@@ -11,7 +11,8 @@ import { q } from "~/api/queries";
 import { useStableQuery } from "~/api/use-stable-query";
 import { Field, KvGrid, PageHead, Section, Stat } from "~/features/nodes/page";
 import { useNow } from "~/features/shell/use-now";
-import { fmtBytes, fmtClock, fmtDuration, fmtInt, fmtPct, fmtRelative } from "~/lib/format";
+import { usePref } from "~/state/prefs";
+import { type TzMode, fmtBytes, fmtClock, fmtDuration, fmtEpoch, fmtInt, fmtPct, fmtRelative } from "~/lib/format";
 import { SCROLL_RESTORE_LOCK_MS, useScrollRestore } from "~/lib/use-scroll-restore";
 import { Button } from "~/ui/button";
 import { AreaChart, type Point } from "~/ui/charts";
@@ -22,12 +23,12 @@ import { HelpTip } from "~/ui/tooltip";
 const SCROLL = "burrow-scroll burrow-page-scroll burrow-page-scroll--stable min-h-0 flex-1 overflow-y-auto pb-6";
 const PANEL = "rounded-lg border border-seam bg-fabric p-(--gap-card)";
 
-function requestSample(point: Point): string {
-  return `${fmtInt(point.v)} requests at ${fmtClock(point.t)}`;
+function requestSample(point: Point, tz: TzMode): string {
+  return `${fmtInt(point.v)} requests at ${fmtClock(point.t, tz)}`;
 }
 
-function memorySample(point: Point): string {
-  return `${fmtBytes(point.v * 1024 * 1024)} at ${fmtClock(point.t)}`;
+function memorySample(point: Point, tz: TzMode): string {
+  return `${fmtBytes(point.v * 1024 * 1024)} at ${fmtClock(point.t, tz)}`;
 }
 
 /** Round a chart ceiling up so the three y-axis labels stay whole numbers. */
@@ -71,6 +72,7 @@ function SystemSkeleton() {
 export function SystemPage() {
   const { data, error, isPending, dataUpdatedAt, refetch } = useStableQuery(q.system());
   const now = useNow();
+  const tz = usePref("tz");
   const retry = () => void refetch();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [savedScroll] = useState(() => Number(sessionStorage.getItem("burrow.system.scroll") ?? "0"));
@@ -109,7 +111,7 @@ export function SystemPage() {
     );
   }
 
-  const { process, clients, requests, memoryHistory, recentErrors, cache } = data;
+  const { process, clients, requests, memoryHistory, recentErrors, cache, appsIndex } = data;
   const memory = process.memory;
   const serverFailures = requests.byStatus["5xx"];
   const requestPoints: Point[] = requests.history.map((bucket) => ({ t: bucket.atMs, v: bucket.requests }));
@@ -154,7 +156,7 @@ export function SystemPage() {
             label="Process RSS"
             value={memory.rssBytes == null ? "Unavailable" : fmtBytes(memory.rssBytes)}
             sub={memory.rssBytes == null ? "platform does not report process memory" : `peak ${fmtBytes(memory.peakRssBytes)}`}
-            hint="Resident set size. The physical memory this Burrow process holds now. Peak is the highest sample since startup. Some platforms do not report process memory."
+            hint="Resident set size. The physical memory this Burrow process holds now. Peak is the highest sample since startup. It includes the response cache and, after Applications has been opened, the complete applications index. Some platforms do not report process memory."
           />
           <Stat
             label="Failed requests"
@@ -166,7 +168,7 @@ export function SystemPage() {
           <Stat
             label="Uptime"
             value={fmtDuration(process.uptimeSeconds * 1000)}
-            sub={`since ${fmtClock(process.startedAtMs)}`}
+            sub={`since ${fmtEpoch(process.startedAtMs, tz)}`}
             hint="Time since this Burrow process started. A restart resets the count."
           />
           <Stat
@@ -198,8 +200,8 @@ export function SystemPage() {
               height={120}
               label="Requests per minute over the last 15 minutes"
               sampleAriaLabel="Request history samples"
-              sampleTooltip={requestSample}
-              timeLabel={fmtClock}
+              sampleTooltip={(point) => requestSample(point, tz)}
+              timeLabel={(t) => fmtClock(t, tz)}
             />
             <p className="text-micro text-ink-3">
               15 one-minute buckets · {fmtInt(requests.total)} responses since startup · p95 {fmtLatency(requests.p95Ms)}
@@ -222,8 +224,8 @@ export function SystemPage() {
               height={120}
               label="Process RSS over the last 15 minutes"
               sampleAriaLabel="Memory history samples"
-              sampleTooltip={memorySample}
-              timeLabel={fmtClock}
+              sampleTooltip={(point) => memorySample(point, tz)}
+              timeLabel={(t) => fmtClock(t, tz)}
             />
             <p className="text-micro text-ink-3">Sampled at most every 5 seconds · peak {fmtBytes(memory.peakRssBytes)}</p>
           </Section>
@@ -297,7 +299,7 @@ export function SystemPage() {
               <span className="tnum">{fmtDuration(process.uptimeSeconds * 1000)}</span>
             </Field>
             <Field label="Started">
-              <span className="tnum">{fmtClock(process.startedAtMs)}</span>
+              <span className="tnum">{fmtEpoch(process.startedAtMs, tz)}</span>
             </Field>
             <Field label="In flight" hint="Requests the server is handling now. This includes static assets and open event streams.">
               <span className="tnum">{fmtInt(requests.inFlight)}</span>
@@ -316,6 +318,16 @@ export function SystemPage() {
             </Field>
             <Field label="Cache bytes" hint="Memory used by the cached response bodies.">
               <span className="tnum">{fmtBytes(cache.bytes)}</span>
+            </Field>
+            <Field
+              label="App index"
+              hint="Applications held in the complete-list index behind the Applications page. A long cluster history makes this the largest thing Burrow keeps in memory; it is released five minutes after the last Applications request."
+            >
+              {appsIndex.apps == null ? (
+                <span className="text-ink-3">Not loaded</span>
+              ) : (
+                <span className="tnum">{fmtInt(appsIndex.apps)} apps</span>
+              )}
             </Field>
             <Field label="Virtual memory" hint="Virtual address space reserved by the process. Some platforms do not report it.">
               {memory.virtualBytes == null ? (

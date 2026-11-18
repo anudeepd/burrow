@@ -69,6 +69,10 @@ async fn system_reports_process_clients_requests_and_cache() {
     ] {
         assert!(json["cache"][key].is_u64(), "cache.{key} is a number");
     }
+    assert!(
+        json["appsIndex"]["apps"].is_null() || json["appsIndex"]["apps"].is_u64(),
+        "appsIndex.apps is a number or null"
+    );
 
     let repeated = harness
         .get_with(

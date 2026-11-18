@@ -78,6 +78,7 @@ export const SYSTEM_FIXTURE = {
   memoryHistory: [{ atMs: 1_791_010_000_000, rssBytes: 134_217_728 }],
   recentErrors: [{ atMs: 1_791_010_000_000, method: "GET", path: "/api/apps", status: 502, durationMs: 12 }],
   cache: { entries: 12, bytes: 123456, hits: 100, misses: 5, coalesced: 3, stale: 1, bypass: 0, upstreamFetches: 9 },
+  appsIndex: { apps: 12 },
 };
 
 const FIXTURES = resolve(process.cwd(), "../fixtures/rm");

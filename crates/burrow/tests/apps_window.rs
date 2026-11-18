@@ -263,6 +263,48 @@ async fn a_failed_refresh_keeps_serving_the_last_snapshot_as_stale() {
 }
 
 #[tokio::test]
+async fn the_default_page_reads_fresh_rows_from_the_bounded_preview() {
+    let mock = Mock::start().await;
+    mock.set(PREVIEW_QUERY, Canned::json(apps_body(10))).await;
+    mock.set(FULL_QUERY, Canned::json(apps_body(10))).await;
+    let harness = Harness::start(config(&mock)).await;
+
+    harness
+        .get("/api/yarn/apps?window=1&offset=0&limit=2")
+        .await;
+    wait_ready(&harness, "/api/yarn/apps?window=1&offset=0&limit=2").await;
+
+    // The complete snapshot still says job-10; the RM's bounded preview now has a newer row.
+    let fresh = json!({
+        "apps": { "app": [{
+            "id": "application_1_0010",
+            "user": "alice", "name": "fresh-row", "queue": "root.default",
+            "state": "RUNNING", "finalStatus": "UNDEFINED", "applicationType": "SPARK",
+            "applicationTags": "", "priority": 0, "startedTime": 10, "launchTime": 10,
+            "finishedTime": 0, "runningContainers": 1, "allocatedVCores": 1,
+            "allocatedMB": 1024, "reservedVCores": 0, "reservedMB": 0,
+            "queueUsagePercentage": 1.5, "clusterUsagePercentage": 0.5,
+            "progress": 50.0, "trackingUI": "ApplicationMaster"
+        }]}
+    });
+    mock.set(
+        PREVIEW_QUERY,
+        Canned::json(serde_json::to_string(&fresh).unwrap()),
+    )
+    .await;
+
+    let body = harness
+        .get("/api/yarn/apps?window=1&offset=0&limit=2")
+        .await
+        .json();
+    assert_eq!(body["apps"]["app"][0]["name"], "fresh-row");
+    // Totals and version still come from the complete snapshot.
+    assert_eq!(body["window"]["total"], 10);
+    assert_eq!(body["window"]["ready"], true);
+    assert_eq!(body["window"]["stale"], false);
+}
+
+#[tokio::test]
 async fn an_idle_snapshot_is_dropped_and_rebuilt_from_a_preview() {
     let mock = Mock::start().await;
     mock.set(PREVIEW_QUERY, Canned::json(apps_body(10))).await;
@@ -283,6 +325,26 @@ async fn an_idle_snapshot_is_dropped_and_rebuilt_from_a_preview() {
         .json();
     assert_eq!(replayed["window"]["ready"], false);
     assert_eq!(replayed["window"]["partial"], true);
+}
+
+#[tokio::test]
+async fn an_idle_snapshot_is_released_without_waiting_for_another_request() {
+    let mock = Mock::start().await;
+    mock.set(PREVIEW_QUERY, Canned::json(apps_body(10))).await;
+    mock.set(FULL_QUERY, Canned::json(apps_body(10))).await;
+    let mut cfg = config(&mock);
+    cfg.apps_index.idle_after = Duration::from_millis(60);
+    let harness = Harness::start(cfg).await;
+
+    harness
+        .get("/api/yarn/apps?window=1&offset=0&limit=2")
+        .await;
+    wait_ready(&harness, "/api/yarn/apps?window=1&offset=0&limit=2").await;
+    assert_eq!(harness.core.apps.snapshot_apps(), Some(10));
+
+    // No requests: the background reaper owns the release.
+    tokio::time::sleep(Duration::from_millis(250)).await;
+    assert_eq!(harness.core.apps.snapshot_apps(), None);
 }
 
 #[tokio::test]

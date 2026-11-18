@@ -76,6 +76,12 @@ export const SystemCacheSchema = obj({
 });
 export type SystemCache = z.infer<typeof SystemCacheSchema>;
 
+export const SystemAppsIndexSchema = obj({
+  /** Rows in the complete applications snapshot; null when no snapshot is held. */
+  apps: num.nullable(),
+});
+export type SystemAppsIndex = z.infer<typeof SystemAppsIndexSchema>;
+
 export const SystemSchema = obj({
   process: SystemProcessSchema,
   clients: SystemClientsSchema,
@@ -83,5 +89,6 @@ export const SystemSchema = obj({
   memoryHistory: z.array(SystemMemoryHistorySchema),
   recentErrors: z.array(SystemRecentErrorSchema),
   cache: SystemCacheSchema,
+  appsIndex: SystemAppsIndexSchema,
 });
 export type System = z.infer<typeof SystemSchema>;

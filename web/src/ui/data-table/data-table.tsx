@@ -712,7 +712,10 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
         if (local >= 0) {
           const nextIndex = dataOffset + local;
           const delta = nextIndex - anchor.index;
-          if (delta !== 0) scroller.scrollTop = Math.max(0, scroller.scrollTop + delta * rowH);
+          // At the very top the reader is watching the newest rows, not a scrolled-away anchor. Expanding a
+          // preview to the complete list (or a live insert above the viewport) must reveal the new top
+          // instead of silently holding the old first row in place.
+          if (delta !== 0 && scroller.scrollTop > 0) scroller.scrollTop = Math.max(0, scroller.scrollTop + delta * rowH);
         }
       }
     }

@@ -44,6 +44,9 @@ pub async fn get(core: &Core, req: ApiRequest<'_>) -> Result<Reply, ApiError> {
             bypass: stats.bypass.load(Ordering::Relaxed),
             upstream_fetches: stats.upstream_fetches.load(Ordering::Relaxed),
         },
+        apps_index: AppsIndexSnapshot {
+            apps: core.apps.snapshot_apps(),
+        },
     };
 
     let mut reply = Reply::json(&body);
@@ -56,6 +59,14 @@ struct SystemResponse {
     #[serde(flatten)]
     snapshot: SystemSnapshot,
     cache: CacheSnapshot,
+    #[serde(rename = "appsIndex")]
+    apps_index: AppsIndexSnapshot,
+}
+
+#[derive(Serialize)]
+struct AppsIndexSnapshot {
+    /// Rows in the complete applications snapshot; null when the index holds no snapshot.
+    apps: Option<usize>,
 }
 
 #[derive(Serialize)]

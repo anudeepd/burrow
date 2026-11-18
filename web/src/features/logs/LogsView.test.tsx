@@ -364,6 +364,38 @@ describe("LogsView", () => {
     expect(screen.queryByRole("heading", { name: "Cannot read this log file" })).toBeNull();
   });
 
+  it("keeps the reader's scroll position when the window is refreshed", async () => {
+    const refreshed = `${LOG_TEXT}2026-10-31 10:00:03,000 INFO [main] refreshed bytes\n`;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const isFile = String(input).includes("/files/");
+        if (isFile) {
+          return new Response(refreshed, {
+            headers: {
+              "content-type": "text/plain",
+              "x-burrow-log-size": String(refreshed.length),
+              "x-burrow-log-start": "0",
+              "x-burrow-log-end": String(refreshed.length),
+              "x-burrow-log-source": "nm",
+            },
+          });
+        }
+        return new Response(JSON.stringify({ source: "nm", node: "worker:8041", files: [{ name: "stdout", size: refreshed.length }] }), {
+          headers: { "content-type": "application/json" },
+        });
+      }),
+    );
+    renderLogs();
+    const log = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(log.textContent).toContain("startup complete"));
+    log.scrollTop = 150;
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh window" }));
+    await waitFor(() => expect(log.textContent).toContain("refreshed bytes"));
+    expect(log.scrollTop).toBe(150);
+  });
+
   it("uses the timer fallback when animation frames are unavailable", async () => {
     vi.stubGlobal("requestAnimationFrame", undefined);
     stubLogFetch();
