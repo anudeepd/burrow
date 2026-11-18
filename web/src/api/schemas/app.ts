@@ -68,7 +68,7 @@ export const AppSchema = obj({
   progress: num, // 0..100
   trackingUI: z.string(), // "UNASSIGNED" | "ApplicationMaster" | "History"
   trackingUrl: z.string().optional(),
-  diagnostics: z.string(),
+  diagnostics: z.string().optional(),
   clusterId: num, // RM start timestamp
   rmClusterId: z.string().optional(), // yarn.resourcemanager.cluster-id (ACL-gated)
   applicationType: z.string().optional(),

@@ -61,6 +61,15 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const wasOpen = useRef(false);
+  // The palette stays mounted (so Base UI can animate the exit); every open still starts from an empty query.
+  useEffect(() => {
+    if (open && !wasOpen.current) {
+      setQuery("");
+      setActive(0);
+    }
+    wasOpen.current = open;
+  }, [open]);
 
   const items = useMemo<Item[]>(() => {
     const go = (item: NavItem): Item => ({
@@ -148,7 +157,6 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      instant
       title="Search and navigate"
       description="Applications, views and view settings"
       className="w-[min(44rem,calc(100vw-2rem))]"

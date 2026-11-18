@@ -71,7 +71,8 @@ so the SPA polls it on its existing live cadence; there is no SSE topic for this
   },
   "memoryHistory": [{ "atMs": 1763000000000, "rssBytes": 134217728 }],
   "recentErrors": [{ "atMs": 1763000000000, "method": "GET", "path": "/api/apps", "status": 502, "durationMs": 12 }],
-  "cache": { "entries": 12, "bytes": 123456, "hits": 100, "misses": 5, "coalesced": 3, "stale": 1, "bypass": 0, "upstreamFetches": 9 }
+  "cache": { "entries": 12, "bytes": 123456, "hits": 100, "misses": 5, "coalesced": 3, "stale": 1, "bypass": 0, "upstreamFetches": 9 },
+  "appsIndex": { "apps": 3412 }
 }
 ```
 
@@ -87,7 +88,9 @@ excluded from latency. `history` is 15 one-minute buckets, oldest first, with em
 `history.errors` and `errorsLast15m` count 5xx only (Burrow failed to serve); `recentErrors` keeps the last 20
 responses with status ≥ 400, newest first, so 4xx diagnostics remain visible. `recentErrors[].durationMs` is also
 fractional milliseconds, and paths carry no query string. `memoryHistory` samples at most once every 5 seconds for the
-last 15 minutes. `cache` mirrors the process-wide cache counters and current usage.
+last 15 minutes. `cache` mirrors the process-wide cache counters and current usage. `appsIndex.apps` is the number
+of rows in the complete applications snapshot, or `null` before the Applications page has built one or after it has
+been released; that snapshot can dominate process RSS on a cluster with a long application history.
 
 ## 3. ResourceManager passthrough
 
@@ -157,7 +160,18 @@ The response is the RM wrapper plus metadata:
 On a cold index the first call returns a bounded `limit` preview immediately (`ready:false`, `partial:true`,
 `total:null`) and starts the complete fetch in the background. `retryAfterMs` tells the client when a deep-offset
 preview may be retried. A refresh failure keeps serving the previous complete snapshot as `stale:true` with
-`refreshError`; a successful refresh swaps the snapshot atomically (pages never mix versions).
+`refreshError`; a successful refresh swaps the snapshot atomically (pages never mix versions). `stale` is set only
+for a failed refresh, never for the normal few-seconds-old snapshot between refreshes; `ageMs` carries that age.
+
+The complete snapshot refreshes at most every 10 seconds while window requests are arriving. The visible default-sorted page is served from a bounded preview at the SPA's live cadence. It is dropped after 5 minutes without a window request, including from a background reaper
+when the browser never returns to `/apps`.
+
+Snapshots keep the fields the applications table renders plus unknown/new ones. A few known `AppInfo`
+fields that only the per-application resource renders are pruned from a list row to bound index memory:
+`diagnostics`, `resourceInfo`, `resourceRequests`, `timeouts`, `amContainerLogs`, `resourceSecondsMap`,
+`preemptedResourceSecondsMap`, `preemptedMemorySeconds`, `preemptedVcoreSeconds`, `masterNodeId`,
+`amHostHttpAddress`, `amRPCAddress`, `logAggregationStatus`, `rmClusterId`, `appNodeLabelExpression`, and
+`amNodeLabelExpression`. Read `/api/yarn/apps/{id}` for the complete record.
 
 RM daemon pages (the legacy "Tools" menu):
 `GET /api/rm/conf?format=json` · `GET /api/rm/jmx[?qry=…]` · `GET /api/rm/stacks` (text) · `GET /api/rm/metrics` (if exposed).

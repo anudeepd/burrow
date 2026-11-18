@@ -176,12 +176,16 @@ export function LogsView() {
     if (!initial.data) return;
     const data = initial.data;
     const pane = logPaneRef.current!.querySelector<HTMLElement>('[role="log"]')!;
+    // A refresh of the same file is a replacement window, not a navigation: keep the reader where they were.
+    // A new file or container starts at the top, as before.
+    const sameWindow = committedRef.current === windowIdentity;
+    const keptScrollTop = pane.scrollTop;
     const commit = () => {
       cancelAnimation(dataFade.current);
       buffer.setWindow(data.text, data.start);
       setMeta({ size: data.size, source: data.source, start: data.start, end: data.end });
       setCommittedWindow(windowIdentity);
-      logPaneRef.current!.querySelector<HTMLElement>('[role="log"]')!.scrollTop = 0;
+      logPaneRef.current!.querySelector<HTMLElement>('[role="log"]')!.scrollTop = sameWindow ? keptScrollTop : 0;
       bump();
     };
     if (committedRef.current == null) {

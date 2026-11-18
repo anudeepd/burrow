@@ -33,7 +33,7 @@ This document covers **what exists today** and, explicitly, what the later slice
 | `rm_pool.rs` | ResourceManager HA (algorithm below), plus `probe`/`probe_all` used by `doctor` and `/api/meta`. |
 | `cache.rs` | Single-flight TTL cache: canonical query keys, byte-weighted moka store, `TtlPolicy` per route class (including state-dependent app detail), stale-while-revalidate on failure, weak ETags from an xxh3 of the body, oversize streaming, stats. |
 | `core.rs` | `Core`: the shared state (config, upstreams, cache, apps index, topics, events hub, memo, node-set) and the single read path `served`/`reply`; query sanitisation; `Memo` (coalesced non-body computations); `node_authorities`; `shared()` (a `Weak` self-handle so long-lived tasks can own the state they poll). |
-| `apps_index.rs` | Complete applications snapshot behind `/api/yarn/apps?window=1`: bounded `limit` preview on a cold index, one background full fetch, immutable `Arc<Snapshot>` swaps, server-side filter/sort/facet/page, stale-while-refresh and idle eviction. Raw app JSON is retained; only filter/sort fields are parsed. |
+| `apps_index.rs` | Complete applications snapshot behind `/api/yarn/apps?window=1`: bounded `limit` preview on a cold index, a fresh bounded preview for the visible default-sorted page, one background full fetch for totals/facets/deep paging, immutable `Arc<Snapshot>` swaps, server-side filter/sort/facet/page, stale-while-refresh, a background idle reaper and a bytes-saving prune of list-irrelevant fields. Unknown fields still pass through; filter/sort fields are parsed once. |
 | `api.rs` | Transport-agnostic `ApiRequest`, the group dispatcher, `/api/healthz`. |
 | `routes/table.rs` | Data-driven route table: one regex per allowed resource (with `{id}` → `[A-Za-z0-9_:.\-]+` and dot-only segments rejected), carrying TTL class, expected content type and optional upstream rewrite. The same table is the allowlist and the cache policy. |
 | `routes/yarn.rs` | `/api/yarn/{path}` → `{rm}/ws/v1/cluster/{path}`. |
@@ -76,9 +76,11 @@ A `Cache-Control: no-cache` request goes straight through (`x-burrow-cache: bypa
 the entry, which is what makes the parity harness and hard reloads both correct and cheap.
 
 `/api/yarn/apps?window=1` is the one synthesized exception: it resolves before the passthrough table, serves the
-first page from an RM `limit` preview, and fills a `apps_index::AppsIndex` snapshot in the background. Later
-pages/filters/sorts are in-memory slices; the browser never receives the complete list. The plain
-`/api/yarn/apps` path remains byte-identical passthrough.
+visible default-sorted page from a bounded RM `limit` preview on every request, and fills an
+`apps_index::AppsIndex` snapshot in the background for totals, facets, column sorts and deep paging. Later
+pages/filters/sorts are in-memory slices; the browser never receives the complete list. A snapshot that no
+Applications request has touched for five minutes is released by a background reaper, not only by the next
+request. The plain `/api/yarn/apps` path remains byte-identical passthrough.
 
 ## Cache design notes
 

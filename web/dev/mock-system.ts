@@ -59,6 +59,7 @@ function systemResponse(): Record<string, unknown> {
       },
     ],
     cache: { entries: 12, bytes: 123_456, hits: 100, misses: 5, coalesced: 3, stale: 1, bypass: 0, upstreamFetches: 9 },
+    appsIndex: { apps: 3412 },
   };
 }
 

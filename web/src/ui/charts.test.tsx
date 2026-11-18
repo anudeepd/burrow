@@ -40,8 +40,31 @@ describe("AreaChart sample inspection", () => {
     const linePath = container.querySelectorAll("path")[1]?.getAttribute("d") ?? "";
     const endpointX = linePath.match(/([\d.]+),([\d.]+)$/)?.[1];
 
-    expect(endpointX).toBe("288");
+    // "100%" needs a wider right gutter than the old fixed 28 px; the trace now ends before the label.
+    expect(endpointX).toBe("280");
     expect(container.querySelectorAll("path")[1]?.getAttribute("stroke-linecap")).toBe("round");
+  });
+
+  it("widens the right gutter for long y-axis labels instead of drawing under them", () => {
+    const { container } = render(
+      <AreaChart
+        points={[
+          { t: 0, v: 100 },
+          { t: 10, v: 304 },
+        ]}
+        width={320}
+        height={72}
+        domain={[0, 304]}
+        unit=" MiB"
+        label="Wide labels"
+      />,
+    );
+    const linePath = container.querySelectorAll("path")[1]?.getAttribute("d") ?? "";
+    const endpointX = Number(linePath.match(/([\d.]+),([\d.]+)$/)?.[1]);
+    const reserved = "304 MiB".length * 7 + 8;
+    expect(endpointX).toBeLessThanOrEqual(320 - reserved - 4);
+    const topLabel = Array.from(container.querySelectorAll("text")).find((text) => text.textContent === "304 MiB");
+    expect(topLabel?.getAttribute("text-anchor")).toBe("end");
   });
 
   it("tracks the pointer between samples instead of snapping to a recorded point", () => {
@@ -78,14 +101,15 @@ describe("AreaChart sample inspection", () => {
       }),
     });
 
-    // x=75 in the 320-unit viewBox maps to t=5, halfway between the first two samples.
-    fireEvent.pointerMove(slider, { clientX: 75, clientY: 36, pointerId: 1 });
+    // The plot now reserves a wider right gutter for "100%": [4, 280] across the 320-unit viewBox.
+    // x=73 maps to t=5, halfway between the first two samples.
+    fireEvent.pointerMove(slider, { clientX: 73, clientY: 36, pointerId: 1 });
 
     expect(slider.getAttribute("aria-valuetext")).toBe("5.0:15.0");
-    expect(container.querySelector("circle")?.getAttribute("cx")).toBe("75");
+    expect(container.querySelector("circle")?.getAttribute("cx")).toBe("73");
 
-    fireEvent.pointerMove(slider, { clientX: 225, clientY: 36, pointerId: 1 });
-    expect(slider.getAttribute("aria-valuetext")).toBe("15.6:25.6");
+    fireEvent.pointerMove(slider, { clientX: 211, clientY: 36, pointerId: 1 });
+    expect(slider.getAttribute("aria-valuetext")).toBe("15.0:25.0");
   });
 
   it("labels both ends of the time axis when a formatter is provided", () => {

@@ -215,6 +215,32 @@ describe("windowed DataTable", () => {
     expect(container.querySelector('[data-placeholder] [role="cell"]')?.getAttribute("aria-colspan")).toBe("4");
   });
 
+  it("shows the new top when rows arrive while the reader is at the top", async () => {
+    const { rerender, container } = renderWindow();
+    expect(table().scrollTop).toBe(0);
+    const inserted = { id: "r-new", name: "new", count: -1 };
+    rerender(
+      <DataTable<Row>
+        data={[inserted, ...rows.slice(4, 7)]}
+        columns={columns}
+        getRowId={(row) => row.id}
+        label="Rows"
+        storageKey="window-table"
+        sorting={[]}
+        onSortingChange={vi.fn()}
+        columnVisibility={{}}
+        onColumnVisibilityChange={vi.fn()}
+        manualSorting
+        rowCount={13}
+        rowOffset={4}
+        preserveScrollAnchor
+        exportName="rows"
+      />,
+    );
+    await waitFor(() => expect(container?.querySelector('[data-ye="r-new"]')).toBeTruthy());
+    expect(table().scrollTop).toBe(0);
+  });
+
   it("keeps the scroll position when the anchored row disappears", async () => {
     const { rerender } = renderWindow();
     table().scrollTop = 136;

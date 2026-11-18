@@ -241,6 +241,9 @@ impl Default for AppsIndexConfig {
     fn default() -> Self {
         Self {
             preview_max: 1_000,
+            // The complete snapshot feeds totals, facets and deep paging. The visible top page for the
+            // default sort is served from a bounded preview on each request, so rows stay at the live
+            // cadence without re-fetching a long application history every few seconds.
             refresh_after: Duration::from_secs(10),
             retry_after: Duration::from_secs(5),
             idle_after: Duration::from_secs(300),

@@ -35,13 +35,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       {drawerMounted && <RailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} returnFocus={railTrigger} />}
-      {/* the palette is keyboard-first (⌘K, `/`): it opens instantly in both directions, and it is unmounted while
-          closed so each open starts from an empty query */}
-      {paletteOpen && (
-        <Suspense fallback={null}>
-          <CommandPalette open onOpenChange={setPaletteOpen} />
-        </Suspense>
-      )}
+      {/* The palette stays mounted so Base UI can play both the entrance and the exit. Keeping it conditional
+          unmounted it before the exit transition could run; the palette itself clears its query on close. */}
+      <Suspense fallback={null}>
+        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+      </Suspense>
       {/* the help sheet is rare, so it keeps its entrance *and* its exit: Base UI mounts the popup only while open,
           which means the root can stay mounted without rendering anything */}
       {helpOpen && (

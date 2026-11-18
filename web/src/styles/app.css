@@ -522,8 +522,8 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
 @media (prefers-reduced-motion: reduce) {
   .burrow-sheet[data-starting-style], .burrow-sheet[data-ending-style] { transform: none; }
 }
-/* a keyboard-first surface (the command palette) opens instantly: it is used hundreds of times a day and an entrance
-   is a cost paid on every open. The class zeroes the overlay durations for that subtree only. */
+/* Opt-out for a surface that must not animate at all. The class zeroes the overlay durations for that subtree
+   only; ordinary dialogs keep the shared fade/scale entrance and exit. */
 .burrow-instant { --dur-fade: 0ms; --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; }
 
 /* ---------- table rows ---------- */
