@@ -28,8 +28,8 @@
 
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering as AtomicOrdering};
+use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
 
 use bytes::{Bytes, BytesMut};
@@ -559,26 +559,14 @@ pub fn parse_apps(body: &[u8]) -> Result<Vec<AppEntry>, ApiError> {
     };
     let mut out = Vec::with_capacity(raw.len());
     for raw in raw {
-        let Ok(mut value) = serde_json::from_str::<serde_json::Value>(raw.get()) else {
+        let mut value: serde_json::Value =
+            serde_json::from_str(raw.get()).unwrap_or(serde_json::Value::Null);
+        let Some((meta, pruned)) = parse_meta(&mut value) else {
             continue;
         };
-        let Some(meta) = parse_meta(&value) else {
-            continue;
-        };
-        let Some(obj) = value.as_object_mut() else {
-            continue;
-        };
-        let mut pruned = false;
-        for key in LIST_IRRELEVANT_FIELDS {
-            pruned |= obj.remove(*key).is_some();
-        }
         if pruned {
-            let Ok(compact) = serde_json::to_string(&value) else {
-                continue;
-            };
-            let Ok(compact) = RawValue::from_string(compact) else {
-                continue;
-            };
+            let compact = RawValue::from_string(value.to_string())
+                .expect("a serialized Value is always valid JSON");
             out.push(AppEntry { raw: compact, meta });
         } else {
             out.push(AppEntry { raw, meta });
@@ -587,8 +575,10 @@ pub fn parse_apps(body: &[u8]) -> Result<Vec<AppEntry>, ApiError> {
     Ok(out)
 }
 
-fn parse_meta(value: &serde_json::Value) -> Option<AppMeta> {
-    let obj = value.as_object()?;
+/// Extract the list fields from one app object and drop the known fields that only the detail resource
+/// renders. The returned flag says whether the object changed, so an untouched row keeps its original bytes.
+fn parse_meta(value: &mut serde_json::Value) -> Option<(AppMeta, bool)> {
+    let obj = value.as_object_mut()?;
     let text = |key: &str| {
         obj.get(key)
             .and_then(serde_json::Value::as_str)
@@ -609,7 +599,7 @@ fn parse_meta(value: &serde_json::Value) -> Option<AppMeta> {
     if id.is_empty() {
         return None;
     }
-    Some(AppMeta {
+    let meta = AppMeta {
         id,
         user: text("user"),
         name: text("name"),
@@ -633,7 +623,12 @@ fn parse_meta(value: &serde_json::Value) -> Option<AppMeta> {
         cluster_usage_percentage: number("clusterUsagePercentage"),
         progress: number("progress"),
         tracking_ui: text("trackingUI"),
-    })
+    };
+    let mut pruned = false;
+    for key in LIST_IRRELEVANT_FIELDS {
+        pruned |= obj.remove(*key).is_some();
+    }
+    Some((meta, pruned))
 }
 
 #[derive(Debug)]
@@ -695,23 +690,7 @@ impl AppsIndex {
         let weak = Arc::downgrade(self);
         let every =
             (self.cfg.idle_after / 8).clamp(Duration::from_millis(5), Duration::from_secs(30));
-        tokio::spawn(async move {
-            let mut ticker = tokio::time::interval(every);
-            ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
-            loop {
-                ticker.tick().await;
-                let Some(index) = weak.upgrade() else {
-                    return;
-                };
-                let mut inner = index.inner.lock();
-                if inner.snapshot.is_some()
-                    && !inner.loading
-                    && inner.last_access.elapsed() >= index.cfg.idle_after
-                {
-                    inner.snapshot = None;
-                }
-            }
-        });
+        tokio::spawn(idle_reaper(weak, every));
     }
 
     /// Serve one window. Always returns quickly when a snapshot exists; the cold path asks the RM for a
@@ -877,9 +856,10 @@ impl AppsIndex {
         snapshot: &Snapshot,
         refresh_error: Option<String>,
     ) -> Result<Reply, ApiError> {
-        let Some((entries, _)) = self.preview_entries(core, window).await? else {
-            return Ok(snapshot_reply(window, snapshot, refresh_error));
-        };
+        let (entries, _) = self
+            .preview_entries(core, window)
+            .await?
+            .expect("can_preview_rows guards the preview query");
         let mut matched: Vec<&AppEntry> = entries
             .iter()
             .filter(|entry| window.filters.matches(&entry.meta))
@@ -918,6 +898,26 @@ impl AppsIndex {
             CacheSource::Miss
         });
         Ok(reply)
+    }
+}
+
+/// The idle reaper owns eviction so a snapshot does not outlive the last Applications request. It holds
+/// only a weak handle, so the task ends as soon as the index itself is dropped.
+async fn idle_reaper(weak: Weak<AppsIndex>, every: Duration) {
+    let mut ticker = tokio::time::interval(every);
+    ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+    loop {
+        ticker.tick().await;
+        let Some(index) = weak.upgrade() else {
+            return;
+        };
+        let mut inner = index.inner.lock();
+        if inner.snapshot.is_some()
+            && !inner.loading
+            && inner.last_access.elapsed() >= index.cfg.idle_after
+        {
+            inner.snapshot = None;
+        }
     }
 }
 
@@ -1482,14 +1482,15 @@ mod tests {
 
     #[test]
     fn parse_meta_accepts_fractional_timestamps_and_rejects_non_objects() {
-        let value: serde_json::Value =
+        let mut value: serde_json::Value =
             serde_json::from_str(r#"{"id":"application_1_1","startedTime":1.9,"launchTime":null}"#)
                 .unwrap();
-        let parsed = parse_meta(&value).unwrap();
+        let (parsed, pruned) = parse_meta(&mut value).unwrap();
         assert_eq!(parsed.started_time, 1);
         assert_eq!(parsed.launch_time, 0);
-        let value: serde_json::Value = serde_json::from_str("[1]").unwrap();
-        assert!(parse_meta(&value).is_none());
+        assert!(!pruned);
+        let mut value: serde_json::Value = serde_json::from_str("[1]").unwrap();
+        assert!(parse_meta(&mut value).is_none());
     }
 
     #[test]
@@ -1736,5 +1737,19 @@ mod tests {
         index.ensure_idle_reaper();
         tokio::time::sleep(Duration::from_millis(100)).await;
         assert_eq!(index.snapshot_apps(), None);
+    }
+
+    #[tokio::test]
+    async fn the_idle_reaper_stops_when_the_index_is_dropped() {
+        let cfg = AppsIndexConfig {
+            idle_after: Duration::from_millis(20),
+            ..AppsIndexConfig::default()
+        };
+        let index = Arc::new(AppsIndex::new(cfg));
+        index.ensure_idle_reaper();
+        drop(index);
+
+        // The first tick runs after the drop, so the weak handle fails and the task returns.
+        tokio::time::sleep(Duration::from_millis(100)).await;
     }
 }

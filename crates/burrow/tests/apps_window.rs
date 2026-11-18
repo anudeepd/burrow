@@ -288,13 +288,14 @@ async fn the_default_page_reads_fresh_rows_from_the_bounded_preview() {
         }]}
     });
     mock.set(
-        PREVIEW_QUERY,
+        "/ws/v1/cluster/apps?deSelects=resourceRequests&limit=3",
         Canned::json(serde_json::to_string(&fresh).unwrap()),
     )
     .await;
 
+    // A different limit proves the rows come from a new preview request, not the cached first preview.
     let body = harness
-        .get("/api/yarn/apps?window=1&offset=0&limit=2")
+        .get("/api/yarn/apps?window=1&offset=0&limit=3")
         .await
         .json();
     assert_eq!(body["apps"]["app"][0]["name"], "fresh-row");
