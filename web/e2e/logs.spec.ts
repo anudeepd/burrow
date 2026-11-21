@@ -38,6 +38,7 @@ test.describe("container logs", () => {
     await expect(page.locator('[data-yf="log.fileSize"][data-yv="42326"]')).toBeVisible();
     await expect(page.locator('[data-burrow-log-source="jhs"]')).toBeVisible();
     await expect(page.locator("[data-burrow-log-range]")).toHaveAttribute("data-burrow-log-range", "0-42326");
+    await expect(page.locator("[data-burrow-log-buffer]")).toHaveText(/^All 41\.3 KiB buffered$/);
     // only the virtualized window is in the DOM, so assert on text that is actually in the first screenful
     await expect(pane(page)).toContainText("ApplicationMaster");
     await expect(page).toHaveURL(/file=stderr/);
@@ -235,6 +236,7 @@ test.describe("container logs", () => {
     await expect(pane(page)).toContainText("BURROW_SUMMARY");
     // The captured file is 5,244,972 bytes; tail=262144 requests its last 256 KiB.
     await expect(page.locator("[data-burrow-log-range]")).toHaveAttribute("data-burrow-log-range", "4982828-5244972");
+    await expect(page.locator("[data-burrow-log-buffer]")).toHaveText(/^256 KiB buffered$/);
     await expect(pane(page)).toContainText("BURROW_BIGLOG end sum=8002000");
   });
 

@@ -389,6 +389,3 @@ export function defaultVisibility(nodes: readonly Node[]): Record<string, boolea
 export function nodeRowVersion(node: Node): string {
   return `${node.state}:${healthOf(node)}`;
 }
-
-/** Just the epoch, for tests/tooltips. */
-export const healthUpdatedText = (node: Pick<Node, "lastHealthUpdate">) => fmtEpoch(node.lastHealthUpdate);

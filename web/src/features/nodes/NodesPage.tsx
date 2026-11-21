@@ -41,6 +41,7 @@ export function NodesPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   useScrollRestore(scrollRef, "burrow.nodes.scroll", true, SCROLL_RESTORE_LOCK_MS, { persist: false });
   const paused = usePref("livePaused");
+  const tz = usePref("tz");
   const nodesQuery = useStableQuery(nq.nodes());
   const { data: nodes, isPending, isFetching, dataUpdatedAt, refetch } = nodesQuery;
   const error = nodesQuery.error;
@@ -89,7 +90,7 @@ export function NodesPage() {
           <>
             <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-small leading-none text-ink-3">
               <StatusDot domain="service" state={paused ? "unconfigured" : "reachable"} label={false} />
-              {paused ? "live paused" : isPending ? "reading…" : stale ? "stale" : `updated ${fmtClock(dataUpdatedAt)}`}
+              {paused ? "live paused" : isPending ? "reading…" : stale ? "stale" : `updated ${fmtClock(dataUpdatedAt, tz)}`}
             </span>
             <Segmented
               label="View"

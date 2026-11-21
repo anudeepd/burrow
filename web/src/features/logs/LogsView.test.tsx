@@ -5,12 +5,14 @@ window.__BURROW_PARITY__ = true;
 const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { QueryClient, QueryClientProvider } = await import("@tanstack/react-query");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
-const { LogsView, logDownloadSize, logErrorMessage } = await import("./LogsView");
+const { LogsView, logDownloadSize, logErrorMessage, logWindowRetryInterval } = await import("./LogsView");
 const { lq } = await import("~/api/queries/logs");
 const { q } = await import("~/api/queries");
 const { ApiError } = await import("~/api/client");
 const { logsSearchSchema, parseSearch } = await import("./search");
 const { parityStore } = await import("~/state/parity");
+const { prefsStore, setPrefs } = await import("~/state/prefs");
+const initialPrefs = prefsStore.get();
 const originalCreateObjectURL = Object.getOwnPropertyDescriptor(URL, "createObjectURL");
 const originalRevokeObjectURL = Object.getOwnPropertyDescriptor(URL, "revokeObjectURL");
 
@@ -27,6 +29,7 @@ function renderLogs(
     containerId?: string | null;
     filesError?: unknown;
     windowError?: unknown;
+    windowFetch?: boolean;
     logText?: string;
     omitFile?: boolean;
     omitFileSize?: boolean;
@@ -69,20 +72,23 @@ function renderLogs(
       ],
     } as never);
     const windowKey = ["logs", "window", containerId, "stdout", 0, "", "", ""];
-    client.setQueryData(windowKey, {
-      text: logText,
-      start: 0,
-      end: logText.length,
-      size: logText.length,
-      source: "nm",
-      responseMeta: null,
-    });
+    if (!options.windowFetch) {
+      client.setQueryData(windowKey, {
+        text: logText,
+        start: 0,
+        end: logText.length,
+        size: logText.length,
+        source: "nm",
+        responseMeta: null,
+      });
+    }
     for (const [key, error] of [
       [filesKey, options.filesError],
       [windowKey, options.windowError],
     ] as const) {
       if (!error) continue;
-      const query = client.getQueryCache().find({ queryKey: key })!;
+      const query = client.getQueryCache().find({ queryKey: key });
+      if (!query) continue;
       query.setState({
         ...query.state,
         data: undefined,
@@ -105,6 +111,7 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  setPrefs(initialPrefs);
   Object.defineProperty(globalThis, "EventSource", {
     configurable: true,
     value: undefined,
@@ -170,6 +177,56 @@ describe("LogsView", () => {
   it("formats API errors and raw log failures", () => {
     expect(logErrorMessage(new Error("request failed"))).toBe("request failed");
     expect(logErrorMessage("raw log failure")).toBe("raw log failure");
+  });
+
+  it("retries a failed window at 12s, backs off, and stops after data", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    expect(logWindowRetryInterval({ state: { data: undefined, fetchFailureCount: 1 } })).toBe(12_000);
+    expect(logWindowRetryInterval({ state: { data: undefined, fetchFailureCount: 2 } })).toBe(24_000);
+    expect(logWindowRetryInterval({ state: { data: undefined, fetchFailureCount: 3 } })).toBe(30_000);
+    expect(logWindowRetryInterval({ state: { data: { text: "" }, fetchFailureCount: 3 } })).toBe(false);
+    setPrefs({ livePaused: true });
+    expect(logWindowRetryInterval({ state: { data: undefined, fetchFailureCount: 1 } })).toBe(false);
+  });
+
+  it("retries a missing log window automatically at the slow cadence", async () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    setPrefs({ liveIntervalMs: 25, livePaused: false });
+    let windowCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/logs/containers/") && !url.includes("/files/")) {
+          return new Response(JSON.stringify({ source: "nm", node: "worker:8041", files: [{ name: "stdout", size: LOG_TEXT.length }] }), {
+            headers: { "content-type": "application/json" },
+          });
+        }
+        if (!url.includes("/files/stdout")) throw new Error(`unexpected fetch ${url}`);
+        windowCalls += 1;
+        if (windowCalls === 1) {
+          return new Response(JSON.stringify({ error: { message: "log not archived yet" } }), {
+            status: 503,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        return new Response(LOG_TEXT, {
+          headers: {
+            "content-type": "text/plain",
+            "x-burrow-log-size": String(LOG_TEXT.length),
+            "x-burrow-log-start": "0",
+            "x-burrow-log-end": String(LOG_TEXT.length),
+            "x-burrow-log-source": "nm",
+          },
+        });
+      }),
+    );
+
+    renderLogs("", { windowFetch: true });
+    expect(await screen.findByRole("heading", { name: "Cannot read this log file" })).toBeTruthy();
+    await waitFor(() => expect(windowCalls).toBe(2), { timeout: 2000 });
+    await waitFor(() => expect(screen.getByText("3 lines", { selector: "[data-burrow-log-lines]" })).toBeTruthy());
   });
 
   it("renders a byte window, searches it, navigates hits, and jumps to the first error", async () => {

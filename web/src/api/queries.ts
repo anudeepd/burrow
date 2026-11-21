@@ -5,7 +5,7 @@
  */
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 import { type Query, apiGet, apiText, topicOf } from "./client";
-import { adaptive } from "./refetch";
+import { adaptive, appDetailInterval } from "./refetch";
 import {
   type App,
   AppActivitiesSchema,
@@ -145,12 +145,23 @@ export const q = {
     ...rm(["yarn", "apps", "filtered", query], "yarn/apps", AppsResponseSchema, "live", { deSelects: "resourceRequests", ...query }),
     select: (r: { apps?: { app?: App | App[] | null } | null }): App[] => asArray(r.apps?.app),
   }),
-  app: (appId: string) => ({
-    ...rm(["yarn", "apps", appId], `yarn/apps/${enc(appId)}`, AppResponseSchema, "live"),
-    select: (r: { app: App }) => r.app,
-  }),
-  appAttempts: (appId: string) =>
-    rm(["yarn", "apps", appId, "appattempts"], `yarn/apps/${enc(appId)}/appattempts`, AppAttemptsResponseSchema, "live"),
+  app: (appId: string) => {
+    const path = `yarn/apps/${enc(appId)}`;
+    return {
+      ...rm(["yarn", "apps", appId], path, AppResponseSchema, "live"),
+      retry: false,
+      refetchInterval: (query: { state: { data: unknown; fetchFailureCount: number } }) => appDetailInterval(query, topicOf(path)),
+      select: (r: { app: App }) => r.app,
+    };
+  },
+  appAttempts: (appId: string) => {
+    const path = `yarn/apps/${enc(appId)}/appattempts`;
+    return {
+      ...rm(["yarn", "apps", appId, "appattempts"], path, AppAttemptsResponseSchema, "live"),
+      retry: false,
+      refetchInterval: (query: { state: { data: unknown; fetchFailureCount: number } }) => appDetailInterval(query, topicOf(path)),
+    };
+  },
   /** the single-attempt resource: AM host/rpcPort, tracking URL, diagnostics (absent from the list entries) */
   appAttemptDetail: (appId: string, attemptId: string) =>
     rm(

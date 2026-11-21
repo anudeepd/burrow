@@ -3,10 +3,12 @@
  * (The heavy line-rendering logic is covered by `model.test.ts` and `segments.test.ts`; virtualization itself needs a
  * real layout, so that part is Playwright's job.)
  */
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { parseLogsLink } from "./ContainerPicker";
 import { LogStatusBar } from "./LogStatusBar";
+
+afterEach(cleanup);
 
 const base = {
   shown: 100,
@@ -18,8 +20,8 @@ const base = {
   followMode: "off" as const,
   followDetail: null,
   behind: null,
-  size: 1024,
   heldBytes: 1024,
+  complete: false,
   ended: false,
   gaps: 0,
   notice: null,
@@ -42,6 +44,23 @@ describe("LogStatusBar", () => {
     render(<LogStatusBar {...base} followMode="polling" followDetail="stream connection lost" onRetry={onRetry} />);
     screen.getByRole("button", { name: "Retry the log stream" }).click();
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("names a whole-file buffer without a false file fraction", () => {
+    render(<LogStatusBar {...base} heldBytes={42_326} complete />);
+    expect(screen.getByText("All 41.3 KiB buffered")).toBeTruthy();
+  });
+
+  it("does not claim a whole file while following", () => {
+    render(<LogStatusBar {...base} complete followMode="streaming" />);
+    expect(screen.getByText("1 KiB buffered")).toBeTruthy();
+    expect(screen.queryByText(/^All /)).toBeNull();
+  });
+
+  it("names a tail buffer without the file size", () => {
+    render(<LogStatusBar {...base} heldBytes={256 * 1024} complete={false} />);
+    expect(screen.getByText("256 KiB buffered")).toBeTruthy();
+    expect(screen.queryByText(/held/)).toBeNull();
   });
 
   it("surfaces dropped lines, byte gaps and match position", () => {

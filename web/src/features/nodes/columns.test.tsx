@@ -27,11 +27,10 @@ window.__BURROW_PARITY__ = true;
 let DataTable: typeof import("~/ui/data-table/data-table").DataTable;
 let nodeColumns: typeof import("./columns").nodeColumns;
 let nodeDefaultVisibility: typeof import("./columns").defaultVisibility;
-let healthUpdatedText: typeof import("./columns").healthUpdatedText;
 
 beforeAll(async () => {
   ({ DataTable } = await import("~/ui/data-table/data-table"));
-  ({ nodeColumns, defaultVisibility: nodeDefaultVisibility, healthUpdatedText } = await import("./columns"));
+  ({ nodeColumns, defaultVisibility: nodeDefaultVisibility } = await import("./columns"));
   ({ setPrefs } = await import("~/state/prefs"));
 });
 
@@ -233,7 +232,6 @@ describe("nodes table column contract", () => {
 
     expect(view.container.textContent).toContain("disk check warning");
     expect(nodeDefaultVisibility([partial])).toMatchObject({ nodeLabels: false, healthReport: false, allocationTags: false });
-    expect(healthUpdatedText(partial)).toBe("—");
     const columns = nodeColumns();
     for (const column of columns) {
       if ("accessorFn" in column && typeof column.accessorFn === "function") column.accessorFn(partial, 0);

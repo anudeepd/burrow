@@ -55,7 +55,7 @@ function AttemptsRoute() {
               title="Could not load the application attempts"
               error={attempts.error}
               message={attempts.error instanceof Error ? undefined : "The RM did not return an attempts payload."}
-              hint="`GET /ws/v1/cluster/apps/{id}/appattempts` — the application may have expired from the RM."
+              hint="Burrow retries automatically while live updates are on. GET /ws/v1/cluster/apps/{id}/appattempts. The application may have expired from the RM."
               onRetry={() => void attempts.refetch()}
             />
           ) : undefined

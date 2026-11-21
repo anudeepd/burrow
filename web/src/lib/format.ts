@@ -82,13 +82,13 @@ function dtf(tz: TzMode): Intl.DateTimeFormat {
 }
 
 /** Epoch ms -> "2026-10-03 12:04:09" in the chosen zone; 0 / negative / null -> "—" (YARN uses 0 for "not yet"). */
-export function fmtEpoch(ms: number | null | undefined, tz: TzMode = "local"): string {
+export function fmtEpoch(ms: number | null | undefined, tz: TzMode): string {
   if (ms == null || !Number.isFinite(ms) || ms <= 0) return NA;
   return dtf(tz).format(ms).replace(",", "");
 }
 
 /** ISO timestamp with explicit zone -> the selected zone; unzoned or non-ISO metadata stays literal. */
-export function fmtIsoTimestamp(value: string | null | undefined, tz: TzMode = "local"): string {
+export function fmtIsoTimestamp(value: string | null | undefined, tz: TzMode): string {
   if (value == null || value.trim() === "") return NA;
   const text = value.trim();
   if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(text)) return text;
@@ -97,7 +97,7 @@ export function fmtIsoTimestamp(value: string | null | undefined, tz: TzMode = "
 }
 
 /** Time only, for "updated 12:04:09". */
-export function fmtClock(ms: number, tz: TzMode = "local"): string {
+export function fmtClock(ms: number, tz: TzMode): string {
   return fmtEpoch(ms, tz).split(" ")[1] ?? NA;
 }
 
@@ -117,7 +117,7 @@ export function rawString(v: unknown): string {
   return JSON.stringify(v);
 }
 
-export function formatByTag(tag: Fmt, v: unknown, tz: TzMode = "local"): string {
+export function formatByTag(tag: Fmt, v: unknown, tz: TzMode): string {
   if (v == null) return NA;
   switch (tag) {
     case "bytes":
