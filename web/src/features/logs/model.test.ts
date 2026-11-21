@@ -199,6 +199,16 @@ describe("search", () => {
     expect(stepMatch(matches, 0, -1)).toBe(2);
     expect(stepMatch([], 0, 1)).toBe(-1);
   });
+  it("scans only the supplied visible line indexes", async () => {
+    const lines = ["INFO hidden", "WARN visible", "INFO hidden", "ERROR visible"];
+    const spec = { query: "visible", regex: false, caseSensitive: false };
+    const expected = [
+      { line: 1, start: 5, end: 12 },
+      { line: 3, start: 6, end: 13 },
+    ];
+    expect(findMatches(lines, spec, 20_000, [1, 3])).toEqual(expected);
+    await expect(scanMatchesAsync(lines, spec, { indices: [1, 3], batch: 1 }).promise).resolves.toEqual(expected);
+  });
   it("finds the first error line", () => {
     const lines = ["INFO ok", "WARN hmm", "ERROR bad", "ERROR worse"];
     expect(firstErrorLine(lines)).toBe(2);
