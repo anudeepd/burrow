@@ -307,6 +307,16 @@ describe("LogsView", () => {
     await waitFor(() => expect(router.state.location.search.file).toBe("stderr"));
   });
 
+  it("scopes search matches to the level-filtered lines", async () => {
+    renderLogs("&q=INFO&filter=WARN");
+    const log = await screen.findByRole("log", { name: "Container log" });
+    await waitFor(() => expect(log.textContent).toContain("queue is slow"));
+    expect(log.textContent).not.toContain("startup complete");
+    await waitFor(() => expect(screen.getByText("0 matches")).toBeTruthy());
+    expect(screen.queryByText(/match 1 of/)).toBeNull();
+    expect(screen.getByText("2 / 3 lines", { selector: "[data-burrow-log-lines]" })).toBeTruthy();
+  });
+
   it("shows a malformed-regex error and keeps an explicit filter in the URL", async () => {
     const { router } = renderLogs("&q=%5B&re=1&filter=WARN&wrap=1");
     const log = await screen.findByRole("log", { name: "Container log" });

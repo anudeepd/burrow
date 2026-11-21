@@ -82,6 +82,35 @@ test.describe("RM configuration", () => {
     await expect(page.locator('[data-yf="conf.value"][data-yv="<redacted>"]')).toBeVisible();
   });
 
+  test("wraps a long tooltip inside its box instead of overflowing horizontally", async ({ page }) => {
+    await page.goto("/tools/conf?q=mapreduce.application.classpath");
+    await expect(page.locator(TABLE)).toHaveAttribute("data-burrow-rows", "1", { timeout: 30_000 });
+
+    await page.locator('[data-yf="conf.value"]').first().hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toContainText("/home/");
+
+    const box = await tooltip.evaluate((element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const text = range.getBoundingClientRect();
+      const box = element.getBoundingClientRect();
+      return {
+        right: box.right,
+        height: box.height,
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        textRight: text.right,
+        viewport: window.innerWidth,
+      };
+    });
+    expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth + 1);
+    expect(box.textRight).toBeLessThanOrEqual(box.right + 1);
+    expect(box.right).toBeLessThanOrEqual(box.viewport);
+    expect(box.height).toBeGreaterThan(36);
+  });
+
   test("renders the full 1 709-row table un-virtualized in parity mode and measures it", async ({ page }) => {
     await page.goto("/tools/conf?parity=1");
     await page.waitForFunction(

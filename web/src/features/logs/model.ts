@@ -273,19 +273,22 @@ function execAll(re: RegExp, text: string, out: { start: number; end: number }[]
 
 /**
  * Scan lines for matches, capped at `cap` (a 1M-line file with a common substring must not build a million-entry
- * array). Matches are reported against the VISIBLE text, so the viewer can highlight them directly.
+ * array). Matches are reported against the VISIBLE text, so the viewer can highlight them directly. `indices` scopes
+ * the scan to a sorted, filtered set of buffer line indexes while keeping each match's original line number.
  */
-export function findMatches(lines: readonly string[], spec: SearchSpec, cap = 20_000): Match[] {
+export function findMatches(lines: readonly string[], spec: SearchSpec, cap = 20_000, indices?: readonly number[]): Match[] {
   const re = compileSearch(spec);
   if (!re) return [];
   const out: Match[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i]!;
+  const count = indices?.length ?? lines.length;
+  for (let i = 0; i < count; i++) {
+    const line = indices ? indices[i]! : i;
+    const raw = lines[line]!;
     const visible = hasAnsi(raw) ? stripAnsi(raw) : raw;
     if (!visible) continue;
     const local: { start: number; end: number }[] = [];
     execAll(re, visible, local, cap - out.length);
-    for (const r of local) out.push({ line: i, start: r.start, end: r.end });
+    for (const r of local) out.push({ line, start: r.start, end: r.end });
     if (out.length >= cap) break;
   }
   return out;
@@ -304,10 +307,12 @@ export interface AsyncScan {
 export function scanMatchesAsync(
   lines: readonly string[],
   spec: SearchSpec,
-  opts: { cap?: number; batch?: number; onProgress?: (found: number, scanned: number) => void } = {},
+  opts: { cap?: number; batch?: number; onProgress?: (found: number, scanned: number) => void; indices?: readonly number[] } = {},
 ): AsyncScan {
   const cap = opts.cap ?? 20_000;
   const batch = opts.batch ?? 25_000;
+  const indices = opts.indices;
+  const count = indices?.length ?? lines.length;
   let cancelled = false;
   const promise = (async (): Promise<Match[]> => {
     const re = compileSearch(spec);
@@ -315,16 +320,17 @@ export function scanMatchesAsync(
     // Yield before the first batch so a caller that cancels synchronously (effect cleanup) never pays for a scan.
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     const out: Match[] = [];
-    for (let i = 0; i < lines.length; i += batch) {
+    for (let i = 0; i < count; i += batch) {
       if (cancelled) return out;
-      const end = Math.min(lines.length, i + batch);
+      const end = Math.min(count, i + batch);
       for (let j = i; j < end; j++) {
-        const raw = lines[j]!;
+        const line = indices ? indices[j]! : j;
+        const raw = lines[line]!;
         const visible = hasAnsi(raw) ? stripAnsi(raw) : raw;
         if (!visible) continue;
         const local: { start: number; end: number }[] = [];
         execAll(re, visible, local, cap - out.length);
-        for (const r of local) out.push({ line: j, start: r.start, end: r.end });
+        for (const r of local) out.push({ line, start: r.start, end: r.end });
         if (out.length >= cap) {
           opts.onProgress?.(out.length, j + 1);
           return out;

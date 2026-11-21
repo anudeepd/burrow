@@ -226,15 +226,17 @@ export function LogsView() {
   });
 
   // ── search ──────────────────────────────────────────────────────────────────────────────────────────────────────
+  const filter = useMemo<LogLevel | null>(() => parseLevelFilter(search.filter), [search.filter]);
+  const visibleIdx = useFilteredIndex(buffer, filter);
   const searchSpec = useMemo<SearchSpec>(
     () => ({ query: search.q ?? "", regex: search.re ?? false, caseSensitive: search.cs ?? false }),
     [search.q, search.re, search.cs],
   );
   const live = followStatus.mode === "streaming" || followStatus.mode === "polling";
-  const { matches, scanning } = useSearchScan(buffer, searchSpec, live, initial.dataUpdatedAt, version);
+  const { matches, scanning } = useSearchScan(buffer, searchSpec, live, initial.dataUpdatedAt, version, filter, visibleIdx);
 
   const [activeMatch, setActiveMatch] = useState(0);
-  useEffect(() => setActiveMatch(0), [searchSpec]);
+  useEffect(() => setActiveMatch(0), [searchSpec, filter]);
   const hitIndex = matches.length > 0 ? Math.min(activeMatch, matches.length - 1) : 0;
 
   const [jumpLine, setJumpLine] = useState<{ line: number; n: number } | null>(null);
@@ -251,7 +253,6 @@ export function LogsView() {
   }, [buffer]);
 
   // ── display state ──────────────────────────────────────────────────────────────────────────────────────────────
-  const filter = useMemo<LogLevel | null>(() => parseLevelFilter(search.filter), [search.filter]);
   // Long lines wrap by default; `?wrap=0` preserves an explicit no-wrap view.
   const wrap = displayWrap ?? search.wrap ?? true;
   useEffect(() => {
@@ -273,7 +274,6 @@ export function LogsView() {
     [setSearch],
   );
   const tsMode = timestampMode(search);
-  const visibleIdx = useFilteredIndex(buffer, filter);
   const shown = filter ? visibleIdx.length : buffer.length;
 
   // ── download ───────────────────────────────────────────────────────────────────────────────────────────────────
@@ -477,7 +477,8 @@ export function LogsView() {
 /**
  * Search over the buffer, kept off the streaming hot path: a full 1M-line scan runs on spec changes, on a 1.5 s
  * cadence while the log is live, and when the initial window lands — never once per SSE chunk. Scans are chunked
- * (`scanMatchesAsync`) so they never block a frame, and a new spec cancels the previous scan.
+ * (`scanMatchesAsync`) so they never block a frame, and a new spec cancels the previous scan. With a level filter
+ * active, only the visible line indexes are scanned so the match count and navigation agree with what is rendered.
  */
 function useSearchScan(
   buffer: LineBuffer,
@@ -485,6 +486,8 @@ function useSearchScan(
   live: boolean,
   revision: number,
   version: number,
+  filter: LogLevel | null,
+  visibleIdx: readonly number[],
 ): { matches: Match[]; scanning: boolean } {
   const [matches, setMatches] = useState<Match[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -492,7 +495,7 @@ function useSearchScan(
 
   useEffect(() => {
     setNonce((n) => n + 1);
-  }, [spec, revision]);
+  }, [spec, revision, filter]);
 
   const refreshSearch = useCallback(() => setNonce((n) => n + 1), []);
   useEffect(() => {
@@ -520,7 +523,7 @@ function useSearchScan(
       return;
     }
     setScanning(true);
-    const scan = scanMatchesAsync(buffer.toLines(), spec, {});
+    const scan = scanMatchesAsync(buffer.toLines(), spec, filter ? { indices: visibleIdx } : {});
     let alive = true;
     void scan.promise.then((m) => {
       if (!alive) return;

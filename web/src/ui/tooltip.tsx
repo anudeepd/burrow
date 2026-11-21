@@ -7,7 +7,7 @@ import { cn } from "~/lib/cn";
 export const TooltipProvider = BTooltip.Provider;
 
 const HELP_SURFACE =
-  "burrow-pop max-w-[min(22rem,calc(100vw-1rem))] rounded-md border border-seam-strong bg-fabric-3 px-2.5 py-2 text-caption leading-relaxed text-ink shadow-(--shadow-overlay) [transition-duration:var(--dur-fast)]";
+  "burrow-pop max-w-[min(22rem,calc(100vw-1rem))] rounded-md border border-seam-strong bg-fabric-3 px-2.5 py-2 text-caption leading-relaxed wrap-anywhere text-ink shadow-(--shadow-overlay) [transition-duration:var(--dur-fast)]";
 
 /** Wrap an interactive or hoverable trigger. Tooltips supplement visible/accessibility-tree content. */
 export function Tooltip({
