@@ -21,8 +21,9 @@ export interface LogStatusBarProps {
   followMode: FollowMode;
   followDetail: string | null;
   behind: number | null;
-  size: number;
   heldBytes: number;
+  /** true when the buffer holds the whole known file from byte 0 and has no gaps */
+  complete: boolean;
   ended: boolean;
   gaps: number;
   /** a one-shot message from an action (e.g. "jump to first error" found nothing) */
@@ -61,13 +62,14 @@ export function LogStatusBar(props: LogStatusBarProps) {
     followMode,
     followDetail,
     behind,
-    size,
     heldBytes,
+    complete,
     ended,
     gaps,
     notice,
     onRetry,
   } = props;
+  const allBuffered = complete && (followMode === "off" || followMode === "ended");
   return (
     <div className="sticky bottom-0 z-sticky flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-seam bg-fabric/95 px-3 py-1.5 text-caption text-ink-3 backdrop-blur">
       <span className="tnum" data-burrow-log-lines>
@@ -114,9 +116,13 @@ export function LogStatusBar(props: LogStatusBarProps) {
           </Button>
         )}
       </span>
-      <span className="tnum">
-        {heldBytes > 0 ? `${fmtBytes(heldBytes)} held` : "0 B held"}
-        {size > 0 && <> of {fmtBytes(size)}</>}
+      <span className="inline-flex items-center gap-1 tnum" data-burrow-log-buffer>
+        {allBuffered && heldBytes > 0
+          ? `All ${fmtBytes(heldBytes)} buffered`
+          : heldBytes > 0
+            ? `${fmtBytes(heldBytes)} buffered`
+            : "0 B buffered"}
+        <HelpTip label="Log buffer">Bytes kept in this view's buffer. The toolbar shows the file size and the loaded byte range.</HelpTip>
       </span>
       {behind != null && behind > 0 && <span className="tnum text-wait">{fmtBytes(behind)} behind</span>}
       {ended && (

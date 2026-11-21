@@ -12,6 +12,7 @@
 import { useStableQuery } from "~/api/use-stable-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { nextInterval } from "~/api/refetch";
 import {
   LOG_MAX_BYTES,
   LOG_WINDOW_BYTES,
@@ -60,6 +61,15 @@ function nextFrame(fn: () => void): void {
 /** File metadata is fetched separately from the byte window; a click can race that metadata effect. */
 export function logDownloadSize(meta: { size: number } | null | undefined): number {
   return meta?.size ?? 0;
+}
+
+/**
+ * Retry a window that has no data on the slow cadence. The default is 12s, then 24s, then the 30s cap.
+ * Once the window lands, the follow stream owns new bytes and this interval stops.
+ */
+export function logWindowRetryInterval(query: { state: { data: unknown; fetchFailureCount: number } }): number | false {
+  if (query.state.data !== undefined) return false;
+  return nextInterval("slow", Math.max(0, query.state.fetchFailureCount - 1));
 }
 
 export function logErrorMessage(error: unknown): string {
@@ -151,6 +161,8 @@ export function LogsView() {
     enabled: !!containerId && !!file && filesQuery.isSuccess,
     staleTime: Number.POSITIVE_INFINITY,
     refetchOnWindowFocus: false,
+    refetchInterval: logWindowRetryInterval,
+    refetchIntervalInBackground: false,
     retry: 0,
   });
 
@@ -275,6 +287,7 @@ export function LogsView() {
   );
   const tsMode = timestampMode(search);
   const shown = filter ? visibleIdx.length : buffer.length;
+  const complete = meta != null && meta.size > 0 && buffer.firstByte === 0 && buffer.gaps.length === 0 && buffer.resumeOffset >= meta.size;
 
   // ── download ───────────────────────────────────────────────────────────────────────────────────────────────────
   const [downloading, setDownloading] = useState(false);
@@ -326,7 +339,7 @@ export function LogsView() {
       <ErrorState
         title="Cannot list this container's log files"
         error={listError}
-        hint="The file list is read from the NodeManager that ran the container, or from JobHistory once the logs are aggregated."
+        hint="Burrow checks again automatically while live updates are on. The file list is read from the NodeManager that ran the container, or from JobHistory once the logs are aggregated."
         onRetry={() => void filesQuery.refetch()}
       />
     );
@@ -442,7 +455,7 @@ export function LogsView() {
               <ErrorState
                 title="Cannot read this log file"
                 error={windowError}
-                hint="A running container's log comes from its NodeManager; a finished one from the aggregated JobHistory/ATS copy."
+                hint="Burrow retries automatically while live updates are on. A running container's log comes from its NodeManager. A finished one comes from the aggregated JobHistory/ATS copy."
                 onRetry={() => void initial.refetch()}
               />
             )}
@@ -460,8 +473,8 @@ export function LogsView() {
         followMode={followStatus.mode}
         followDetail={followStatus.detail}
         behind={meta ? Math.max(0, meta.size - buffer.resumeOffset) : null}
-        size={meta?.size ?? 0}
         heldBytes={buffer.heldBytes}
+        complete={complete}
         ended={buffer.ended}
         gaps={buffer.gaps.length}
         notice={

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { adaptive, configuredInterval, eventsStore, nextInterval } from "./refetch";
+import { adaptive, appDetailInterval, configuredInterval, eventsStore, nextAppDetailInterval, nextInterval } from "./refetch";
 import { parityStore } from "~/state/parity";
 import { prefsStore, setPrefs } from "~/state/prefs";
 
@@ -38,6 +38,30 @@ describe("adaptive query focus policy", () => {
     expect(adaptive("static").staleTime).toBe(60_000);
     parityStore.setState(() => ({ enabled: true }));
     expect(adaptive("live").staleTime).toBe(Number.POSITIVE_INFINITY);
+  });
+
+  it("retries app detail at 6s, 9s, 12s while it has no data", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    setPrefs({ livePaused: false, liveIntervalMs: 3000 });
+    expect(nextAppDetailInterval(1)).toBe(6000);
+    expect(nextAppDetailInterval(2)).toBe(9000);
+    expect(nextAppDetailInterval(3)).toBe(12000);
+    expect(nextAppDetailInterval(8)).toBe(27000);
+    expect(nextAppDetailInterval(9)).toBe(30000);
+    expect(nextAppDetailInterval(10)).toBe(30000);
+    setPrefs({ livePaused: true });
+    expect(nextAppDetailInterval(1)).toBe(false);
+  });
+
+  it("uses the live policy after app detail data exists", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    setPrefs({ livePaused: false, liveIntervalMs: 3000 });
+    eventsStore.setState(() => ({ state: "idle", lastEventAt: null, topics: [] }));
+    expect(appDetailInterval({ state: { data: undefined, fetchFailureCount: 1 } }, "yarn/apps/x")).toBe(6000);
+    expect(appDetailInterval({ state: { data: { app: {} }, fetchFailureCount: 0 } }, "yarn/apps/x")).toBe(3000);
+    eventsStore.setState(() => ({ state: "open", lastEventAt: Date.now(), topics: ["yarn/apps/x"] }));
+    expect(appDetailInterval({ state: { data: { app: {} }, fetchFailureCount: 0 } }, "yarn/apps/x")).toBe(30000);
+    expect(appDetailInterval({ state: { data: undefined, fetchFailureCount: 1 } }, "yarn/apps/x")).toBe(6000);
   });
 
   it("suspends polling for static, paused, parity, and hidden-page states", () => {

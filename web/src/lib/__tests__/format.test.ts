@@ -58,20 +58,20 @@ describe("formatters", () => {
     const ms = Date.UTC(2026, 9, 3, 12, 4, 9);
     expect(fmtEpoch(ms, "utc")).toBe("2026-10-03 12:04:09");
     expect(fmtEpoch(ms, "local")).toMatch(/^\d{4}-\d{2}-\d{2} /);
-    expect(fmtEpoch(0)).toBe("—");
-    expect(fmtEpoch(-1)).toBe("—");
-    expect(fmtEpoch(null)).toBe("—");
+    expect(fmtEpoch(0, "local")).toBe("—");
+    expect(fmtEpoch(-1, "local")).toBe("—");
+    expect(fmtEpoch(null, "local")).toBe("—");
   });
 
   it("converts zoned ISO timestamps and leaves unzoned or invalid metadata intact", () => {
     const ms = Date.UTC(2026, 9, 3, 12, 4, 9);
     expect(fmtIsoTimestamp("  2026-10-03T12:04:09Z  ", "utc")).toBe("2026-10-03 12:04:09");
-    expect(fmtIsoTimestamp("2026-10-03 12:04:09")).toBe("2026-10-03 12:04:09");
-    expect(fmtIsoTimestamp("not-a-dateZ")).toBe("not-a-dateZ");
-    expect(fmtIsoTimestamp("   ")).toBe("—");
-    expect(fmtIsoTimestamp(null)).toBe("—");
+    expect(fmtIsoTimestamp("2026-10-03 12:04:09", "local")).toBe("2026-10-03 12:04:09");
+    expect(fmtIsoTimestamp("not-a-dateZ", "local")).toBe("not-a-dateZ");
+    expect(fmtIsoTimestamp("   ", "local")).toBe("—");
+    expect(fmtIsoTimestamp(null, "local")).toBe("—");
     expect(fmtClock(ms, "utc")).toBe("12:04:09");
-    expect(fmtClock(0)).toBe("—");
+    expect(fmtClock(0, "local")).toBe("—");
   });
 
   it("formats relative times", () => {
@@ -93,16 +93,16 @@ describe("formatters", () => {
   });
 
   it("maps format tags to the visible text only", () => {
-    expect(formatByTag("bytes", 1536)).toBe("1.5 KiB");
-    expect(formatByTag("mb", 512)).toBe("512 MiB");
-    expect(formatByTag("ms", 340)).toBe("340 ms");
-    expect(formatByTag("dur", 1000)).toBe("1s");
-    expect(formatByTag("int", "42")).toBe("42");
-    expect(formatByTag("pct", 0.5)).toBe("0.5%");
-    expect(formatByTag("epoch", 0)).toBe("—");
-    expect(formatByTag("text", "NEW")).toBe("NEW");
-    expect(formatByTag("int", null)).toBe("—");
-    expect(formatByTag("id", 1234567)).toBe("1234567");
-    expect(formatByTag("id", { id: 7 })).toBe("[object Object]");
+    expect(formatByTag("bytes", 1536, "local")).toBe("1.5 KiB");
+    expect(formatByTag("mb", 512, "local")).toBe("512 MiB");
+    expect(formatByTag("ms", 340, "local")).toBe("340 ms");
+    expect(formatByTag("dur", 1000, "local")).toBe("1s");
+    expect(formatByTag("int", "42", "local")).toBe("42");
+    expect(formatByTag("pct", 0.5, "local")).toBe("0.5%");
+    expect(formatByTag("epoch", 0, "local")).toBe("—");
+    expect(formatByTag("text", "NEW", "local")).toBe("NEW");
+    expect(formatByTag("int", null, "local")).toBe("—");
+    expect(formatByTag("id", 1234567, "local")).toBe("1234567");
+    expect(formatByTag("id", { id: 7 }, "local")).toBe("[object Object]");
   });
 });

@@ -59,7 +59,7 @@ function AppLayout() {
           title={`Could not load ${appId}`}
           error={app.error}
           message={app.error instanceof Error ? undefined : "The ResourceManager did not return the application."}
-          hint="The application may have expired out of the RM's memory; finished applications stay queryable only while the RM retains them."
+          hint="Burrow retries automatically while live updates are on. The application may have expired out of the RM's memory. Finished applications stay queryable only while the RM retains them."
           onRetry={() => void app.refetch()}
         />
       </CenteredPageState>
@@ -95,7 +95,7 @@ function AppLayout() {
             compact
             title="Application attempt history unavailable"
             error={attempts.error}
-            hint="Application details remain available; retry to load attempt history."
+            hint="Burrow retries automatically while live updates are on. Application details remain available."
             onRetry={() => void attempts.refetch()}
           />
         ))}

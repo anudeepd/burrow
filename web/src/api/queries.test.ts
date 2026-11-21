@@ -1,11 +1,12 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 
-const { apiGetMock, apiTextMock, topicOfMock, adaptiveMock } = vi.hoisted(() => ({
+const { apiGetMock, apiTextMock, topicOfMock, adaptiveMock, appDetailIntervalMock } = vi.hoisted(() => ({
   apiGetMock: vi.fn(),
   apiTextMock: vi.fn(),
   topicOfMock: vi.fn((path: string) => path),
   adaptiveMock: vi.fn(() => ({})),
+  appDetailIntervalMock: vi.fn(() => 6000),
 }));
 
 vi.mock("./client", async (importOriginal) => ({
@@ -14,7 +15,7 @@ vi.mock("./client", async (importOriginal) => ({
   apiText: apiTextMock,
   topicOf: topicOfMock,
 }));
-vi.mock("./refetch", () => ({ adaptive: adaptiveMock }));
+vi.mock("./refetch", () => ({ adaptive: adaptiveMock, appDetailInterval: appDetailIntervalMock }));
 
 import { APPS_QUERY, q } from "./queries";
 import { ApiError } from "./client";
@@ -161,6 +162,13 @@ describe("API query option factories", () => {
     const bean = { name: "java.lang:type=Memory" };
     expect(tq.conf().select({ properties: [property] } as never)).toEqual([property]);
     expect(tq.jmx().select({ beans: [bean] } as never)).toEqual([bean]);
+  });
+
+  it("wires the patient retry policy into app detail queries", () => {
+    expect(q.app("application:1").retry).toBe(false);
+    expect(typeof q.app("application:1").refetchInterval).toBe("function");
+    expect(q.appAttempts("application:1").retry).toBe(false);
+    expect(typeof q.appAttempts("application:1").refetchInterval).toBe("function");
   });
 
   it("builds overview aliases and executes the scheduler overview endpoint", async () => {

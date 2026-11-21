@@ -2,9 +2,12 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { connectionStore } from "~/api/connection";
 import { parityStore } from "~/state/parity";
+import { prefsStore, setPrefs } from "~/state/prefs";
 import { RouterProvider, SYSTEM_FIXTURE, queryClient, routerAt, serveFixtures } from "~/__tests__/route-test-utils";
 
 window.__BURROW_PARITY__ = true;
+
+const initialPrefs = prefsStore.get();
 
 function statFor(label: string): HTMLElement {
   return screen.getAllByText(label)[0]!.parentElement as HTMLElement;
@@ -28,6 +31,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   queryClient.clear();
+  setPrefs(initialPrefs);
   connectionStore.setState((state) => ({
     ...state,
     lastCache: null,
@@ -121,6 +125,16 @@ describe("system page", () => {
     expect(screen.getByText("1.9 GiB")).toBeTruthy();
     expect(screen.getByRole("button", { name: "About Cache hit rate" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "About App index" })).toBeTruthy();
+  });
+
+  it("uses the selected time zone in the recent-errors table and uptime", async () => {
+    setPrefs({ tz: "utc" });
+    render(<RouterProvider router={routerAt("/system")} />);
+
+    const table = await screen.findByRole("table", { name: "Recent failed requests, newest first" });
+    expect(within(table).getByText("06:46:40")).toBeTruthy();
+    expect(screen.getByText(/^since /).textContent).toContain("06:46:40");
+    expect(screen.getByText("Started").closest("div")?.textContent).toContain("06:46:40");
   });
 
   it("renders an unavailable state when the platform reports no memory", async () => {

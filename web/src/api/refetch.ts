@@ -44,6 +44,24 @@ export function nextInterval(kind: RefetchKind, errorCount: number, topic?: stri
   return Math.min(BACKOFF_CAP_MS, base * 2 ** Math.min(errorCount, 5));
 }
 
+/**
+ * App detail has no data yet: wait 6s, then 9s, then 12s, and so on up to the 30s cap.
+ * Once the record arrives, the normal live policy takes over.
+ */
+const APP_DETAIL_FIRST_RETRY_MS = 6_000;
+const APP_DETAIL_RETRY_STEP_MS = 3_000;
+
+export function nextAppDetailInterval(errorCount: number): number | false {
+  if (configuredInterval("live") === false) return false;
+  return Math.min(BACKOFF_CAP_MS, APP_DETAIL_FIRST_RETRY_MS + APP_DETAIL_RETRY_STEP_MS * Math.max(0, errorCount - 1));
+}
+
+/** Use the patient schedule only while the record has no data. After that, keep the normal live policy. */
+export function appDetailInterval(query: { state: { data: unknown; fetchFailureCount: number } }, topic: string): number | false {
+  if (query.state.data !== undefined) return nextInterval("live", query.state.fetchFailureCount, topic);
+  return nextAppDetailInterval(query.state.fetchFailureCount);
+}
+
 /** Spread into queryOptions(); meta carries the cadence so the SSE hub can subscribe/throttle correctly. */
 export function adaptive(kind: RefetchKind, meta: Record<string, unknown> = {}) {
   return {

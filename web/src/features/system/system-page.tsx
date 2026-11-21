@@ -274,7 +274,7 @@ export function SystemPage() {
                 <tbody>
                   {recentErrors.slice(0, 20).map((row, index) => (
                     <tr key={`${row.atMs}-${row.method}-${row.path}-${row.status}-${index}`} className="border-t border-seam-soft">
-                      <td className="px-3 py-1.5 tnum text-ink-3">{fmtClock(row.atMs)}</td>
+                      <td className="px-3 py-1.5 tnum text-ink-3">{fmtClock(row.atMs, tz)}</td>
                       <td className="px-3 py-1.5 font-medium tnum text-fail">{fmtInt(row.status)}</td>
                       <td className="px-3 py-1.5 text-ink-2">{row.method}</td>
                       <td className="px-3 py-1.5 font-mono text-ink-2">{row.path}</td>
