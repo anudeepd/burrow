@@ -148,6 +148,23 @@ test.describe("container logs", () => {
     await expect(page.getByText("No ERROR/FATAL line in the loaded window")).toBeVisible();
   });
 
+  test("scopes search matches to the level-filtered lines", async ({ page }) => {
+    // All 12 ApplicationMaster occurrences are INFO lines, except one ERROR line. A WARN+ filter must leave one match.
+    await page.goto(logUrl(FAILED, "&file=stderr&filter=WARN&q=ApplicationMaster"));
+    await expect(pane(page)).toBeVisible({ timeout: 30_000 });
+
+    await expect(page.locator("[data-burrow-log-lines]")).toHaveText("399 / 416 lines");
+    await expect(page.getByText("1 match", { exact: true })).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("[data-burrow-log-hits]")).toContainText("match 1 of 1");
+    await expect(pane(page).locator("mark[data-ansi-mark]")).toHaveCount(1);
+    await expect(pane(page).locator("mark[data-active]")).toBeVisible();
+
+    // The same query without the filter still finds every occurrence, so the filter is what scopes it.
+    await page.goto(logUrl(FAILED, "&file=stderr&q=ApplicationMaster"));
+    await expect(pane(page)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("12 matches", { exact: true })).toBeVisible({ timeout: 20_000 });
+  });
+
   test("searches literal and regex with match navigation", async ({ page }) => {
     await page.goto(logUrl(FAILED, "&file=stderr"));
     await expect(pane(page)).toBeVisible({ timeout: 30_000 });
