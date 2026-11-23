@@ -12,7 +12,7 @@ import { useParity } from "~/state/parity";
 import { Button } from "~/ui/button";
 import { Tooltip } from "~/ui/tooltip";
 import { BurrowBrand } from "./BurrowBrand";
-import { NAV_OVERVIEW, NAV_PRIMARY, NAV_TOOLS, type NavBadge, type NavItem } from "./nav";
+import { NAV_OVERVIEW, NAV_PRIMARY, NAV_TOOLS, type NavBadge, type NavItem, type NavPath } from "./nav";
 
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -77,7 +77,7 @@ function RailItem({
   item: NavItem;
   collapsed: boolean;
   badges: Record<NavBadge, number>;
-  onNavigate?: () => void;
+  onNavigate?: (to: NavPath) => void;
   mounted: boolean;
 }) {
   const badgeValue = item.badge ? badges[item.badge] : 0;
@@ -93,7 +93,7 @@ function RailItem({
       key={`${mounted ? "client" : "server"}:${item.to}`}
       to={item.to}
       activeOptions={{ exact: item.to === "/", includeSearch: false }}
-      onClick={onNavigate}
+      onClick={() => onNavigate?.(item.to)}
       aria-label={collapsed ? item.label : undefined}
       className={cn(
         "burrow-nav-link relative flex h-9 shrink-0 items-center gap-2.5 rounded-sm px-2 text-body text-ink-2 outline-offset-2",
@@ -192,7 +192,15 @@ function RailToggle({ collapsed, className }: { collapsed: boolean; className?: 
 }
 
 /** Left rail: brand, live navigation, tools, and the connection footer. Also rendered inside the mobile drawer. */
-export function Rail({ inDrawer = false, className, onNavigate }: { inDrawer?: boolean; className?: string; onNavigate?: () => void }) {
+export function Rail({
+  inDrawer = false,
+  className,
+  onNavigate,
+}: {
+  inDrawer?: boolean;
+  className?: string;
+  onNavigate?: (to: NavPath) => void;
+}) {
   const badges = useBadges();
   const parity = useParity();
   const collapsedPref = usePref("railCollapsed");

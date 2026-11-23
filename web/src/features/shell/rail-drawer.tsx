@@ -1,5 +1,6 @@
 import { Dialog as BDialog } from "@base-ui/react/dialog";
 import type { RefObject } from "react";
+import type { NavPath } from "./nav";
 import { Rail } from "./rail";
 
 /** Mobile navigation drawer. Its chunk saved almost nothing, so it ships with the shell and remains mounted after first open for its exit animation. */
@@ -7,10 +8,12 @@ export function RailDrawer({
   open,
   onOpenChange,
   returnFocus,
+  onNavigate,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   returnFocus: RefObject<HTMLButtonElement | null>;
+  onNavigate?: (to: NavPath) => void;
 }) {
   return (
     <BDialog.Root open={open} onOpenChange={onOpenChange}>
@@ -22,7 +25,14 @@ export function RailDrawer({
           className="burrow-sheet fixed inset-y-0 left-0 z-overlay flex flex-col bg-fabric text-ink shadow-(--shadow-overlay) outline-none md:hidden"
         >
           <BDialog.Title className="sr-only">Navigation</BDialog.Title>
-          <Rail inDrawer className="h-full border-r-0" onNavigate={() => onOpenChange(false)} />
+          <Rail
+            inDrawer
+            className="h-full border-r-0"
+            onNavigate={(to) => {
+              onNavigate?.(to);
+              onOpenChange(false);
+            }}
+          />
         </BDialog.Popup>
       </BDialog.Portal>
     </BDialog.Root>
