@@ -3,7 +3,7 @@
  * badge, and a copy-to-clipboard control for the diagnostics blobs.
  */
 import { Check, Copy } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { type MouseEvent, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import type { Fmt } from "~/lib/format";
 import { cn } from "~/lib/cn";
 import { copyText } from "~/lib/copy";
@@ -180,6 +180,14 @@ export function CopyButton({
       })
       .catch(() => setCopied(false));
   }, [text]);
+  const onCopyClick = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      // A copy control can sit inside a clickable row or card. Its activation must never run the parent action.
+      event.stopPropagation();
+      onCopy();
+    },
+    [onCopy],
+  );
   if (iconOnly) {
     const subject = label.replace(/^Copy\s+/i, "");
     return (
@@ -187,7 +195,7 @@ export function CopyButton({
         <Button
           variant="ghost"
           size="icon-sm"
-          onClick={onCopy}
+          onClick={onCopyClick}
           className={cn("size-6 rounded-md text-ink-4 hover:text-live", className)}
           aria-label={copied ? `${subject} copied` : `${label} to clipboard`}
         >
@@ -197,7 +205,7 @@ export function CopyButton({
     );
   }
   return (
-    <Button variant="quiet" size="sm" onClick={onCopy} className={className} aria-label={`${label} to clipboard`}>
+    <Button variant="quiet" size="sm" onClick={onCopyClick} className={className} aria-label={`${label} to clipboard`}>
       {copied ? <Check className="size-3.5 text-ok" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
       {copied ? "Copied" : label}
     </Button>

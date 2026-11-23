@@ -1,4 +1,4 @@
-import { useLocation } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { cn } from "~/lib/cn";
 import { Rail } from "./rail";
@@ -9,13 +9,24 @@ import { Topbar } from "./topbar";
 const CommandPalette = lazy(() => import("./command-palette").then((module) => ({ default: module.CommandPalette })));
 const ShortcutsDialog = lazy(() => import("./shortcuts-dialog").then((module) => ({ default: module.ShortcutsDialog })));
 
+function useRouteFocus() {
+  const router = useRouter();
+  useEffect(() => {
+    let previousPathname = router.state.location.pathname;
+    return router.subscribe("onResolved", ({ pathChanged, toLocation }) => {
+      if (!pathChanged || previousPathname === toLocation.pathname) return;
+      previousPathname = toLocation.pathname;
+      const main = document.getElementById("main-content");
+      if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true });
+    });
+  }, [router]);
+}
+
 /**
  * The application chrome: rail, top bar, content region, palette and shortcut help. Rendered by the root route, so every
  * page gets it; pages own only their content inside `<main>`.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { pathname } = useLocation();
-  const previousPathname = useRef(pathname);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -26,12 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setDrawerMounted(true);
     setDrawerOpen(true);
   };
-  useEffect(() => {
-    if (previousPathname.current === pathname) return;
-    previousPathname.current = pathname;
-    const main = document.getElementById("main-content");
-    if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true });
-  }, [pathname]);
+  useRouteFocus();
 
   return (
     <div className={cn("flex h-svh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>

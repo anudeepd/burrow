@@ -541,6 +541,18 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
 }
 .burrow-row[data-selected="true"] { background: color-mix(in oklch, var(--live) 9%, transparent); box-shadow: inset 2px 0 0 var(--live); }
 
+/* The ID cell keeps its link and gains a copy affordance. Touch devices show the control in flow; hover devices reveal
+   it without taking it out of the tab order. */
+.burrow-app-id-copy { flex: none; }
+@media (hover: hover) {
+  .burrow-app-id-cell .burrow-app-id-copy {
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .burrow-app-id-cell:hover .burrow-app-id-copy,
+  .burrow-app-id-cell:focus-within .burrow-app-id-copy { opacity: 1; }
+}
+
 .burrow-pinned-header { background: var(--fabric-2); }
 .burrow-pinned-cell { background: var(--fabric); border-right: 1px solid var(--seam-soft); }
 .burrow-tab-overflow-fade {
