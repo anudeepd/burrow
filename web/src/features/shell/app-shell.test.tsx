@@ -6,9 +6,17 @@ const shellHotkeys = vi.hoisted(() => ({
 
 vi.mock("./rail", () => ({ Rail: () => <nav aria-label="Desktop navigation" /> }));
 vi.mock("./topbar", () => ({
-  Topbar: ({ onOpenRail, onOpenPalette }: { onOpenRail: () => void; onOpenPalette: () => void }) => (
+  Topbar: ({
+    onOpenRail,
+    onOpenPalette,
+    railTrigger,
+  }: {
+    onOpenRail: () => void;
+    onOpenPalette: () => void;
+    railTrigger: React.RefObject<HTMLButtonElement | null>;
+  }) => (
     <header>
-      <button type="button" onClick={onOpenRail}>
+      <button ref={railTrigger} type="button" onClick={onOpenRail}>
         Open navigation
       </button>
       <button type="button" onClick={onOpenPalette}>
@@ -28,16 +36,46 @@ vi.mock("./shortcuts", () => ({
     shellHotkeys.current = callbacks;
   },
 }));
-vi.mock("./rail-drawer", () => ({
-  RailDrawer: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
-    open ? (
-      <div role="dialog" aria-label="Navigation">
-        <button type="button" onClick={() => onOpenChange(false)}>
-          Close navigation
-        </button>
-      </div>
-    ) : null,
-}));
+vi.mock("./rail-drawer", async () => {
+  const { Link } = await import("@tanstack/react-router");
+  return {
+    RailDrawer: ({
+      open,
+      onOpenChange,
+      onNavigate,
+    }: {
+      open: boolean;
+      onOpenChange: (open: boolean) => void;
+      onNavigate?: (to: "/" | "/apps") => void;
+    }) =>
+      open ? (
+        <div role="dialog" aria-label="Navigation">
+          <Link
+            to="/apps"
+            onClick={() => {
+              onNavigate?.("/apps");
+              onOpenChange(false);
+            }}
+          >
+            Drawer applications
+          </Link>
+          <Link
+            to="/"
+            search={{ window: "all" }}
+            onClick={() => {
+              onNavigate?.("/");
+              onOpenChange(false);
+            }}
+          >
+            Drawer overview
+          </Link>
+          <button type="button" onClick={() => onOpenChange(false)}>
+            Close navigation
+          </button>
+        </div>
+      ) : null,
+  };
+});
 vi.mock("./command-palette", () => ({
   CommandPalette: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
     open ? (
@@ -59,7 +97,7 @@ vi.mock("./shortcuts-dialog", () => ({
     ) : null,
 }));
 
-const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
+const { act, cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
 const { createMemoryHistory, createRootRoute, createRoute, createRouter, Link, Outlet, RouterProvider } = await import(
   "@tanstack/react-router"
 );
@@ -97,7 +135,7 @@ function renderShell() {
     routeTree: root.addChildren([index, apps]),
     history: createMemoryHistory({ initialEntries: ["/"] }),
   });
-  return render(<RouterProvider router={router} />);
+  return { ...render(<RouterProvider router={router} />), router };
 }
 
 describe("AppShell overlays", () => {
@@ -116,6 +154,44 @@ describe("AppShell overlays", () => {
     fireEvent.click(screen.getByRole("link", { name: "Open apps" }));
     expect(await screen.findByText("Apps content")).toBeTruthy();
     await waitFor(() => expect(document.activeElement).toBe(document.getElementById("main-content")));
+  });
+
+  it("returns focus to the navigation trigger after a drawer route change", async () => {
+    renderShell();
+    expect(await screen.findByText("Shell content")).toBeTruthy();
+    const trigger = screen.getByRole("button", { name: "Open navigation" });
+
+    fireEvent.click(trigger);
+    fireEvent.click(await screen.findByRole("link", { name: "Drawer applications" }));
+
+    expect(await screen.findByText("Apps content")).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
+  it("keeps focus in the main content when it is already there", async () => {
+    const { router } = renderShell();
+    expect(await screen.findByText("Shell content")).toBeTruthy();
+    fireEvent.click(screen.getByRole("link", { name: "Open apps" }));
+    expect(await screen.findByText("Apps content")).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(document.getElementById("main-content")));
+
+    await act(async () => {
+      await router.navigate({ to: "/", search: { window: "all" } });
+    });
+    expect(await screen.findByText("Shell content")).toBeTruthy();
+    expect(document.activeElement).toBe(document.getElementById("main-content"));
+  });
+
+  it("leaves focus alone when the drawer re-selects the current route", async () => {
+    renderShell();
+    expect(await screen.findByText("Shell content")).toBeTruthy();
+    const trigger = screen.getByRole("button", { name: "Open navigation" });
+
+    fireEvent.click(trigger);
+    fireEvent.click(await screen.findByRole("link", { name: "Drawer overview" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Navigation" })).toBeNull());
+    expect(document.activeElement).not.toBe(document.getElementById("main-content"));
   });
 
   it("mounts and closes the navigation drawer and command palette", async () => {
