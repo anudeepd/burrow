@@ -316,7 +316,7 @@ export function groupByRack(nodes: readonly Node[]): { rack: string; nodes: Node
     else map.set(rack, [node]);
   }
   return [...map.entries()]
-    .map(([rack, list]) => ({ rack, nodes: [...list].sort((a, b) => a.id.localeCompare(b.id)) }))
+    .map(([rack, list]) => ({ rack, nodes: list.toSorted((a, b) => a.id.localeCompare(b.id)) }))
     .sort((a, b) => a.rack.localeCompare(b.rack));
 }
 

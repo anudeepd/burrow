@@ -5,4 +5,7 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
  * (`apps/$appId/**`) nest under this Outlet. A route that has children must render its children, otherwise everything
  * below `/apps/<id>` renders nothing.
  */
-export const Route = createFileRoute("/apps")({ component: () => <Outlet /> });
+export const Route = createFileRoute("/apps")({
+  head: () => ({ meta: [{ title: "Applications · Burrow" }] }),
+  component: () => <Outlet />,
+});

@@ -17,6 +17,7 @@ import { containerSearchSchema, parseSearch } from "~/features/app/search";
 import { useNow } from "~/features/app/use-now";
 
 export const Route = createFileRoute("/apps/$appId/containers/$containerId")({
+  head: ({ params }) => ({ meta: [{ title: `Container ${params.containerId} · ${params.appId} · Burrow` }] }),
   validateSearch: (search: Record<string, unknown>) => parseSearch(containerSearchSchema, search),
   component: ContainerRoute,
 });

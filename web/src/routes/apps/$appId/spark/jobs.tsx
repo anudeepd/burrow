@@ -5,5 +5,6 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
  * detail page renders *instead of* the table while keeping the same route prefix (same layout/index split as `stages`).
  */
 export const Route = createFileRoute("/apps/$appId/spark/jobs")({
+  head: ({ params }) => ({ meta: [{ title: `Jobs · ${params.appId} · Burrow` }] }),
   component: () => <Outlet />,
 });

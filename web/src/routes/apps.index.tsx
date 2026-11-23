@@ -8,6 +8,7 @@ import { appsSearchSchema, withPatch, type AppsSearch } from "~/features/apps/se
  * is linkable and the back button works.
  */
 export const Route = createFileRoute("/apps/")({
+  head: () => ({ meta: [{ title: "Applications · Burrow" }] }),
   validateSearch: (search: Record<string, unknown>): AppsSearch => appsSearchSchema.parse(search),
   component: AppsRoute,
   staticData: { title: "Applications" },

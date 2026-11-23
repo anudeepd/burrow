@@ -37,6 +37,30 @@ async function setPrefs(page: Page, prefs: Record<string, unknown>) {
 }
 
 test.describe("app shell", () => {
+  test("names each page and moves focus to the main content after navigation", async ({ page }) => {
+    await freezeLive(page);
+    await page.goto("/apps");
+    await expect(page).toHaveTitle("Applications · Burrow");
+    const appId = (await page.locator('[data-yf="app.id"]').first().textContent())?.trim() ?? "";
+    expect(appId).toMatch(/^application_/);
+
+    const skip = page.getByRole("link", { name: "Skip to main content" });
+    await skip.focus();
+    await expect(skip).toBeVisible();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#main-content")).toBeFocused();
+
+    const rail = page.getByTestId("rail");
+    await rail.getByRole("link", { name: "Nodes" }).click();
+    await expect(page).toHaveTitle("Nodes · Burrow");
+    await expect(page.locator("#main-content")).toBeFocused();
+
+    await page.goto(`/apps/${appId}`);
+    await expect(page).toHaveTitle(`Overview · ${appId} · Burrow`);
+    await page.goto(`/apps/${appId}/spark/jobs`);
+    await expect(page).toHaveTitle(`Jobs · ${appId} · Burrow`);
+  });
+
   test("rail, top bar and connection status render with live cluster identity", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/apps");
@@ -296,6 +320,7 @@ test.describe("app shell", () => {
     await page.keyboard.press("/");
     await expect(page.getByTestId("command-palette")).toBeVisible();
     await page.keyboard.press("Escape");
+    await expect(page.getByTestId("command-palette")).toBeHidden();
 
     await page.keyboard.press("?");
     const help = page.getByTestId("shortcuts-dialog");

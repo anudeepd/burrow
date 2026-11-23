@@ -627,6 +627,21 @@ test.describe("/apps", () => {
     await expect(page).toHaveURL(new RegExp(`/apps/${firstId}`));
   });
 
+  test("copies an application ID without opening the application", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await freezeLive(page);
+    await page.goto("/apps");
+    const firstId = (await page.locator('[data-yf="app.id"]').first().textContent())?.trim() ?? "";
+    expect(firstId).toMatch(/^application_/);
+
+    await page
+      .getByRole("button", { name: `Copy application ID ${firstId} to clipboard` })
+      .first()
+      .click();
+    expect(new URL(page.url()).pathname).toBe("/apps");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(firstId);
+  });
+
   test("paints a bounded preview before the complete index is ready", async ({ page }) => {
     await freezeLive(page);
     const preview = SCREENSHOT_APPS.slice(0, 2);

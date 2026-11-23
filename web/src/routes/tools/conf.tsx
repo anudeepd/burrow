@@ -8,6 +8,7 @@ import { ConfView } from "~/features/tools/ConfView";
 import { confSearchSchema } from "~/features/tools/search";
 
 export const Route = createFileRoute("/tools/conf")({
+  head: () => ({ meta: [{ title: "Configuration · Burrow" }] }),
   validateSearch: confSearchSchema,
   component: ConfView,
 });

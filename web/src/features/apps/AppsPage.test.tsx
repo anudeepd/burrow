@@ -194,6 +194,8 @@ describe("AppsPage", () => {
   });
 
   it("sorts the application table, toggles final outcomes, and opens a selected row", async () => {
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     const { patch, onOpenApp } = renderAppsPage({ previewApps: apps });
     const table = await screen.findByRole("table", { name: "Applications" });
     const nameHeader = table.querySelector('[data-col="name"] button')!;
@@ -219,6 +221,13 @@ describe("AppsPage", () => {
     expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
     const queueLink = within(table).getAllByRole("link", { name: "root.default" })[0]!;
     fireEvent.click(queueLink);
+    expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
+    const idLink = within(table).getByRole("link", { name: apps[0]!.id });
+    fireEvent.click(idLink, { metaKey: true });
+    expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
+    const copyId = within(table).getByRole("button", { name: `Copy application ID ${apps[0]!.id} to clipboard` });
+    fireEvent.click(copyId);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(apps[0]!.id));
     expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
   });
 

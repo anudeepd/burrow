@@ -4,6 +4,7 @@ import { EnvironmentPage } from "~/features/spark/pages/EnvironmentPage";
 
 /** `/apps/$appId/spark/environment?q=&attempt=` — `q` filters the Spark Properties pane. */
 export const Route = createFileRoute("/apps/$appId/spark/environment")({
+  head: ({ params }) => ({ meta: [{ title: `Environment · ${params.appId} · Burrow` }] }),
   validateSearch: (s: Record<string, unknown>) => sparkSearch(s),
   component: EnvironmentPage,
 });

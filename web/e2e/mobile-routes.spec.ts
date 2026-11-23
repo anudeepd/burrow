@@ -246,6 +246,11 @@ test("phone and tablet content controls meet the 44px hit-area minimum", async (
   await expect(page.locator('[data-burrow-table="apps"]')).toBeVisible();
   const appIdLink = page.locator('[data-burrow-table="apps"] [data-yf="app.id"] a').first();
   await expectTouchHitArea(appIdLink, "Application ID list link");
+  const firstId = (await appIdLink.textContent())?.trim() ?? "";
+  await expectTouchHitArea(
+    page.getByRole("button", { name: `Copy application ID ${firstId} to clipboard` }),
+    "Application ID copy control",
+  );
   const appRow = appIdLink.locator('xpath=ancestor::*[@role="row"]');
   expect((await appRow.boundingBox())?.height ?? 0, "Application row should make room for its link target").toBeGreaterThanOrEqual(44);
   await expectTouchHitArea(page.getByRole("combobox", { name: "Lifecycle state" }), "Application lifecycle selector");

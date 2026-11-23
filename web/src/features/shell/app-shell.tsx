@@ -1,4 +1,5 @@
-import { lazy, Suspense, useRef, useState } from "react";
+import { useRouter } from "@tanstack/react-router";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { cn } from "~/lib/cn";
 import { Rail } from "./rail";
 import { RailDrawer } from "./rail-drawer";
@@ -7,6 +8,19 @@ import { Topbar } from "./topbar";
 
 const CommandPalette = lazy(() => import("./command-palette").then((module) => ({ default: module.CommandPalette })));
 const ShortcutsDialog = lazy(() => import("./shortcuts-dialog").then((module) => ({ default: module.ShortcutsDialog })));
+
+function useRouteFocus() {
+  const router = useRouter();
+  useEffect(() => {
+    let previousPathname = router.state.location.pathname;
+    return router.subscribe("onResolved", ({ pathChanged, toLocation }) => {
+      if (!pathChanged || previousPathname === toLocation.pathname) return;
+      previousPathname = toLocation.pathname;
+      const main = document.getElementById("main-content");
+      if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true });
+    });
+  }, [router]);
+}
 
 /**
  * The application chrome: rail, top bar, content region, palette and shortcut help. Rendered by the root route, so every
@@ -23,13 +37,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setDrawerMounted(true);
     setDrawerOpen(true);
   };
+  useRouteFocus();
 
   return (
     <div className={cn("flex h-svh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-toast focus:rounded-md focus:bg-fabric-2 focus:px-3 focus:py-2 focus:text-ink focus:shadow-(--shadow-overlay)"
+      >
+        Skip to main content
+      </a>
       <Rail className="hidden md:flex" />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Topbar railTrigger={railTrigger} onOpenRail={openDrawer} onOpenPalette={() => setPaletteOpen(true)} />
-        <main className="burrow-main relative flex min-h-0 flex-1 flex-col overflow-hidden">
+        <main id="main-content" tabIndex={-1} className="burrow-main relative flex min-h-0 flex-1 flex-col overflow-hidden">
           {/* The router preserves shared layouts; changing a leaf route must not remount its navigation or scrollports. */}
           <div className="burrow-page flex min-h-0 flex-1 flex-col">{children}</div>
         </main>

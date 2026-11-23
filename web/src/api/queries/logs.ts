@@ -80,7 +80,7 @@ export type LogFilesResponse = z.infer<typeof LogFilesResponseSchema>;
 /** Size-descending is the useful default: the interesting file in a userlog dir is stdout/stderr, not directory.info. */
 const FILE_ORDER: Record<string, number> = { stdout: 0, stderr: 1 };
 export function orderLogFiles(files: readonly LogFileInfo[]): LogFileInfo[] {
-  return [...files].sort((a, b) => {
+  return files.toSorted((a, b) => {
     const ra = FILE_ORDER[a.name] ?? 2;
     const rb = FILE_ORDER[b.name] ?? 2;
     return ra !== rb ? ra - rb : a.name.localeCompare(b.name);

@@ -25,6 +25,7 @@ import type { ColDef } from "~/ui/data-table/features";
 import { ProgressBar } from "~/ui/progress-bar";
 import { StatusPill } from "~/ui/status";
 import { Tooltip } from "~/ui/tooltip";
+import { CopyButton } from "~/features/app/components/Field";
 import { blacklistedNodesCount } from "./view";
 
 /** Values the legacy table printed as `N/A` because the RM reports a sentinel. */
@@ -130,13 +131,19 @@ export const APPS_COLUMNS: ColDef<App>[] = [
     meta: { label: "ID", pinned: true, hint: "Application id — opens the application page" },
     cell: ({ row }) => (
       <Datum field="app.id" raw={row.original.id} as="span" className="min-w-0">
-        <Link
-          to="/apps/$appId"
-          params={{ appId: row.original.id }}
-          className="burrow-touch-link block truncate font-mono text-small text-live outline-offset-2 hover:underline"
-        >
-          {row.original.id}
-        </Link>
+        <span className="burrow-app-id-cell flex min-w-0 items-center gap-1">
+          <Link
+            to="/apps/$appId"
+            params={{ appId: row.original.id }}
+            className="burrow-touch-link min-w-0 flex-1 truncate font-mono text-small text-live outline-offset-2 hover:underline"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {row.original.id}
+          </Link>
+          <span className="burrow-app-id-copy">
+            <CopyButton text={row.original.id} label={`Copy application ID ${row.original.id}`} iconOnly />
+          </span>
+        </span>
       </Datum>
     ),
   },

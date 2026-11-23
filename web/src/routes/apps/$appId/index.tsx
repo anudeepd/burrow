@@ -8,7 +8,10 @@ import { selectAppAttempts } from "~/api/schemas";
 import { isAppFinal } from "~/features/app/model";
 import { OverviewTab } from "~/features/app/components/OverviewTab";
 
-export const Route = createFileRoute("/apps/$appId/")({ component: AppOverview });
+export const Route = createFileRoute("/apps/$appId/")({
+  head: ({ params }) => ({ meta: [{ title: `Overview · ${params.appId} · Burrow` }] }),
+  component: AppOverview,
+});
 
 function AppOverview() {
   const { appId } = Route.useParams();

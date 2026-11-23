@@ -527,7 +527,11 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
 .burrow-instant { --dur-fade: 0ms; --dur-fast: 0ms; --dur-base: 0ms; --dur-slow: 0ms; --dur-sheet: 0ms; }
 
 /* ---------- table rows ---------- */
-.burrow-row { content-visibility: auto; transition: background-color var(--dur-fast) var(--ease-out); }
+.burrow-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--row-h);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
 /* parity renders every row eagerly: `content-visibility: auto` is a rendering hint that may skip offscreen work */
 .burrow-row-static { content-visibility: visible; }
 /* The row IS the click target on every list in the product and it had no hover cue at all. Pointer-gated, colour only;
@@ -536,6 +540,18 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
 .burrow-row:hover { background: var(--fabric-2); }
 }
 .burrow-row[data-selected="true"] { background: color-mix(in oklch, var(--live) 9%, transparent); box-shadow: inset 2px 0 0 var(--live); }
+
+/* The ID cell keeps its link and gains a copy affordance. Touch devices show the control in flow; hover devices reveal
+   it without taking it out of the tab order. */
+.burrow-app-id-copy { flex: none; }
+@media (hover: hover) {
+  .burrow-app-id-cell .burrow-app-id-copy {
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
+  }
+  .burrow-app-id-cell:hover .burrow-app-id-copy,
+  .burrow-app-id-cell:focus-within .burrow-app-id-copy { opacity: 1; }
+}
 
 .burrow-pinned-header { background: var(--fabric-2); }
 .burrow-pinned-cell { background: var(--fabric); border-right: 1px solid var(--seam-soft); }

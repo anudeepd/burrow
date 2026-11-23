@@ -274,7 +274,7 @@ function toElkGraph(req: LayoutRequest, options: Record<string, string>) {
   }
   const rootChildren: Box[] = [];
   // Deepest container first, so a nested scope exists before it is attached to its parent.
-  const ordered = [...req.graph.clusters].sort((a, b) => depth.get(b.id)! - depth.get(a.id)!);
+  const ordered = req.graph.clusters.toSorted((a, b) => depth.get(b.id)! - depth.get(a.id)!);
   for (const c of ordered) {
     const box = boxes.get(c.id)!;
     const parent = c.parentId ? boxes.get(c.parentId) : undefined;

@@ -7,6 +7,7 @@ import { sparkSearch } from "~/features/spark/data/search";
  * `zoom` the level that produced it; absent means "fit the whole application".
  */
 export const Route = createFileRoute("/apps/$appId/spark/timeline")({
+  head: ({ params }) => ({ meta: [{ title: `Timeline · ${params.appId} · Burrow` }] }),
   validateSearch: (s: Record<string, unknown>) => sparkSearch(s),
   component: TimelinePage,
 });

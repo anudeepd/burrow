@@ -288,7 +288,7 @@ export function buildJmxTree(beans: JmxBean[]): JmxTree {
     nodes++;
   };
 
-  const sorted = [...beans].sort((a, b) => a.name.localeCompare(b.name));
+  const sorted = beans.toSorted((a, b) => a.name.localeCompare(b.name));
   for (const bean of sorted) {
     const groupLabel = beanGroup(bean.name);
     let group = groups.get(groupLabel);
