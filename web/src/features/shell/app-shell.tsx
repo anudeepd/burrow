@@ -1,6 +1,7 @@
 import { useRouter } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { cn } from "~/lib/cn";
+import type { NavPath } from "./nav";
 import { Rail } from "./rail";
 import { RailDrawer } from "./rail-drawer";
 import { useShellHotkeys } from "./shortcuts";
@@ -9,17 +10,36 @@ import { Topbar } from "./topbar";
 const CommandPalette = lazy(() => import("./command-palette").then((module) => ({ default: module.CommandPalette })));
 const ShortcutsDialog = lazy(() => import("./shortcuts-dialog").then((module) => ({ default: module.ShortcutsDialog })));
 
-function useRouteFocus() {
+/**
+ * Route changes move focus to the page so keyboard and screen-reader users land on the new content. A drawer link is the
+ * exception: the drawer closes and returns focus to its trigger, so the shell must not take focus back.
+ */
+function useRouteFocus({
+  drawerNavigation,
+  drawerTrigger,
+}: {
+  drawerNavigation: React.RefObject<NavPath | null>;
+  drawerTrigger: React.RefObject<HTMLButtonElement | null>;
+}) {
   const router = useRouter();
   useEffect(() => {
     let previousPathname = router.state.location.pathname;
     return router.subscribe("onResolved", ({ pathChanged, toLocation }) => {
-      if (!pathChanged || previousPathname === toLocation.pathname) return;
+      if (!pathChanged || previousPathname === toLocation.pathname) {
+        drawerNavigation.current = null;
+        return;
+      }
       previousPathname = toLocation.pathname;
+      const fromDrawer = drawerNavigation.current === toLocation.pathname;
+      drawerNavigation.current = null;
+      if (fromDrawer) {
+        drawerTrigger.current?.focus({ preventScroll: true });
+        return;
+      }
       const main = document.getElementById("main-content");
       if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true });
     });
-  }, [router]);
+  }, [router, drawerNavigation, drawerTrigger]);
 }
 
 /**
@@ -31,13 +51,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerMounted, setDrawerMounted] = useState(false);
+  const drawerNavigation = useRef<NavPath | null>(null);
   const railTrigger = useRef<HTMLButtonElement>(null);
+  const router = useRouter();
   useShellHotkeys({ onPalette: () => setPaletteOpen(true), onHelp: () => setHelpOpen(true) });
   const openDrawer = () => {
     setDrawerMounted(true);
     setDrawerOpen(true);
   };
-  useRouteFocus();
+  const handleDrawerNavigate = (to: NavPath) => {
+    // Only a real route change needs the drawer's focus handoff. Tapping the current page leaves focus where it is.
+    drawerNavigation.current = router.state.location.pathname === to ? null : to;
+  };
+  useRouteFocus({ drawerNavigation, drawerTrigger: railTrigger });
 
   return (
     <div className={cn("flex h-svh min-h-0 flex-col overflow-hidden bg-ground text-ink", "md:flex-row")}>
@@ -55,7 +81,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="burrow-page flex min-h-0 flex-1 flex-col">{children}</div>
         </main>
       </div>
-      {drawerMounted && <RailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} returnFocus={railTrigger} />}
+      {drawerMounted && (
+        <RailDrawer open={drawerOpen} onOpenChange={setDrawerOpen} returnFocus={railTrigger} onNavigate={handleDrawerNavigate} />
+      )}
       {/* The palette stays mounted so Base UI can play both the entrance and the exit. Keeping it conditional
           unmounted it before the exit transition could run; the palette itself clears its query on close. */}
       <Suspense fallback={null}>
