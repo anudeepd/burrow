@@ -60,7 +60,9 @@ vi.mock("./shortcuts-dialog", () => ({
 }));
 
 const { cleanup, fireEvent, render, screen, waitFor } = await import("@testing-library/react");
-const { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider } = await import("@tanstack/react-router");
+const { createMemoryHistory, createRootRoute, createRoute, createRouter, Link, Outlet, RouterProvider } = await import(
+  "@tanstack/react-router"
+);
 const { AppShell } = await import("./app-shell");
 
 afterEach(() => {
@@ -69,21 +71,53 @@ afterEach(() => {
 });
 
 function renderShell() {
-  const root = createRootRoute();
+  const root = createRootRoute({
+    component: () => (
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    ),
+  });
   const index = createRoute({
     getParentRoute: () => root,
     path: "/",
     component: () => (
-      <AppShell>
-        <div>Shell content</div>
-      </AppShell>
+      <div>
+        Shell content
+        <Link to="/apps">Open apps</Link>
+      </div>
     ),
   });
-  const router = createRouter({ routeTree: root.addChildren([index]), history: createMemoryHistory({ initialEntries: ["/"] }) });
+  const apps = createRoute({
+    getParentRoute: () => root,
+    path: "/apps",
+    component: () => <div>Apps content</div>,
+  });
+  const router = createRouter({
+    routeTree: root.addChildren([index, apps]),
+    history: createMemoryHistory({ initialEntries: ["/"] }),
+  });
   return render(<RouterProvider router={router} />);
 }
 
 describe("AppShell overlays", () => {
+  it("exposes a skip link that targets the main content", async () => {
+    renderShell();
+    expect(await screen.findByText("Shell content")).toBeTruthy();
+    const skip = screen.getByRole("link", { name: "Skip to main content" }) as HTMLAnchorElement;
+    const main = document.getElementById("main-content");
+    expect(skip.getAttribute("href")).toBe("#main-content");
+    expect(main?.getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("moves focus to the main content after a route change", async () => {
+    renderShell();
+    expect(await screen.findByText("Shell content")).toBeTruthy();
+    fireEvent.click(screen.getByRole("link", { name: "Open apps" }));
+    expect(await screen.findByText("Apps content")).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(document.getElementById("main-content")));
+  });
+
   it("mounts and closes the navigation drawer and command palette", async () => {
     renderShell();
     expect(await screen.findByText("Shell content")).toBeTruthy();

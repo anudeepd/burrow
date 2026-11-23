@@ -10,6 +10,7 @@ import { LogsView } from "~/features/logs/LogsView";
 import { logsSearchSchema, parseSearch } from "~/features/logs/search";
 
 export const Route = createFileRoute("/apps/$appId/logs")({
+  head: ({ params }) => ({ meta: [{ title: `Logs · ${params.appId} · Burrow` }] }),
   validateSearch: (search: Record<string, unknown>) => parseSearch(logsSearchSchema, search),
   component: LogsView,
 });

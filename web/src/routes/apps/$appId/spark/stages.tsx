@@ -6,5 +6,6 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
  * when you come back) — the same layout/index split as `routes/nodes.tsx`.
  */
 export const Route = createFileRoute("/apps/$appId/spark/stages")({
+  head: ({ params }) => ({ meta: [{ title: `Stages · ${params.appId} · Burrow` }] }),
   component: () => <Outlet />,
 });

@@ -134,6 +134,7 @@ export const APPS_COLUMNS: ColDef<App>[] = [
           to="/apps/$appId"
           params={{ appId: row.original.id }}
           className="burrow-touch-link block truncate font-mono text-small text-live outline-offset-2 hover:underline"
+          onClick={(event) => event.stopPropagation()}
         >
           {row.original.id}
         </Link>

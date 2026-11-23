@@ -9,6 +9,7 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { attemptsSearchSchema, parseSearch } from "~/features/app/search";
 
 export const Route = createFileRoute("/apps/$appId/attempts")({
+  head: ({ params }) => ({ meta: [{ title: `Attempts · ${params.appId} · Burrow` }] }),
   validateSearch: (search: Record<string, unknown>) => parseSearch(attemptsSearchSchema, search),
   component: () => <Outlet />,
 });

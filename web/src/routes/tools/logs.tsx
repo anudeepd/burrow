@@ -7,6 +7,7 @@ import { LogsView } from "~/features/tools/LogsView";
 import { logsSearchSchema } from "~/features/tools/search";
 
 export const Route = createFileRoute("/tools/logs")({
+  head: () => ({ meta: [{ title: "Daemon logs · Burrow" }] }),
   validateSearch: logsSearchSchema,
   component: LogsView,
 });

@@ -7,6 +7,7 @@ import { StoragePage } from "~/features/spark/pages/StoragePage";
  * distribution inline.
  */
 export const Route = createFileRoute("/apps/$appId/spark/storage/")({
+  head: ({ params }) => ({ meta: [{ title: `Storage · ${params.appId} · Burrow` }] }),
   validateSearch: (s: Record<string, unknown>) => sparkSearch(s),
   component: StoragePage,
 });

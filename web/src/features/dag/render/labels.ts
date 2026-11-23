@@ -93,7 +93,7 @@ function cellKey(cx: number, cy: number): string {
  * the honest behaviour: a squeezed label is unreadable, and the node still carries tone/shape/aria.
  */
 export function resolveLabelCollisions(candidates: readonly LabelCandidate[], maxLabels = 400): CollisionResult {
-  const ordered = [...candidates].sort((a, b) => b.priority - a.priority || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const ordered = candidates.toSorted((a, b) => b.priority - a.priority || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const placed: LabelPlacement[] = [];
   const hidden: string[] = [];
   const grid = new Map<string, LabelPlacement[]>();

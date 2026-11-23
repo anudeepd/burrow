@@ -220,6 +220,9 @@ describe("AppsPage", () => {
     const queueLink = within(table).getAllByRole("link", { name: "root.default" })[0]!;
     fireEvent.click(queueLink);
     expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
+    const idLink = within(table).getByRole("link", { name: apps[0]!.id });
+    fireEvent.click(idLink, { metaKey: true });
+    expect(onOpenApp).toHaveBeenCalledTimes(openedBeforeLinks);
   });
 
   it("changes lifecycle state through the compact picker", async () => {

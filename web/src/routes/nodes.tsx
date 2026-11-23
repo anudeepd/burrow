@@ -5,5 +5,6 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
  * nested inside the table (the table keeps its data + scroll when you come back).
  */
 export const Route = createFileRoute("/nodes")({
+  head: () => ({ meta: [{ title: "Nodes · Burrow" }] }),
   component: () => <Outlet />,
 });

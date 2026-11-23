@@ -4,6 +4,7 @@ import { SqlPage } from "~/features/spark/pages/SqlPage";
 
 /** `/apps/$appId/spark/sql?status=&q=&sort=&dir=&cols=&page=&size=&attempt=` */
 export const Route = createFileRoute("/apps/$appId/spark/sql/")({
+  head: ({ params }) => ({ meta: [{ title: `SQL · ${params.appId} · Burrow` }] }),
   validateSearch: (s: Record<string, unknown>) => sparkSearch(s),
   component: SqlPage,
 });

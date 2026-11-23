@@ -12,7 +12,10 @@ import { AttemptDetail } from "~/features/app/components/AttemptDetail";
 import { isAppFinal } from "~/features/app/model";
 import { useNow } from "~/features/app/use-now";
 
-export const Route = createFileRoute("/apps/$appId/attempts/$attemptId")({ component: AttemptRoute });
+export const Route = createFileRoute("/apps/$appId/attempts/$attemptId")({
+  head: ({ params }) => ({ meta: [{ title: `Attempt ${params.attemptId} · ${params.appId} · Burrow` }] }),
+  component: AttemptRoute,
+});
 
 function AttemptRoute() {
   const { appId, attemptId } = Route.useParams();

@@ -13,7 +13,10 @@ import { ATTEMPT_DEFAULT_VISIBILITY, AttemptsTab } from "~/features/app/componen
 import { sortingFromParam, sortingToParam, visibilityFromParam, visibilityToParam } from "~/features/app/search";
 import { useNow } from "~/features/app/use-now";
 
-export const Route = createFileRoute("/apps/$appId/attempts/")({ component: AttemptsRoute });
+export const Route = createFileRoute("/apps/$appId/attempts/")({
+  head: ({ params }) => ({ meta: [{ title: `Attempts · ${params.appId} · Burrow` }] }),
+  component: AttemptsRoute,
+});
 
 /** The layout route owns the search schema; this list reads the same typed state through its API. */
 const parent = getRouteApi("/apps/$appId/attempts");

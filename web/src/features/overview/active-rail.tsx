@@ -53,7 +53,7 @@ function AppFact({
 
 /** Longest-running first, running before queued; the rail is about work in flight. */
 function rankApps(apps: App[]): App[] {
-  return [...apps].sort((a, b) => {
+  return apps.toSorted((a, b) => {
     const pa = appPhase(a.state);
     const pb = appPhase(b.state);
     if (pa !== pb) return pa === "running" ? -1 : 1;

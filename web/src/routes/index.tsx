@@ -19,6 +19,7 @@ export interface OverviewSearch {
 }
 
 export const Route = createFileRoute("/")({
+  head: () => ({ meta: [{ title: "Overview · Burrow" }] }),
   validateSearch: (search: Record<string, unknown>): OverviewSearch => ({
     window: WINDOW_KEYS.includes(search.window as HistoryWindow) ? (search.window as HistoryWindow) : "all",
   }),

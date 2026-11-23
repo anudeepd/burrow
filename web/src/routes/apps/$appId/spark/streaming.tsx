@@ -7,6 +7,7 @@ import { sparkSearch } from "~/features/spark/data/search";
  * (COMPLETED|PROCESSING|QUEUED), `size` is how many of the newest batches are loaded and charted (default 200).
  */
 export const Route = createFileRoute("/apps/$appId/spark/streaming")({
+  head: ({ params }) => ({ meta: [{ title: `Streaming · ${params.appId} · Burrow` }] }),
   validateSearch: (s: Record<string, unknown>) => sparkSearch(s),
   component: StreamingPage,
 });

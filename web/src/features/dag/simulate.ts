@@ -144,7 +144,7 @@ export function createSimulator(dag: Dag, config: Partial<ProgressConfig> = {}):
   const cfg: ProgressConfig = { ...DEFAULT_PROGRESS, ...config };
   const rand = rng(cfg.seed);
   const plans = new Map<number, StagePlan>();
-  const ordered = [...dag.stages].sort((a, b) => a.stageId - b.stageId);
+  const ordered = dag.stages.toSorted((a, b) => a.stageId - b.stageId);
   const budget = Math.max(1000, cfg.totalMs);
   const perStage = budget / Math.max(1, ordered.length);
   let start = 0;

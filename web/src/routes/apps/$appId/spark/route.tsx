@@ -6,6 +6,7 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { SparkShell } from "~/features/spark/ui/SparkShell";
 
 export const Route = createFileRoute("/apps/$appId/spark")({
+  head: ({ params }) => ({ meta: [{ title: `Spark · ${params.appId} · Burrow` }] }),
   component: SparkLayout,
 });
 

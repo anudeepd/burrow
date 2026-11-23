@@ -21,7 +21,10 @@ import { useNow } from "~/features/app/use-now";
 import { RouteTabIndicator, TAB_LINK_CLASS, TAB_STRIP_CLASS } from "~/ui/tabs";
 import { HelpTip } from "~/ui/tooltip";
 
-export const Route = createFileRoute("/apps/$appId")({ component: AppLayout });
+export const Route = createFileRoute("/apps/$appId")({
+  head: ({ params }) => ({ meta: [{ title: `${params.appId} · Application · Burrow` }] }),
+  component: AppLayout,
+});
 
 function AppLayout() {
   const { appId } = Route.useParams();

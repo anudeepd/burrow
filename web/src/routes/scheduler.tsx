@@ -5,4 +5,7 @@ import { Outlet, createFileRoute } from "@tanstack/react-router";
  * children must render them, otherwise `/scheduler/$queue` would never mount. The page itself lives in
  * `scheduler.index.tsx`, the queue drill-down in `scheduler/$queue.tsx`.
  */
-export const Route = createFileRoute("/scheduler")({ component: () => <Outlet /> });
+export const Route = createFileRoute("/scheduler")({
+  head: () => ({ meta: [{ title: "Scheduler · Burrow" }] }),
+  component: () => <Outlet />,
+});

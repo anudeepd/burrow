@@ -226,7 +226,7 @@ export function isEndpointMissing(error: unknown): boolean {
  */
 export function sortLogFiles(files: readonly LogFileEntry[], key: LogSortKey, desc: boolean): LogFileEntry[] {
   const dir = desc ? -1 : 1;
-  return [...files].sort((a, b) => {
+  return files.toSorted((a, b) => {
     if (a.isDir !== b.isDir) return a.isDir ? 1 : -1;
     if (key === "name") return dir * a.name.localeCompare(b.name);
     if (key === "size") return dir * (a.size - b.size) || a.name.localeCompare(b.name);

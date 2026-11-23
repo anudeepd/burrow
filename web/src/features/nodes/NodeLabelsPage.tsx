@@ -348,7 +348,7 @@ function MappingView({
     () => (q ? nodes.filter((n) => `${n.id} ${n.rack} ${(n.nodeLabels ?? []).join(" ")}`.toLowerCase().includes(q)) : nodes),
     [nodes, q],
   );
-  const names = useMemo(() => [...labelNames].sort((a, b) => a.localeCompare(b)), [labelNames]);
+  const names = useMemo(() => labelNames.toSorted((a, b) => a.localeCompare(b)), [labelNames]);
 
   const columns = useMemo<ColDef<Node>[]>(() => {
     const base: ColDef<Node>[] = [

@@ -7,6 +7,9 @@ import { sparkSearch } from "~/features/spark/data/search";
  * `size` (25|50|100) switches the task table to Spark's server-side paging, `level=more` adds the additional task metrics.
  */
 export const Route = createFileRoute("/apps/$appId/spark/stages/$stageId/$attemptId")({
+  head: ({ params }) => ({
+    meta: [{ title: `Stage ${params.stageId} attempt ${params.attemptId} · ${params.appId} · Burrow` }],
+  }),
   validateSearch: (s: Record<string, unknown>) => sparkSearch(s),
   component: StageDetailPage,
 });
