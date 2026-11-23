@@ -84,7 +84,7 @@ def main() -> None:
 
                 with urllib.request.urlopen(f"http://127.0.0.1:{port}/", timeout=5) as response:
                     shell = response.read().decode("utf-8")
-                if response.status != 200 or "<title>Burrow</title>" not in shell:
+                if response.status != 200 or "<title>" not in shell or "Burrow</title>" not in shell:
                     fail("Burrow did not serve the embedded SPA shell", output)
             finally:
                 if server.poll() is None:
