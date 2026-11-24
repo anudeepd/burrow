@@ -1227,17 +1227,18 @@ const TableRowInner = <T extends RowData>({
     if (event.button !== 0) return;
     press.current = { x: event.clientX, y: event.clientY };
   };
-  const onRowClick = (event: ReactMouseEvent<HTMLDivElement>) => {
-    const start = press.current;
-    press.current = null;
-    if (!onActivate) return;
-    // Selecting text is a mouse interaction too; a click that ends a drag must not also open the row.
-    if (window.getSelection()?.toString().trim()) return;
-    if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > ROW_ACTIVATION_DRAG_PX) return;
-    // A click that starts in another row has no press point here; only programmatic keyboard-style clicks may omit it.
-    if (!start && event.detail > 0) return;
-    onActivate();
-  };
+  const onRowClick = onActivate
+    ? (event: ReactMouseEvent<HTMLDivElement>) => {
+        const start = press.current;
+        press.current = null;
+        // Selecting text is a mouse interaction too; a click that ends a drag must not also open the row.
+        if (window.getSelection()?.toString().trim()) return;
+        if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > ROW_ACTIVATION_DRAG_PX) return;
+        // A click that starts in another row has no press point here; only programmatic keyboard-style clicks may omit it.
+        if (!start && event.detail > 0) return;
+        onActivate();
+      }
+    : undefined;
   useEffect(() => {
     const row = flashRef.current!.closest<HTMLElement>(".burrow-row")!;
     const hasPulsingStatus = Boolean(row.querySelector(".burrow-dot-pulse"));

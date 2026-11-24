@@ -15,6 +15,7 @@ const motionMocks = vi.hoisted(() => ({
 }));
 const scrollBottomMocks = vi.hoisted(() => ({ skipObserver: false }));
 const widthMocks = vi.hoisted(() => ({ width: 0 }));
+const virtualMocks = vi.hoisted(() => ({ scrollToIndex: vi.fn() }));
 
 vi.mock("~/lib/motion", async (importOriginal) => ({
   ...(await importOriginal<typeof import("~/lib/motion")>()),
@@ -41,7 +42,7 @@ vi.mock("@tanstack/react-virtual", () => ({
       })),
     getTotalSize: () => Array.from({ length: count }, (_, index) => estimateSize(index)).reduce((sum, height) => sum + height, 0),
     measure: vi.fn(),
-    scrollToIndex: vi.fn(),
+    scrollToIndex: virtualMocks.scrollToIndex,
   }),
 }));
 
@@ -64,7 +65,7 @@ vi.mock("../scroll-bottom-fade", async (importOriginal) => {
 
 window.__BURROW_PARITY__ = true;
 
-const { cleanup, fireEvent, render, screen } = await import("@testing-library/react");
+const { cleanup, createEvent, fireEvent, render, screen } = await import("@testing-library/react");
 const { DataTable, defaultVisibilityOf } = await import("./data-table");
 const { Datum } = await import("../datum");
 const { EmptyState, ErrorState } = await import("../feedback");
@@ -156,6 +157,7 @@ afterEach(() => {
   motionMocks.duration = null;
   widthMocks.width = 0;
   motionMocks.flash.mockClear();
+  virtualMocks.scrollToIndex.mockClear();
   scrollBottomMocks.skipObserver = false;
 });
 
@@ -728,6 +730,51 @@ describe("DataTable", () => {
     expect(first.dataset.active).toBe("true");
   });
 
+  it("starts relative navigation on the first row", () => {
+    const firstView = renderTable();
+    const firstTable = screen.getByRole("table", { name: "Nodes" });
+    fireEvent.keyDown(firstTable, { key: "ArrowUp" });
+    expect(screen.getByRole("row", { name: /n-1 alpha/ }).dataset.active).toBe("true");
+    firstView.unmount();
+
+    renderTable();
+    fireEvent.keyDown(screen.getByRole("table", { name: "Nodes" }), { key: "PageDown" });
+    expect(screen.getByRole("row", { name: /n-1 alpha/ }).dataset.active).toBe("true");
+  });
+
+  it("ignores unrelated keys, modified keys, prevented keys and child targets", () => {
+    const { onRowActivate } = renderTable();
+    const table = screen.getByRole("table", { name: "Nodes" });
+    const first = screen.getByRole("row", { name: /n-1 alpha/ });
+
+    fireEvent.keyDown(table, { key: "ArrowDown", altKey: true });
+    fireEvent.keyDown(table, { key: "Escape" });
+    fireEvent.keyDown(screen.getByRole("checkbox", { name: "Select n-1" }), { key: "ArrowDown", bubbles: true });
+    const prevented = createEvent.keyDown(table, { key: "ArrowDown" });
+    prevented.preventDefault();
+    fireEvent(table, prevented);
+
+    expect(first.dataset.active).toBeUndefined();
+    expect(onRowActivate).not.toHaveBeenCalled();
+  });
+
+  it("leaves Enter and Space alone when the table has no row action or selection", () => {
+    renderTable({ onRowActivate: undefined, selectable: false });
+    const table = screen.getByRole("table", { name: "Nodes" });
+    fireEvent.keyDown(table, { key: "ArrowDown" });
+    fireEvent.keyDown(table, { key: "Enter" });
+    fireEvent.keyDown(table, { key: " " });
+    expect(screen.getByRole("row", { name: /n-1 alpha/ }).dataset.active).toBe("true");
+  });
+
+  it("scrolls the virtualizer to the active row outside parity mode", () => {
+    parityStore.setState(() => ({ enabled: false }));
+    window.__BURROW_PARITY__ = false;
+    renderTable();
+    fireEvent.keyDown(screen.getByRole("table", { name: "Nodes" }), { key: "ArrowDown" });
+    expect(virtualMocks.scrollToIndex).toHaveBeenCalledWith(0, { align: "auto" });
+  });
+
   it("does not activate a row after the pointer dragged across it", () => {
     const { onRowActivate } = renderTable();
     const row = screen.getByRole("row", { name: /n-1 alpha/ });
@@ -739,6 +786,21 @@ describe("DataTable", () => {
     fireEvent.pointerDown(row, { button: 0, clientX: 10, clientY: 10 });
     fireEvent.click(row, { clientX: 12, clientY: 12 });
     expect(onRowActivate).toHaveBeenCalledWith(rows[0]);
+  });
+
+  it("does not activate a row when the click selects text or starts outside it", () => {
+    const { onRowActivate } = renderTable();
+    const row = screen.getByRole("row", { name: /n-1 alpha/ });
+    vi.spyOn(window, "getSelection").mockReturnValue({ toString: () => "alpha" } as Selection);
+
+    fireEvent.pointerDown(row, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.click(row, { clientX: 10, clientY: 10 });
+    expect(onRowActivate).not.toHaveBeenCalled();
+
+    vi.restoreAllMocks();
+    fireEvent.pointerDown(row, { button: 2, clientX: 10, clientY: 10 });
+    fireEvent.click(row, { clientX: 10, clientY: 10, detail: 1 });
+    expect(onRowActivate).not.toHaveBeenCalled();
   });
 
   it("exports the current view and custom export values when no rows are selected", () => {
