@@ -151,6 +151,11 @@ describe("filterApps", () => {
     expect(filterApps(ALL, parse({ name: "spark" })).length).toBe(3);
     expect(filterApps(ALL, parse({ name: "application_1767000000000_0003" })).map((a) => a.name)).toEqual(["spark-job-broken"]);
   });
+  it("matches partial names and partial ids, case-insensitively", () => {
+    expect(filterApps(ALL, parse({ name: "SPARK" })).length).toBe(3);
+    expect(filterApps(ALL, parse({ name: "1767000000000_0003" })).map((a) => a.name)).toEqual(["spark-job-broken"]);
+    expect(filterApps(ALL, parse({ name: "job-bro" })).map((a) => a.name)).toEqual(["spark-job-broken"]);
+  });
   it("filters started/finished ranges", () => {
     expect(filterApps(ALL, parse({ startedAfter: 2_000_000 })).map((a) => a.name)).toEqual([
       "spark-job-broken",

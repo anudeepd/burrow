@@ -73,9 +73,8 @@ function appTags(app: App): string[] {
 }
 
 /**
- * Apply the URL filters. `name` searches the application NAME; a value that looks like an application id (contains
- * `application_`) searches the id instead — that is how the legacy DataTables search box behaves in practice, but
- * scoped to the two columns people actually paste.
+ * Apply the URL filters. `name` searches both the application NAME and id with one partial, case-insensitive match:
+ * people paste either the label they recognise or any fragment of the YARN id.
  *
  * The time ranges mirror `RMWebServices`/`ApplicationsRequestBuilder` exactly: `startedTimeBegin/End` default to
  * `0..Long.MAX_VALUE` and are always applied, while the finished range is only applied when a bound was actually set —
@@ -85,7 +84,6 @@ export function filterApps(apps: readonly App[], search: AppsSearch): App[] {
   const states = parseStates(search.states);
   const stateSet = new Set<string>(states);
   const needle = search.name?.toLowerCase();
-  const byId = needle?.includes("application_") ?? false;
   const tag = search.tag?.toLowerCase();
   const startedBegin = search.startedAfter ?? 0;
   const startedEnd = search.startedBefore ?? Number.MAX_SAFE_INTEGER;
@@ -101,10 +99,7 @@ export function filterApps(apps: readonly App[], search: AppsSearch): App[] {
     if (tag && !appTags(app).includes(tag)) return false;
     if (app.startedTime < startedBegin || app.startedTime > startedEnd) return false;
     if (hasFinishedRange && (app.finishedTime < finishedBegin || app.finishedTime > finishedEnd)) return false;
-    if (needle) {
-      const hit = byId ? app.id.toLowerCase().includes(needle) : app.name.toLowerCase().includes(needle);
-      if (!hit) return false;
-    }
+    if (needle && !app.name.toLowerCase().includes(needle) && !app.id.toLowerCase().includes(needle)) return false;
     return true;
   });
 }

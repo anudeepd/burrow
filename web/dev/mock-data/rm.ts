@@ -250,10 +250,9 @@ export function filteredApps(c: MockCluster, q: URLSearchParams): MockApp[] {
     if (types.size && !types.has(a.type.toUpperCase())) continue;
     if (tags.size && !a.tags.some((t) => tags.has(t.toLowerCase()))) continue;
     if (name) {
-      // The UI searches substrings in the app NAME, or in the id when the needle looks like one.
+      // The UI searches partial, case-insensitive substrings in both the app name and id.
       const needle = name.toLowerCase();
-      const hit = needle.includes("application_") ? a.id.toLowerCase().includes(needle) : a.name.toLowerCase().includes(needle);
-      if (!hit) continue;
+      if (!a.name.toLowerCase().includes(needle) && !a.id.toLowerCase().includes(needle)) continue;
     }
     out.push(a);
   }
