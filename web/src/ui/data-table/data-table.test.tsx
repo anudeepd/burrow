@@ -41,6 +41,7 @@ vi.mock("@tanstack/react-virtual", () => ({
       })),
     getTotalSize: () => Array.from({ length: count }, (_, index) => estimateSize(index)).reduce((sum, height) => sum + height, 0),
     measure: vi.fn(),
+    scrollToIndex: vi.fn(),
   }),
 }));
 
@@ -689,6 +690,55 @@ describe("DataTable", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "JSON (1 selected)" }));
     expect(createUrl).toHaveBeenCalledTimes(2);
     expect(clickAnchor).toHaveBeenCalledTimes(2);
+  });
+
+  it("moves the active row with list keys and activates or selects it", () => {
+    const { onRowActivate } = renderTable();
+    const table = screen.getByRole("table", { name: "Nodes" });
+    table.focus();
+
+    fireEvent.keyDown(table, { key: "ArrowDown" });
+    const first = screen.getByRole("row", { name: /n-1 alpha/ });
+    expect(first.dataset.active).toBe("true");
+    expect(table.getAttribute("aria-activedescendant")).toBe(first.id);
+
+    fireEvent.keyDown(table, { key: "j" });
+    const second = screen.getByRole("row", { name: /n-2 beta/ });
+    expect(second.dataset.active).toBe("true");
+    expect(first.dataset.active).toBeUndefined();
+
+    fireEvent.keyDown(table, { key: "Enter" });
+    expect(onRowActivate).toHaveBeenLastCalledWith(rows[1]);
+
+    fireEvent.keyDown(table, { key: " " });
+    expect((screen.getByRole("checkbox", { name: "Select n-2" }) as HTMLInputElement).checked).toBe(true);
+
+    fireEvent.keyDown(table, { key: "Home" });
+    expect(first.dataset.active).toBe("true");
+
+    fireEvent.keyDown(table, { key: "End" });
+    expect(second.dataset.active).toBe("true");
+    fireEvent.keyDown(table, { key: "ArrowUp" });
+    expect(first.dataset.active).toBe("true");
+    fireEvent.keyDown(table, { key: "PageDown" });
+    expect(second.dataset.active).toBe("true");
+    fireEvent.keyDown(table, { key: "PageUp" });
+    expect(first.dataset.active).toBe("true");
+    fireEvent.keyDown(table, { key: "k" });
+    expect(first.dataset.active).toBe("true");
+  });
+
+  it("does not activate a row after the pointer dragged across it", () => {
+    const { onRowActivate } = renderTable();
+    const row = screen.getByRole("row", { name: /n-1 alpha/ });
+
+    fireEvent.pointerDown(row, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.click(row, { clientX: 90, clientY: 10 });
+    expect(onRowActivate).not.toHaveBeenCalled();
+
+    fireEvent.pointerDown(row, { button: 0, clientX: 10, clientY: 10 });
+    fireEvent.click(row, { clientX: 12, clientY: 12 });
+    expect(onRowActivate).toHaveBeenCalledWith(rows[0]);
   });
 
   it("exports the current view and custom export values when no rows are selected", () => {

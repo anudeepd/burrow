@@ -2,8 +2,8 @@
  * DataTable — the one table for Burrow (TanStack Table v9 + TanStack Virtual).
  *
  * Features: sticky header · virtualized rows (34px pointer, 44px coarse-pointer row height) · sort (click, shift-click multi) ·
- * column chooser · column resize (persisted) · row selection (checkbox + Space) · CSV/JSON export of the current view ·
- * change flashes · loading/empty/error/stale states.
+ * column chooser · column resize (persisted) · row keyboard navigation · row selection (checkbox + Space) · CSV/JSON
+ * export of the current view · change flashes · loading/empty/error/stale states.
  * URL-sync is the caller's job: sorting + column visibility are CONTROLLED props (see features/apps for the pattern).
  *
  * Parity mode (docs/contracts/parity-dom.md): every column visible, NO virtualization window (all rows rendered),
@@ -22,6 +22,9 @@ import {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDown, ArrowUp, ArrowUpDown, Columns3, Download, X } from "lucide-react";
 import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactElement,
   type ReactNode,
   cloneElement,
@@ -55,6 +58,7 @@ import type { Row } from "@tanstack/react-table";
 export const ROW_HEIGHT = 34;
 const TOUCH_ROW_HEIGHT = 44;
 const SELECT_W = 36;
+const ROW_ACTIVATION_DRAG_PX = 4;
 type CompactStateProps = { compact?: boolean };
 
 const COARSE_POINTER_QUERY = "(pointer: coarse)";
@@ -271,6 +275,9 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
   });
 
   const rows = table.getRowModel().rows as Row<TableFeatureSet, T>[];
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const activeRowIndex = activeRowId === null ? -1 : rows.findIndex((row) => row.id === activeRowId);
+  const rowDomId = useCallback((index: number) => `${storageKey}-row-${index}`, [storageKey]);
   const parityRows = parity ? data.length : undefined;
   const windowed = rowCount !== undefined || rowOffset !== undefined;
   const totalRows = parityRows ?? rowCount ?? rows.length;
@@ -424,6 +431,18 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
     syncOverflowCue();
     syncVerticalOverflowCue();
   }, [syncOverflowCue, syncVerticalOverflowCue]);
+  useEffect(() => {
+    if (activeRowIndex < 0) return;
+    const globalIndex = dataOffset + activeRowIndex;
+    if (parity) {
+      document.getElementById(rowDomId(globalIndex))?.scrollIntoView({ block: "nearest" });
+    } else {
+      virt.scrollToIndex(globalIndex, { align: "auto" });
+    }
+  }, [activeRowIndex, dataOffset, parity, rowDomId, virt]);
+  useEffect(() => {
+    setActiveRowId(null);
+  }, [scrollResetKey]);
   useLayoutEffect(() => {
     const firstCommit = !hasCommitted.current;
     hasCommitted.current = true;
@@ -641,6 +660,56 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
       : undefined;
   const vItems = parity ? null : virt.getVirtualItems();
 
+  const onTableKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented || event.target !== event.currentTarget || rows.length === 0) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.nativeEvent.isComposing) return;
+
+    const current = activeRowIndex >= 0 ? activeRowIndex : 0;
+    const page = Math.max(1, Math.floor((scrollRef.current?.clientHeight || rowH * 10) / rowH) - 2);
+    let next: number | undefined;
+    switch (event.key) {
+      case "ArrowDown":
+      case "j":
+        next = activeRowIndex < 0 ? 0 : current + 1;
+        break;
+      case "ArrowUp":
+      case "k":
+        next = activeRowIndex < 0 ? 0 : current - 1;
+        break;
+      case "PageDown":
+        next = activeRowIndex < 0 ? 0 : current + page;
+        break;
+      case "PageUp":
+        next = current - page;
+        break;
+      case "Home":
+        next = 0;
+        break;
+      case "End":
+        next = rows.length - 1;
+        break;
+      case "Enter":
+        if (onRowActivate) {
+          setActiveRowId(rows[current]!.id);
+          onRowActivate(rows[current]!.original as T);
+          event.preventDefault();
+        }
+        return;
+      case " ":
+        if (selectable) {
+          setActiveRowId(rows[current]!.id);
+          rows[current]!.toggleSelected();
+          event.preventDefault();
+        }
+        return;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    setActiveRowId(rows[Math.max(0, Math.min(rows.length - 1, next))]!.id);
+  };
+
   const renderRow = (index: number, offset: number) => {
     const local = index - dataOffset;
     const row = local >= 0 && local < rows.length ? rows[local] : undefined;
@@ -667,6 +736,8 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
         width={totalWidth}
         grow={grow}
         widths={widths}
+        active={index - dataOffset === activeRowIndex}
+        domId={rowDomId(index)}
         selected={row.getIsSelected()}
         selectable={!!selectable}
         selectionPinned={selectionPinned}
@@ -884,9 +955,11 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
           aria-label={label}
           aria-rowcount={totalRows + 1}
           aria-colcount={leafCols.length + (selectable ? 1 : 0)}
+          aria-activedescendant={activeRowIndex >= 0 ? rowDomId(dataOffset + activeRowIndex) : undefined}
           // biome-ignore lint/a11y/noNoninteractiveTabindex: the native scrollport needs keyboard scrolling for overflow columns and rows.
           tabIndex={0} //NOSONAR -- required for keyboard scrolling in Safari
           aria-busy={loading || undefined}
+          onKeyDown={onTableKeyDown}
           onScroll={() => {
             syncScrollCues();
             captureAnchorRef.current();
@@ -1064,7 +1137,10 @@ export function DataTable<T extends RowData>(props: DataTableProps<T>) {
                   <span className="hidden sm:inline">Scroll for more columns</span>
                 </span>
               )}
-              <span className="hidden text-ink-3 md:inline">{selectable && <>Space select · </>}shift-click header: multi-sort</span>
+              <span className="hidden text-ink-3 md:inline">
+                {onRowActivate && <>↑↓ move · Enter open · </>}
+                {selectable && <>Space select · </>}shift-click header: multi-sort
+              </span>
             </span>
           )}
         </div>
@@ -1110,6 +1186,9 @@ interface TableRowProps<T extends RowData> {
   grow: number;
   /** rendered width per visible column id (phone: two columns fill the viewport, the rest scroll) */
   widths: Map<string, number>;
+  /** The row keyboard navigation is on, announced through the table's aria-activedescendant. */
+  active: boolean;
+  domId: string;
   selectionPinned: boolean;
   pinnedOffsets: ReadonlyMap<string, number>;
   selected: boolean;
@@ -1128,6 +1207,8 @@ const TableRowInner = <T extends RowData>({
   width,
   grow,
   widths,
+  active,
+  domId,
   selectionPinned,
   pinnedOffsets,
   selected,
@@ -1136,11 +1217,27 @@ const TableRowInner = <T extends RowData>({
   onActivate,
 }: TableRowProps<T>) => {
   const flashRef = useRef<HTMLSpanElement>(null);
+  const press = useRef<{ x: number; y: number } | null>(null);
   const prev = useRef<{ version: string | number | undefined; hasPulsingStatus: boolean }>({
     version,
     hasPulsingStatus: false,
   });
   const parity = useParity();
+  const onRowPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    press.current = { x: event.clientX, y: event.clientY };
+  };
+  const onRowClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const start = press.current;
+    press.current = null;
+    if (!onActivate) return;
+    // Selecting text is a mouse interaction too; a click that ends a drag must not also open the row.
+    if (window.getSelection()?.toString().trim()) return;
+    if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > ROW_ACTIVATION_DRAG_PX) return;
+    // A click that starts in another row has no press point here; only programmatic keyboard-style clicks may omit it.
+    if (!start && event.detail > 0) return;
+    onActivate();
+  };
   useEffect(() => {
     const row = flashRef.current!.closest<HTMLElement>(".burrow-row")!;
     const hasPulsingStatus = Boolean(row.querySelector(".burrow-dot-pulse"));
@@ -1161,9 +1258,12 @@ const TableRowInner = <T extends RowData>({
     <Entity
       id={entity}
       as="div"
+      domId={domId}
       role="row"
       aria-rowindex={index + 2}
       aria-selected={selectable ? selected : undefined}
+      data-active={active ? "true" : undefined}
+      data-activatable={onActivate ? "true" : undefined}
       data-selected={selected}
       className={cn(
         "burrow-row group/row relative flex items-stretch border-b border-seam-soft",
@@ -1171,7 +1271,8 @@ const TableRowInner = <T extends RowData>({
         !parity && "absolute left-0",
       )}
       style={{ height, width, transform: `translateY(${offset}px)` }}
-      onClick={onActivate}
+      onPointerDown={onActivate ? onRowPointerDown : undefined}
+      onClick={onActivate ? onRowClick : undefined}
     >
       <span ref={flashRef} aria-hidden="true" className="pointer-events-none absolute inset-0 bg-live opacity-0" />
       {selectable && (
@@ -1226,6 +1327,8 @@ const TableRow = memo(TableRowInner, (a, b) => {
     a.offset === b.offset &&
     a.height === b.height &&
     a.width === b.width &&
+    a.active === b.active &&
+    a.domId === b.domId &&
     a.selected === b.selected &&
     a.layoutKey === b.layoutKey &&
     a.version === b.version
