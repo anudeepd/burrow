@@ -445,6 +445,51 @@ test.describe("/apps", () => {
     await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", "1");
   });
 
+  test("an id fragment matches by application id", async ({ page }) => {
+    await freezeLive(page);
+    await page.goto("/apps");
+    await expect(page.locator('[data-yf="app.id"]').first()).toBeVisible();
+    const firstId = (await page.locator('[data-yf="app.id"]').first().textContent())?.trim() ?? "";
+    const fragment = firstId.replace(/^application_/, "");
+    await page.getByTestId("apps-name-filter").fill(fragment);
+    await expect(page.locator("[data-burrow-rows]")).toHaveAttribute("data-burrow-rows", "1");
+    await expect(page.locator('[data-yf="app.id"]')).toHaveText(firstId);
+  });
+
+  test("arrow keys move the active row and Enter opens it", async ({ page }) => {
+    await freezeLive(page);
+    await page.goto("/apps");
+    const grid = table(page);
+    await expect(grid).toBeVisible();
+    await grid.focus();
+    await page.keyboard.press("ArrowDown");
+
+    const active = grid.locator('.burrow-row[data-active="true"]');
+    await expect(active).toHaveCount(1);
+    const firstId = (await active.locator('[data-yf="app.id"]').textContent())?.trim() ?? "";
+    expect(firstId).toMatch(/^application_\d+_\d+$/);
+
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(new RegExp(`/apps/${firstId}$`));
+  });
+
+  test("dragging across row text selects it without opening the row", async ({ page }) => {
+    await freezeLive(page);
+    await page.goto("/apps");
+    const name = table(page).locator('[data-yf="app.name"]').first();
+    await expect(name).toBeVisible();
+    const box = await name.boundingBox();
+    expect(box).not.toBeNull();
+    const y = box!.y + box!.height / 2;
+    await page.mouse.move(box!.x + 4, y);
+    await page.mouse.down();
+    await page.mouse.move(box!.x + Math.min(box!.width - 4, 140), y);
+    await page.mouse.up();
+
+    expect(await page.evaluate(() => window.getSelection()?.toString().trim())).not.toBe("");
+    expect(new URL(page.url()).pathname).toBe("/apps");
+  });
+
   test("a short list caps the card to its content — the horizontal bar never clips the last row", async ({ page }) => {
     await freezeLive(page);
     await page.goto("/apps");

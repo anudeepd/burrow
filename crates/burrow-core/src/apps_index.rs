@@ -230,13 +230,10 @@ impl AppFilters {
             return false;
         }
         if let Some(needle) = &self.name {
-            let needle = needle.to_ascii_lowercase();
-            let hit = if needle.contains("application_") {
-                app.id.to_ascii_lowercase().contains(&needle)
-            } else {
-                app.name.to_ascii_lowercase().contains(&needle)
-            };
-            if !hit {
+            let needle = needle.to_lowercase();
+            if !app.name.to_lowercase().contains(&needle)
+                && !app.id.to_lowercase().contains(&needle)
+            {
                 return false;
             }
         }
@@ -1263,7 +1260,8 @@ mod tests {
 
     #[test]
     fn filters_match_every_field() {
-        let app = meta("application_1_1");
+        let mut app = meta("application_1_1");
+        app.name = "job-application".into();
         let matching = AppFilters {
             states: vec!["RUNNING".into()],
             final_status: Some("UNDEFINED".into()),
@@ -1271,7 +1269,7 @@ mod tests {
             queue: Some("root.default".into()),
             application_type: Some("SPARK".into()),
             tag: Some("etl".into()),
-            name: Some("JOB-application".into()),
+            name: Some("JOB-APP".into()),
             started_after: Some(100),
             started_before: Some(100),
             finished_after: None,
@@ -1334,6 +1332,16 @@ mod tests {
             }
             .matches(&app)
         );
+        for fragment in ["1_1", "pplication_1", "JOB-APP"] {
+            assert!(
+                AppFilters {
+                    name: Some(fragment.into()),
+                    ..matching.clone()
+                }
+                .matches(&app),
+                "expected {fragment:?} to match the app name or id"
+            );
+        }
         assert!(
             !AppFilters {
                 started_after: Some(101),

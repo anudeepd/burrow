@@ -539,7 +539,13 @@ html[data-parity] .burrow-sheet[data-starting-style], html[data-parity] .burrow-
 @media (hover: hover) and (pointer: fine) {
 .burrow-row:hover { background: var(--fabric-2); }
 }
+.burrow-row[data-activatable="true"] { cursor: pointer; }
+.burrow-row[data-activatable="true"] [role="cell"] { cursor: inherit; }
+.burrow-row[data-active="true"] { background: var(--fabric-2); box-shadow: inset 0 0 0 1px var(--focus); }
 .burrow-row[data-selected="true"] { background: color-mix(in oklch, var(--live) 9%, transparent); box-shadow: inset 2px 0 0 var(--live); }
+.burrow-row[data-selected="true"][data-active="true"] {
+  box-shadow: inset 2px 0 0 var(--live), inset 0 0 0 1px var(--focus);
+}
 
 /* The ID cell keeps its link and gains a copy affordance. Touch devices show the control in flow; hover devices reveal
    it without taking it out of the tab order. */
